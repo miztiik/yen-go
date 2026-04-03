@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "source": "blacktoplay",
+  "description": "BTP 15 categories → YenGo collection slugs. Categories are topical browsing groups. 12/15 map to collections; 3 unmapped (technique-level, handled by tags).",
+  "review": "Cho Chikun (9p) approved 2026-02-25",
+  "mappings": {
+    "attachments": [],
+    "basics": ["beginner-essentials", "novice-essentials"],
+    "capturing": ["capture-problems"],
+    "endgame": ["endgame-problems"],
+    "eyes": ["eye-shape-mastery"],
+    "ko": ["ko-problems"],
+    "placements": [],
+    "reductions": [],
+    "sacrifice": ["sacrifice-techniques"],
+    "seki": ["seki-problems"],
+    "semeai": ["capturing-race"],
+    "shape": ["shape-problems"],
+    "shortage": ["liberty-shortage"],
+    "tactics": ["tesuji-training"],
+    "vital-point": ["vital-point"]
+  },
+  "category_decode": {
+    "A": "attachments", "B": "basics", "C": "capturing", "D": "endgame",
+    "E": "eyes", "F": "ko", "G": "placements", "H": "reductions",
+    "I": "sacrifice", "J": "seki", "K": "semeai", "L": "shape",
+    "M": "shortage", "N": "tactics", "O": "vital-point"
+  }
+}

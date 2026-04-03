@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_version": "1.0",
+  "description": "9-level difficulty system for puzzle classification. Source of truth for both pipeline and frontend.",
+  "last_updated": "2026-01-26",
+  "changelog": [
+    {
+      "version": "1.0",
+      "date": "2026-01-26",
+      "author": "initial",
+      "changes": "Initial 9-level system with sequential IDs 1-9."
+    }
+  ],
+
+  "levels": [
+    {
+      "id": 1,
+      "slug": "novice",
+      "name": "Novice",
+      "shortName": "Nov",
+      "rankRange": { "min": "30k", "max": "26k" },
+      "description": "First patterns, single-move problems"
+    },
+    {
+      "id": 2,
+      "slug": "beginner",
+      "name": "Beginner",
+      "shortName": "Beg",
+      "rankRange": { "min": "25k", "max": "21k" },
+      "description": "Basic life/death shapes"
+    },
+    {
+      "id": 3,
+      "slug": "elementary",
+      "name": "Elementary",
+      "shortName": "Elem",
+      "rankRange": { "min": "20k", "max": "16k" },
+      "description": "Simple sequences (2-3 moves)"
+    },
+    {
+      "id": 4,
+      "slug": "intermediate",
+      "name": "Intermediate",
+      "shortName": "Int",
+      "rankRange": { "min": "15k", "max": "11k" },
+      "description": "Standard patterns"
+    },
+    {
+      "id": 5,
+      "slug": "upper-intermediate",
+      "name": "Upper Intermediate",
+      "shortName": "U.Int",
+      "rankRange": { "min": "10k", "max": "6k" },
+      "description": "Multi-step reading"
+    },
+    {
+      "id": 6,
+      "slug": "advanced",
+      "name": "Advanced",
+      "shortName": "Adv",
+      "rankRange": { "min": "5k", "max": "1k" },
+      "description": "Complex tesuji"
+    },
+    {
+      "id": 7,
+      "slug": "low-dan",
+      "name": "Low Dan",
+      "shortName": "L.Dan",
+      "rankRange": { "min": "1d", "max": "3d" },
+      "description": "Dan-level reading"
+    },
+    {
+      "id": 8,
+      "slug": "high-dan",
+      "name": "High Dan",
+      "shortName": "H.Dan",
+      "rankRange": { "min": "4d", "max": "6d" },
+      "description": "Professional patterns"
+    },
+    {
+      "id": 9,
+      "slug": "expert",
+      "name": "Expert",
+      "shortName": "Exp",
+      "rankRange": { "min": "7d", "max": "9d" },
+      "description": "Master-level problems"
+    }
+  ]
+}

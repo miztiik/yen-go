@@ -1,0 +1,41 @@
+{
+  "initiative_id": "2026-03-07-feature-enrichment-lab-query-fix",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "All changes are bug fixes; broken output had no legitimate consumers"
+    },
+    "legacy_code_removal": {
+      "remove_old_code": true,
+      "rationale": "DRY: eliminate SyncEngineAdapter.__init__ tsumego-prep duplication; dead code policy"
+    },
+    "option_selection": {
+      "selected_option_id": "OPT-B",
+      "rationale": "Full fix (all bugs) + DRY refactor of query-building into single shared function. Eliminates root cause AND its architectural enabler."
+    }
+  },
+  "planning_confidence_score": 85,
+  "risk_level": "medium",
+  "research_invoked": false,
+  "governance_decisions": {
+    "options_review": "GOV-OPTIONS-APPROVED",
+    "plan_review": "GOV-PLAN-CONDITIONAL",
+    "implementation_review": "GOV-REVIEW-APPROVED"
+  },
+  "updated_at": "2026-03-07",
+  "open_issues": []
+}

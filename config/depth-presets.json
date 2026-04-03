@@ -1,0 +1,19 @@
+{
+  "$schema": "./schemas/depth-presets.schema.json",
+  "schema_version": "1.0",
+  "description": "Solution depth preset filters for browse-level pages. Bucket boundaries define the cx_depth ranges for each preset.",
+  "last_updated": "2026-03-19",
+  "changelog": [
+    {
+      "version": "1.0",
+      "date": "2026-03-19",
+      "author": "initial",
+      "changes": "Initial depth presets: quick (1-2), medium (3-5), deep (6+)."
+    }
+  ],
+  "presets": [
+    { "id": "quick", "label": "Quick", "minDepth": 1, "maxDepth": 2 },
+    { "id": "medium", "label": "Medium", "minDepth": 3, "maxDepth": 5 },
+    { "id": "deep", "label": "Deep", "minDepth": 6, "maxDepth": null }
+  ]
+}

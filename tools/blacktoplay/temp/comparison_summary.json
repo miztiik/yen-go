@@ -1,0 +1,10 @@
+{
+  "disk_count": 3780,
+  "log_count": 3781,
+  "cache_count": 3819,
+  "missing_from_disk": 39,
+  "orphaned_on_disk": 0,
+  "failed_downloads": 1,
+  "unlogged": 0,
+  "coverage_pct": 98.98
+}

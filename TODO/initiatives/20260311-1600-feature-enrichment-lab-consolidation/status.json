@@ -1,0 +1,30 @@
+{
+  "initiative_id": "20260311-1600-feature-enrichment-lab-consolidation",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "Forward only — no backward compat. Re-process all puzzles. Enrichment is idempotent." },
+    "legacy_code_removal": { "remove_old_code": true, "rationale": "Remove aggressively per project policy: delete, don't deprecate. Git history preserves everything." },
+    "option_selection": {
+      "selected_option_id": "OPT-3",
+      "rationale": "Interleaved Priority: fixes → algorithms → reviews → sgfmill → docs. Unanimous governance approval. Reviews cover full codebase state."
+    }
+  },
+  "planning_confidence_score": 90,
+  "risk_level": "low",
+  "research_invoked": true,
+  "research_artifact": "TODO/initiatives/20260310-research-tsumego-solver-pns/15-research.md",
+  "updated_at": "2026-03-11"
+}

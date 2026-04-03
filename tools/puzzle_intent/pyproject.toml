@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = [".embedding_cache", "__pycache__", ".pytest_cache"]
+markers = [
+    "requires_semantic: tests requiring sentence-transformers (PyTorch); skip logic handled by conftest.py - never call _check_available() at module level",
+]

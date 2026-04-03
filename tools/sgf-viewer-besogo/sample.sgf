@@ -1,0 +1,20 @@
+(;GM[1]FF[4]CA[UTF-8]AP[YenGo:1.0]ST[2]
+SZ[9]
+GN[Sample Tsumego]
+PB[Black]PW[White]
+KM[0]
+AB[fc][gc][hc][fd][gd][hd][ge][he]
+AW[ec][dc][dd][ed][ee][fe][df][ef][ff][gf]
+C[Black to play. Find the killing move.
+
+This is a simple tsumego problem demonstrating ladder technique on a 9x9 board. Black must find the correct first move to capture the white stones.]
+PL[B]
+;B[fb]C[Correct! This is the key move.]
+(;W[eb]C[White resists]
+;B[gb]C[Black continues the ladder]
+;W[db]
+;B[ea]C[White is captured])
+(;W[gb]C[If white tries this]
+;B[eb]C[Black captures immediately]
+;W[db]
+;B[ea]C[White cannot escape]))

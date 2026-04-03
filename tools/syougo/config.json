@@ -1,0 +1,33 @@
+{
+  "_comment": "Configuration for syougo.jp puzzle downloader",
+  "_version": "1.0.0",
+  
+  "output": {
+    "directory": "./downloads",
+    "save_sgf": true,
+    "save_metadata": true
+  },
+  
+  "network": {
+    "base_delay_seconds": 2.0,
+    "jitter_factor": 0.5,
+    "max_delay_seconds": 60.0,
+    "request_timeout_seconds": 30,
+    "max_retries": 3,
+    "backoff_multiplier": 2.0,
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "referer": "https://www.syougo.jp/jk/khantei.html"
+  },
+  
+  "behavior": {
+    "skip_existing": true,
+    "stop_on_consecutive_failures": 3
+  },
+  
+  "logging": {
+    "level": "INFO",
+    "to_file": true,
+    "include_timestamp": true,
+    "include_run_id": true
+  }
+}

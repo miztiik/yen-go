@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enrichment Lab - Yen-Go</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-fixed-top">
+        <div id="sgf-input"></div>
+        <div id="engine-status" class="status-box">
+          <span class="label">Engine:</span>
+          <span id="engine-model">-</span>
+          <span id="ac-badge" class="ac-badge hidden"></span>
+        </div>
+      </div>
+      <div class="sidebar-scroll">
+        <div id="stage-stepper"></div>
+        <div id="config-panel"></div>
+      </div>
+      <div class="sidebar-fixed-bottom">
+        <div id="run-info" class="status-box hidden">
+          <div><span class="label">run_id:</span> <code id="run-id-val"></code></div>
+          <div><span class="label">trace:</span> <code id="trace-id-val"></code></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Area -->
+    <main class="main-area">
+      <div id="besogo-container" class="besogo-container"></div>
+      <div id="status-bar" class="status-bar"></div>
+    </main>
+
+    <!-- Right Panel -->
+    <aside class="right-panel">
+      <div id="player-indicator"></div>
+      <div id="solution-tree-panel"></div>
+      <div id="policy-priors"></div>
+      <div id="analysis-table"></div>
+    </aside>
+  </div>
+
+  <!-- Log Panel -->
+  <div id="log-panel"></div>
+
+  <!-- Libraries (classic scripts - global namespace) -->
+  <script src="lib/besogo/besogo.js"></script>
+  <script src="lib/besogo/svgUtil.js"></script>
+  <script src="lib/besogo/gameRoot.js"></script>
+  <script src="lib/besogo/editor.js"></script>
+  <script src="lib/besogo/parseSgf.js"></script>
+  <script src="lib/besogo/loadSgf.js"></script>
+  <script src="lib/besogo/boardDisplay.js"></script>
+  <script src="lib/besogo/coord.js"></script>
+  <script src="lib/besogo/treePanel.js"></script>
+
+  <!-- App modules (ES modules) -->
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>

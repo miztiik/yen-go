@@ -1,0 +1,36 @@
+{
+  "initiative_id": "20260330-2200-feature-collection-edition-detection",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "New column on yengo-content.db is additive. Existing entries get NULL collection_slug. No existing frontend behavior changes for single-source collections."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": false,
+      "rationale": "No old code to remove. This is new functionality."
+    },
+    "option_selection": {
+      "selected_option_id": "OPT-SIMPLE-EDITIONS",
+      "rationale": "Simplest approach: add collection_slug to content DB, detect collisions at ingest via SQL, create editions at publish via GROUP BY. No config fields, no richness scoring, no type-based branching. Works for all collection types."
+    }
+  },
+  "planning_confidence_score": 95,
+  "risk_level": "low",
+  "research_invoked": true,
+  "supersedes": "20260330-1400-feature-cross-source-collection-editions",
+  "updated_at": "2026-03-30T22:00:00Z"
+}

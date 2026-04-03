@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "source": "101weiqi",
+  "description": "Maps 101weiqi qtypename categories to YenGo collection slugs. Covers all 13 known categories.",
+  "mappings": {
+    "死活题": "life-and-death",
+    "手筋": "tesuji-problems",
+    "布局": "opening-problems",
+    "定式": "joseki-problems",
+    "官子": "endgame-problems",
+    "官子题": "endgame-problems",
+    "手筋题": "tesuji-problems",
+    "对杀": "capturing-race",
+    "对杀题": "capturing-race",
+    "综合": "general-practice",
+    "中盘": "general-practice",
+    "吃子": "capture-problems",
+    "骗招": "tesuji-problems",
+    "实战": "general-practice",
+    "棋理": "general-practice",
+    "模仿": "general-practice",
+    "欣赏题": "general-practice"
+  }
+}

@@ -1,0 +1,861 @@
+{"ts": "2026-02-11T21:38:17.425657+00:00", "level": "INFO", "logger": "ogs", "message": "Log: external-sources/ogs/logs/20260211-223817-ogs.jsonl"}
+{"ts": "2026-02-11T21:38:17.426543+00:00", "level": "INFO", "logger": "ogs", "message": "START external-sources/ogs max=100 mode=fresh", "event_type": "run_start", "data": {"output_dir": "external-sources/ogs", "max_items": 100, "resume": false, "dry_run": false}}
+{"ts": "2026-02-11T21:38:18.413421+00:00", "level": "INFO", "logger": "ogs", "message": "Fetching puzzle count from OGS..."}
+{"ts": "2026-02-11T21:38:18.848533+00:00", "level": "INFO", "logger": "ogs", "message": "Total puzzles available: 58582 (1172 pages)"}
+{"ts": "2026-02-11T21:38:18.850023+00:00", "level": "INFO", "logger": "ogs", "message": "Will download up to 100 new puzzles this session"}
+{"ts": "2026-02-11T21:38:18.850625+00:00", "level": "INFO", "logger": "ogs", "message": "GET page 1/1172", "event_type": "page_start", "data": {"page": 1, "total_pages": 1172, "url": "https://online-go.com/api/v1/puzzles/?page=1&page_size=50"}}
+{"ts": "2026-02-11T21:38:19.236767+00:00", "level": "INFO", "logger": "ogs", "message": "FETCHED page 1: 50 puzzles", "event_type": "page_fetch", "data": {"page": 1, "url": "https://online-go.com/api/v1/puzzles/?page=1&page_size=50", "puzzle_count": 50}}
+{"ts": "2026-02-11T21:38:19.237577+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 45", "event_type": "item_fetch", "data": {"puzzle_id": 45, "url": "https://online-go.com/api/v1/puzzles/45/"}}
+{"ts": "2026-02-11T21:38:19.522606+00:00", "level": "DEBUG", "logger": "ogs.levels", "message": "Loaded 9 level definitions from puzzle-levels.json"}
+{"ts": "2026-02-11T21:38:19.522773+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 45: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:38:19.570198+00:00", "level": "DEBUG", "logger": "ogs.tags", "message": "Loaded 28 tags with 202 aliases"}
+{"ts": "2026-02-11T21:38:19.570532+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 45: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:38:19.570633+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 45: YT[life-and-death]"}
+{"ts": "2026-02-11T21:38:19.632521+00:00", "level": "DEBUG", "logger": "ogs.translator", "message": "Loaded 569 terms from dictionary"}
+{"ts": "2026-02-11T21:38:19.644616+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/45.sgf"}
+{"ts": "2026-02-11T21:38:19.645875+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 45 -> 45.sgf [saved=1 skip=0 err=0]", "event_type": "item_save", "data": {"item_id": "45", "path": "45.sgf", "downloaded": 1, "skipped": 0, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:38:19.655879+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 1 puzzles"}
+{"ts": "2026-02-11T21:38:22.070586+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.4s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.4135916547122513, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:38:22.071707+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 1555", "event_type": "item_fetch", "data": {"puzzle_id": 1555, "url": "https://online-go.com/api/v1/puzzles/1555/"}}
+{"ts": "2026-02-11T21:38:22.252015+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 1555: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:38:22.256387+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/1555.sgf"}
+{"ts": "2026-02-11T21:38:22.256881+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 1555 -> 1555.sgf [saved=2 skip=0 err=0]", "event_type": "item_save", "data": {"item_id": "1555", "path": "1555.sgf", "downloaded": 2, "skipped": 0, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:38:22.261474+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 2 puzzles"}
+{"ts": "2026-02-11T21:38:25.112139+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.8s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.8495429181424194, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:38:25.112926+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 6544", "event_type": "item_fetch", "data": {"puzzle_id": 6544, "url": "https://online-go.com/api/v1/puzzles/6544/"}}
+{"ts": "2026-02-11T21:38:25.296468+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 6544: rank 22 \u2192 YG[upper-intermediate]"}
+{"ts": "2026-02-11T21:38:25.296590+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 6544: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:38:25.296637+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 6544: YT[life-and-death]"}
+{"ts": "2026-02-11T21:38:25.300031+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/6544.sgf"}
+{"ts": "2026-02-11T21:38:25.300452+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 6544 -> 6544.sgf [saved=3 skip=0 err=0]", "event_type": "item_save", "data": {"item_id": "6544", "path": "6544.sgf", "downloaded": 3, "skipped": 0, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:38:25.306551+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 3 puzzles"}
+{"ts": "2026-02-11T21:38:27.809268+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.5s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.500670446753073, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:38:27.811856+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 7994", "event_type": "item_fetch", "data": {"puzzle_id": 7994, "url": "https://online-go.com/api/v1/puzzles/7994/"}}
+{"ts": "2026-02-11T21:38:27.988778+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 7994: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:38:27.989018+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 7994: 'tesuji' \u2192 tag 'tesuji'"}
+{"ts": "2026-02-11T21:38:27.989111+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 7994: YT[tesuji]"}
+{"ts": "2026-02-11T21:38:27.993716+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/7994.sgf"}
+{"ts": "2026-02-11T21:38:27.995585+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 7994 -> 7994.sgf [saved=4 skip=0 err=0]", "event_type": "item_save", "data": {"item_id": "7994", "path": "7994.sgf", "downloaded": 4, "skipped": 0, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:38:28.004074+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 4 puzzles"}
+{"ts": "2026-02-11T21:38:30.364379+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.4s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.3590560629797555, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:38:30.366898+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 8037", "event_type": "item_fetch", "data": {"puzzle_id": 8037, "url": "https://online-go.com/api/v1/puzzles/8037/"}}
+{"ts": "2026-02-11T21:38:30.554514+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 8037: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:38:30.554667+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 8037: 'tesuji' \u2192 tag 'tesuji'"}
+{"ts": "2026-02-11T21:38:30.554732+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 8037: YT[tesuji]"}
+{"ts": "2026-02-11T21:38:30.557987+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/8037.sgf"}
+{"ts": "2026-02-11T21:38:30.560297+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 8037 -> 8037.sgf [saved=5 skip=0 err=0]", "event_type": "item_save", "data": {"item_id": "8037", "path": "8037.sgf", "downloaded": 5, "skipped": 0, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:38:30.567286+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 5 puzzles"}
+{"ts": "2026-02-11T21:38:33.389692+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.8s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.8191090040931295, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:38:33.391943+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 8061", "event_type": "item_fetch", "data": {"puzzle_id": 8061, "url": "https://online-go.com/api/v1/puzzles/8061/"}}
+{"ts": "2026-02-11T21:38:33.577737+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 8061: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:38:33.577952+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 8061: 'tesuji' \u2192 tag 'tesuji'"}
+{"ts": "2026-02-11T21:38:33.578085+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 8061: YT[tesuji]"}
+{"ts": "2026-02-11T21:38:33.586407+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/8061.sgf"}
+{"ts": "2026-02-11T21:38:33.590294+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 8061 -> 8061.sgf [saved=6 skip=0 err=0]", "event_type": "item_save", "data": {"item_id": "8061", "path": "8061.sgf", "downloaded": 6, "skipped": 0, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:38:33.596290+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 6 puzzles"}
+{"ts": "2026-02-11T21:38:35.812037+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.2s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.211676384856698, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:38:35.815563+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 8341", "event_type": "item_fetch", "data": {"puzzle_id": 8341, "url": "https://online-go.com/api/v1/puzzles/8341/"}}
+{"ts": "2026-02-11T21:38:36.009527+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 8341: rank 5 \u2192 YG[beginner]"}
+{"ts": "2026-02-11T21:38:36.009736+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 8341: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:38:36.009875+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 8341: YT[life-and-death]"}
+{"ts": "2026-02-11T21:38:36.014300+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/8341.sgf"}
+{"ts": "2026-02-11T21:38:36.017281+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 8341 -> 8341.sgf [saved=7 skip=0 err=0]", "event_type": "item_save", "data": {"item_id": "8341", "path": "8341.sgf", "downloaded": 7, "skipped": 0, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:38:36.022622+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 7 puzzles"}
+{"ts": "2026-02-11T21:38:39.340028+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.315861809037918, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:38:39.344138+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 10496", "event_type": "item_fetch", "data": {"puzzle_id": 10496, "url": "https://online-go.com/api/v1/puzzles/10496/"}}
+{"ts": "2026-02-11T21:38:39.521035+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 10496: rank 22 \u2192 YG[upper-intermediate]"}
+{"ts": "2026-02-11T21:38:39.521343+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 10496: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:38:39.521477+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 10496: YT[life-and-death]"}
+{"ts": "2026-02-11T21:38:39.526833+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/10496.sgf"}
+{"ts": "2026-02-11T21:38:39.528651+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 10496 -> 10496.sgf [saved=8 skip=0 err=0]", "event_type": "item_save", "data": {"item_id": "10496", "path": "10496.sgf", "downloaded": 8, "skipped": 0, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:38:39.535896+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 8 puzzles"}
+{"ts": "2026-02-11T21:38:42.292296+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.8s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.7554139230950283, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:38:42.294670+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 13605", "event_type": "item_fetch", "data": {"puzzle_id": 13605, "url": "https://online-go.com/api/v1/puzzles/13605/"}}
+{"ts": "2026-02-11T21:38:43.142422+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 13605: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:38:43.142627+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 13605: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:38:43.142739+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 13605: YT[life-and-death]"}
+{"ts": "2026-02-11T21:38:43.146571+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/13605.sgf"}
+{"ts": "2026-02-11T21:38:43.149627+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 13605 -> 13605.sgf [saved=9 skip=0 err=0]", "event_type": "item_save", "data": {"item_id": "13605", "path": "13605.sgf", "downloaded": 9, "skipped": 0, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:38:43.154127+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 9 puzzles"}
+{"ts": "2026-02-11T21:38:44.928634+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 1.8s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 1.773704215905349, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:38:44.931030+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 13723", "event_type": "item_fetch", "data": {"puzzle_id": 13723, "url": "https://online-go.com/api/v1/puzzles/13723/"}}
+{"ts": "2026-02-11T21:38:45.104533+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 13723 (Rejected puzzle 13723: Solution too long (52 moves). Max allowed is 20 moves.)", "event_type": "item_skip", "data": {"item_id": "13723", "reason": "Rejected puzzle 13723: Solution too long (52 moves). Max allowed is 20 moves.", "status": "skipped"}}
+{"ts": "2026-02-11T21:38:47.530300+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.4s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.4232170380637177, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:38:47.532404+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 14458", "event_type": "item_fetch", "data": {"puzzle_id": 14458, "url": "https://online-go.com/api/v1/puzzles/14458/"}}
+{"ts": "2026-02-11T21:38:47.763220+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 14458: rank 5 \u2192 YG[beginner]"}
+{"ts": "2026-02-11T21:38:47.763523+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 14458: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:38:47.763638+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 14458: YT[life-and-death]"}
+{"ts": "2026-02-11T21:38:47.768765+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/14458.sgf"}
+{"ts": "2026-02-11T21:38:47.769454+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 14458 -> 14458.sgf [saved=10 skip=1 err=0]", "event_type": "item_save", "data": {"item_id": "14458", "path": "14458.sgf", "downloaded": 10, "skipped": 1, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:38:47.779236+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 10 puzzles"}
+{"ts": "2026-02-11T21:38:50.775544+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.0s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.993344752392087, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:38:50.779121+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 14555", "event_type": "item_fetch", "data": {"puzzle_id": 14555, "url": "https://online-go.com/api/v1/puzzles/14555/"}}
+{"ts": "2026-02-11T21:38:50.986342+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 14555 (Rejected puzzle 14555: No solution found in move tree. (Note: has_solution API field was False, but tree traversal found no correct_answer nodes.))", "event_type": "item_skip", "data": {"item_id": "14555", "reason": "Rejected puzzle 14555: No solution found in move tree. (Note: has_solution API field was False, but tree traversal found no correct_answer nodes.)", "status": "skipped"}}
+{"ts": "2026-02-11T21:38:54.335259+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.3468608936981754, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:38:54.338301+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 15032", "event_type": "item_fetch", "data": {"puzzle_id": 15032, "url": "https://online-go.com/api/v1/puzzles/15032/"}}
+{"ts": "2026-02-11T21:38:54.532890+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 15032: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:38:54.533057+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 15032: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:38:54.533126+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 15032: YT[life-and-death]"}
+{"ts": "2026-02-11T21:38:54.537641+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/15032.sgf"}
+{"ts": "2026-02-11T21:38:54.538226+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 15032 -> 15032.sgf [saved=11 skip=2 err=0]", "event_type": "item_save", "data": {"item_id": "15032", "path": "15032.sgf", "downloaded": 11, "skipped": 2, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:38:54.544556+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 11 puzzles"}
+{"ts": "2026-02-11T21:38:57.325251+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.8s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.779608697118757, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:38:57.327708+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 15355", "event_type": "item_fetch", "data": {"puzzle_id": 15355, "url": "https://online-go.com/api/v1/puzzles/15355/"}}
+{"ts": "2026-02-11T21:38:57.516009+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 15355: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:38:57.516152+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 15355: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:38:57.516225+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 15355: YT[life-and-death]"}
+{"ts": "2026-02-11T21:38:57.520440+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/15355.sgf"}
+{"ts": "2026-02-11T21:38:57.521365+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 15355 -> 15355.sgf [saved=12 skip=2 err=0]", "event_type": "item_save", "data": {"item_id": "15355", "path": "15355.sgf", "downloaded": 12, "skipped": 2, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:38:57.527886+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 12 puzzles"}
+{"ts": "2026-02-11T21:39:00.059001+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.5s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.529713994718718, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:00.061582+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 15633", "event_type": "item_fetch", "data": {"puzzle_id": 15633, "url": "https://online-go.com/api/v1/puzzles/15633/"}}
+{"ts": "2026-02-11T21:39:00.259399+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 15633: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:39:00.259844+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 15633: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:00.259964+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 15633: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:00.264674+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/15633.sgf"}
+{"ts": "2026-02-11T21:39:00.267981+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 15633 -> 15633.sgf [saved=13 skip=2 err=0]", "event_type": "item_save", "data": {"item_id": "15633", "path": "15633.sgf", "downloaded": 13, "skipped": 2, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:00.273187+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 13 puzzles"}
+{"ts": "2026-02-11T21:39:02.828836+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.6s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.5542592729173696, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:02.831590+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 15904", "event_type": "item_fetch", "data": {"puzzle_id": 15904, "url": "https://online-go.com/api/v1/puzzles/15904/"}}
+{"ts": "2026-02-11T21:39:03.025676+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 15904 (Rejected puzzle 15904: No solution found in move tree. (Note: has_solution API field was False, but tree traversal found no correct_answer nodes.))", "event_type": "item_skip", "data": {"item_id": "15904", "reason": "Rejected puzzle 15904: No solution found in move tree. (Note: has_solution API field was False, but tree traversal found no correct_answer nodes.)", "status": "skipped"}}
+{"ts": "2026-02-11T21:39:05.494052+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.5s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.4647561517777516, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:05.503468+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 16595", "event_type": "item_fetch", "data": {"puzzle_id": 16595, "url": "https://online-go.com/api/v1/puzzles/16595/"}}
+{"ts": "2026-02-11T21:39:05.698797+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16595: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:39:05.698962+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16595: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:05.699024+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16595: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:05.704243+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/16595.sgf"}
+{"ts": "2026-02-11T21:39:05.707901+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 16595 -> 16595.sgf [saved=14 skip=3 err=0]", "event_type": "item_save", "data": {"item_id": "16595", "path": "16595.sgf", "downloaded": 14, "skipped": 3, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:05.712295+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 14 puzzles"}
+{"ts": "2026-02-11T21:39:08.997395+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.282923580770547, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:09.003030+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 16596", "event_type": "item_fetch", "data": {"puzzle_id": 16596, "url": "https://online-go.com/api/v1/puzzles/16596/"}}
+{"ts": "2026-02-11T21:39:09.172032+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16596: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:39:09.172295+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16596: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:09.172477+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16596: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:09.178226+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/16596.sgf"}
+{"ts": "2026-02-11T21:39:09.179672+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 16596 -> 16596.sgf [saved=15 skip=3 err=0]", "event_type": "item_save", "data": {"item_id": "16596", "path": "16596.sgf", "downloaded": 15, "skipped": 3, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:09.184986+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 15 puzzles"}
+{"ts": "2026-02-11T21:39:11.684807+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.5s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.4987963991373867, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:11.689343+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 16613", "event_type": "item_fetch", "data": {"puzzle_id": 16613, "url": "https://online-go.com/api/v1/puzzles/16613/"}}
+{"ts": "2026-02-11T21:39:11.874607+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16613: rank 27 \u2192 YG[advanced]"}
+{"ts": "2026-02-11T21:39:11.875005+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16613: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:11.875349+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16613: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:11.892428+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/16613.sgf"}
+{"ts": "2026-02-11T21:39:11.895528+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 16613 -> 16613.sgf [saved=16 skip=3 err=0]", "event_type": "item_save", "data": {"item_id": "16613", "path": "16613.sgf", "downloaded": 16, "skipped": 3, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:11.907560+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 16 puzzles"}
+{"ts": "2026-02-11T21:39:14.849802+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.9s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.940377875978242, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:14.854577+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 16631", "event_type": "item_fetch", "data": {"puzzle_id": 16631, "url": "https://online-go.com/api/v1/puzzles/16631/"}}
+{"ts": "2026-02-11T21:39:15.045637+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16631: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:39:15.045853+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16631: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:15.045935+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16631: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:15.053351+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/16631.sgf"}
+{"ts": "2026-02-11T21:39:15.056985+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 16631 -> 16631.sgf [saved=17 skip=3 err=0]", "event_type": "item_save", "data": {"item_id": "16631", "path": "16631.sgf", "downloaded": 17, "skipped": 3, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:15.066601+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 17 puzzles"}
+{"ts": "2026-02-11T21:39:18.101669+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.0s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.032563661579392, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:18.104190+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 16654", "event_type": "item_fetch", "data": {"puzzle_id": 16654, "url": "https://online-go.com/api/v1/puzzles/16654/"}}
+{"ts": "2026-02-11T21:39:18.297198+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16654: rank 5 \u2192 YG[beginner]"}
+{"ts": "2026-02-11T21:39:18.297357+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16654: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:18.297463+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16654: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:18.305724+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/16654.sgf"}
+{"ts": "2026-02-11T21:39:18.311939+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 16654 -> 16654.sgf [saved=18 skip=3 err=0]", "event_type": "item_save", "data": {"item_id": "16654", "path": "16654.sgf", "downloaded": 18, "skipped": 3, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:18.321538+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 18 puzzles"}
+{"ts": "2026-02-11T21:39:20.890021+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.6s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.56652121708994, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:20.892103+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 16679", "event_type": "item_fetch", "data": {"puzzle_id": 16679, "url": "https://online-go.com/api/v1/puzzles/16679/"}}
+{"ts": "2026-02-11T21:39:21.082416+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16679: rank 5 \u2192 YG[beginner]"}
+{"ts": "2026-02-11T21:39:21.082565+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16679: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:21.082634+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16679: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:21.087484+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/16679.sgf"}
+{"ts": "2026-02-11T21:39:21.088681+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 16679 -> 16679.sgf [saved=19 skip=3 err=0]", "event_type": "item_save", "data": {"item_id": "16679", "path": "16679.sgf", "downloaded": 19, "skipped": 3, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:21.096511+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 19 puzzles"}
+{"ts": "2026-02-11T21:39:24.158423+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.1s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.0598043781435718, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:24.160541+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 16695", "event_type": "item_fetch", "data": {"puzzle_id": 16695, "url": "https://online-go.com/api/v1/puzzles/16695/"}}
+{"ts": "2026-02-11T21:39:24.414186+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16695: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:39:24.414338+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16695: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:24.414385+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16695: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:24.417945+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/16695.sgf"}
+{"ts": "2026-02-11T21:39:24.418545+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 16695 -> 16695.sgf [saved=20 skip=3 err=0]", "event_type": "item_save", "data": {"item_id": "16695", "path": "16695.sgf", "downloaded": 20, "skipped": 3, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:24.423621+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 20 puzzles"}
+{"ts": "2026-02-11T21:39:26.650311+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.2s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.225604019055515, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:26.652242+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 16753", "event_type": "item_fetch", "data": {"puzzle_id": 16753, "url": "https://online-go.com/api/v1/puzzles/16753/"}}
+{"ts": "2026-02-11T21:39:26.846250+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16753: rank 5 \u2192 YG[beginner]"}
+{"ts": "2026-02-11T21:39:26.846474+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16753: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:26.846561+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16753: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:26.852053+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/16753.sgf"}
+{"ts": "2026-02-11T21:39:26.854532+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 16753 -> 16753.sgf [saved=21 skip=3 err=0]", "event_type": "item_save", "data": {"item_id": "16753", "path": "16753.sgf", "downloaded": 21, "skipped": 3, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:26.859353+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 21 puzzles"}
+{"ts": "2026-02-11T21:39:30.211585+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.4s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.3503974023046403, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:30.213722+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 16756", "event_type": "item_fetch", "data": {"puzzle_id": 16756, "url": "https://online-go.com/api/v1/puzzles/16756/"}}
+{"ts": "2026-02-11T21:39:30.377488+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 16756 (Rejected puzzle 16756: Solution too long (33 moves). Max allowed is 20 moves.)", "event_type": "item_skip", "data": {"item_id": "16756", "reason": "Rejected puzzle 16756: Solution too long (33 moves). Max allowed is 20 moves.", "status": "skipped"}}
+{"ts": "2026-02-11T21:39:33.685084+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.3061145662769915, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:33.687214+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 16805", "event_type": "item_fetch", "data": {"puzzle_id": 16805, "url": "https://online-go.com/api/v1/puzzles/16805/"}}
+{"ts": "2026-02-11T21:39:33.883915+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16805: rank 5 \u2192 YG[beginner]"}
+{"ts": "2026-02-11T21:39:33.884082+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16805: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:33.884151+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16805: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:33.888401+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/16805.sgf"}
+{"ts": "2026-02-11T21:39:33.896127+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 16805 -> 16805.sgf [saved=22 skip=4 err=0]", "event_type": "item_save", "data": {"item_id": "16805", "path": "16805.sgf", "downloaded": 22, "skipped": 4, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:33.900824+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 22 puzzles"}
+{"ts": "2026-02-11T21:39:36.833939+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.9s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.931962057290232, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:36.837513+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 16824", "event_type": "item_fetch", "data": {"puzzle_id": 16824, "url": "https://online-go.com/api/v1/puzzles/16824/"}}
+{"ts": "2026-02-11T21:39:37.011512+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16824: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:39:37.011687+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16824: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:37.011754+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 16824: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:37.016153+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/16824.sgf"}
+{"ts": "2026-02-11T21:39:37.016784+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 16824 -> 16824.sgf [saved=23 skip=4 err=0]", "event_type": "item_save", "data": {"item_id": "16824", "path": "16824.sgf", "downloaded": 23, "skipped": 4, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:37.023810+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 23 puzzles"}
+{"ts": "2026-02-11T21:39:40.008850+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.0s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.9836599740203145, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:40.011169+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 17021", "event_type": "item_fetch", "data": {"puzzle_id": 17021, "url": "https://online-go.com/api/v1/puzzles/17021/"}}
+{"ts": "2026-02-11T21:39:40.220062+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17021: rank 22 \u2192 YG[upper-intermediate]"}
+{"ts": "2026-02-11T21:39:40.227574+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/17021.sgf"}
+{"ts": "2026-02-11T21:39:40.229337+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 17021 -> 17021.sgf [saved=24 skip=4 err=0]", "event_type": "item_save", "data": {"item_id": "17021", "path": "17021.sgf", "downloaded": 24, "skipped": 4, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:40.235523+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 24 puzzles"}
+{"ts": "2026-02-11T21:39:43.268807+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.0s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.029924113785476, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:43.271962+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 17126", "event_type": "item_fetch", "data": {"puzzle_id": 17126, "url": "https://online-go.com/api/v1/puzzles/17126/"}}
+{"ts": "2026-02-11T21:39:43.457429+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17126: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:39:43.457621+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17126: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:43.457730+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17126: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:43.463375+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/17126.sgf"}
+{"ts": "2026-02-11T21:39:43.464492+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 17126 -> 17126.sgf [saved=25 skip=4 err=0]", "event_type": "item_save", "data": {"item_id": "17126", "path": "17126.sgf", "downloaded": 25, "skipped": 4, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:43.473434+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 25 puzzles"}
+{"ts": "2026-02-11T21:39:46.615118+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.1s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.1403940517839493, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:46.616888+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 17236", "event_type": "item_fetch", "data": {"puzzle_id": 17236, "url": "https://online-go.com/api/v1/puzzles/17236/"}}
+{"ts": "2026-02-11T21:39:46.788411+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17236: rank 5 \u2192 YG[beginner]"}
+{"ts": "2026-02-11T21:39:46.788613+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17236: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:46.788715+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17236: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:46.795262+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/17236.sgf"}
+{"ts": "2026-02-11T21:39:46.797663+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 17236 -> 17236.sgf [saved=26 skip=4 err=0]", "event_type": "item_save", "data": {"item_id": "17236", "path": "17236.sgf", "downloaded": 26, "skipped": 4, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:46.802479+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 26 puzzles"}
+{"ts": "2026-02-11T21:39:49.913766+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.1s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.1099479491524322, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:49.915395+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 17313", "event_type": "item_fetch", "data": {"puzzle_id": 17313, "url": "https://online-go.com/api/v1/puzzles/17313/"}}
+{"ts": "2026-02-11T21:39:50.098209+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17313: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:39:50.098411+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17313: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:50.098581+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17313: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:50.103927+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/17313.sgf"}
+{"ts": "2026-02-11T21:39:50.104506+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 17313 -> 17313.sgf [saved=27 skip=4 err=0]", "event_type": "item_save", "data": {"item_id": "17313", "path": "17313.sgf", "downloaded": 27, "skipped": 4, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:50.111773+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 27 puzzles"}
+{"ts": "2026-02-11T21:39:52.705308+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.6s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.5911285217582227, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:52.708861+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 17322", "event_type": "item_fetch", "data": {"puzzle_id": 17322, "url": "https://online-go.com/api/v1/puzzles/17322/"}}
+{"ts": "2026-02-11T21:39:52.878657+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17322: rank 17 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:39:52.878872+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17322: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:52.879028+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17322: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:52.884306+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/17322.sgf"}
+{"ts": "2026-02-11T21:39:52.884954+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 17322 -> 17322.sgf [saved=28 skip=4 err=0]", "event_type": "item_save", "data": {"item_id": "17322", "path": "17322.sgf", "downloaded": 28, "skipped": 4, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:52.890137+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 28 puzzles"}
+{"ts": "2026-02-11T21:39:55.941519+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.1s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.0501341125953587, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:55.943841+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 17574", "event_type": "item_fetch", "data": {"puzzle_id": 17574, "url": "https://online-go.com/api/v1/puzzles/17574/"}}
+{"ts": "2026-02-11T21:39:56.134344+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17574: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:39:56.134515+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17574: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:56.134646+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17574: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:56.139121+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/17574.sgf"}
+{"ts": "2026-02-11T21:39:56.140939+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 17574 -> 17574.sgf [saved=29 skip=4 err=0]", "event_type": "item_save", "data": {"item_id": "17574", "path": "17574.sgf", "downloaded": 29, "skipped": 4, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:56.147080+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 29 puzzles"}
+{"ts": "2026-02-11T21:39:58.470190+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.321061405273009, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:39:58.472359+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 17682", "event_type": "item_fetch", "data": {"puzzle_id": 17682, "url": "https://online-go.com/api/v1/puzzles/17682/"}}
+{"ts": "2026-02-11T21:39:58.645984+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17682: rank 30 \u2192 YG[low-dan]"}
+{"ts": "2026-02-11T21:39:58.646158+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17682: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:39:58.646325+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17682: YT[life-and-death]"}
+{"ts": "2026-02-11T21:39:58.651282+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/17682.sgf"}
+{"ts": "2026-02-11T21:39:58.653139+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 17682 -> 17682.sgf [saved=30 skip=4 err=0]", "event_type": "item_save", "data": {"item_id": "17682", "path": "17682.sgf", "downloaded": 30, "skipped": 4, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:39:58.657575+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 30 puzzles"}
+{"ts": "2026-02-11T21:40:00.908426+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.2s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.2467995611857075, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:00.911402+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 17852", "event_type": "item_fetch", "data": {"puzzle_id": 17852, "url": "https://online-go.com/api/v1/puzzles/17852/"}}
+{"ts": "2026-02-11T21:40:01.160917+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17852: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:40:01.166445+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/17852.sgf"}
+{"ts": "2026-02-11T21:40:01.169862+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 17852 -> 17852.sgf [saved=31 skip=4 err=0]", "event_type": "item_save", "data": {"item_id": "17852", "path": "17852.sgf", "downloaded": 31, "skipped": 4, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:40:01.178269+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 31 puzzles"}
+{"ts": "2026-02-11T21:40:03.827013+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.6s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.646661505655507, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:03.830430+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 17958", "event_type": "item_fetch", "data": {"puzzle_id": 17958, "url": "https://online-go.com/api/v1/puzzles/17958/"}}
+{"ts": "2026-02-11T21:40:04.007356+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17958: rank 38 \u2192 YG[expert]"}
+{"ts": "2026-02-11T21:40:04.007702+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17958: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:40:04.007896+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17958: YT[life-and-death]"}
+{"ts": "2026-02-11T21:40:04.014974+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/17958.sgf"}
+{"ts": "2026-02-11T21:40:04.015976+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 17958 -> 17958.sgf [saved=32 skip=4 err=0]", "event_type": "item_save", "data": {"item_id": "17958", "path": "17958.sgf", "downloaded": 32, "skipped": 4, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:40:04.021513+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 32 puzzles"}
+{"ts": "2026-02-11T21:40:07.426364+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.4s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.3984375455204265, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:07.429911+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 17971", "event_type": "item_fetch", "data": {"puzzle_id": 17971, "url": "https://online-go.com/api/v1/puzzles/17971/"}}
+{"ts": "2026-02-11T21:40:07.617841+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17971: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:40:07.617998+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17971: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:40:07.618069+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 17971: YT[life-and-death]"}
+{"ts": "2026-02-11T21:40:07.622367+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/17971.sgf"}
+{"ts": "2026-02-11T21:40:07.623803+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 17971 -> 17971.sgf [saved=33 skip=4 err=0]", "event_type": "item_save", "data": {"item_id": "17971", "path": "17971.sgf", "downloaded": 33, "skipped": 4, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:40:07.632335+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 33 puzzles"}
+{"ts": "2026-02-11T21:40:10.961013+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.327562345344518, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:10.963719+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 18172", "event_type": "item_fetch", "data": {"puzzle_id": 18172, "url": "https://online-go.com/api/v1/puzzles/18172/"}}
+{"ts": "2026-02-11T21:40:11.174752+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 18172 (No initial stones on board)", "event_type": "item_skip", "data": {"item_id": "18172", "reason": "No initial stones on board", "status": "skipped"}}
+{"ts": "2026-02-11T21:40:14.443892+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.2683362475430267, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:14.445929+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 18241", "event_type": "item_fetch", "data": {"puzzle_id": 18241, "url": "https://online-go.com/api/v1/puzzles/18241/"}}
+{"ts": "2026-02-11T21:40:14.625287+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18241: rank 28 \u2192 YG[advanced]"}
+{"ts": "2026-02-11T21:40:14.625444+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18241: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:40:14.625511+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18241: YT[life-and-death]"}
+{"ts": "2026-02-11T21:40:14.634165+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/18241.sgf"}
+{"ts": "2026-02-11T21:40:14.635764+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 18241 -> 18241.sgf [saved=34 skip=5 err=0]", "event_type": "item_save", "data": {"item_id": "18241", "path": "18241.sgf", "downloaded": 34, "skipped": 5, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:40:14.640764+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 34 puzzles"}
+{"ts": "2026-02-11T21:40:17.139656+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.5s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.4965183578226595, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:17.143080+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 18338", "event_type": "item_fetch", "data": {"puzzle_id": 18338, "url": "https://online-go.com/api/v1/puzzles/18338/"}}
+{"ts": "2026-02-11T21:40:17.309697+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18338: rank 27 \u2192 YG[advanced]"}
+{"ts": "2026-02-11T21:40:17.309863+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18338: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:40:17.309993+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18338: YT[life-and-death]"}
+{"ts": "2026-02-11T21:40:17.315988+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/18338.sgf"}
+{"ts": "2026-02-11T21:40:17.316711+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 18338 -> 18338.sgf [saved=35 skip=5 err=0]", "event_type": "item_save", "data": {"item_id": "18338", "path": "18338.sgf", "downloaded": 35, "skipped": 5, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:40:17.322624+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 35 puzzles"}
+{"ts": "2026-02-11T21:40:20.293777+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.0s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.969478725595413, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:20.296915+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 18371", "event_type": "item_fetch", "data": {"puzzle_id": 18371, "url": "https://online-go.com/api/v1/puzzles/18371/"}}
+{"ts": "2026-02-11T21:40:20.472602+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18371: rank 5 \u2192 YG[beginner]"}
+{"ts": "2026-02-11T21:40:20.472765+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18371: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:40:20.472841+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18371: YT[life-and-death]"}
+{"ts": "2026-02-11T21:40:20.477660+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/18371.sgf"}
+{"ts": "2026-02-11T21:40:20.479528+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 18371 -> 18371.sgf [saved=36 skip=5 err=0]", "event_type": "item_save", "data": {"item_id": "18371", "path": "18371.sgf", "downloaded": 36, "skipped": 5, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:40:20.484651+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 36 puzzles"}
+{"ts": "2026-02-11T21:40:23.395439+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.9s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.907143473597052, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:23.399999+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 18381", "event_type": "item_fetch", "data": {"puzzle_id": 18381, "url": "https://online-go.com/api/v1/puzzles/18381/"}}
+{"ts": "2026-02-11T21:40:23.581352+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18381: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:40:23.594931+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/18381.sgf"}
+{"ts": "2026-02-11T21:40:23.598209+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 18381 -> 18381.sgf [saved=37 skip=5 err=0]", "event_type": "item_save", "data": {"item_id": "18381", "path": "18381.sgf", "downloaded": 37, "skipped": 5, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:40:23.613472+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 37 puzzles"}
+{"ts": "2026-02-11T21:40:25.825787+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.2s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.2098989072519113, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:25.828100+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 18502", "event_type": "item_fetch", "data": {"puzzle_id": 18502, "url": "https://online-go.com/api/v1/puzzles/18502/"}}
+{"ts": "2026-02-11T21:40:26.034748+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18502: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:40:26.034906+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18502: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:40:26.034994+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18502: YT[life-and-death]"}
+{"ts": "2026-02-11T21:40:26.042683+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/18502.sgf"}
+{"ts": "2026-02-11T21:40:26.043324+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 18502 -> 18502.sgf [saved=38 skip=5 err=0]", "event_type": "item_save", "data": {"item_id": "18502", "path": "18502.sgf", "downloaded": 38, "skipped": 5, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:40:26.060514+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 38 puzzles"}
+{"ts": "2026-02-11T21:40:28.914759+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.9s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.8503933625168774, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:28.918883+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 18571", "event_type": "item_fetch", "data": {"puzzle_id": 18571, "url": "https://online-go.com/api/v1/puzzles/18571/"}}
+{"ts": "2026-02-11T21:40:29.248881+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18571: rank 10 \u2192 YG[elementary]"}
+{"ts": "2026-02-11T21:40:29.257073+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/18571.sgf"}
+{"ts": "2026-02-11T21:40:29.261493+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 18571 -> 18571.sgf [saved=39 skip=5 err=0]", "event_type": "item_save", "data": {"item_id": "18571", "path": "18571.sgf", "downloaded": 39, "skipped": 5, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:40:29.270248+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 39 puzzles"}
+{"ts": "2026-02-11T21:40:31.359466+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.1s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.0855581406280894, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:31.361499+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 18753", "event_type": "item_fetch", "data": {"puzzle_id": 18753, "url": "https://online-go.com/api/v1/puzzles/18753/"}}
+{"ts": "2026-02-11T21:40:31.544652+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18753: rank 5 \u2192 YG[beginner]"}
+{"ts": "2026-02-11T21:40:31.544798+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18753: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:40:31.544873+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18753: YT[life-and-death]"}
+{"ts": "2026-02-11T21:40:31.548768+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/18753.sgf"}
+{"ts": "2026-02-11T21:40:31.550671+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 18753 -> 18753.sgf [saved=40 skip=5 err=0]", "event_type": "item_save", "data": {"item_id": "18753", "path": "18753.sgf", "downloaded": 40, "skipped": 5, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:40:31.554709+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 40 puzzles"}
+{"ts": "2026-02-11T21:40:34.272761+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.7s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.7170464389546494, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:34.275280+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 18802", "event_type": "item_fetch", "data": {"puzzle_id": 18802, "url": "https://online-go.com/api/v1/puzzles/18802/"}}
+{"ts": "2026-02-11T21:40:34.457453+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 18802 (Rejected puzzle 18802: Solution too long (43 moves). Max allowed is 20 moves.)", "event_type": "item_skip", "data": {"item_id": "18802", "reason": "Rejected puzzle 18802: Solution too long (43 moves). Max allowed is 20 moves.", "status": "skipped"}}
+{"ts": "2026-02-11T21:40:37.024849+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.6s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.5660178889366057, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:37.028394+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 18923", "event_type": "item_fetch", "data": {"puzzle_id": 18923, "url": "https://online-go.com/api/v1/puzzles/18923/"}}
+{"ts": "2026-02-11T21:40:37.201863+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 18923 (No initial stones on board)", "event_type": "item_skip", "data": {"item_id": "18923", "reason": "No initial stones on board", "status": "skipped"}}
+{"ts": "2026-02-11T21:40:40.082774+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.9s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.8799210512936018, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:40.084549+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 18944", "event_type": "item_fetch", "data": {"puzzle_id": 18944, "url": "https://online-go.com/api/v1/puzzles/18944/"}}
+{"ts": "2026-02-11T21:40:40.319386+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18944: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:40:40.319565+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18944: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:40:40.319637+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 18944: YT[life-and-death]"}
+{"ts": "2026-02-11T21:40:40.324385+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/18944.sgf"}
+{"ts": "2026-02-11T21:40:40.325867+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 18944 -> 18944.sgf [saved=41 skip=7 err=0]", "event_type": "item_save", "data": {"item_id": "18944", "path": "18944.sgf", "downloaded": 41, "skipped": 7, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:40:40.330904+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 41 puzzles"}
+{"ts": "2026-02-11T21:40:42.924820+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.6s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.569060116951266, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:42.949021+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 19031", "event_type": "item_fetch", "data": {"puzzle_id": 19031, "url": "https://online-go.com/api/v1/puzzles/19031/"}}
+{"ts": "2026-02-11T21:40:43.358901+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 19031: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:40:43.359217+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 19031: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:40:43.359420+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 19031: YT[life-and-death]"}
+{"ts": "2026-02-11T21:40:43.366996+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/19031.sgf"}
+{"ts": "2026-02-11T21:40:43.369320+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 19031 -> 19031.sgf [saved=42 skip=7 err=0]", "event_type": "item_save", "data": {"item_id": "19031", "path": "19031.sgf", "downloaded": 42, "skipped": 7, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:40:43.378962+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 42 puzzles"}
+{"ts": "2026-02-11T21:40:45.642129+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.2617895759809117, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:45.648524+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 19260", "event_type": "item_fetch", "data": {"puzzle_id": 19260, "url": "https://online-go.com/api/v1/puzzles/19260/"}}
+{"ts": "2026-02-11T21:40:45.940139+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 19260 (No initial stones on board)", "event_type": "item_skip", "data": {"item_id": "19260", "reason": "No initial stones on board", "status": "skipped"}}
+{"ts": "2026-02-11T21:40:45.947331+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 42 puzzles"}
+{"ts": "2026-02-11T21:40:45.947619+00:00", "level": "DEBUG", "logger": "ogs", "message": "CHECKPOINT saved=42 page=1", "event_type": "checkpoint_save", "data": {"downloaded": 42, "page": 1}}
+{"ts": "2026-02-11T21:40:45.948107+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 0.0s (page_delay)", "event_type": "api_wait", "data": {"delay": 0.0, "reason": "page_delay"}}
+{"ts": "2026-02-11T21:40:45.949033+00:00", "level": "INFO", "logger": "ogs", "message": "GET page 2/1172", "event_type": "page_start", "data": {"page": 2, "total_pages": 1172, "url": "https://online-go.com/api/v1/puzzles/?page=2&page_size=50"}}
+{"ts": "2026-02-11T21:40:46.349165+00:00", "level": "INFO", "logger": "ogs", "message": "FETCHED page 2: 50 puzzles", "event_type": "page_fetch", "data": {"page": 2, "url": "https://online-go.com/api/v1/puzzles/?page=2&page_size=50", "puzzle_count": 50}}
+{"ts": "2026-02-11T21:40:48.154875+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 1.8s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 1.8044622643053994, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:48.156763+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 19326", "event_type": "item_fetch", "data": {"puzzle_id": 19326, "url": "https://online-go.com/api/v1/puzzles/19326/"}}
+{"ts": "2026-02-11T21:40:48.417878+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 19326 (No initial stones on board)", "event_type": "item_skip", "data": {"item_id": "19326", "reason": "No initial stones on board", "status": "skipped"}}
+{"ts": "2026-02-11T21:40:51.490191+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.1s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.0711052148047, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:51.493717+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 19352", "event_type": "item_fetch", "data": {"puzzle_id": 19352, "url": "https://online-go.com/api/v1/puzzles/19352/"}}
+{"ts": "2026-02-11T21:40:53.253635+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 19352: rank 33 \u2192 YG[low-dan]"}
+{"ts": "2026-02-11T21:40:53.253855+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 19352: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:40:53.253936+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 19352: YT[life-and-death]"}
+{"ts": "2026-02-11T21:40:53.259254+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/19352.sgf"}
+{"ts": "2026-02-11T21:40:53.260726+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 19352 -> 19352.sgf [saved=43 skip=9 err=0]", "event_type": "item_save", "data": {"item_id": "19352", "path": "19352.sgf", "downloaded": 43, "skipped": 9, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:40:53.265968+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 43 puzzles"}
+{"ts": "2026-02-11T21:40:54.706504+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 1.4s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 1.439702096110448, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:54.708848+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 19357", "event_type": "item_fetch", "data": {"puzzle_id": 19357, "url": "https://online-go.com/api/v1/puzzles/19357/"}}
+{"ts": "2026-02-11T21:40:54.901430+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 19357: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:40:54.901562+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 19357: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:40:54.901603+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 19357: YT[life-and-death]"}
+{"ts": "2026-02-11T21:40:54.905881+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/19357.sgf"}
+{"ts": "2026-02-11T21:40:54.906797+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 19357 -> 19357.sgf [saved=44 skip=9 err=0]", "event_type": "item_save", "data": {"item_id": "19357", "path": "19357.sgf", "downloaded": 44, "skipped": 9, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:40:54.911805+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 44 puzzles"}
+{"ts": "2026-02-11T21:40:58.044090+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.1s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.129441545768567, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:40:58.048471+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 19767", "event_type": "item_fetch", "data": {"puzzle_id": 19767, "url": "https://online-go.com/api/v1/puzzles/19767/"}}
+{"ts": "2026-02-11T21:40:58.217722+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 19767 (No initial stones on board)", "event_type": "item_skip", "data": {"item_id": "19767", "reason": "No initial stones on board", "status": "skipped"}}
+{"ts": "2026-02-11T21:41:00.812809+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.6s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.5912445919912686, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:00.819826+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 19803", "event_type": "item_fetch", "data": {"puzzle_id": 19803, "url": "https://online-go.com/api/v1/puzzles/19803/"}}
+{"ts": "2026-02-11T21:41:00.994021+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 19803 (Rejected puzzle 19803: No solution found in move tree. (Note: has_solution API field was False, but tree traversal found no correct_answer nodes.))", "event_type": "item_skip", "data": {"item_id": "19803", "reason": "Rejected puzzle 19803: No solution found in move tree. (Note: has_solution API field was False, but tree traversal found no correct_answer nodes.)", "status": "skipped"}}
+{"ts": "2026-02-11T21:41:04.328315+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.3327981900040435, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:04.330154+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 19863", "event_type": "item_fetch", "data": {"puzzle_id": 19863, "url": "https://online-go.com/api/v1/puzzles/19863/"}}
+{"ts": "2026-02-11T21:41:04.516979+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 19863: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:41:04.517149+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 19863: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:41:04.517234+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 19863: YT[life-and-death]"}
+{"ts": "2026-02-11T21:41:04.521298+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/19863.sgf"}
+{"ts": "2026-02-11T21:41:04.521857+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 19863 -> 19863.sgf [saved=45 skip=11 err=0]", "event_type": "item_save", "data": {"item_id": "19863", "path": "19863.sgf", "downloaded": 45, "skipped": 11, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:41:04.524640+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 45 puzzles"}
+{"ts": "2026-02-11T21:41:07.675679+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.2s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.1500260177444903, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:07.677429+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 19925", "event_type": "item_fetch", "data": {"puzzle_id": 19925, "url": "https://online-go.com/api/v1/puzzles/19925/"}}
+{"ts": "2026-02-11T21:41:07.993243+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 19925 (No initial stones on board)", "event_type": "item_skip", "data": {"item_id": "19925", "reason": "No initial stones on board", "status": "skipped"}}
+{"ts": "2026-02-11T21:41:10.170246+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.2s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.1757677619925997, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:10.170783+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 19953", "event_type": "item_fetch", "data": {"puzzle_id": 19953, "url": "https://online-go.com/api/v1/puzzles/19953/"}}
+{"ts": "2026-02-11T21:41:10.384440+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 19953: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:41:10.389604+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/19953.sgf"}
+{"ts": "2026-02-11T21:41:10.390323+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 19953 -> 19953.sgf [saved=46 skip=12 err=0]", "event_type": "item_save", "data": {"item_id": "19953", "path": "19953.sgf", "downloaded": 46, "skipped": 12, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:41:10.394108+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 46 puzzles"}
+{"ts": "2026-02-11T21:41:13.712386+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.316677850092796, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:13.717883+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 19986", "event_type": "item_fetch", "data": {"puzzle_id": 19986, "url": "https://online-go.com/api/v1/puzzles/19986/"}}
+{"ts": "2026-02-11T21:41:13.910640+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 19986: rank 10 \u2192 YG[elementary]"}
+{"ts": "2026-02-11T21:41:13.910959+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 19986: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:41:13.911130+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 19986: YT[life-and-death]"}
+{"ts": "2026-02-11T21:41:13.915500+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/19986.sgf"}
+{"ts": "2026-02-11T21:41:13.916120+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 19986 -> 19986.sgf [saved=47 skip=12 err=0]", "event_type": "item_save", "data": {"item_id": "19986", "path": "19986.sgf", "downloaded": 47, "skipped": 12, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:41:13.926227+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 47 puzzles"}
+{"ts": "2026-02-11T21:41:16.794993+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.9s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.8676097389522788, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:16.797212+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 20179", "event_type": "item_fetch", "data": {"puzzle_id": 20179, "url": "https://online-go.com/api/v1/puzzles/20179/"}}
+{"ts": "2026-02-11T21:41:16.990325+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20179: rank 5 \u2192 YG[beginner]"}
+{"ts": "2026-02-11T21:41:16.990509+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20179: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:41:16.990698+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20179: YT[life-and-death]"}
+{"ts": "2026-02-11T21:41:16.994596+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/20179.sgf"}
+{"ts": "2026-02-11T21:41:16.995104+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 20179 -> 20179.sgf [saved=48 skip=12 err=0]", "event_type": "item_save", "data": {"item_id": "20179", "path": "20179.sgf", "downloaded": 48, "skipped": 12, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:41:16.998578+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 48 puzzles"}
+{"ts": "2026-02-11T21:41:19.324614+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.3247964116007354, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:19.327257+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 20259", "event_type": "item_fetch", "data": {"puzzle_id": 20259, "url": "https://online-go.com/api/v1/puzzles/20259/"}}
+{"ts": "2026-02-11T21:41:19.563202+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20259: rank 26 \u2192 YG[advanced]"}
+{"ts": "2026-02-11T21:41:19.563319+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20259: 'tesuji' \u2192 tag 'tesuji'"}
+{"ts": "2026-02-11T21:41:19.563421+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20259: YT[tesuji]"}
+{"ts": "2026-02-11T21:41:19.566907+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/20259.sgf"}
+{"ts": "2026-02-11T21:41:19.567595+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 20259 -> 20259.sgf [saved=49 skip=12 err=0]", "event_type": "item_save", "data": {"item_id": "20259", "path": "20259.sgf", "downloaded": 49, "skipped": 12, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:41:19.574512+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 49 puzzles"}
+{"ts": "2026-02-11T21:41:21.726940+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.1s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.1492227655215626, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:21.729174+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 20405", "event_type": "item_fetch", "data": {"puzzle_id": 20405, "url": "https://online-go.com/api/v1/puzzles/20405/"}}
+{"ts": "2026-02-11T21:41:22.058570+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 20405 (Rejected puzzle 20405: No solution found in move tree. (Note: has_solution API field was False, but tree traversal found no correct_answer nodes.))", "event_type": "item_skip", "data": {"item_id": "20405", "reason": "Rejected puzzle 20405: No solution found in move tree. (Note: has_solution API field was False, but tree traversal found no correct_answer nodes.)", "status": "skipped"}}
+{"ts": "2026-02-11T21:41:24.832974+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.8s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.7732949613511586, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:24.836093+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 20478", "event_type": "item_fetch", "data": {"puzzle_id": 20478, "url": "https://online-go.com/api/v1/puzzles/20478/"}}
+{"ts": "2026-02-11T21:41:25.264279+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20478: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:41:25.264457+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20478: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:41:25.264545+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20478: YT[life-and-death]"}
+{"ts": "2026-02-11T21:41:25.269363+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/20478.sgf"}
+{"ts": "2026-02-11T21:41:25.270181+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 20478 -> 20478.sgf [saved=50 skip=13 err=0]", "event_type": "item_save", "data": {"item_id": "20478", "path": "20478.sgf", "downloaded": 50, "skipped": 13, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:41:25.275252+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 50 puzzles"}
+{"ts": "2026-02-11T21:41:27.751470+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.5s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.472184115313932, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:27.756373+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 20507", "event_type": "item_fetch", "data": {"puzzle_id": 20507, "url": "https://online-go.com/api/v1/puzzles/20507/"}}
+{"ts": "2026-02-11T21:41:27.955661+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20507: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:41:27.956121+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20507: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:41:27.956315+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20507: YT[life-and-death]"}
+{"ts": "2026-02-11T21:41:27.965841+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/20507.sgf"}
+{"ts": "2026-02-11T21:41:27.969516+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 20507 -> 20507.sgf [saved=51 skip=13 err=0]", "event_type": "item_save", "data": {"item_id": "20507", "path": "20507.sgf", "downloaded": 51, "skipped": 13, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:41:27.983715+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 51 puzzles"}
+{"ts": "2026-02-11T21:41:30.173727+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.2s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.188698743302044, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:30.177920+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 20572", "event_type": "item_fetch", "data": {"puzzle_id": 20572, "url": "https://online-go.com/api/v1/puzzles/20572/"}}
+{"ts": "2026-02-11T21:41:30.411008+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20572: rank 10 \u2192 YG[elementary]"}
+{"ts": "2026-02-11T21:41:30.411177+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20572: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:41:30.411264+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20572: YT[life-and-death]"}
+{"ts": "2026-02-11T21:41:30.416680+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/20572.sgf"}
+{"ts": "2026-02-11T21:41:30.417474+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 20572 -> 20572.sgf [saved=52 skip=13 err=0]", "event_type": "item_save", "data": {"item_id": "20572", "path": "20572.sgf", "downloaded": 52, "skipped": 13, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:41:30.434814+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 52 puzzles"}
+{"ts": "2026-02-11T21:41:33.260332+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.8s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.8190321728352794, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:33.264042+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 20601", "event_type": "item_fetch", "data": {"puzzle_id": 20601, "url": "https://online-go.com/api/v1/puzzles/20601/"}}
+{"ts": "2026-02-11T21:41:33.460536+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20601: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:41:33.460741+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20601: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:41:33.460890+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20601: YT[life-and-death]"}
+{"ts": "2026-02-11T21:41:33.468324+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/20601.sgf"}
+{"ts": "2026-02-11T21:41:33.469025+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 20601 -> 20601.sgf [saved=53 skip=13 err=0]", "event_type": "item_save", "data": {"item_id": "20601", "path": "20601.sgf", "downloaded": 53, "skipped": 13, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:41:33.484419+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 53 puzzles"}
+{"ts": "2026-02-11T21:41:36.794492+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.3083511855187093, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:36.797412+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 20638", "event_type": "item_fetch", "data": {"puzzle_id": 20638, "url": "https://online-go.com/api/v1/puzzles/20638/"}}
+{"ts": "2026-02-11T21:41:37.094930+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20638: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:41:37.095567+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20638: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:41:37.095847+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20638: YT[life-and-death]"}
+{"ts": "2026-02-11T21:41:37.130655+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/20638.sgf"}
+{"ts": "2026-02-11T21:41:37.132060+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 20638 -> 20638.sgf [saved=54 skip=13 err=0]", "event_type": "item_save", "data": {"item_id": "20638", "path": "20638.sgf", "downloaded": 54, "skipped": 13, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:41:37.141097+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 54 puzzles"}
+{"ts": "2026-02-11T21:41:40.057427+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.9s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.9150531493629384, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:40.066510+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 20642", "event_type": "item_fetch", "data": {"puzzle_id": 20642, "url": "https://online-go.com/api/v1/puzzles/20642/"}}
+{"ts": "2026-02-11T21:41:40.250481+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20642: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:41:40.250916+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20642: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:41:40.251153+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20642: YT[life-and-death]"}
+{"ts": "2026-02-11T21:41:40.260065+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/20642.sgf"}
+{"ts": "2026-02-11T21:41:40.261294+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 20642 -> 20642.sgf [saved=55 skip=13 err=0]", "event_type": "item_save", "data": {"item_id": "20642", "path": "20642.sgf", "downloaded": 55, "skipped": 13, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:41:40.279142+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 55 puzzles"}
+{"ts": "2026-02-11T21:41:42.865537+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.6s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.5827633188591275, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:42.868448+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 20766", "event_type": "item_fetch", "data": {"puzzle_id": 20766, "url": "https://online-go.com/api/v1/puzzles/20766/"}}
+{"ts": "2026-02-11T21:41:43.052802+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20766: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:41:43.053143+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20766: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:41:43.053331+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 20766: YT[life-and-death]"}
+{"ts": "2026-02-11T21:41:43.064649+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/20766.sgf"}
+{"ts": "2026-02-11T21:41:43.065615+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 20766 -> 20766.sgf [saved=56 skip=13 err=0]", "event_type": "item_save", "data": {"item_id": "20766", "path": "20766.sgf", "downloaded": 56, "skipped": 13, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:41:43.073047+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 56 puzzles"}
+{"ts": "2026-02-11T21:41:45.987344+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.9s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.9103589899375155, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:45.989970+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 20809", "event_type": "item_fetch", "data": {"puzzle_id": 20809, "url": "https://online-go.com/api/v1/puzzles/20809/"}}
+{"ts": "2026-02-11T21:41:46.168151+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 20809 (No initial stones on board)", "event_type": "item_skip", "data": {"item_id": "20809", "reason": "No initial stones on board", "status": "skipped"}}
+{"ts": "2026-02-11T21:41:48.674241+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.5s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.5047493177488507, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:48.676656+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 20923", "event_type": "item_fetch", "data": {"puzzle_id": 20923, "url": "https://online-go.com/api/v1/puzzles/20923/"}}
+{"ts": "2026-02-11T21:41:48.872062+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 20923 (No initial stones on board)", "event_type": "item_skip", "data": {"item_id": "20923", "reason": "No initial stones on board", "status": "skipped"}}
+{"ts": "2026-02-11T21:41:51.634605+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.8s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.7591463565485332, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:51.636665+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 21075", "event_type": "item_fetch", "data": {"puzzle_id": 21075, "url": "https://online-go.com/api/v1/puzzles/21075/"}}
+{"ts": "2026-02-11T21:41:51.853406+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21075: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:41:51.853583+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21075: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:41:51.853704+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21075: YT[life-and-death]"}
+{"ts": "2026-02-11T21:41:51.859241+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/21075.sgf"}
+{"ts": "2026-02-11T21:41:51.859889+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 21075 -> 21075.sgf [saved=57 skip=15 err=0]", "event_type": "item_save", "data": {"item_id": "21075", "path": "21075.sgf", "downloaded": 57, "skipped": 15, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:41:51.868100+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 57 puzzles"}
+{"ts": "2026-02-11T21:41:55.049146+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.2s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.1777945341507285, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:55.051601+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 21104", "event_type": "item_fetch", "data": {"puzzle_id": 21104, "url": "https://online-go.com/api/v1/puzzles/21104/"}}
+{"ts": "2026-02-11T21:41:55.363525+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21104: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:41:55.363711+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21104: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:41:55.363876+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21104: YT[life-and-death]"}
+{"ts": "2026-02-11T21:41:55.375713+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/21104.sgf"}
+{"ts": "2026-02-11T21:41:55.381353+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 21104 -> 21104.sgf [saved=58 skip=15 err=0]", "event_type": "item_save", "data": {"item_id": "21104", "path": "21104.sgf", "downloaded": 58, "skipped": 15, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:41:55.389568+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 58 puzzles"}
+{"ts": "2026-02-11T21:41:58.008403+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.6s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.615163270602065, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:41:58.012089+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 21213", "event_type": "item_fetch", "data": {"puzzle_id": 21213, "url": "https://online-go.com/api/v1/puzzles/21213/"}}
+{"ts": "2026-02-11T21:41:58.189285+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21213: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:41:58.189524+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21213: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:41:58.189685+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21213: YT[life-and-death]"}
+{"ts": "2026-02-11T21:41:58.201364+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/21213.sgf"}
+{"ts": "2026-02-11T21:41:58.202019+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 21213 -> 21213.sgf [saved=59 skip=15 err=0]", "event_type": "item_save", "data": {"item_id": "21213", "path": "21213.sgf", "downloaded": 59, "skipped": 15, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:41:58.213333+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 59 puzzles"}
+{"ts": "2026-02-11T21:42:00.657266+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.4s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.442558372126194, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:00.660034+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 21278", "event_type": "item_fetch", "data": {"puzzle_id": 21278, "url": "https://online-go.com/api/v1/puzzles/21278/"}}
+{"ts": "2026-02-11T21:42:00.845555+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21278: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:42:00.845775+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21278: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:42:00.845912+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21278: YT[life-and-death]"}
+{"ts": "2026-02-11T21:42:00.860325+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/21278.sgf"}
+{"ts": "2026-02-11T21:42:00.861066+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 21278 -> 21278.sgf [saved=60 skip=15 err=0]", "event_type": "item_save", "data": {"item_id": "21278", "path": "21278.sgf", "downloaded": 60, "skipped": 15, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:00.874513+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 60 puzzles"}
+{"ts": "2026-02-11T21:42:04.107210+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.2s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.225473625028733, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:04.109618+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 21292", "event_type": "item_fetch", "data": {"puzzle_id": 21292, "url": "https://online-go.com/api/v1/puzzles/21292/"}}
+{"ts": "2026-02-11T21:42:04.343713+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21292: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:42:04.343863+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21292: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:42:04.344006+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21292: YT[life-and-death]"}
+{"ts": "2026-02-11T21:42:04.349218+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/21292.sgf"}
+{"ts": "2026-02-11T21:42:04.349842+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 21292 -> 21292.sgf [saved=61 skip=15 err=0]", "event_type": "item_save", "data": {"item_id": "21292", "path": "21292.sgf", "downloaded": 61, "skipped": 15, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:04.364185+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 61 puzzles"}
+{"ts": "2026-02-11T21:42:06.676600+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.309692084566068, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:06.678961+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 21337", "event_type": "item_fetch", "data": {"puzzle_id": 21337, "url": "https://online-go.com/api/v1/puzzles/21337/"}}
+{"ts": "2026-02-11T21:42:07.132171+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21337: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:42:07.132472+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21337: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:42:07.132647+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21337: YT[life-and-death]"}
+{"ts": "2026-02-11T21:42:07.141353+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/21337.sgf"}
+{"ts": "2026-02-11T21:42:07.142376+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 21337 -> 21337.sgf [saved=62 skip=15 err=0]", "event_type": "item_save", "data": {"item_id": "21337", "path": "21337.sgf", "downloaded": 62, "skipped": 15, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:07.164053+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 62 puzzles"}
+{"ts": "2026-02-11T21:42:09.178060+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.0s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.012859611608856, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:09.190010+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 21368", "event_type": "item_fetch", "data": {"puzzle_id": 21368, "url": "https://online-go.com/api/v1/puzzles/21368/"}}
+{"ts": "2026-02-11T21:42:09.381372+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21368: rank 25 \u2192 YG[advanced]"}
+{"ts": "2026-02-11T21:42:09.381557+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21368: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:42:09.381662+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21368: YT[life-and-death]"}
+{"ts": "2026-02-11T21:42:09.387835+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/21368.sgf"}
+{"ts": "2026-02-11T21:42:09.388550+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 21368 -> 21368.sgf [saved=63 skip=15 err=0]", "event_type": "item_save", "data": {"item_id": "21368", "path": "21368.sgf", "downloaded": 63, "skipped": 15, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:09.399137+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 63 puzzles"}
+{"ts": "2026-02-11T21:42:12.620848+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.2s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.2176253129998935, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:12.622951+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 21378", "event_type": "item_fetch", "data": {"puzzle_id": 21378, "url": "https://online-go.com/api/v1/puzzles/21378/"}}
+{"ts": "2026-02-11T21:42:12.850557+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21378: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:42:12.850744+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21378: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:42:12.850829+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21378: YT[life-and-death]"}
+{"ts": "2026-02-11T21:42:12.860235+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/21378.sgf"}
+{"ts": "2026-02-11T21:42:12.871801+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 21378 -> 21378.sgf [saved=64 skip=15 err=0]", "event_type": "item_save", "data": {"item_id": "21378", "path": "21378.sgf", "downloaded": 64, "skipped": 15, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:12.893304+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 64 puzzles"}
+{"ts": "2026-02-11T21:42:16.108224+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.2s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.210996595126778, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:16.113727+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 21389", "event_type": "item_fetch", "data": {"puzzle_id": 21389, "url": "https://online-go.com/api/v1/puzzles/21389/"}}
+{"ts": "2026-02-11T21:42:16.293022+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21389: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:42:16.302806+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/21389.sgf"}
+{"ts": "2026-02-11T21:42:16.311673+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 21389 -> 21389.sgf [saved=65 skip=15 err=0]", "event_type": "item_save", "data": {"item_id": "21389", "path": "21389.sgf", "downloaded": 65, "skipped": 15, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:16.326565+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 65 puzzles"}
+{"ts": "2026-02-11T21:42:18.928084+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.6s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.6001305063415976, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:18.932818+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 21712", "event_type": "item_fetch", "data": {"puzzle_id": 21712, "url": "https://online-go.com/api/v1/puzzles/21712/"}}
+{"ts": "2026-02-11T21:42:19.961180+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21712: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:42:19.961343+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21712: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:42:19.961467+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 21712: YT[life-and-death]"}
+{"ts": "2026-02-11T21:42:19.967063+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/21712.sgf"}
+{"ts": "2026-02-11T21:42:19.967695+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 21712 -> 21712.sgf [saved=66 skip=15 err=0]", "event_type": "item_save", "data": {"item_id": "21712", "path": "21712.sgf", "downloaded": 66, "skipped": 15, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:19.978255+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 66 puzzles"}
+{"ts": "2026-02-11T21:42:21.550987+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 1.6s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 1.5706349278521845, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:21.553960+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 22130", "event_type": "item_fetch", "data": {"puzzle_id": 22130, "url": "https://online-go.com/api/v1/puzzles/22130/"}}
+{"ts": "2026-02-11T21:42:21.737887+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 22130: rank 25 \u2192 YG[advanced]"}
+{"ts": "2026-02-11T21:42:21.738075+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 22130: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:42:21.738175+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 22130: YT[life-and-death]"}
+{"ts": "2026-02-11T21:42:21.744014+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/22130.sgf"}
+{"ts": "2026-02-11T21:42:21.744687+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 22130 -> 22130.sgf [saved=67 skip=15 err=0]", "event_type": "item_save", "data": {"item_id": "22130", "path": "22130.sgf", "downloaded": 67, "skipped": 15, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:21.754067+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 67 puzzles"}
+{"ts": "2026-02-11T21:42:25.023517+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.2623410251600764, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:25.026731+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 22174", "event_type": "item_fetch", "data": {"puzzle_id": 22174, "url": "https://online-go.com/api/v1/puzzles/22174/"}}
+{"ts": "2026-02-11T21:42:25.250601+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 22174: rank 27 \u2192 YG[advanced]"}
+{"ts": "2026-02-11T21:42:25.250763+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 22174: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:42:25.250899+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 22174: YT[life-and-death]"}
+{"ts": "2026-02-11T21:42:25.261463+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/22174.sgf"}
+{"ts": "2026-02-11T21:42:25.263789+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 22174 -> 22174.sgf [saved=68 skip=15 err=0]", "event_type": "item_save", "data": {"item_id": "22174", "path": "22174.sgf", "downloaded": 68, "skipped": 15, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:25.271090+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 68 puzzles"}
+{"ts": "2026-02-11T21:42:28.386860+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.1s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.1101234128055006, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:28.391513+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 22657", "event_type": "item_fetch", "data": {"puzzle_id": 22657, "url": "https://online-go.com/api/v1/puzzles/22657/"}}
+{"ts": "2026-02-11T21:42:28.568761+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 22657 (Rejected puzzle 22657: No solution found in move tree. (Note: has_solution API field was False, but tree traversal found no correct_answer nodes.))", "event_type": "item_skip", "data": {"item_id": "22657", "reason": "Rejected puzzle 22657: No solution found in move tree. (Note: has_solution API field was False, but tree traversal found no correct_answer nodes.)", "status": "skipped"}}
+{"ts": "2026-02-11T21:42:31.131012+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.6s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.561097454857858, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:31.133319+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 22746", "event_type": "item_fetch", "data": {"puzzle_id": 22746, "url": "https://online-go.com/api/v1/puzzles/22746/"}}
+{"ts": "2026-02-11T21:42:31.347327+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 22746: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:42:31.359635+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/22746.sgf"}
+{"ts": "2026-02-11T21:42:31.360496+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 22746 -> 22746.sgf [saved=69 skip=16 err=0]", "event_type": "item_save", "data": {"item_id": "22746", "path": "22746.sgf", "downloaded": 69, "skipped": 16, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:31.372233+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 69 puzzles"}
+{"ts": "2026-02-11T21:42:33.670372+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.293045107524246, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:33.675502+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 22762", "event_type": "item_fetch", "data": {"puzzle_id": 22762, "url": "https://online-go.com/api/v1/puzzles/22762/"}}
+{"ts": "2026-02-11T21:42:33.854151+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 22762: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:42:33.857588+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 22762: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:42:33.862323+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 22762: YT[life-and-death]"}
+{"ts": "2026-02-11T21:42:33.874687+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/22762.sgf"}
+{"ts": "2026-02-11T21:42:33.876151+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 22762 -> 22762.sgf [saved=70 skip=16 err=0]", "event_type": "item_save", "data": {"item_id": "22762", "path": "22762.sgf", "downloaded": 70, "skipped": 16, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:33.897287+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 70 puzzles"}
+{"ts": "2026-02-11T21:42:37.084358+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.2s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.1858629472637365, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:37.087668+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 22785", "event_type": "item_fetch", "data": {"puzzle_id": 22785, "url": "https://online-go.com/api/v1/puzzles/22785/"}}
+{"ts": "2026-02-11T21:42:37.271348+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 22785: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:42:37.271568+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 22785: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:42:37.271677+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 22785: YT[life-and-death]"}
+{"ts": "2026-02-11T21:42:37.296820+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/22785.sgf"}
+{"ts": "2026-02-11T21:42:37.298108+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 22785 -> 22785.sgf [saved=71 skip=16 err=0]", "event_type": "item_save", "data": {"item_id": "22785", "path": "22785.sgf", "downloaded": 71, "skipped": 16, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:37.307365+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 71 puzzles"}
+{"ts": "2026-02-11T21:42:39.945856+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.6s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.636128406687593, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:39.948683+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 23123", "event_type": "item_fetch", "data": {"puzzle_id": 23123, "url": "https://online-go.com/api/v1/puzzles/23123/"}}
+{"ts": "2026-02-11T21:42:40.116577+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 23123 (No initial stones on board)", "event_type": "item_skip", "data": {"item_id": "23123", "reason": "No initial stones on board", "status": "skipped"}}
+{"ts": "2026-02-11T21:42:43.151643+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.0s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.0337170987480606, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:43.154018+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 23448", "event_type": "item_fetch", "data": {"puzzle_id": 23448, "url": "https://online-go.com/api/v1/puzzles/23448/"}}
+{"ts": "2026-02-11T21:42:43.355727+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 23448: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:42:43.355907+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 23448: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:42:43.356099+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 23448: YT[life-and-death]"}
+{"ts": "2026-02-11T21:42:43.363423+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/23448.sgf"}
+{"ts": "2026-02-11T21:42:43.364538+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 23448 -> 23448.sgf [saved=72 skip=17 err=0]", "event_type": "item_save", "data": {"item_id": "23448", "path": "23448.sgf", "downloaded": 72, "skipped": 17, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:43.376393+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 72 puzzles"}
+{"ts": "2026-02-11T21:42:45.830388+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.4s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.448449384674507, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:45.833572+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 24039", "event_type": "item_fetch", "data": {"puzzle_id": 24039, "url": "https://online-go.com/api/v1/puzzles/24039/"}}
+{"ts": "2026-02-11T21:42:46.017420+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 24039 (No initial stones on board)", "event_type": "item_skip", "data": {"item_id": "24039", "reason": "No initial stones on board", "status": "skipped"}}
+{"ts": "2026-02-11T21:42:48.890671+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.9s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.8722166952968164, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:48.892954+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 24055", "event_type": "item_fetch", "data": {"puzzle_id": 24055, "url": "https://online-go.com/api/v1/puzzles/24055/"}}
+{"ts": "2026-02-11T21:42:49.129384+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 24055: rank 29 \u2192 YG[advanced]"}
+{"ts": "2026-02-11T21:42:49.129625+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 24055: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:42:49.129754+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 24055: YT[life-and-death]"}
+{"ts": "2026-02-11T21:42:49.136750+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/24055.sgf"}
+{"ts": "2026-02-11T21:42:49.138923+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 24055 -> 24055.sgf [saved=73 skip=18 err=0]", "event_type": "item_save", "data": {"item_id": "24055", "path": "24055.sgf", "downloaded": 73, "skipped": 18, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:49.146795+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 73 puzzles"}
+{"ts": "2026-02-11T21:42:51.695254+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.5s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.546954349489262, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:51.703198+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 24199", "event_type": "item_fetch", "data": {"puzzle_id": 24199, "url": "https://online-go.com/api/v1/puzzles/24199/"}}
+{"ts": "2026-02-11T21:42:51.948588+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 24199 (No initial stones on board)", "event_type": "item_skip", "data": {"item_id": "24199", "reason": "No initial stones on board", "status": "skipped"}}
+{"ts": "2026-02-11T21:42:54.230483+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.280661909467594, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:54.233455+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 24247", "event_type": "item_fetch", "data": {"puzzle_id": 24247, "url": "https://online-go.com/api/v1/puzzles/24247/"}}
+{"ts": "2026-02-11T21:42:54.423387+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 24247: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:42:54.423536+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 24247: 'tesuji' \u2192 tag 'tesuji'"}
+{"ts": "2026-02-11T21:42:54.423628+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 24247: YT[tesuji]"}
+{"ts": "2026-02-11T21:42:54.428094+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/24247.sgf"}
+{"ts": "2026-02-11T21:42:54.428673+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 24247 -> 24247.sgf [saved=74 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "24247", "path": "24247.sgf", "downloaded": 74, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:54.443793+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 74 puzzles"}
+{"ts": "2026-02-11T21:42:56.779135+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.327072347881016, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:56.781072+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 24250", "event_type": "item_fetch", "data": {"puzzle_id": 24250, "url": "https://online-go.com/api/v1/puzzles/24250/"}}
+{"ts": "2026-02-11T21:42:56.959556+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 24250: rank 14 \u2192 YG[elementary]"}
+{"ts": "2026-02-11T21:42:56.959808+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 24250: 'tesuji' \u2192 tag 'tesuji'"}
+{"ts": "2026-02-11T21:42:56.959982+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 24250: YT[tesuji]"}
+{"ts": "2026-02-11T21:42:56.977827+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/24250.sgf"}
+{"ts": "2026-02-11T21:42:56.978483+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 24250 -> 24250.sgf [saved=75 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "24250", "path": "24250.sgf", "downloaded": 75, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:56.997023+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 75 puzzles"}
+{"ts": "2026-02-11T21:42:59.800636+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.8s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.8022117729235925, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:42:59.808333+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 24308", "event_type": "item_fetch", "data": {"puzzle_id": 24308, "url": "https://online-go.com/api/v1/puzzles/24308/"}}
+{"ts": "2026-02-11T21:42:59.981432+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 24308: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:42:59.987155+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/24308.sgf"}
+{"ts": "2026-02-11T21:42:59.988057+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 24308 -> 24308.sgf [saved=76 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "24308", "path": "24308.sgf", "downloaded": 76, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:42:59.997781+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 76 puzzles"}
+{"ts": "2026-02-11T21:43:02.242361+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.2s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.243259211807116, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:02.244648+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 24572", "event_type": "item_fetch", "data": {"puzzle_id": 24572, "url": "https://online-go.com/api/v1/puzzles/24572/"}}
+{"ts": "2026-02-11T21:43:02.430581+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 24572: rank 31 \u2192 YG[low-dan]"}
+{"ts": "2026-02-11T21:43:02.430772+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 24572: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:43:02.430864+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 24572: YT[life-and-death]"}
+{"ts": "2026-02-11T21:43:02.450413+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/24572.sgf"}
+{"ts": "2026-02-11T21:43:02.451419+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 24572 -> 24572.sgf [saved=77 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "24572", "path": "24572.sgf", "downloaded": 77, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:02.460393+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 77 puzzles"}
+{"ts": "2026-02-11T21:43:04.749966+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.288146475636279, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:04.755826+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 24972", "event_type": "item_fetch", "data": {"puzzle_id": 24972, "url": "https://online-go.com/api/v1/puzzles/24972/"}}
+{"ts": "2026-02-11T21:43:04.953476+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 24972: rank 25 \u2192 YG[advanced]"}
+{"ts": "2026-02-11T21:43:04.953669+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 24972: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:43:04.953798+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 24972: YT[life-and-death]"}
+{"ts": "2026-02-11T21:43:04.959615+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/24972.sgf"}
+{"ts": "2026-02-11T21:43:04.960956+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 24972 -> 24972.sgf [saved=78 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "24972", "path": "24972.sgf", "downloaded": 78, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:04.981845+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 78 puzzles"}
+{"ts": "2026-02-11T21:43:07.925322+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.9s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.9421210382564045, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:07.928420+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 25338", "event_type": "item_fetch", "data": {"puzzle_id": 25338, "url": "https://online-go.com/api/v1/puzzles/25338/"}}
+{"ts": "2026-02-11T21:43:08.377718+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 25338: rank 15 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:43:08.377977+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 25338: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:43:08.378271+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 25338: YT[life-and-death]"}
+{"ts": "2026-02-11T21:43:08.398082+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/25338.sgf"}
+{"ts": "2026-02-11T21:43:08.399151+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 25338 -> 25338.sgf [saved=79 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "25338", "path": "25338.sgf", "downloaded": 79, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:08.412989+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 79 puzzles"}
+{"ts": "2026-02-11T21:43:11.514501+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.1s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.099967152917865, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:11.516945+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 25978", "event_type": "item_fetch", "data": {"puzzle_id": 25978, "url": "https://online-go.com/api/v1/puzzles/25978/"}}
+{"ts": "2026-02-11T21:43:12.188100+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 25978: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:43:12.188260+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 25978: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:43:12.188355+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 25978: YT[life-and-death]"}
+{"ts": "2026-02-11T21:43:12.193267+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/25978.sgf"}
+{"ts": "2026-02-11T21:43:12.194029+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 25978 -> 25978.sgf [saved=80 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "25978", "path": "25978.sgf", "downloaded": 80, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:12.201107+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 80 puzzles"}
+{"ts": "2026-02-11T21:43:14.126182+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 1.9s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 1.9235329292120396, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:14.128762+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 26002", "event_type": "item_fetch", "data": {"puzzle_id": 26002, "url": "https://online-go.com/api/v1/puzzles/26002/"}}
+{"ts": "2026-02-11T21:43:14.311319+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26002: rank 3 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:43:14.317702+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/26002.sgf"}
+{"ts": "2026-02-11T21:43:14.318551+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 26002 -> 26002.sgf [saved=81 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "26002", "path": "26002.sgf", "downloaded": 81, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:14.331830+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 81 puzzles"}
+{"ts": "2026-02-11T21:43:14.343009+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 81 puzzles"}
+{"ts": "2026-02-11T21:43:14.343182+00:00", "level": "DEBUG", "logger": "ogs", "message": "CHECKPOINT saved=81 page=2", "event_type": "checkpoint_save", "data": {"downloaded": 81, "page": 2}}
+{"ts": "2026-02-11T21:43:14.343644+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 0.0s (page_delay)", "event_type": "api_wait", "data": {"delay": 0.0, "reason": "page_delay"}}
+{"ts": "2026-02-11T21:43:14.344522+00:00", "level": "INFO", "logger": "ogs", "message": "GET page 3/1172", "event_type": "page_start", "data": {"page": 3, "total_pages": 1172, "url": "https://online-go.com/api/v1/puzzles/?page=3&page_size=50"}}
+{"ts": "2026-02-11T21:43:14.767070+00:00", "level": "INFO", "logger": "ogs", "message": "FETCHED page 3: 50 puzzles", "event_type": "page_fetch", "data": {"page": 3, "url": "https://online-go.com/api/v1/puzzles/?page=3&page_size=50", "puzzle_count": 50}}
+{"ts": "2026-02-11T21:43:17.019652+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.251606965719726, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:17.022754+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 26300", "event_type": "item_fetch", "data": {"puzzle_id": 26300, "url": "https://online-go.com/api/v1/puzzles/26300/"}}
+{"ts": "2026-02-11T21:43:17.187824+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26300: rank 20 \u2192 YG[upper-intermediate]"}
+{"ts": "2026-02-11T21:43:17.187996+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26300: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:43:17.188104+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26300: YT[life-and-death]"}
+{"ts": "2026-02-11T21:43:17.195192+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/26300.sgf"}
+{"ts": "2026-02-11T21:43:17.195896+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 26300 -> 26300.sgf [saved=82 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "26300", "path": "26300.sgf", "downloaded": 82, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:17.203747+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 82 puzzles"}
+{"ts": "2026-02-11T21:43:19.683534+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.5s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.471500186786876, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:19.685522+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 26380", "event_type": "item_fetch", "data": {"puzzle_id": 26380, "url": "https://online-go.com/api/v1/puzzles/26380/"}}
+{"ts": "2026-02-11T21:43:19.854355+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26380: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:43:19.860191+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/26380.sgf"}
+{"ts": "2026-02-11T21:43:19.865211+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 26380 -> 26380.sgf [saved=83 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "26380", "path": "26380.sgf", "downloaded": 83, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:19.872136+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 83 puzzles"}
+{"ts": "2026-02-11T21:43:22.319573+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.4s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.446227096586082, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:22.322035+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 26489", "event_type": "item_fetch", "data": {"puzzle_id": 26489, "url": "https://online-go.com/api/v1/puzzles/26489/"}}
+{"ts": "2026-02-11T21:43:22.575201+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26489: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:43:22.595954+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/26489.sgf"}
+{"ts": "2026-02-11T21:43:22.601763+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 26489 -> 26489.sgf [saved=84 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "26489", "path": "26489.sgf", "downloaded": 84, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:22.628611+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 84 puzzles"}
+{"ts": "2026-02-11T21:43:25.022276+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.4s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.3922098427232736, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:25.029724+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 26678", "event_type": "item_fetch", "data": {"puzzle_id": 26678, "url": "https://online-go.com/api/v1/puzzles/26678/"}}
+{"ts": "2026-02-11T21:43:25.370266+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26678: rank 15 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:43:25.370470+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26678: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:43:25.370574+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26678: YT[life-and-death]"}
+{"ts": "2026-02-11T21:43:25.375707+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/26678.sgf"}
+{"ts": "2026-02-11T21:43:25.376484+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 26678 -> 26678.sgf [saved=85 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "26678", "path": "26678.sgf", "downloaded": 85, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:25.384098+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 85 puzzles"}
+{"ts": "2026-02-11T21:43:28.397282+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.0s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.000586540390078, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:28.401440+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 26872", "event_type": "item_fetch", "data": {"puzzle_id": 26872, "url": "https://online-go.com/api/v1/puzzles/26872/"}}
+{"ts": "2026-02-11T21:43:28.648552+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26872: rank 5 \u2192 YG[beginner]"}
+{"ts": "2026-02-11T21:43:28.648747+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26872: 'tesuji' \u2192 tag 'tesuji'"}
+{"ts": "2026-02-11T21:43:28.648862+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26872: YT[tesuji]"}
+{"ts": "2026-02-11T21:43:28.655291+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/26872.sgf"}
+{"ts": "2026-02-11T21:43:28.656053+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 26872 -> 26872.sgf [saved=86 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "26872", "path": "26872.sgf", "downloaded": 86, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:28.671041+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 86 puzzles"}
+{"ts": "2026-02-11T21:43:31.844100+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.2s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.171240280340303, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:31.849861+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 26873", "event_type": "item_fetch", "data": {"puzzle_id": 26873, "url": "https://online-go.com/api/v1/puzzles/26873/"}}
+{"ts": "2026-02-11T21:43:32.142557+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26873: rank 5 \u2192 YG[beginner]"}
+{"ts": "2026-02-11T21:43:32.143183+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26873: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:43:32.143647+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26873: YT[life-and-death]"}
+{"ts": "2026-02-11T21:43:32.153212+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/26873.sgf"}
+{"ts": "2026-02-11T21:43:32.154018+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 26873 -> 26873.sgf [saved=87 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "26873", "path": "26873.sgf", "downloaded": 87, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:32.179900+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 87 puzzles"}
+{"ts": "2026-02-11T21:43:34.748912+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.6s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.562309397237049, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:34.752749+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 26874", "event_type": "item_fetch", "data": {"puzzle_id": 26874, "url": "https://online-go.com/api/v1/puzzles/26874/"}}
+{"ts": "2026-02-11T21:43:34.936020+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26874: rank 30 \u2192 YG[low-dan]"}
+{"ts": "2026-02-11T21:43:34.936185+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26874: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:43:34.936273+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26874: YT[life-and-death]"}
+{"ts": "2026-02-11T21:43:34.941357+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/26874.sgf"}
+{"ts": "2026-02-11T21:43:34.942161+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 26874 -> 26874.sgf [saved=88 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "26874", "path": "26874.sgf", "downloaded": 88, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:34.950532+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 88 puzzles"}
+{"ts": "2026-02-11T21:43:37.781800+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.8s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.829723593348457, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:37.784055+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 26918", "event_type": "item_fetch", "data": {"puzzle_id": 26918, "url": "https://online-go.com/api/v1/puzzles/26918/"}}
+{"ts": "2026-02-11T21:43:37.961878+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26918: rank 10 \u2192 YG[elementary]"}
+{"ts": "2026-02-11T21:43:37.962141+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26918: 'tesuji' \u2192 tag 'tesuji'"}
+{"ts": "2026-02-11T21:43:37.962321+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 26918: YT[tesuji]"}
+{"ts": "2026-02-11T21:43:37.971674+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/26918.sgf"}
+{"ts": "2026-02-11T21:43:37.972313+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 26918 -> 26918.sgf [saved=89 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "26918", "path": "26918.sgf", "downloaded": 89, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:37.982338+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 89 puzzles"}
+{"ts": "2026-02-11T21:43:40.250746+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.267013397948803, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:40.252875+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 27250", "event_type": "item_fetch", "data": {"puzzle_id": 27250, "url": "https://online-go.com/api/v1/puzzles/27250/"}}
+{"ts": "2026-02-11T21:43:40.479848+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27250: rank 5 \u2192 YG[beginner]"}
+{"ts": "2026-02-11T21:43:40.480366+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27250: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:43:40.480640+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27250: YT[life-and-death]"}
+{"ts": "2026-02-11T21:43:40.512799+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/27250.sgf"}
+{"ts": "2026-02-11T21:43:40.514321+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 27250 -> 27250.sgf [saved=90 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "27250", "path": "27250.sgf", "downloaded": 90, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:40.537459+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 90 puzzles"}
+{"ts": "2026-02-11T21:43:42.803175+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.2631253067251142, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:42.806735+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 27302", "event_type": "item_fetch", "data": {"puzzle_id": 27302, "url": "https://online-go.com/api/v1/puzzles/27302/"}}
+{"ts": "2026-02-11T21:43:42.990989+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27302: rank 0 \u2192 YG[novice]"}
+{"ts": "2026-02-11T21:43:43.004808+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/27302.sgf"}
+{"ts": "2026-02-11T21:43:43.007337+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 27302 -> 27302.sgf [saved=91 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "27302", "path": "27302.sgf", "downloaded": 91, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:43.017975+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 91 puzzles"}
+{"ts": "2026-02-11T21:43:45.407025+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.4s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.387866937603662, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:45.409328+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 27417", "event_type": "item_fetch", "data": {"puzzle_id": 27417, "url": "https://online-go.com/api/v1/puzzles/27417/"}}
+{"ts": "2026-02-11T21:43:45.577924+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27417: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:43:45.578184+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27417: 'tesuji' \u2192 tag 'tesuji'"}
+{"ts": "2026-02-11T21:43:45.578358+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27417: YT[tesuji]"}
+{"ts": "2026-02-11T21:43:45.590392+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/27417.sgf"}
+{"ts": "2026-02-11T21:43:45.591106+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 27417 -> 27417.sgf [saved=92 skip=19 err=0]", "event_type": "item_save", "data": {"item_id": "27417", "path": "27417.sgf", "downloaded": 92, "skipped": 19, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:45.600652+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 92 puzzles"}
+{"ts": "2026-02-11T21:43:48.943918+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.3420732032701026, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:48.946433+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 27456", "event_type": "item_fetch", "data": {"puzzle_id": 27456, "url": "https://online-go.com/api/v1/puzzles/27456/"}}
+{"ts": "2026-02-11T21:43:49.125210+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 27456 (No initial stones on board)", "event_type": "item_skip", "data": {"item_id": "27456", "reason": "No initial stones on board", "status": "skipped"}}
+{"ts": "2026-02-11T21:43:52.228027+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.1s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.1001764850072004, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:52.230849+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 27559", "event_type": "item_fetch", "data": {"puzzle_id": 27559, "url": "https://online-go.com/api/v1/puzzles/27559/"}}
+{"ts": "2026-02-11T21:43:52.523936+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27559: rank 18 \u2192 YG[intermediate]"}
+{"ts": "2026-02-11T21:43:52.524126+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27559: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:43:52.524232+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27559: YT[life-and-death]"}
+{"ts": "2026-02-11T21:43:52.531058+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/27559.sgf"}
+{"ts": "2026-02-11T21:43:52.532055+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 27559 -> 27559.sgf [saved=93 skip=20 err=0]", "event_type": "item_save", "data": {"item_id": "27559", "path": "27559.sgf", "downloaded": 93, "skipped": 20, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:52.549978+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 93 puzzles"}
+{"ts": "2026-02-11T21:43:55.791759+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.2s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.232139460931016, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:55.794182+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 27588", "event_type": "item_fetch", "data": {"puzzle_id": 27588, "url": "https://online-go.com/api/v1/puzzles/27588/"}}
+{"ts": "2026-02-11T21:43:55.977260+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27588: rank 5 \u2192 YG[beginner]"}
+{"ts": "2026-02-11T21:43:55.982008+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/27588.sgf"}
+{"ts": "2026-02-11T21:43:55.989733+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 27588 -> 27588.sgf [saved=94 skip=20 err=0]", "event_type": "item_save", "data": {"item_id": "27588", "path": "27588.sgf", "downloaded": 94, "skipped": 20, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:55.999566+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 94 puzzles"}
+{"ts": "2026-02-11T21:43:59.315056+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.3134613897630643, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:43:59.317734+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 27594", "event_type": "item_fetch", "data": {"puzzle_id": 27594, "url": "https://online-go.com/api/v1/puzzles/27594/"}}
+{"ts": "2026-02-11T21:43:59.486653+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27594: rank 22 \u2192 YG[upper-intermediate]"}
+{"ts": "2026-02-11T21:43:59.487092+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27594: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:43:59.487344+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27594: YT[life-and-death]"}
+{"ts": "2026-02-11T21:43:59.499645+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/27594.sgf"}
+{"ts": "2026-02-11T21:43:59.502545+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 27594 -> 27594.sgf [saved=95 skip=20 err=0]", "event_type": "item_save", "data": {"item_id": "27594", "path": "27594.sgf", "downloaded": 95, "skipped": 20, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:43:59.512382+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 95 puzzles"}
+{"ts": "2026-02-11T21:44:02.705446+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.2s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.191022907412444, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:44:02.709211+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 27788", "event_type": "item_fetch", "data": {"puzzle_id": 27788, "url": "https://online-go.com/api/v1/puzzles/27788/"}}
+{"ts": "2026-02-11T21:44:02.946763+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27788: rank 28 \u2192 YG[advanced]"}
+{"ts": "2026-02-11T21:44:02.947067+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27788: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:44:02.947277+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 27788: YT[life-and-death]"}
+{"ts": "2026-02-11T21:44:02.958941+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/27788.sgf"}
+{"ts": "2026-02-11T21:44:02.959748+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 27788 -> 27788.sgf [saved=96 skip=20 err=0]", "event_type": "item_save", "data": {"item_id": "27788", "path": "27788.sgf", "downloaded": 96, "skipped": 20, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:44:02.966622+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 96 puzzles"}
+{"ts": "2026-02-11T21:44:05.691902+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.7s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.7217093870252604, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:44:05.694699+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 27906", "event_type": "item_fetch", "data": {"puzzle_id": 27906, "url": "https://online-go.com/api/v1/puzzles/27906/"}}
+{"ts": "2026-02-11T21:44:05.875393+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 27906 (No initial stones on board)", "event_type": "item_skip", "data": {"item_id": "27906", "reason": "No initial stones on board", "status": "skipped"}}
+{"ts": "2026-02-11T21:44:08.513554+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.6s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.6323276852263047, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:44:08.515760+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 28022", "event_type": "item_fetch", "data": {"puzzle_id": 28022, "url": "https://online-go.com/api/v1/puzzles/28022/"}}
+{"ts": "2026-02-11T21:44:08.704906+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 28022: rank 20 \u2192 YG[upper-intermediate]"}
+{"ts": "2026-02-11T21:44:08.705115+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 28022: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:44:08.705216+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 28022: YT[life-and-death]"}
+{"ts": "2026-02-11T21:44:08.714429+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/28022.sgf"}
+{"ts": "2026-02-11T21:44:08.715346+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 28022 -> 28022.sgf [saved=97 skip=21 err=0]", "event_type": "item_save", "data": {"item_id": "28022", "path": "28022.sgf", "downloaded": 97, "skipped": 21, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:44:08.729348+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 97 puzzles"}
+{"ts": "2026-02-11T21:44:11.055624+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.3128385342586917, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:44:11.060715+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 28023", "event_type": "item_fetch", "data": {"puzzle_id": 28023, "url": "https://online-go.com/api/v1/puzzles/28023/"}}
+{"ts": "2026-02-11T21:44:11.324140+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 28023 (No initial stones on board)", "event_type": "item_skip", "data": {"item_id": "28023", "reason": "No initial stones on board", "status": "skipped"}}
+{"ts": "2026-02-11T21:44:13.779978+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.5s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.4545252708670593, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:44:13.781862+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 28035", "event_type": "item_fetch", "data": {"puzzle_id": 28035, "url": "https://online-go.com/api/v1/puzzles/28035/"}}
+{"ts": "2026-02-11T21:44:13.961819+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 28035: rank 20 \u2192 YG[upper-intermediate]"}
+{"ts": "2026-02-11T21:44:13.962137+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 28035: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:44:13.962292+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 28035: YT[life-and-death]"}
+{"ts": "2026-02-11T21:44:13.968387+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/28035.sgf"}
+{"ts": "2026-02-11T21:44:13.969201+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 28035 -> 28035.sgf [saved=98 skip=22 err=0]", "event_type": "item_save", "data": {"item_id": "28035", "path": "28035.sgf", "downloaded": 98, "skipped": 22, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:44:13.983265+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 98 puzzles"}
+{"ts": "2026-02-11T21:44:17.322452+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 3.3s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 3.3379073803030748, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:44:17.324177+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 28104", "event_type": "item_fetch", "data": {"puzzle_id": 28104, "url": "https://online-go.com/api/v1/puzzles/28104/"}}
+{"ts": "2026-02-11T21:44:17.532673+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 28104: rank 20 \u2192 YG[upper-intermediate]"}
+{"ts": "2026-02-11T21:44:17.532853+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 28104: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:44:17.532964+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 28104: YT[life-and-death]"}
+{"ts": "2026-02-11T21:44:17.538050+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/28104.sgf"}
+{"ts": "2026-02-11T21:44:17.538659+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 28104 -> 28104.sgf [saved=99 skip=22 err=0]", "event_type": "item_save", "data": {"item_id": "28104", "path": "28104.sgf", "downloaded": 99, "skipped": 22, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:44:17.550146+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 99 puzzles"}
+{"ts": "2026-02-11T21:44:20.111924+00:00", "level": "INFO", "logger": "ogs", "message": "WAIT 2.6s (puzzle_delay)", "event_type": "api_wait", "data": {"delay": 2.560731969293644, "reason": "puzzle_delay"}}
+{"ts": "2026-02-11T21:44:20.114144+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 28106", "event_type": "item_fetch", "data": {"puzzle_id": 28106, "url": "https://online-go.com/api/v1/puzzles/28106/"}}
+{"ts": "2026-02-11T21:44:20.387059+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 28106: rank 20 \u2192 YG[upper-intermediate]"}
+{"ts": "2026-02-11T21:44:20.387219+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 28106: 'life_and_death' \u2192 tag 'life-and-death'"}
+{"ts": "2026-02-11T21:44:20.387360+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Puzzle 28106: YT[life-and-death]"}
+{"ts": "2026-02-11T21:44:20.396754+00:00", "level": "DEBUG", "logger": "ogs.storage", "message": "Saved external-sources/ogs/sgf/batch-001/28106.sgf"}
+{"ts": "2026-02-11T21:44:20.397398+00:00", "level": "INFO", "logger": "ogs", "message": "SAVE 28106 -> 28106.sgf [saved=100 skip=22 err=0]", "event_type": "item_save", "data": {"item_id": "28106", "path": "28106.sgf", "downloaded": 100, "skipped": 22, "errors": 0, "status": "success"}}
+{"ts": "2026-02-11T21:44:20.403931+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 100 puzzles"}
+{"ts": "2026-02-11T21:44:20.415874+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 100 puzzles"}
+{"ts": "2026-02-11T21:44:20.416196+00:00", "level": "DEBUG", "logger": "ogs", "message": "CHECKPOINT saved=100 page=3", "event_type": "checkpoint_save", "data": {"downloaded": 100, "page": 3}}
+{"ts": "2026-02-11T21:44:20.417117+00:00", "level": "INFO", "logger": "ogs", "message": "Reached max puzzles limit (100)"}
+{"ts": "2026-02-11T21:44:20.470251+00:00", "level": "INFO", "logger": "ogs", "message": "END saved=100 skipped=22 errors=0 [6m3s]", "event_type": "run_end", "data": {"downloaded": 100, "skipped": 22, "errors": 0, "duration_sec": 363.0438356399536}}

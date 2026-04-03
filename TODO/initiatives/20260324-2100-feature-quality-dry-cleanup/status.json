@@ -1,0 +1,29 @@
+{
+  "initiative_id": "20260324-2100-feature-quality-dry-cleanup",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "Dead code removal — generated-types.ts has 0 imports; deprecated aliases are unused. No external consumers." },
+    "legacy_code_removal": { "remove_old_code": true, "rationale": "Delete dead file, remove deprecated aliases, consolidate into single canonical source." },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Unanimous governance approval. Maximizes DRY, satisfies dead code policy, respects YAGNI. config.ts stays under 200 lines."
+    }
+  },
+  "planning_confidence_score": 92,
+  "risk_level": "low",
+  "research_invoked": false,
+  "updated_at": "2026-03-24"
+}

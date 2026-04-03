@@ -1,0 +1,40 @@
+{
+  "_comment": "BTP category → YenGo collection mapping. Cho Chikun approved.",
+  "_last_updated": "2026-02-25",
+  "_coverage": "12/15 BTP categories map to YenGo collections. 3 unmapped (handled by tags).",
+  "mapping": {
+    "attachments": [],
+    "basics": ["beginner-essentials", "novice-essentials"],
+    "capturing": ["capture-problems"],
+    "endgame": ["endgame-problems"],
+    "eyes": ["eye-shape-mastery"],
+    "ko": ["ko-problems"],
+    "placements": [],
+    "reductions": [],
+    "sacrifice": ["sacrifice-techniques"],
+    "seki": ["seki-problems"],
+    "semeai": ["capturing-race"],
+    "shape": ["shape-problems"],
+    "shortage": ["liberty-shortage"],
+    "tactics": ["tesuji-training"],
+    "vital-point": ["vital-point"]
+  },
+  "category_decode": {
+    "_comment": "BTP encodes categories as single uppercase letters: index = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.indexOf(char)",
+    "A": "attachments",
+    "B": "basics",
+    "C": "capturing",
+    "D": "endgame",
+    "E": "eyes",
+    "F": "ko",
+    "G": "placements",
+    "H": "reductions",
+    "I": "sacrifice",
+    "J": "seki",
+    "K": "semeai",
+    "L": "shape",
+    "M": "shortage",
+    "N": "tactics",
+    "O": "vital-point"
+  }
+}

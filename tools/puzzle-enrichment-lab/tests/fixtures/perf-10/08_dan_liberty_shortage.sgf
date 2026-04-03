@@ -1,0 +1,15 @@
+(;FF[4]GM[1]SZ[19]PL[B]
+YT[life-and-death,liberty-shortage]YC[BL]
+C[Dan-level liberty shortage with approach move. Black must reduce White's liberties precisely. Deep reading and move order critical. Source: Sensei's Library — ShortageOfLiberties.]
+PC[https://senseis.xmp.net/?ShortageOfLiberties]
+AB[ao][bo][co][bp][cp][dp][ep][bq][eq][br][cr][dr][er]
+AW[ap][cq][dq][fq][ar][fr][as][bs][cs][ds][es][fs]
+;B[aq]C[Correct! The approach move at A3 creates a liberty shortage (damezumari).]
+(;W[ap]
+;B[ar]
+(;W[bs];B[as]C[White cannot escape the shortage of liberties.])
+(;W[as];B[bs]C[White is captured.]))
+(;W[ar]
+;B[ap]
+;W[as]
+;B[bs]C[Black wins by liberty shortage.]))

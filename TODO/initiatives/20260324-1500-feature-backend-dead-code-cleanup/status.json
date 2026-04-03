@@ -1,0 +1,89 @@
+{
+  "initiative_id": "20260324-1500-feature-backend-dead-code-cleanup",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "Git history preserves everything. Delete aggressively per project dead code policy." },
+    "legacy_code_removal": { "remove_old_code": true, "rationale": "Delete all dead code, orphaned adapters, old registry, and obsolete docs." },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Unanimous governance: 3-Phase Risk-Layered. Dependency-graph-aligned phasing, orphan test co-deletion, better failure attribution, balanced governance overhead."
+    }
+  },
+  "governance_gates": {
+    "charter": {
+      "decision": "approve_with_conditions",
+      "status_code": "GOV-CHARTER-CONDITIONAL",
+      "conditions_met": true,
+      "rc_items": ["RC-1 (blocking, addressed)", "RC-2 (recommended, addressed)", "RC-3 (recommended, addressed)"]
+    },
+    "options": {
+      "decision": "approve",
+      "status_code": "GOV-OPTIONS-APPROVED",
+      "selected_option": "OPT-1",
+      "unanimous": true
+    },
+    "plan": {
+      "decision": "approve",
+      "status_code": "GOV-PLAN-APPROVED",
+      "unanimous": true,
+      "required_changes": "none"
+    },
+    "review": {
+      "decision": "approve",
+      "status_code": "GOV-REVIEW-APPROVED",
+      "unanimous": true,
+      "rc_items": ["RC-1 (minor, fixed: stale import in adapter-development.md)"]
+    },
+    "closeout": {
+      "decision": "approve_with_conditions",
+      "status_code": "GOV-CLOSEOUT-CONDITIONAL",
+      "unanimous": true,
+      "conditions_met": true
+    }
+  },
+  "open_issues": [],
+  "updated_at": "2026-03-24"
+}
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "Git history preserves everything. Delete aggressively per project dead code policy." },
+    "legacy_code_removal": { "remove_old_code": true, "rationale": "Delete all dead code, orphaned adapters, old registry, and obsolete docs." },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Unanimous governance: 3-Phase Risk-Layered. Dependency-graph-aligned phasing, orphan test co-deletion, better failure attribution, balanced governance overhead."
+    }
+  },
+  "governance_gates": {
+    "charter": {
+      "decision": "approve_with_conditions",
+      "status_code": "GOV-CHARTER-CONDITIONAL",
+      "conditions_met": true,
+      "rc_items": ["RC-1 (blocking, addressed)", "RC-2 (recommended, addressed)", "RC-3 (recommended, addressed)"]
+    },
+    "options": {
+      "decision": "approve",
+      "status_code": "GOV-OPTIONS-APPROVED",
+      "selected_option": "OPT-1",
+      "unanimous": true
+    },
+    "plan": {
+      "decision": "approve",
+      "status_code": "GOV-PLAN-APPROVED",
+      "unanimous": true,
+      "required_changes": "none"
+    }
+  },
+  "updated_at": "2026-03-24"
+}

@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "batch": {
+    "size": 2000,
+    "max_files_per_dir": 2000
+  },
+  "staging": {
+    "cleanup_policy": "on_success"
+  },
+  "retention": {
+    "logs_days": 45,
+    "state_days": 45,
+    "failed_files_days": 45
+  },
+  "daily": {
+    "standard_puzzle_count": 30,
+    "timed_set_count": 3,
+    "timed_puzzles_per_set": 50,
+    "tag_puzzle_count": 50,
+    "level_weights": {
+      "novice": 0.35,
+      "beginner": 0.30,
+      "elementary": 0.20,
+      "intermediate": 0.15
+    },
+    "target_levels": [1, 2, 3, 4]
+  },
+  "output": {
+    "root": "yengo-puzzle-collections",
+    "sgf_path": "sgf/{batch}"
+  }
+}

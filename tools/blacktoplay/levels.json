@@ -1,0 +1,20 @@
+{
+  "_comment": "BTP rating → YenGo level mapping. Cho Chikun approved.",
+  "_last_updated": "2026-02-25",
+  "_source": "BTP language.js get_rank_from_rating() formula: rank = 21 - round(rating/100)",
+  "ranges": [
+    {"btp_rating_min": 0, "btp_rating_max": 99, "go_rank": null, "go_rank_label": "below 20k", "yengo_level": "novice", "note": "BTP assigns no Go rank below rating 100"},
+    {"btp_rating_min": 100, "btp_rating_max": 549, "go_rank_min": "20k", "go_rank_max": "16k", "yengo_level": "elementary"},
+    {"btp_rating_min": 550, "btp_rating_max": 1049, "go_rank_min": "15k", "go_rank_max": "11k", "yengo_level": "intermediate"},
+    {"btp_rating_min": 1050, "btp_rating_max": 1549, "go_rank_min": "10k", "go_rank_max": "6k", "yengo_level": "upper-intermediate"},
+    {"btp_rating_min": 1550, "btp_rating_max": 2049, "go_rank_min": "5k", "go_rank_max": "1k", "yengo_level": "advanced"},
+    {"btp_rating_min": 2050, "btp_rating_max": 2349, "go_rank_min": "1d", "go_rank_max": "3d", "yengo_level": "low-dan"},
+    {"btp_rating_min": 2350, "btp_rating_max": 2649, "go_rank_min": "4d", "go_rank_max": "6d", "yengo_level": "high-dan"},
+    {"btp_rating_min": 2650, "btp_rating_max": 3000, "go_rank_min": "7d", "go_rank_max": "9d", "yengo_level": "expert"}
+  ],
+  "coverage_gap": {
+    "level": "beginner",
+    "rank_range": "25k-21k",
+    "reason": "BTP lowest Go rank is 20k (rating 100). No BTP puzzles map to beginner."
+  }
+}

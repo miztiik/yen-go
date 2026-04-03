@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://yen-go.github.io/schemas/sgf-properties.schema.json",
+  "title": "YenGo SGF Custom Properties Schema",
+  "description": "Schema defining YenGo's custom SGF properties for tsumego puzzles. This is the SINGLE SOURCE OF TRUTH for SGF property validation.",
+  "schema_version": "4",
+  "last_updated": "2026-01-27",
+  "changelog": [
+    {
+      "version": "4",
+      "date": "2026-01-27",
+      "author": "unknown",
+      "changes": "Current schema version. Version is always an integer. Future versions increment by 1 (5, 6, 7...). No decimal versions."
+    }
+  ],
+
+  "definitions": {
+    "YV": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Schema version number (integer). Used for migration compatibility. Increments by 1 for each major schema change (no decimal versions).",
+      "examples": [4, 3, 5],
+      "current_version": 4,
+      "required": true,
+      "note": "Version is always an integer. Future versions increment by 1 (5, 6, 7...). No decimal versions (4.1, 4.2). See docs/architecture/backend/sgf.md for rationale."
+    },
+    
+    "YG": {
+      "type": "string",
+      "description": "Difficulty level with optional sub-level. Format: 'level' or 'level:sublevel'. Level must be a valid slug from config/levels.json. Sub-level (1-3) provides finer granularity within each level.",
+      "pattern": "^(novice|beginner|elementary|intermediate|upper-intermediate|advanced|low-dan|high-dan|expert)(:[1-3])?$",
+      "valid_levels": [
+        "novice",
+        "beginner",
+        "elementary",
+        "intermediate",
+        "upper-intermediate",
+        "advanced",
+        "low-dan",
+        "high-dan",
+        "expert"
+      ],
+      "sub_level_range": [1, 2, 3],
+      "examples": ["intermediate:2", "beginner:1", "low-dan:3", "novice"],
+      "required": true
+    },
+    
+    "YT": {
+      "type": "string",
+      "description": "Comma-separated technique tags. Each tag must exist in config/tags.json.",
+      "pattern": "^[a-z-]+(,[a-z-]+)*$",
+      "examples": ["life-and-death", "snapback,ko", "ladder,net,life-and-death"],
+      "required": true
+    },
+    
+    "YH1": {
+      "type": "string",
+      "description": "Level 1 hint: Region or area description. Revealed first.",
+      "maxLength": 100,
+      "examples": ["Focus on the top-left area", "Look near the corner"],
+      "required": false
+    },
+    
+    "YH2": {
+      "type": "string",
+      "description": "Level 2 hint: Coordinate or technique hint. Revealed second.",
+      "examples": ["The first move is at ba", "snapback", "cb"],
+      "required": false
+    },
+    
+    "YH3": {
+      "type": "string",
+      "description": "Level 3 hint: Full solution text. Revealed last.",
+      "maxLength": 500,
+      "examples": ["Look for the throw-in at the vital point"],
+      "required": false
+    },
+    
+    "YR": {
+      "type": "string",
+      "description": "Refutation move coordinates (comma-separated). Common wrong first moves for educational feedback.",
+      "pattern": "^[a-s]{2}(,[a-s]{2})*$",
+      "examples": ["bb,cd", "ab"],
+      "required": false
+    },
+    
+    "YC": {
+      "type": "string",
+      "description": "Board region identifier. Enables region-based filtering.",
+      "enum": [
+        "TL", "TR", "BL", "BR",
+        "T", "B", "L", "R",
+        "C",
+        "TL:3-3", "TL:4-4", "TL:3-4",
+        "TR:3-3", "TR:4-4", "TR:3-4",
+        "BL:3-3", "BL:4-4", "BL:3-4",
+        "BR:3-3", "BR:4-4", "BR:3-4",
+        "T:edge", "B:edge", "L:edge", "R:edge",
+        "C:star"
+      ],
+      "examples": ["TL", "TL:3-3", "T:edge"],
+      "required": false
+    },
+    
+    "YQ": {
+      "type": "string",
+      "description": "Quality metrics: measures DATA RICHNESS (how well documented). Defined in spec-024. Quality tier (q:1-5) indicates documentation completeness, refutation count (rc) is number of wrong-move branches, has_comments (hc) is boolean.",
+      "pattern": "^q:[1-5](;rc:[0-9]+)?(;hc:[01])?$",
+      "examples": ["q:2;rc:3;hc:1", "q:4;rc:0;hc:0", "q:1;rc:5;hc:1"],
+      "required": false,
+      "see_also": "specs/024-puzzle-quality-system for quality tier definitions",
+      "properties_detail": {
+        "q": {
+          "description": "Quality tier (1=Premium, 2=High, 3=Standard, 4=Basic, 5=Minimal)",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "rc": {
+          "description": "Refutation count - number of wrong-move branches in solution tree",
+          "type": "integer",
+          "minimum": 0
+        },
+        "hc": {
+          "description": "Has comments - 1 if solution has teaching comments, 0 otherwise",
+          "type": "integer",
+          "enum": [0, 1]
+        }
+      },
+      "quality_tier_criteria": {
+        "1_premium": "solution tree + ≥3 refutations + comments",
+        "2_high": "solution tree + ≥2 refutations + comments",
+        "3_standard": "solution tree + ≥1 refutation",
+        "4_basic": "solution tree only, no refutations",
+        "5_minimal": "no solution tree"
+      }
+    },
+    
+    "YX": {
+      "type": "string",
+      "description": "Complexity metrics: measures PUZZLE DIFFICULTY (how hard to solve). Defined in spec-024. All metrics computable from tree analysis - NO AI required.",
+      "pattern": "^d:[0-9]+(;r:[0-9]+)?(;s:[0-9]+)?(;u:[01])?$",
+      "examples": ["d:5;r:13;s:24;u:1", "d:3;r:7;s:15;u:1", "d:10;r:45;s:30;u:0"],
+      "required": false,
+      "see_also": "specs/024-puzzle-quality-system for complexity metrics definitions",
+      "properties_detail": {
+        "d": {
+          "description": "Solution depth - moves in main correct line",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "r": {
+          "description": "Reading count - total nodes in solution tree (workload)",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 999
+        },
+        "s": {
+          "description": "Stone count - total stones on board (position complexity)",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 361
+        },
+        "u": {
+          "description": "Uniqueness - 1 if single correct first move, 0 if miai (multiple correct)",
+          "type": "integer",
+          "enum": [0, 1]
+        }
+      },
+      "note": "YX.d (solution_depth) overlaps with YM (move count). YM may be deprecated in future."
+    },
+    
+    "YK": {
+      "type": "string",
+      "description": "Ko context for puzzles involving ko fights.",
+      "pattern": "^(none|direct|approach|multi|picnic|unconditional|ko-for-life|eternal)(:.+)?$",
+      "examples": ["none", "direct", "direct:B2,W1", "approach", "multi:2", "picnic:B"],
+      "required": false,
+      "enum_base": ["none", "direct", "approach", "multi", "picnic", "unconditional", "ko-for-life", "eternal"]
+    },
+    
+    "YO": {
+      "type": "string",
+      "description": "Move order flexibility. Default (no YO property) means strict order required.",
+      "pattern": "^(strict|([0-9,]+:)?flexible|all:flexible)$",
+      "examples": ["strict", "1,2:flexible", "all:flexible"],
+      "required": false,
+      "default": "strict"
+    },
+
+    "YM": {
+      "type": "integer",
+      "description": "Move count - number of moves in the main solution line. Note: Overlaps with YX.d (solution_depth). May be deprecated in future versions.",
+      "minimum": 1,
+      "maximum": 50,
+      "examples": [3, 5, 11],
+      "required": false,
+      "deprecation_note": "Consider using YX.d (solution depth) instead for consistency."
+    }
+  },
+
+  "standard_properties": {
+    "description": "Standard SGF FF[4] properties that YenGo uses",
+    "required": ["GM", "FF", "CA", "SZ", "PL", "GN"],
+    "properties": {
+      "GM": {
+        "const": 1,
+        "description": "Game type. Always 1 for Go."
+      },
+      "FF": {
+        "const": 4,
+        "description": "File format version. Always 4."
+      },
+      "CA": {
+        "const": "UTF-8",
+        "description": "Character encoding. Always UTF-8."
+      },
+      "SZ": {
+        "type": "integer",
+        "minimum": 5,
+        "maximum": 19,
+        "description": "Board size. Common values: 9, 13, 19."
+      },
+      "PL": {
+        "enum": ["B", "W"],
+        "description": "Player to move."
+      },
+      "GN": {
+        "type": "string",
+        "description": "Game/puzzle name. Used as unique identifier."
+      },
+      "AB": {
+        "type": "array",
+        "items": { "pattern": "^[a-s]{2}$" },
+        "description": "Black stones (setup)."
+      },
+      "AW": {
+        "type": "array",
+        "items": { "pattern": "^[a-s]{2}$" },
+        "description": "White stones (setup)."
+      },
+      "C": {
+        "type": "string",
+        "description": "Comment. Use for puzzle instructions or source attribution."
+      },
+      "VW": {
+        "type": "string",
+        "description": "View region (cropped board display)."
+      }
+    }
+  },
+
+  "move_annotation_properties": {
+    "description": "Standard FF[4] move annotations to use in solution trees",
+    "properties": {
+      "TE": {
+        "const": 1,
+        "description": "Tesuji marker. Use on correct moves."
+      },
+      "BM": {
+        "const": 1,
+        "description": "Bad move marker. Use on refutation/wrong moves."
+      }
+    }
+  },
+
+  "validation_rules": [
+    "YV must be present in root node",
+    "YG must reference valid level slug from config/levels.json",
+    "All tags in YT must exist in config/tags.json",
+    "YH1, YH2, YH3 are optional but should be progressive (don't skip levels)",
+    "YR coordinates must be valid SGF format (two lowercase letters a-s)",
+    "YC must be a valid region identifier",
+    "YQ should only contain objective metrics (d, u, r)",
+    "YK should default to 'none' if puzzle has no ko",
+    "YO should be omitted if order is strict (default)"
+  ],
+
+  "example_sgf": "(;GM[1]FF[4]CA[UTF-8]SZ[19]GN[example-001]PL[B]YV[3]YG[intermediate]YT[life-and-death,snapback]YH1[Focus on the corner]YH2[cb]YC[TL]AB[ba][ca][da]AW[ab][bb][cb]C[Black to play and kill];B[cb]TE[1](;W[bb]BM[1])(;W[db];B[da]TE[1]))"
+}

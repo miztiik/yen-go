@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self' https://cdn.jsdelivr.net https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'">
+  <title>Enrichment Log Viewer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Sticky nav -->
+  <nav id="section-nav" class="section-nav hidden">
+    <span class="nav-title">Log Viewer</span>
+    <a href="#s1-header">Header</a>
+    <a href="#s2-summary">Summary</a>
+    <a href="#s3-timing">Timing</a>
+    <a href="#s4-pipeline">Pipeline</a>
+    <a href="#s5-details">Details</a>
+    <a href="#s6-search">Search</a>
+    <a href="#s7-reference">Reference</a>
+    <button id="btn-load-another" class="btn-link hidden">Load another</button>
+    <button id="btn-theme-toggle" class="btn-icon" title="Toggle light/dark theme">&#9789;</button>
+    <button id="btn-scroll-top" class="btn-icon" title="Scroll to top">&uarr;</button>
+  </nav>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <h3>Recent Logs</h3>
+      <button id="btn-clear-history" class="btn-link sidebar-clear" title="Clear history">Clear</button>
+    </div>
+    <div id="sidebar-list" class="sidebar-list">
+      <p class="sidebar-empty">No logs loaded yet</p>
+    </div>
+  </aside>
+
+  <!-- Drop zone -->
+  <div id="drop-zone" class="drop-zone">
+    <div class="drop-zone-content">
+      <h1>Enrichment Log Viewer</h1>
+      <p class="drop-zone-hint">Drop a <code>.jsonl</code> log file here</p>
+      <p class="drop-zone-or">or</p>
+      <div class="drop-zone-actions">
+        <button id="btn-browse" class="btn-primary">Browse files</button>
+        <button id="btn-sample" class="btn-secondary">Load sample data</button>
+      </div>
+      <p class="drop-zone-accept">Accepts .jsonl, .log, .txt files</p>
+    </div>
+    <input type="file" id="file-input" accept=".jsonl,.log,.txt" class="hidden">
+  </div>
+
+  <!-- Error banner -->
+  <div id="error-banner" class="error-banner hidden"></div>
+
+  <!-- Dashboard sections -->
+  <main id="dashboard" class="dashboard hidden">
+    <section id="s1-header" class="section"></section>
+    <section id="s2-summary" class="section"></section>
+    <section id="s3-timing" class="section"></section>
+    <section id="s4-pipeline" class="section"></section>
+    <section id="s5-details" class="section"></section>
+    <section id="s6-search" class="section"></section>
+    <section id="s7-reference" class="section"></section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
+          crossorigin="anonymous"></script>
+  <script src="app.js" defer></script>
+</body>
+</html>

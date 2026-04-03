@@ -1,0 +1,25 @@
+{
+  "$schema": "./schemas/puzzle-validation.schema.json",
+  "schema_version": "2.0",
+  "description": "Centralized puzzle validation rules for board dimensions, solution requirements, and stone counts.",
+  "last_updated": "2026-02-18",
+  "changelog": [
+    {
+      "version": "2.0",
+      "date": "2026-02-18",
+      "author": "unknown",
+      "changes": "Replace require_solution with min_solution_depth for unified depth-range validation [1, max_solution_depth]."
+    },
+    {
+      "version": "1.0",
+      "date": "unknown",
+      "author": "initial",
+      "changes": "Initial validation rules."
+    }
+  ],
+  "min_board_dimension": 5,
+  "max_board_dimension": 19,
+  "min_solution_depth": 1,
+  "min_stones": 2,
+  "max_solution_depth": 30
+}

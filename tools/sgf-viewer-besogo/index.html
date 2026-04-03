@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGF Viewer - Yen-Go</title>
+    
+    <!-- BesoGo CSS -->
+    <link rel="stylesheet" type="text/css" href="css/besogo.css">
+    <link rel="stylesheet" type="text/css" href="css/board-wood.css">
+</head>
+<body>
+    <div id="viewer-target"></div>
+    
+    <!-- BesoGo JavaScript -->
+    <script src="js/besogo.js"></script>
+    <script src="js/editor.js"></script>
+    <script src="js/gameRoot.js"></script>
+    <script src="js/svgUtil.js"></script>
+    <script src="js/parseSgf.js"></script>
+    <script src="js/loadSgf.js"></script>
+    <script src="js/saveSgf.js"></script>
+    <script src="js/boardDisplay.js"></script>
+    <script src="js/coord.js"></script>
+    <script src="js/toolPanel.js"></script>
+    <script src="js/filePanel.js"></script>
+    <script src="js/controlPanel.js"></script>
+    <script src="js/namesPanel.js"></script>
+    <script src="js/commentPanel.js"></script>
+    <script src="js/treePanel.js"></script>
+    
+    <script type="text/javascript">
+        (function() {
+            var options = { 
+                realstones: "on",
+                coord: "western",
+                tool: "auto",
+                panels: "control+tool+file+names+comment+paste+tree"
+            };
+            
+            var searchString = location.search.substring(1);
+            var params = searchString.split("&");
+            var div = document.getElementById('viewer-target');
+            var i, value;
+            
+            // Parse query parameters
+            for (i = 0; i < params.length; i++) {
+                value = params[i].split("=");
+                options[value.shift()] = value.join("=");
+            }
+            
+            // Default to sample.sgf if no sgf parameter provided
+            if (!options.sgf) {
+                options.sgf = 'sample.sgf';
+            }
+            
+            // Create BesoGo viewer
+            besogo.create(div, options);
+        })();
+    </script>
+</body>
+</html>

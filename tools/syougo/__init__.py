@@ -1,0 +1,1 @@
+# Syougo puzzle ingestor package.

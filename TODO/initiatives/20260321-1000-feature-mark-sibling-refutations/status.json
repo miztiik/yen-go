@@ -1,0 +1,32 @@
+{
+  "initiative_id": "20260321-1000-feature-mark-sibling-refutations",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "This is a data quality fix — the old behavior (accepting wrong moves as correct) is a bug, not a feature. Old code updated in place."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": false,
+      "rationale": "No deprecated path exists — this is additive logic to existing correctness.py."
+    },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Unanimous governance selection. Backend pipeline fix with structural sibling heuristic. Fixes data at source, all downstream consumers benefit automatically, architecture-compliant."
+    }
+  },
+  "updated_at": "2026-03-21"
+}

@@ -1,0 +1,125 @@
+name: Visual Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/src/**'
+      - 'frontend/tests/visual/**'
+      - 'frontend/playwright.config.ts'
+      - '.github/workflows/visual-tests.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'frontend/src/**'
+      - 'frontend/tests/visual/**'
+      - 'frontend/playwright.config.ts'
+      - '.github/workflows/visual-tests.yml'
+
+jobs:
+  visual-tests:
+    name: Visual Regression Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Run visual tests
+        run: npm run test:visual
+        continue-on-error: true
+        id: visual_tests
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 30
+
+      - name: Upload diff images
+        uses: actions/upload-artifact@v4
+        if: failure() || steps.visual_tests.outcome == 'failure'
+        with:
+          name: visual-test-diffs
+          path: |
+            frontend/tests/visual/test-results/**/*-diff.png
+            frontend/tests/visual/test-results/**/*-actual.png
+            frontend/tests/visual/test-results/**/*-expected.png
+          retention-days: 30
+
+      - name: Comment on PR with diff summary
+        if: github.event_name == 'pull_request' && (failure() || steps.visual_tests.outcome == 'failure')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Look for diff images
+            const testResultsDir = 'frontend/tests/visual/test-results';
+            let diffFiles = [];
+            
+            function findDiffs(dir) {
+              if (!fs.existsSync(dir)) return;
+              const files = fs.readdirSync(dir, { withFileTypes: true });
+              for (const file of files) {
+                const fullPath = path.join(dir, file.name);
+                if (file.isDirectory()) {
+                  findDiffs(fullPath);
+                } else if (file.name.endsWith('-diff.png')) {
+                  diffFiles.push(file.name.replace('-diff.png', ''));
+                }
+              }
+            }
+            
+            findDiffs(testResultsDir);
+            
+            if (diffFiles.length > 0) {
+              const body = `## ⚠️ Visual Regression Detected
+              
+              The following screenshots differ from their baselines:
+              
+              ${diffFiles.map(f => `- \`${f}\``).join('\n')}
+              
+              **To review:**
+              1. Download the \`visual-test-diffs\` artifact
+              2. Compare \`*-actual.png\` (new) vs \`*-expected.png\` (baseline) vs \`*-diff.png\` (diff)
+              
+              **To update baselines (if changes are intentional):**
+              \`\`\`bash
+              cd frontend
+              npm run test:visual:update
+              git add tests/visual/baselines/
+              git commit -m "chore: update visual baselines"
+              \`\`\`
+              `;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            }
+
+      - name: Fail if visual tests failed
+        if: steps.visual_tests.outcome == 'failure'
+        run: exit 1

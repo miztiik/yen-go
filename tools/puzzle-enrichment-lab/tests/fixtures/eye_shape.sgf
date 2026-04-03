@@ -1,0 +1,14 @@
+(;FF[4]GM[1]SZ[9]PL[B]
+YT[eye-shape]
+PC[https://senseis.xmp.net/?EyeShape]
+C[Eye shape — create or destroy an eye — from Sensei's Library.
+White occupies aa, appears to have two eyes: one at A1 (aa), one at E1 (ea).
+Black plays at E1 to reveal that White's second eye is false — White has only aa.]
+AB[ba][ca][da][ab][db][ac][bc][cc][dc][ad][bd][cd]
+AW[aa][bb][cb][cc]
+;B[ea]C[Correct! Black plays at E1 — stepping into White's apparent second eye. Without ea, White has only A1. Dead.]
+(;W[da]C[White captures...]
+;B[fa]C[...there is no real second eye. White is dead.])
+(;W[fa]C[White tries to extend...]
+;B[da]C[...Black plays to maintain the false eye structure.])
+(;W[pass]C[Wrong — Black has destroyed White's second eye.]))

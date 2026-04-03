@@ -1,0 +1,26 @@
+{
+  "initiative_id": "20260313-2000-feature-katrain-trap-density-elo-anchor",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "Lab tool re-runs per collection; no published scores affected until new pipeline run" },
+    "legacy_code_removal": { "remove_old_code": true, "rationale": "Old |winrate_delta| formula is documented approximation; score-based is strictly better" },
+    "option_selection": {
+      "selected_option_id": "OPT-3",
+      "rationale": "Score-based trap density with configurable floor + Elo-anchor hard gate. Unanimous governance approval."
+    }
+  },
+  "updated_at": "2026-03-13"
+}

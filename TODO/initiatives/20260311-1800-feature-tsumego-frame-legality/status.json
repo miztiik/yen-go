@@ -1,0 +1,58 @@
+{
+  "initiative_id": "20260311-1800-feature-tsumego-frame-legality",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "User confirmed: no backward compatibility. Re-enrich all with new frame."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": true,
+      "rationale": "No legacy code — replacing inline logic in same file"
+    },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Unanimous 6/6 panel approval. Inline validation: validate-and-skip is the only approach that guarantees F10 safety. YAGNI/KISS favor single-file. Module extraction trivial later if needed."
+    }
+  },
+  "governance": {
+    "charter_gate": {
+      "decision": "approve_with_conditions",
+      "status_code": "GOV-CHARTER-CONDITIONAL",
+      "date": "2026-03-11",
+      "required_changes": ["RC-1", "RC-2", "RC-3", "RC-5"]
+    },
+    "charter_amendment_f25": {
+      "decision": "approve_with_conditions",
+      "status_code": "GOV-CHARTER-CONDITIONAL",
+      "date": "2026-03-11",
+      "required_changes": ["RC-6", "RC-7", "RC-8"]
+    },
+    "options_gate": {
+      "decision": "approve",
+      "status_code": "GOV-OPTIONS-APPROVED",
+      "date": "2026-03-11",
+      "selected_option": "OPT-1",
+      "must_hold": ["MH-1", "MH-2", "MH-3", "MH-4"]
+    },
+    "plan_gate": {
+      "decision": "approve",
+      "status_code": "GOV-PLAN-APPROVED",
+      "date": "2026-03-11"
+    }
+  },
+  "updated_at": "2026-03-12"
+}

@@ -1,0 +1,675 @@
+{
+  "$schema": "./schemas/katago-enrichment.schema.json",
+  "schema_version": "1.28",
+  "config_min_version": "1.17",
+  "description": "KataGo enrichment configuration — all tunable thresholds for puzzle analysis.",
+  "last_updated": "2026-03-18",
+  "changelog": [
+    {
+      "version": "1.28",
+      "date": "2026-03-18",
+      "author": "unknown",
+      "changes": "Removed report_generation section (Work Stream K sunset). HTML report feature removed; log-viewer standalone JSONL dashboard replaces it."
+    },
+    {
+      "version": "1.27",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Calibration resilience & flexibility. Changed randomize_fixtures default true→random (broader coverage by default). Added restart_every_n=10 (engine restart crash mitigation for Intel iGPU OpenCL 0xC0000005). run_calibration.py now reads fixture_dirs/sample_size/seed from config (--input-dir overrides). Deterministic mode via randomize_fixtures=false + seed."
+    },
+    {
+      "version": "1.26",
+      "date": "unknown",
+      "author": "4-expert-consensus",
+      "changes": "Tsumego threshold fine-tuning (4-expert consensus). Tightened: t_good 0.05→0.03, t_bad 0.15→0.12, t_disagreement 0.10→0.07. Depth: entry.solution_min_depth 2→3, strong.solution_max_depth 28→24, curated_pruning.min_depth 2→3. Visits: refutation_visits 100→200, continuation_visits 125→200, max_total_tree_queries 50→65, candidate_max_count 5→6. Detection: score_lead_seki_max 2.0→5.0, score_delta_ko 5.0→7.0, branch_disagreement_threshold 0.10→0.07. Calibration: sample_size 5→20. Code fix: adaptive visit allocation now compounds with corner/ladder edge-case boosts (was overriding them since v1.24)."
+    },
+    {
+      "version": "1.25",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Log-report generation (Work Stream K). Added report_generation section: enabled (default false), execution_profile (lab|production). Supports automated markdown report generation from enrichment logs."
+    },
+    {
+      "version": "1.24",
+      "date": "2026-03-19",
+      "author": "unknown",
+      "changes": "Feature activation Phase 2 (20260319-PGR-4b). PI-2 visit_allocation_mode=adaptive, PI-7 branch_escalation_enabled=true, PI-8 multi_pass_harvesting=true, PI-9 player_alternative_rate=0.15. Budget constraint C7: max_total_tree_queries=50 cap, continuation_visits < branch_visits, player_alternative_rate ≤ 0.20, branch_disagreement_threshold ≥ 0.05. Constraint C9: thresholds conserved."
+    },
+    {
+      "version": "1.23",
+      "date": "2026-03-18",
+      "author": "unknown",
+      "changes": "Feature activation Phase 1a-1c (20260318-1400). Phase 1a: PI-1 ownership_delta_weight=0.3, PI-3 score_delta_enabled=true, PI-12 best_resistance_enabled=true. Phase 1b: PI-5 noise_scaling=board_scaled, PI-6 forced_min_visits_formula=true. Phase 1c: PI-10 use_opponent_policy=true, PI-11 surprise_weighting=true. Constraint C9: thresholds conserved. Phase 2 deferred to v1.24 pending PGR-4b budget verification."
+    },
+    {
+      "version": "1.22",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Production readiness: Added quality_weights section (GQ-1 panel-validated qk formula). Weights: trap_density 40%, avg_refutation_depth 30%, correct_move_rank 20%, policy_entropy 10%. Visit-count gate at rank_min_visits=500 (C4). Config-driven per C3."
+    },
+    {
+      "version": "1.21",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Refutation tree quality improvements Phase D (PI-11). Added: calibration.surprise_weighting (surprise-weighted calibration, default false), calibration.surprise_weight_scale (scale factor for surprise weighting, default 2.0). Weight = 1 + scale * |T0_winrate - T2_winrate|. Higher surprise = higher weight in threshold optimization. Feature-gated with current-behavior default (disabled = uniform weighting)."
+    },
+    {
+      "version": "1.20",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Refutation tree quality improvements Phase C (PI-7/PI-8/PI-12). Added: solution_tree.branch_escalation_enabled/branch_disagreement_threshold (branch-local disagreement escalation, default disabled/0.10), refutations.multi_pass_harvesting/secondary_noise_multiplier (diversified root candidate harvesting, default disabled/2.0), refutations.best_resistance_enabled/best_resistance_max_candidates (best-resistance line generation, default disabled/3). All feature-gated with current-behavior defaults."
+    },
+    {
+      "version": "1.19",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Refutation tree quality improvements Phase B (PI-2/PI-5/PI-6/PI-9). Added: solution_tree.visit_allocation_mode/branch_visits/continuation_visits (adaptive visit allocation, default fixed), refutation_overrides.noise_scaling/noise_base/noise_reference_area (board-size-scaled Dirichlet noise, default fixed), refutations.forced_min_visits_formula/forced_visits_k (forced minimum visits, default disabled), solution_tree.player_alternative_rate/player_alternative_auto_detect (player-side alternative exploration, default rate=0.0/auto_detect=true). All feature-gated with current-behavior defaults."
+    },
+    {
+      "version": "1.18",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Refutation tree quality improvements Phase A (PI-1/PI-3/PI-4/PI-10). Added: refutations.ownership_delta_weight (ownership delta composite scoring, default 0.0), refutations.score_delta_enabled/score_delta_threshold (score-lead delta filter, default disabled/5.0), ai_solve.model_by_category (model routing by puzzle complexity, default empty), teaching.use_opponent_policy (opponent-response teaching comments, default false). All feature-gated with current-behavior defaults."
+    },
+    {
+      "version": "1.17",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Score-based trap density (KaTrain-inspired) replacing |winrate_delta| approximation. Configurable floor (trap_density_floor) and score normalization cap (score_normalization_cap). Elo-anchor hard gate for level validation using KaTrain CALIBRATED_RANK_ELO (MIT licensed, github.com/sanderland/katrain). Covered range: elementary→high-dan."
+    },
+    {
+      "version": "1.16",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Added benson_gate section (RC-3). Feature flag and min_contest_stones threshold for Benson unconditional life gate (G1) and interior-point death gate (G2). Config-driven enable/disable for safe rollout."
+    },
+    {
+      "version": "1.15",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Kishimoto-Mueller search optimizations (KM-01..KM-04). Added solution_tree: simulation_enabled, simulation_verify_visits (KM-01 Kawano simulation), forced_move_visits, forced_move_policy_threshold (KM-03 forced-move fast-path), transposition_enabled (KM-02 position-hash cache). Added difficulty.normalization.max_resolved_depth_ceiling and structural_weights.proof_depth (KM-04 proof-depth signal, rebalanced weights 40/25/20/15 to 35/22/18/15/10). Added TreeCompletenessMetrics counters: simulation_hits/misses, transposition_hits, forced_move_count, max_resolved_depth."
+    },
+    {
+      "version": "1.14",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "AI-Solve unified enrichment (ai-solve-enrichment-plan-v3). Added ai_solve section with 10 sub-configs: thresholds (DD-2 delta-based TE/BM/BM_HO classification), confidence_metrics (DD-6 annotations not gates), solution_tree (DD-1 category-aware depth profiles for entry/core/strong, DD-3 branching/budget), seki_detection (DD-12 early-exit heuristic), goal_inference (DD-8 multi-signal), edge_case_boosts (DD-12 corner/ladder visit multipliers), alternatives (DD-7 co-correct three-signal, DD-10 human_solution_confidence), calibration (DD-9 stratified model-aware), observability (DD-11 disagreement sink + batch summaries). Feature-gated: enabled=false by default. Zero behavior change when ai_solve key is absent."
+    },
+    {
+      "version": "1.13",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Consolidate output/calibration/benchmark paths (Q10). Added paths section — all runtime artifacts centralized under .lab-runtime/. Logs, KataGo logs, outputs, calibration results all config-driven."
+    },
+    {
+      "version": "1.12",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Performance & config-driven enrichment (Plan 010). Added: models (name indirection), tree_validation, technique_detection, ko_detection, teaching, difficulty.normalization, calibration, logging additions, refutations.pv_mode. Renamed lab_mode → deep_enrich. Removed dual_engine section (absorbed into deep_enrich + models). ~45 hardcoded thresholds migrated to config."
+    },
+    {
+      "version": "1.11",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Phase P.2: Enable level_mismatch.threshold 99→3. Overwrite YG when KataGo estimate differs by ≥3 level steps. Works for all collections — purely signal-driven, no collection-specific hardcoding. (Section retired in v1.15 — JSON section removed, threshold=3 retained as _MISMATCH_THRESHOLD constant in sgf_enricher.py.)"
+    },
+    {
+      "version": "1.10",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Phase S.G: Threshold tuning (ADR D36). Widened elementary max_score 56→62 and shifted subsequent thresholds to accommodate KataGo-primary formula (80% AI signals). Expert panel S.0 identified policy dilution on 19x19 boards inflating elementary scores."
+    },
+    {
+      "version": "1.9",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Phase S.4: Added ko_analysis section (ADR D31). Per-ko-type rules override (tromp-taylor for ko puzzles) and analysisPVLen override (30 for ko puzzles). Inspired by KataGo PR #261."
+    },
+    {
+      "version": "1.8",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Phase S.2: Added lab_mode section for max-effort enrichment (ADR D23/D30). b28c512 model, 10K visits, 8 symmetries, no time limit. Supersedes progressive escalation for lab context."
+    },
+    {
+      "version": "1.7",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Phase R calibration fixes: added refutations.locality_max_distance (Chebyshev filter), added difficulty.structural_weights (SGF-structural formula replacing KataGo-signal formula)."
+    },
+    {
+      "version": "1.6",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Added level_mismatch section for policy-aligned enrichment (ADR-007). Threshold TBD — needs Go professional calibration. (Section retired in v1.15 — JSON section removed, threshold=3 kept as code constant _MISMATCH_THRESHOLD in sgf_enricher.py.)"
+    },
+    {
+      "version": "1.5",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Cycle 2 validation fixes — rejected_not_in_top_n 5→20 (b18 ranks correct tsumego moves at 6-35); add winrate_rescue_auto_accept=0.85 (auto-accept when winrate≥0.85 even if not in top-N)."
+    },
+    {
+      "version": "1.4",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Calibration cycle 1 fixes — candidate_min_policy 0.02→0.0 (b18 gives near-zero policy to tsumego moves); refutation_visits 200→100; candidate_max_count 8→5; score_to_level_thresholds shifted +20-25 points (policy floor ~25 + refutation floor ~25 = effective minimum score ~56)."
+    },
+    {
+      "version": "1.3",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Upgrade quick_model b10→b18; rebalance difficulty weights (R2: policy 40→25, depth 25→35, refutations 15→25); add refutation_escalation (retry with higher visits when 0 refutations found); lower refutation thresholds (candidate_min_policy 0.05→0.02, delta_threshold 0.15→0.08, refutation_visits 100→200); add sparse_position detection (R1)."
+    },
+    {
+      "version": "1.2",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Added quality_gates (acceptance_threshold, difficulty_match_threshold) and analysis_defaults (default_max_visits, puzzle_region_margin, visits_escalation_multiplier, visits_escalation_addend) — all thresholds now config-driven."
+    },
+    {
+      "version": "1.1",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "quick_visits 200→500 for better quick-model accuracy on complex puzzles."
+    },
+    {
+      "version": "1.0",
+      "date": "unknown",
+      "author": "initial",
+      "changes": "Initial config with ownership, difficulty, refutation, and escalation thresholds."
+    }
+  ],
+  "ownership_thresholds": {
+    "description": "Ownership thresholds for life/death validation (D8). Range: -1.0 (dead) to +1.0 (alive).",
+    "alive": 0.7,
+    "dead": -0.7,
+    "seki_low": -0.3,
+    "seki_high": 0.3,
+    "center_reduction": 0.2,
+    "center_alive": 0.5,
+    "center_dead": -0.5
+  },
+
+  "validation": {
+    "description": "Correct move validation thresholds.",
+    "flagged_value_low": 0.3,
+    "flagged_value_high": 0.7,
+    "rejected_not_in_top_n": 20,
+    "ko_visit_ratio": 0.8,
+    "winrate_rescue_auto_accept": 0.85,
+    "curated_pruning": {
+      "enabled": true,
+      "min_visit_ratio": 0.01,
+      "trap_threshold": 0.02,
+      "min_depth": 3
+    }
+  },
+
+  "difficulty": {
+    "description": "Difficulty scoring formula weights and policy-to-level mapping (D4, D22). Structural signals dominant (35%), trap density (20%), complexity (15%), policy+visits reduced (15+15=30%) to mitigate PUCT collinearity.",
+    "weights": {
+      "policy_rank": 15.0,
+      "visits_to_solve": 15.0,
+      "trap_density": 20.0,
+      "structural": 35.0,
+      "complexity": 15.0
+    },
+    "score_to_level_thresholds": [
+      { "max_score": 40, "level_slug": "novice" },
+      { "max_score": 50, "level_slug": "beginner" },
+      { "max_score": 62, "level_slug": "elementary" },
+      { "max_score": 70, "level_slug": "intermediate" },
+      { "max_score": 78, "level_slug": "upper-intermediate" },
+      { "max_score": 85, "level_slug": "advanced" },
+      { "max_score": 91, "level_slug": "low-dan" },
+      { "max_score": 96, "level_slug": "high-dan" },
+      { "max_score": 100, "level_slug": "expert" }
+    ],
+    "policy_to_level": {
+      "description": "Tier 0.5 policy-only difficulty mapping (D4). Higher prior = easier puzzle.",
+      "thresholds": [
+        { "min_prior": 0.50, "level_slug": "novice" },
+        { "min_prior": 0.30, "level_slug": "beginner" },
+        { "min_prior": 0.15, "level_slug": "elementary" },
+        { "min_prior": 0.10, "level_slug": "intermediate" },
+        { "min_prior": 0.05, "level_slug": "upper-intermediate" },
+        { "min_prior": 0.03, "level_slug": "advanced" },
+        { "min_prior": 0.015, "level_slug": "low-dan" },
+        { "min_prior": 0.005, "level_slug": "high-dan" },
+        { "min_prior": 0.0, "level_slug": "expert" }
+      ]
+    },
+    "mcts": {
+      "description": "MCTS-based difficulty (Tier 2) composite formula parameters.",
+      "base_visits": 50,
+      "max_trap_density_moves": 5
+    },
+    "structural_weights": {
+      "description": "SGF-structural difficulty sub-weights (Phase R.3). These are weighted within the structural component (45% of composite). Sum to 100 internally.",
+      "solution_depth": 35.0,
+      "branch_count": 22.0,
+      "local_candidates": 18.0,
+      "refutation_count": 15.0,
+      "proof_depth": 10.0
+    },
+    "normalization": {
+      "description": "Difficulty normalization ceilings (Plan 010, D41). From estimate_difficulty.py.",
+      "max_solution_depth": 15.0,
+      "max_branch_count": 5.0,
+      "max_local_candidates": 20.0,
+      "max_refutation_count": 5.0,
+      "max_visits_cap": 20000,
+      "disagree_multiplier": 2,
+      "max_resolved_depth_ceiling": 20
+    },
+    "score_normalization_cap": 30.0,
+    "trap_density_floor": 0.05
+  },
+
+  "refutations": {
+    "description": "Wrong-move refutation thresholds.",
+    "candidate_min_policy": 0.0,
+    "candidate_max_count": 6,
+    "refutation_max_count": 3,
+    "delta_threshold": 0.08,
+    "refutation_visits": 200,
+    "locality_max_distance": 2,
+    "max_pv_length": 4,
+    "pv_mode": "multi_query",
+    "pv_extract_min_depth": 3,
+    "pv_quality_min_visits": 50,
+    "candidate_scoring": {
+      "mode": "temperature",
+      "temperature": 1.5
+    },
+    "refutation_overrides": {
+      "root_policy_temperature": 1.3,
+      "root_fpu_reduction_max": 0,
+      "wide_root_noise": 0.08,
+      "noise_scaling": "board_scaled",
+      "noise_base": 0.03,
+      "noise_reference_area": 361
+    },
+    "tenuki_rejection": {
+      "enabled": true,
+      "manhattan_threshold": 4.0
+    },
+    "suboptimal_branches": {
+      "enabled": true,
+      "score_delta_threshold": 2.0,
+      "max_branches": 3,
+      "max_pv_depth": 8,
+      "min_policy": 0.01,
+      "visits": 200
+    },
+    "ownership_delta_weight": 0.3,
+    "score_delta_enabled": true,
+    "score_delta_threshold": 5.0,
+    "forced_min_visits_formula": true,
+    "forced_visits_k": 2.0,
+    "multi_pass_harvesting": true,
+    "secondary_noise_multiplier": 2.0,
+    "best_resistance_enabled": true,
+    "best_resistance_max_candidates": 3
+  },
+
+  "refutation_escalation": {
+    "description": "Escalation settings when 0 refutations found on first pass. Retries with higher visits and relaxed thresholds to ensure refutation trees are always built.",
+    "enabled": true,
+    "min_refutations_required": 1,
+    "escalation_visits": 500,
+    "escalation_delta_threshold": 0.03,
+    "escalation_candidate_min_policy": 0.003,
+    "use_referee_engine": true,
+    "max_escalation_attempts": 1
+  },
+
+  "sparse_position": {
+    "description": "Sparse position detection (R1). Auto-escalate to referee for low-density boards where the quick model struggles with global context.",
+    "density_threshold": 0.08,
+    "min_board_size": 13,
+    "action": "escalate_to_referee"
+  },
+
+  "escalation": {
+    "_deprecated": "Superseded by lab_mode (ADR D30, Phase S.2). In lab context, fixed max-effort visits replace progressive escalation. This section is preserved for FUTURE PRODUCTION PIPELINE use only — lab code ignores it when deep_enrich.enabled=true.",
+    "description": "Progressive visit escalation thresholds (D6 — superseded by D30 in lab context).",
+    "levels": [
+      { "visits": 500, "description": "initial" },
+      { "visits": 1000, "description": "uncertain" },
+      { "visits": 5000, "description": "deep" }
+    ],
+    "uncertain_value_low": 0.3,
+    "uncertain_value_high": 0.7
+  },
+
+  "quality_gates": {
+    "description": "Configurable acceptance thresholds for performance tests and calibration.",
+    "acceptance_threshold": 0.95,
+    "difficulty_match_threshold": 0.85
+  },
+
+  "analysis_defaults": {
+    "description": "Default analysis parameters used across query builders and models when no override is provided.",
+    "default_max_visits": 500,
+    "puzzle_region_margin": 2,
+    "visits_escalation_multiplier": 2,
+    "visits_escalation_addend": 500
+  },
+
+  "visit_tiers": {
+    "description": "Visit tier configuration for graduated analysis depth. Higher tiers used for complex positions or disagreement resolution.",
+    "T0": { "visits": 50, "purpose": "Policy snapshot for technique pre-classification and quick reject" },
+    "T1": { "visits": 500, "purpose": "Standard analysis for correct move validation and difficulty estimation" },
+    "T2": { "visits": 2000, "purpose": "Deep analysis for refutation generation and complex positions" },
+    "T3": { "visits": 5000, "purpose": "Referee for disagreement resolution and escalation endpoint" }
+  },
+
+  "ai_solve": {
+    "description": "AI-Solve unified enrichment (ai-solve-enrichment-plan-v3, DD-1 through DD-12). Always active.",
+    "thresholds": {
+      "t_good": 0.03,
+      "t_bad": 0.12,
+      "t_hotspot": 0.30,
+      "t_disagreement": 0.07
+    },
+    "confidence_metrics": {
+      "pre_winrate_floor": 0.30,
+      "post_winrate_ceiling": 0.95
+    },
+    "solution_tree": {
+      "depth_profiles": {
+        "entry": { "solution_min_depth": 3, "solution_max_depth": 10 },
+        "core": { "solution_min_depth": 3, "solution_max_depth": 16 },
+        "strong": { "solution_min_depth": 4, "solution_max_depth": 24 }
+      },
+      "wr_epsilon": 0.02,
+      "own_epsilon": 0.05,
+      "branch_min_policy": 0.05,
+      "depth_policy_scale": 0.01,
+      "max_branch_width": 3,
+      "max_total_tree_queries": 65,
+      "confirmation_min_policy": 0.03,
+      "confirmation_visits": 500,
+      "tree_visits": 500,
+      "max_correct_root_trees": 2,
+      "max_refutation_root_trees": 3,
+      "simulation_enabled": true,
+      "simulation_verify_visits": 50,
+      "forced_move_visits": 125,
+      "forced_move_policy_threshold": 0.85,
+      "transposition_enabled": true,
+      "terminal_detection_enabled": true,
+      "benson_gate": {
+        "enabled": true,
+        "min_contest_stones": 1
+      },
+      "visit_allocation_mode": "adaptive",
+      "branch_visits": 500,
+      "continuation_visits": 200,
+      "player_alternative_rate": 0.15,
+      "player_alternative_auto_detect": true,
+      "branch_escalation_enabled": true,
+      "branch_disagreement_threshold": 0.07
+    },
+    "seki_detection": {
+      "winrate_band_low": 0.45,
+      "winrate_band_high": 0.55,
+      "seki_consecutive_depth": 3,
+      "score_lead_seki_max": 5.0
+    },
+    "goal_inference": {
+      "score_delta_kill": 15.0,
+      "score_delta_ko": 7.0,
+      "ownership_threshold": 0.7,
+      "ownership_variance_gate": 0.3
+    },
+    "edge_case_boosts": {
+      "corner_visit_boost": 1.5,
+      "ladder_visit_boost": 2.0,
+      "ladder_pv_threshold": 8
+    },
+    "alternatives": {
+      "co_correct_min_gap": 0.02,
+      "co_correct_score_gap": 2.0,
+      "disagreement_threshold": 0.10,
+      "losing_threshold": 0.30
+    },
+    "calibration": {
+      "min_samples_per_class": 30,
+      "target_macro_f1": 0.85,
+      "visit_counts": [500, 1000, 2000]
+    },
+    "observability": {
+      "disagreement_sink_path": ".lab-runtime/logs/disagreements",
+      "collection_warning_threshold": 0.20
+    },
+    "model_by_category": {}
+  },
+
+  "deep_enrich": {
+    "description": "Deep enrichment settings (Plan 010, D47). Behavior-descriptive naming; location-agnostic for mainline migration. b18 at 2K visits = ~13,600 Elo. b28 reserved for referee escalation only.",
+    "enabled": true,
+    "model": "b18c384",
+    "visits": 2000,
+    "root_num_symmetries_to_sample": 4,
+    "referee_symmetries": 8,
+    "max_time": 0,
+    "escalate_to_referee": true,
+    "escalation_winrate_low": 0.3,
+    "escalation_winrate_high": 0.7,
+    "tiebreaker_tolerance": 0.05,
+    "_note": "When deep_enrich.enabled=true, enrichment bypasses dual-engine escalation and uses a single engine at max visits. Single engine with config-driven referee escalation."
+  },
+
+  "ko_analysis": {
+    "description": "Ko-aware analysis configuration (Phase S.4, ADR D31). Per-ko-type overrides for KataGo rules and PV length. Motivated by KataGo PR #261: superko rules prevent exploration of ko recapture sequences. Using simple ko rules (tromp-taylor) lets the search tree include ko fights.",
+    "rules_by_ko_type": {
+      "none": "chinese",
+      "direct": "tromp-taylor",
+      "approach": "tromp-taylor"
+    },
+    "pv_len_by_ko_type": {
+      "none": 15,
+      "direct": 30,
+      "approach": 30
+    }
+  },
+
+  "models": {
+    "description": "Model name indirection (Plan 010, D42). Code references labels only, never filenames directly. No .py file may reference a model filename or architecture string directly.",
+    "quick": {
+      "label": "quick",
+      "arch": "b10c128",
+      "filename": "kata1-b10c128-s1141046784-d204142634.bin.gz"
+    },
+      "deep_enrich": {
+      "label": "deep_enrich",
+      "arch": "b18c384",
+      "filename": "kata1-b18c384nbt-s9996604416-d4316597426.bin.gz"
+      },
+    "referee": {
+      "label": "referee",
+      "arch": "b28c512",
+      "filename": "kata1-b28c512nbt-s12192929536-d5655876072.bin.gz"
+    },
+    "test_fast": {
+      "label": "test_fast",
+      "arch": "b10c128",
+      "filename": "kata1-b10c128-s1141046784-d204142634.bin.gz",
+      "description": "Smallest supported model for fast integration tests. Not for production analysis."
+    },
+    "test_smallest": {
+      "label": "test_smallest",
+      "arch": "b6c96",
+      "filename": "kata1-b6c96-s175395328-d26788732.bin.gz",
+      "description": "Smallest model for smoke tests and basic integration validation. Not for accuracy-sensitive analysis."
+    },
+    "benchmark": {
+      "label": "benchmark",
+      "arch": "b10c128",
+      "filename": "kata1-b10c128-s1141046784-d204142634.bin.gz",
+      "description": "b10c128 (~7MB, ~9400 Elo) — benchmark model for performance comparison tests."
+    }
+  },
+
+  "test_defaults": {
+    "description": "Shared defaults for integration/performance tests. Centralizes magic numbers that were duplicated across test files.",
+    "startup_timeout": 180.0,
+    "query_timeout": 30.0,
+    "default_max_visits": 50,
+    "num_threads": 1
+  },
+
+  "tree_validation": {
+    "description": "Deep solution tree validation thresholds (Plan 010, D44). Currently hardcoded in validate_correct_move.py.",
+    "enabled": true,
+    "skip_when_confident": true,
+    "confidence_winrate": 0.85,
+    "confidence_winrate_ko": 0.75,
+    "confidence_winrate_seki": 0.70,
+    "confidence_top_n": 1,
+    "visits_per_depth": 500,
+    "top_n_match": 3,
+    "depth_base": 3,
+    "depth_intermediate": 5,
+    "depth_advanced": 7,
+    "depth_ko": 5,
+    "level_intermediate_threshold": 140,
+    "level_advanced_threshold": 170,
+    "quick_only_depth_cap": 2
+  },
+
+  "technique_detection": {
+    "description": "Technique detection thresholds (Plan 010, D41). 16 thresholds from technique_classifier.py.",
+    "ladder": {
+      "min_pv_length": 4,
+      "diagonal_ratio": 0.5
+    },
+    "snapback": {
+      "policy_threshold": 0.05,
+      "winrate_threshold": 0.9,
+      "delta_threshold": 0.3
+    },
+    "net": {
+      "policy_threshold": 0.3,
+      "winrate_threshold": 0.9,
+      "min_refutations": 2,
+      "delta_spread": 0.1
+    },
+    "seki": {
+      "winrate_low": 0.40,
+      "winrate_high": 0.60,
+      "score_threshold": 5.0
+    },
+    "direct_capture": {
+      "max_depth": 2,
+      "winrate_threshold": 0.9,
+      "max_visits": 500
+    },
+    "throw_in": {
+      "edge_lines": 2
+    }
+  },
+
+  "ko_detection": {
+    "description": "Ko detection thresholds (Plan 010, D41). From ko_validation.py.",
+    "min_pv_length": 3,
+    "min_repeat_count": 2,
+    "long_ko_threshold": 3,
+    "double_ko_coords": 2
+  },
+
+  "teaching": {
+    "description": "Teaching comment generation thresholds (Plan 010, D41). From teaching_comments.py.",
+    "non_obvious_policy": 0.10,
+    "ko_delta_threshold": 0.12,
+    "capture_depth_threshold": 1,
+    "significant_loss_threshold": 0.5,
+    "moderate_loss_threshold": 0.2,
+    "use_opponent_policy": true
+  },
+
+  "elo_anchor": {
+    "description": "Elo-anchor hard gate for level validation (v1.17). Cross-checks composite difficulty level against KaTrain's CALIBRATED_RANK_ELO table (MIT licensed, github.com/sanderland/katrain). Overrides level when divergence exceeds threshold. Covered range: elementary (18k) through high-dan (5d).",
+    "enabled": true,
+    "override_threshold_levels": 2,
+    "min_covered_rank_kyu": 18,
+    "max_covered_rank_dan": 5,
+    "calibrated_rank_elo": [
+      {"elo": -21.679, "kyu_rank": 18},
+      {"elo": 42.602, "kyu_rank": 17},
+      {"elo": 106.883, "kyu_rank": 16},
+      {"elo": 162.858, "kyu_rank": 15},
+      {"elo": 218.832, "kyu_rank": 14},
+      {"elo": 274.807, "kyu_rank": 13},
+      {"elo": 330.782, "kyu_rank": 12},
+      {"elo": 386.757, "kyu_rank": 11},
+      {"elo": 442.731, "kyu_rank": 10},
+      {"elo": 502.149, "kyu_rank": 9},
+      {"elo": 561.566, "kyu_rank": 8},
+      {"elo": 620.984, "kyu_rank": 7},
+      {"elo": 680.401, "kyu_rank": 6},
+      {"elo": 756.226, "kyu_rank": 5},
+      {"elo": 832.052, "kyu_rank": 4},
+      {"elo": 907.877, "kyu_rank": 3},
+      {"elo": 983.703, "kyu_rank": 2},
+      {"elo": 1059.528, "kyu_rank": 1},
+      {"elo": 1200.000, "kyu_rank": 0},
+      {"elo": 1350.000, "kyu_rank": -1},
+      {"elo": 1450.000, "kyu_rank": -2},
+      {"elo": 1550.000, "kyu_rank": -3},
+      {"elo": 1650.000, "kyu_rank": -4},
+      {"elo": 1700.000, "kyu_rank": -5}
+    ]
+  },
+
+  "calibration": {
+    "description": "Calibration test configuration (Plan 010, D46).",
+    "sample_size": 20,
+    "seed": 42,
+    "batch_timeout": 1800,
+    "level_tolerance": 20,
+    "fixture_dirs": ["cho-elementary", "cho-intermediate", "cho-advanced"],
+    "randomize_fixtures": true,
+    "restart_every_n": 10,
+    "surprise_weighting": true,
+    "surprise_weight_scale": 2.0
+  },
+
+  "paths": {
+    "description": "Centralized output directory paths (Q10). All runtime artifacts under .lab-runtime/. Relative to the puzzle-enrichment-lab tool root.",
+    "runtime_dir": ".lab-runtime",
+    "logs_dir": ".lab-runtime/logs",
+    "katago_logs_dir": ".lab-runtime/katago-logs",
+    "outputs_dir": ".lab-runtime/outputs",
+    "calibration_results_dir": ".lab-runtime/calibration-results"
+  },
+
+  "logging": {
+    "description": "Logging configuration (Plan 010, D45).",
+    "per_run_files": true,
+    "use_relative_paths": true
+  },
+
+  "quality_weights": {
+    "description": "Panel-validated quality algorithm weights (GQ-1). qk = weighted sum of trap_density, avg_refutation_depth, correct_move_rank, policy_entropy. Config-driven per constraint C3.",
+    "trap_density": 0.40,
+    "avg_refutation_depth": 0.30,
+    "correct_move_rank": 0.20,
+    "policy_entropy": 0.10,
+    "rank_min_visits": 500,
+    "rank_clamp_max": 8,
+    "avg_depth_max": 10,
+    "low_visit_multiplier": 0.7
+  },
+
+  "frame": {
+    "entropy_quality_check": {
+      "enabled": true,
+      "variance_threshold": 0.15,
+      "entropy_contest_threshold": 0.5
+    }
+  }
+}

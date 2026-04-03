@@ -1,0 +1,366 @@
+{
+  "$schema": "./schemas/teaching-comments.schema.json",
+  "schema_version": "2.1",
+  "description": "Teaching comment templates for SGF C[] embedding and YH hint text. V2: two-layer composition (technique + signal).",
+  "last_updated": "2026-03-09",
+  "changelog": [
+    {
+      "version": "2.1",
+      "date": "2026-03-09",
+      "author": "unknown",
+      "changes": "Teaching comment refinements."
+    },
+    {
+      "version": "2.0",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Two-layer composition system (technique phrase + signal phrase) with 15-word cap."
+    },
+    {
+      "version": "1.0",
+      "date": "unknown",
+      "author": "initial",
+      "changes": "Initial teaching comment templates."
+    }
+  ],
+  "design_principles": {
+    "precision_over_emission": "Never emit a false, vague, or misleading comment. Suppress when uncertain.",
+    "technique_grounded": "Every comment must name the specific technique and its key mechanism.",
+    "confidence_gated": "Comments are only emitted when tag classification confidence is HIGH or CERTAIN.",
+    "one_insight_rule": "Each comment delivers exactly one actionable insight per move.",
+    "student_learning": "Comments exist to teach. Include Japanese/Korean terms where standard.",
+    "layered_composition": "Layer 1 (technique phrase) + Layer 2 (signal phrase) assembled under 15-word cap."
+  },
+  "correct_move_comments": {
+    "life-and-death": {
+      "comment": "Life & Death (shikatsu) -- find the vital point deciding the group's fate.",
+      "technique_phrase": "Life & Death (shikatsu)",
+      "vital_move_comment": "The vital point -- this decides the group's fate.",
+      "hint_text": "Life & Death (shikatsu)",
+      "min_confidence": "HIGH"
+    },
+    "living": {
+      "comment": "Living (ikiru) -- create two eyes to ensure your group survives.",
+      "technique_phrase": "Living (ikiru)",
+      "vital_move_comment": "Second eye secured -- the group lives.",
+      "hint_text": "Living (ikiru)",
+      "min_confidence": "HIGH"
+    },
+    "ko": {
+      "comment": "Ko (kō) -- start the ko fight that favors your position.",
+      "technique_phrase": "Ko (kō)",
+      "vital_move_comment": "Ko initiated -- the fight begins.",
+      "hint_text": "Ko (kō)",
+      "min_confidence": "HIGH"
+    },
+    "seki": {
+      "comment": "Seki -- achieve mutual life where neither side can attack safely.",
+      "technique_phrase": "Seki",
+      "vital_move_comment": "Mutual life achieved -- seki confirmed.",
+      "hint_text": "Seki",
+      "min_confidence": "HIGH"
+    },
+    "capture-race": {
+      "comment": "Capture Race (semeai) -- fill the opponent's liberties before they fill yours.",
+      "technique_phrase": "Capture Race (semeai)",
+      "vital_move_comment": "Liberty advantage secured -- you win the race.",
+      "hint_text": "Capture Race (semeai)",
+      "min_confidence": "HIGH"
+    },
+    "escape": {
+      "comment": "Escape -- break out of encirclement while keeping your stones connected.",
+      "technique_phrase": "Escape",
+      "vital_move_comment": "The stones break free -- escape succeeds.",
+      "hint_text": "Escape",
+      "min_confidence": "HIGH"
+    },
+    "snapback": {
+      "comment": "Snapback (uttegaeshi) -- allow the capture, then recapture the larger group.",
+      "technique_phrase": "Snapback (uttegaeshi)",
+      "vital_move_comment": "Now recapture -- the snapback completes.",
+      "hint_text": "Snapback (uttegaeshi)",
+      "min_confidence": "HIGH"
+    },
+    "throw-in": {
+      "comment": "Throw-in (horikomi) -- sacrifice inside the opponent's shape to reduce eye space.",
+      "technique_phrase": "Throw-in (horikomi)",
+      "vital_move_comment": "Eye space destroyed -- the throw-in lands.",
+      "hint_text": "Throw-in (horikomi)",
+      "min_confidence": "HIGH"
+    },
+    "ladder": {
+      "comment": "Ladder (shicho) -- each atari forces one response toward the board edge.",
+      "technique_phrase": "Ladder (shicho)",
+      "vital_move_comment": "The ladder continues -- no escape.",
+      "hint_text": "Ladder (shicho)",
+      "min_confidence": "HIGH"
+    },
+    "net": {
+      "comment": "Net (geta) -- loosely surround stones, preventing escape without direct atari.",
+      "technique_phrase": "Net (geta)",
+      "vital_move_comment": "The net closes -- stones cannot escape.",
+      "hint_text": "Net (geta)",
+      "min_confidence": "HIGH"
+    },
+    "liberty-shortage": {
+      "comment": "Liberty Shortage (damezumari) -- exploit the opponent's lack of liberties to capture.",
+      "technique_phrase": "Liberty Shortage (damezumari)",
+      "vital_move_comment": "Liberties exhausted -- capture follows.",
+      "hint_text": "Liberty Shortage (damezumari)",
+      "min_confidence": "HIGH"
+    },
+    "connect-and-die": {
+      "comment": "Connect & Die (oiotoshi) -- the opponent's connection leads to a larger capture.",
+      "technique_phrase": "Connect & Die (oiotoshi)",
+      "vital_move_comment": "Connection forced -- the group is captured.",
+      "hint_text": "Connect & Die (oiotoshi)",
+      "min_confidence": "HIGH"
+    },
+    "under-the-stones": {
+      "comment": "Under the Stones (ishi no shita) -- play back into the captured space.",
+      "technique_phrase": "Under the Stones (ishi no shita)",
+      "vital_move_comment": "Play beneath -- under the stones completes.",
+      "hint_text": "Under the Stones (ishi no shita)",
+      "min_confidence": "HIGH"
+    },
+    "double-atari": {
+      "comment": "Double Atari (ryō-atari) -- threaten two groups at once, capturing at least one.",
+      "technique_phrase": "Double Atari (ryō-atari)",
+      "vital_move_comment": "Two groups threatened -- one must fall.",
+      "hint_text": "Double Atari (ryō-atari)",
+      "min_confidence": "HIGH"
+    },
+    "vital-point": {
+      "comment": "Vital Point (oki) -- interior placement reduces the opponent's eyes or liberties.",
+      "technique_phrase": "Vital Point (oki)",
+      "vital_move_comment": "The vital point -- eyes or liberties collapse.",
+      "hint_text": "Vital Point (oki)",
+      "min_confidence": "HIGH"
+    },
+    "clamp": {
+      "comment": "Clamp (hasami-tsuke) -- attach inside the opponent's shape to reduce eye space.",
+      "technique_phrase": "Clamp (hasami-tsuke)",
+      "vital_move_comment": "The clamp lands -- eye space reduced.",
+      "hint_text": "Clamp (hasami-tsuke)",
+      "min_confidence": "HIGH"
+    },
+    "eye-shape": {
+      "comment": "Eye Shape -- create or destroy eyes to decide the group's life or death.",
+      "technique_phrase": "Eye Shape",
+      "vital_move_comment": "Eye shape decided -- the outcome is clear.",
+      "hint_text": "Eye Shape",
+      "min_confidence": "HIGH"
+    },
+    "dead-shapes": {
+      "comment": "Dead Shapes -- this shape cannot make two eyes regardless of move order.",
+      "technique_phrase": "Dead Shapes",
+      "vital_move_comment": "Unconditionally dead -- no eyes possible.",
+      "hint_text": "Dead Shapes",
+      "min_confidence": "HIGH",
+      "alias_comments": {
+        "bent-four": "Bent Four (magari-shi-moku) -- dead in the corner without ko.",
+        "bulky-five": "Bulky Five (guzumi) -- dead; the vital point prevents two eyes.",
+        "rabbity-six": "Rabbity Six -- dead; no matter who plays first.",
+        "l-group": "L-Group (eru-gata) -- dead; cannot form two independent eyes.",
+        "straight-three": "Straight Three (choku-san) -- dead on the first line.",
+        "flower-six": "Flower Six -- unconditionally dead; no vital point can save it.",
+        "table shape": "Table Shape -- dead; the rectangular shape cannot form two eyes.",
+        "pyramid four": "Pyramid Four -- dead; the internal point is the only eye.",
+        "crossed five": "Crossed Five -- dead; the vital point prevents two eyes."
+      }
+    },
+    "nakade": {
+      "comment": "Nakade -- play the vital point inside to prevent the opponent making two eyes.",
+      "technique_phrase": "Nakade",
+      "vital_move_comment": "Interior vital point -- two eyes prevented.",
+      "hint_text": "Nakade",
+      "min_confidence": "HIGH"
+    },
+    "connection": {
+      "comment": "Connection (tsugu) -- link separated groups into one to share liberties.",
+      "technique_phrase": "Connection (tsugu)",
+      "vital_move_comment": "Groups linked -- liberties shared.",
+      "hint_text": "Connection (tsugu)",
+      "min_confidence": "HIGH"
+    },
+    "cutting": {
+      "comment": "Cutting (kiri) -- separate the opponent's groups so each must survive alone.",
+      "technique_phrase": "Cutting (kiri)",
+      "vital_move_comment": "Groups severed -- each must live alone.",
+      "hint_text": "Cutting (kiri)",
+      "min_confidence": "HIGH",
+      "alias_comments": {
+        "crosscut": "Crosscut (kiri-chigai) -- cut through the diagonal connection.",
+        "peep": "Peep (nozoki) -- threaten to cut, forcing a defensive response.",
+        "nozoki": "Peep (nozoki) -- threaten to cut, forcing a defensive response."
+      }
+    },
+    "corner": {
+      "comment": "Corner (sumi) -- exploit corner geometry where the board edge limits options.",
+      "technique_phrase": "Corner (sumi)",
+      "vital_move_comment": "Corner geometry exploited -- edges limit options.",
+      "hint_text": "Corner (sumi)",
+      "min_confidence": "HIGH"
+    },
+    "sacrifice": {
+      "comment": "Sacrifice (suteishi) -- give up stones to gain a larger strategic advantage.",
+      "technique_phrase": "Sacrifice (suteishi)",
+      "vital_move_comment": "The sacrifice pays off -- larger gain secured.",
+      "hint_text": "Sacrifice (suteishi)",
+      "min_confidence": "HIGH"
+    },
+    "shape": {
+      "comment": "Shape (katachi) -- find efficient stone placement that minimizes weaknesses.",
+      "technique_phrase": "Shape (katachi)",
+      "vital_move_comment": "Good shape -- weaknesses minimized.",
+      "hint_text": "Shape (katachi)",
+      "min_confidence": "HIGH"
+    },
+    "endgame": {
+      "comment": "Endgame (yose) -- maximize territorial gain with precise late-game technique.",
+      "technique_phrase": "Endgame (yose)",
+      "vital_move_comment": "Precise endgame -- territory maximized.",
+      "hint_text": "Endgame (yose)",
+      "min_confidence": "HIGH"
+    },
+    "tesuji": {
+      "comment": "Tesuji -- a sharp tactical move that exploits a positional weakness.",
+      "technique_phrase": "Tesuji",
+      "vital_move_comment": "The tesuji -- exploiting the weakness.",
+      "hint_text": "Tesuji",
+      "min_confidence": "HIGH",
+      "alias_comments": {
+        "hane": "Hane -- bend around the opponent's stone at the key point.",
+        "crane's nest": "Crane's Nest (tsuru no sugomori) -- trap stones within their own shape.",
+        "wedge": "Wedge (warikomi) -- insert between the opponent's stones to split them.",
+        "tiger's mouth": "Tiger's Mouth -- a shape that threatens to capture if entered.",
+        "kosumi": "Kosumi -- diagonal move creating a flexible, hard-to-cut connection.",
+        "keima": "Keima -- knight's move for a light, flexible extension.",
+        "warikomi": "Warikomi -- wedge between stones to disconnect.",
+        "nose tesuji": "Nose Tesuji (hanatsuke) -- attach at the nose to cut.",
+        "descent": "Descent (sagari) -- drop down to secure the key point.",
+        "sagari": "Descent (sagari) -- drop down to secure the key point.",
+        "atekomi": "Atekomi -- strike directly at the vital point."
+      }
+    },
+    "joseki": {
+      "comment": "Joseki -- follow the standard corner sequence for an equal result.",
+      "technique_phrase": "Joseki",
+      "vital_move_comment": "Standard joseki -- equal result achieved.",
+      "hint_text": "Joseki",
+      "min_confidence": "CERTAIN"
+    },
+    "fuseki": {
+      "comment": "Fuseki -- choose the optimal opening move for whole-board balance.",
+      "technique_phrase": "Fuseki",
+      "vital_move_comment": "Opening balance -- whole-board position improved.",
+      "hint_text": "Fuseki",
+      "min_confidence": "CERTAIN"
+    }
+  },
+  "signal_templates": {
+    "vital_point": "vital point {!xy}",
+    "forcing": "only move -- all alternatives fail",
+    "non_obvious": "surprising move -- decisive at {!xy}",
+    "unique_solution": "only path to success",
+    "sacrifice_setup": "sacrifice now, exploit the response",
+    "opponent_takes_vital": "opponent takes vital point {!xy}"
+  },
+  "assembly_rules": {
+    "composition": "{technique_phrase} -- {signal_phrase}.",
+    "max_words": 15,
+    "overflow_strategy": "signal_replaces_mechanism",
+    "parenthetical_counting": "Parenthetical Japanese terms count as 1 word (e.g. '(uttegaeshi)' = 1 word)",
+    "coord_token": "{!xy} format (SGF 2-letter coordinate, transform-safe -- never hardcode board positions)"
+  },
+  "annotation_policy": {
+    "max_correct_node_annotations": 2,
+    "vital_move_annotation_scope": "strict_only",
+    "alias_placement": "vital_move_preferred",
+    "max_causal_wrong_moves": 3,
+    "causal_wrong_move_ranking": "refutation_depth_desc"
+  },
+  "wrong_move_comments": {
+    "almost_correct_threshold": 0.05,
+    "templates": [
+      {
+        "condition": "immediate_capture",
+        "comment": "Captured immediately.",
+        "guard": "Only when PV depth ≤ 1 and capture verified."
+      },
+      {
+        "condition": "opponent_escapes",
+        "comment": "Opponent escapes at {!xy}."
+      },
+      {
+        "condition": "opponent_lives",
+        "comment": "Opponent makes two eyes -  lives."
+      },
+      {
+        "condition": "capturing_race_lost",
+        "comment": "Loses the race."
+      },
+      {
+        "condition": "opponent_takes_vital",
+        "comment": "Opponent takes vital point {!xy} first."
+      },
+      {
+        "condition": "opponent_reduces_liberties",
+        "comment": "Opponent reduces liberties at {!xy}."
+      },
+      {
+        "condition": "self_atari",
+        "comment": "Ends in atari."
+      },
+      {
+        "condition": "shape_death_alias",
+        "comment": "Creates {alias} - unconditionally dead."
+      },
+      {
+        "condition": "ko_involved",
+        "comment": "Leads to ko - direct path avoids it."
+      },
+      {
+        "condition": "wrong_direction",
+        "comment": "Doesn't address the key area."
+      },
+      {
+        "condition": "almost_correct",
+        "comment": "Close, but not the best move."
+      },
+      {
+        "condition": "default",
+        "comment": "Opponent has a strong response."
+      }
+    ],
+    "delta_annotations": {
+      "significant_loss": {
+        "threshold": 0.5,
+        "template": "Loses approximately {delta_pct}% of the position."
+      },
+      "moderate_loss": {
+        "threshold": 0.2,
+        "template": "Results in a significant disadvantage."
+      }
+    }
+  },
+  "voice_constraints": {
+    "description": "VP-1 through VP-5 enforcement rules for teaching comment voice",
+    "forbidden_starts": ["The ", "This ", "A ", "Your "],
+    "forbidden_phrases": ["your mistake", "your error", "after you", "you played", "unfortunately"],
+    "allowed_warmth_conditions": ["almost_correct"],
+    "max_words": 15
+  },
+  "opponent_response_templates": {
+    "description": "PI-10: Condition-keyed opponent-response phrases appended to wrong-move comments",
+    "enabled_conditions": ["immediate_capture", "capturing_race_lost", "self_atari", "wrong_direction", "default"],
+    "templates": [
+      {"condition": "immediate_capture", "template": "{opponent_color} {!opponent_move} - captures the stone."},
+      {"condition": "capturing_race_lost", "template": "{opponent_color} {!opponent_move} - fills the last liberty."},
+      {"condition": "self_atari", "template": "{opponent_color} {!opponent_move} - captures the stone."},
+      {"condition": "wrong_direction", "template": "{opponent_color} {!opponent_move} - claims the vital area."},
+      {"condition": "default", "template": "{opponent_color} {!opponent_move} - responds decisively."}
+    ],
+    "conditional_dash_rule": "Omit dash from opponent-response when wrong-move template already contains em-dash"
+  }
+}

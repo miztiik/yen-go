@@ -1,0 +1,99 @@
+/**
+ * Styles for Explanation component.
+ */
+
+.explanation {
+  padding: 0.75rem 1rem;
+  background-color: var(--color-surface, #fafafa);
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border, #e0e0e0);
+  min-height: 80px;
+}
+
+.explanation--initial {
+  text-align: center;
+}
+
+.explanation--complete {
+  border-color: var(--color-success, #4caf50);
+  background-color: var(--color-success-bg, #e8f5e9);
+}
+
+.explanation__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.explanation__move-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.explanation__color {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.explanation__color--b {
+  background-color: #333;
+  color: #fff;
+}
+
+.explanation__color--w {
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+.explanation__coordinate {
+  font-family: monospace;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #333);
+}
+
+.explanation__move-number {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, #666);
+}
+
+.explanation__text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-primary, #333);
+  line-height: 1.5;
+}
+
+.explanation__hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #666);
+}
+
+.explanation__complete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-success-border, #a5d6a7);
+}
+
+.explanation__complete-icon {
+  font-size: 1.25rem;
+  color: var(--color-success, #4caf50);
+}
+
+.explanation__complete-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-success, #4caf50);
+}

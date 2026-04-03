@@ -1,0 +1,303 @@
+/**
+ * Solution Tree View Styles
+ * @module components/SolutionTree/SolutionTreeView.css
+ *
+ * Styles for SVG-based solution tree visualization.
+ *
+ * Feature: 056-solution-tree-visualization, 122-frontend-comprehensive-refactor
+ * Tasks: T009, T010, T011, T2.5 (smart scrollbar)
+ *
+ * Constitution Compliance:
+ * - X. Accessibility: Focus indicators, touch targets, contrast
+ */
+
+/* Import shared styles */
+@import '../../styles/scrollbars.css';
+@import '../../styles/buttons.css';
+
+/* ============================================================================
+   Container
+   ============================================================================ */
+
+/* Wrapper for entire tree component */
+.solution-tree-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-height: 400px;
+  min-height: 200px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  background: var(--tree-bg, #fafafa);
+}
+
+.solution-tree-wrapper:focus-within {
+  outline: 3px solid var(--focus-color, #3b82f6);
+  outline-offset: 2px;
+}
+
+/* Scrollable container for the tree SVG - uses smart-scroll from scrollbars.css */
+.solution-tree-view {
+  position: relative;
+  flex: 1;
+  min-height: 0;  /* Important for flex child scrolling */
+}
+
+.solution-tree-view:focus {
+  outline: none;  /* Focus handled by wrapper */
+}
+
+.solution-tree-svg {
+  display: block;
+}
+
+/* ============================================================================
+   Background
+   ============================================================================ */
+
+.tree-background {
+  fill: var(--tree-bg, #fafafa);
+}
+
+/* ============================================================================
+   Paths (Besogo-style connected paths - Spec 123)
+   ============================================================================ */
+
+.tree-paths path {
+  stroke: var(--edge-color, #444444);
+  stroke-width: 6;
+  fill: none;
+}
+
+.path-default {
+  stroke: var(--edge-color, #444444);
+  stroke-width: 6;
+}
+
+.path-current {
+  stroke: var(--primary-color, #00bcd4);
+  stroke-width: 7;
+}
+
+/* Legacy edge styles (for backwards compatibility) */
+.tree-edge {
+  stroke: var(--edge-color, #444444);
+  stroke-width: 6;
+  fill: none;
+}
+
+.tree-edge-current {
+  stroke: var(--primary-color, #00bcd4);
+  stroke-width: 7;
+}
+
+/* ============================================================================
+   Nodes
+   ============================================================================ */
+
+.tree-node {
+  cursor: pointer;
+}
+
+/* No hover effects - clean static appearance */
+.tree-node-hovered {
+  /* No visual change on hover - avoids transparency issues */
+}
+
+/* No selection effects - tree syncs with board */
+.tree-node-selected {
+  /* Selection indicated by board sync, not visual decoration */
+}
+
+.tree-node:hover {
+  /* No hover animation */
+}
+
+.tree-node:focus {
+  outline: none;
+}
+
+.tree-node:focus .tree-stone {
+  stroke-width: 5;
+  stroke: var(--focus-color, #00acc1);
+}
+
+/* Stone circles */
+.tree-stone {
+  /* Static appearance - no transitions */
+}
+
+.tree-stone-B {
+  fill: var(--stone-black, #1a1a1a);
+  stroke: var(--stone-black-stroke, #000000);
+}
+
+.tree-stone-W {
+  fill: var(--stone-white, #f5f5f5);
+  stroke: var(--stone-white-stroke, #666666);
+}
+
+/* Move number labels */
+.tree-label {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 500;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ============================================================================
+   Markers
+   ============================================================================ */
+
+.tree-node-hover {
+  fill: var(--hover-color, #60a5fa);
+  opacity: 0.2;
+  transition: opacity var(--transition-fast, 100ms) ease-out;
+}
+
+.tree-node-current {
+  fill: var(--primary-color, #3b82f6);
+  opacity: 0.3;
+  stroke: var(--focus-color, #2563eb);
+  stroke-width: 2;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ============================================================================
+   Correctness Indicators (FR-022)
+   ============================================================================ */
+
+.tree-node-correctness {
+  fill: none;
+  stroke-width: 3;
+  pointer-events: none;
+}
+
+.tree-node-correctness.correct {
+  stroke: var(--correct-color, #4CAF50);
+}
+
+.tree-node-correctness.wrong {
+  stroke: var(--wrong-color, #f44336);
+}
+
+/* ============================================================================
+   Tooltip (FR-023)
+   ============================================================================ */
+
+.tree-tooltip {
+  pointer-events: none;
+  animation: fadeIn var(--transition-fast, 100ms) ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+   Tree Navigation Buttons (Spec 122 T2.3)
+   ============================================================================ */
+
+.tree-nav-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+}
+
+.tree-nav-buttons .btn-icon {
+  font-size: 16px;
+}
+
+/* ============================================================================
+   Accessibility
+   ============================================================================ */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .tree-edge {
+    stroke-width: 3;
+  }
+
+  .tree-edge-current {
+    stroke-width: 4;
+  }
+
+  .tree-node-correctness {
+    stroke-width: 4;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .tree-node,
+  .tree-stone,
+  .tree-edge,
+  .tree-node-hover,
+  .tree-tooltip {
+    transition: none;
+  }
+
+  .tree-node-current {
+    animation: none;
+    opacity: 0.4;
+  }
+}
+
+/* Touch device enhancements (FR-019: 44px minimum touch target) */
+@media (pointer: coarse) {
+  .tree-node {
+    /* Ensure minimum touch target size */
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* ============================================================================
+   CSS Variables (Theme Support)
+   ============================================================================ */
+
+:root {
+  /* Colors - Besogo-style cyan theme */
+  --tree-bg: #fafafa;
+  --border-color: #e5e7eb;
+  --edge-color: #666666;
+  --primary-color: #00bcd4;  /* Cyan - Besogo selection */
+  --focus-color: #00acc1;    /* Darker cyan for focus */
+  --hover-color: #4dd0e1;    /* Lighter cyan for hover */
+  --correct-color: #4CAF50;
+  --wrong-color: #f44336;
+
+  /* Stones */
+  --stone-black: #1a1a1a;
+  --stone-black-stroke: #000000;
+  --stone-white: #f5f5f5;
+  --stone-white-stroke: #666666;
+
+  /* Scrollbar */
+  --scrollbar-track: #f1f1f1;
+  --scrollbar-thumb: #c1c1c1;
+  --scrollbar-thumb-hover: #a1a1a1;
+
+  /* Transitions */
+  --transition-fast: 100ms;
+  --transition-medium: 200ms;
+  --transition-slow: 300ms;
+}
+
+/* Force light mode only - no dark mode (per UX requirement) */

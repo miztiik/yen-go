@@ -1,0 +1,33 @@
+{
+  "initiative_id": "20260308-1500-feature-tsumego-frame-rewrite",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "User explicitly stated: no backward compatibility required. Old code deleted and replaced entirely."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": true,
+      "rationale": "Existing tsumego_frame.py is a complete rewrite — old code has no salvageable logic. Delete and replace."
+    },
+    "option_selection": {
+      "selected_option_id": "OPT-2",
+      "rationale": "Merged KaTrain + ghostban. Unanimous governance approval (6/6). Highest weighted score 4.8/5. Fixes all 15 V1 bugs."
+    }
+  },
+  "open_issues": [],
+  "updated_at": "2026-03-08"
+}

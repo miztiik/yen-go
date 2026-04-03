@@ -1,0 +1,136 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "puzzle-manager"
+version = "1.0.0"
+description = "Yen-Go puzzle manager - 3-stage pipeline for Go tsumego puzzles"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [
+    {name = "Yen-Go Team"}
+]
+keywords = ["go", "baduk", "weiqi", "tsumego", "puzzle"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Games/Entertainment :: Board Games",
+]
+
+dependencies = [
+    "pydantic>=2.5.0",
+    "httpx>=0.26.0",
+    "tenacity>=8.2.0",
+    "filelock>=3.13.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-xdist>=3.5.0",  # Parallel test execution: pytest -n auto
+    "jsonschema>=4.20.0",  # Contract tests: validate output against JSON Schema
+    "ruff>=0.1.0",
+    "mypy>=1.7.0",
+]
+nlp = [
+    "sentence-transformers>=2.2.0",  # Semantic matching for puzzle intent extraction
+]
+
+[project.scripts]
+puzzle-manager = "backend.puzzle_manager.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/yengo/yen-go"
+Documentation = "https://github.com/yengo/yen-go/blob/main/backend/puzzle_manager/README.md"
+Repository = "https://github.com/yengo/yen-go"
+
+[tool.setuptools.packages.find]
+where = [".."]
+include = ["backend.puzzle_manager*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+markers = [
+    "unit: fast isolated tests with no I/O or mocking (run always)",
+    "adapter: adapter-specific tests (skip with '-m \"not adapter\"')",
+    "integration: tests that touch filesystem/subprocess (run before PR)",
+    "slow: tests taking >5s - benchmarks, large data (skip with '-m \"not slow\"')",
+    "e2e: full pipeline end-to-end tests (skip with '-m \"not e2e\"')",
+    "cli: CLI subprocess tests - slowest category (skip with '-m \"not cli\"')",
+    "inventory: inventory management tests (skip with '-m \"not inventory\"')",
+    "pagination: pagination/views tests (skip with '-m \"not pagination\"')",
+    "posix: POSIX path compatibility tests (run on CI only)",
+]
+
+# Test categories for faster feedback
+# Quick:    pytest -m "not (slow or cli or e2e)"     # ~30s, local dev
+# Standard: pytest -m "not (slow or e2e)"            # ~60s, pre-commit
+# Full:     pytest                                    # ~3min, CI
+# Adapter:  pytest -m adapter                        # ~10s, adapter work
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # Pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "B008",  # do not perform function calls in argument defaults
+    "B017",  # assert-raises-exception — tests use broad Exception for Pydantic ValidationError
+    "UP031", # printf-string-formatting — existing pattern, low priority
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["E402"]
+"core/__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["backend.puzzle_manager"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = ["httpx.*", "tenacity.*"]
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["backend/puzzle_manager"]
+branch = true
+omit = ["*/tests/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]

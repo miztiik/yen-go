@@ -1,0 +1,28 @@
+{
+  "initiative_id": "20260313-1400-refactor-enrich-single-srp",
+  "initiative_type": "refactor",
+  "current_phase": "closeout",
+  "planning_confidence_score": 85,
+  "risk_level": "medium",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "Q1:B — Internal tool with no external consumers. Signature changes allowed, tests will be updated." },
+    "legacy_code_removal": { "remove_old_code": true, "rationale": "Q2:A — Dead code policy: delete, don't deprecate. Git preserves history." },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Stage Runner Pattern — only option aligned with Q7:A (auto-wrap) and Q8:A (declarative error policy). Best SRP, DRY, and backend merger readiness. Pattern proven in backend StageExecutor."
+    }
+  },
+  "updated_at": "2026-03-13"
+}

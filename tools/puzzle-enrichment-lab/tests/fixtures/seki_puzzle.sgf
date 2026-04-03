@@ -1,0 +1,12 @@
+(;FF[4]GM[1]SZ[19]PL[B]
+YT[seki]
+PC[https://senseis.xmp.net/?Seki]
+C[Simple seki without eyes — from Sensei's Library.
+The marked groups share two liberties at a (ba) and b (bb).
+If either player plays on one, the opponent captures. Neither plays — seki.]
+AB[aa][da][ab][db][ac][bc][dc]
+AW[ca][cb][cc][ad][bd][ce][de]
+LB[ba:a][bb:b]
+;B[ba]C[If Black plays at a...]
+(;W[bb]C[Correct — White captures. But this is mutual destruction.
+In practice, neither side plays — it remains seki.]))

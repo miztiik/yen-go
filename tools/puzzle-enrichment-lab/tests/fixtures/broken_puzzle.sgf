@@ -1,0 +1,7 @@
+(;FF[4]GM[1]SZ[19]PL[B]
+YT[life-and-death]
+C[Test fixture: Intentionally broken puzzle — Black has no valid move.
+The stated correct move (S1) is on the opposite side of the board — clearly wrong.]
+AB[aa]
+AW[bb][ab][ba]
+;B[ss]C[This is NOT correct — S1 is far from the action. No move saves the corner.])

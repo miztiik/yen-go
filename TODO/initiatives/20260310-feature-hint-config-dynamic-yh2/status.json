@@ -1,0 +1,58 @@
+{
+  "initiative_id": "20260310-feature-hint-config-dynamic-yh2",
+  "initiative_type": "feature",
+  "title": "Config-Driven YH1 + Dynamic YH2 Reasoning",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "created": "2026-03-10",
+  "updated_at": "2026-03-10",
+  "risk_level": "low",
+  "planning_confidence_score": 90,
+  "decisions": {
+    "backward_compatibility": { "required": true, "rationale": "Config-first with fallback preserves existing hint output" },
+    "legacy_code_removal": { "remove_old_code": false, "rationale": "TECHNIQUE_HINTS kept as fallback" },
+    "option_selection": {
+      "selected_option_id": "B",
+      "title": "Enriched YH2 Reasoning (Config-Driven YH1 + Dynamic Reasoning)",
+      "rationale": "Best balance of hint quality improvement with minimal risk.",
+      "governance_status_code": "GOV-OPTIONS-CONDITIONAL"
+    }
+  },
+  "gates": {
+    "options_review": {
+      "decision": "approve_with_conditions",
+      "status_code": "GOV-OPTIONS-CONDITIONAL",
+      "unanimous": true,
+      "date": "2026-03-10"
+    },
+    "implementation_review": {
+      "decision": "change_requested",
+      "status_code": "GOV-REVIEW-REVISE",
+      "unanimous": true,
+      "date": "2026-03-10",
+      "defects_found": 2,
+      "defects_fixed": 2,
+      "blocking": "none — RC-5 resolved (2065 passed, 0 failed)"
+    },
+    "implementation_review_2": {
+      "decision": "approve",
+      "status_code": "GOV-REVIEW-APPROVED",
+      "unanimous": true,
+      "date": "2026-03-10",
+      "defects_found": 0,
+      "blocking": "none"
+    }
+  },
+  "open_issues": []
+}

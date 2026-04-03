@@ -1,0 +1,86 @@
+{
+  "initiative_id": "20260315-2000-feature-refutation-quality",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "open_issues": [],
+  "decisions": {
+    "backward_compatibility": {
+      "required": true,
+      "rationale": "All changes must be feature-gated with config defaults matching current behavior (v1.14 ai_solve pattern). Absent key = current behavior."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": false,
+      "rationale": "No legacy code to remove — all changes are additive config keys and algorithm extensions."
+    },
+    "option_selection": {
+      "selected_option_id": "OPT-3-expanded",
+      "rationale": "Unanimous panel approval. Parallel Tracks expanded: 12 PI items across 4 phases. Phase A: PI-1 + PI-3 + PI-4 + PI-10. DF-2/3/4/5 reclassified to implement per user decision (2026-03-15)."
+    }
+  },
+  "phase_completion": {
+    "phase_a": {
+      "status": "complete",
+      "governance": "GOV-CLOSEOUT-APPROVED",
+      "items": ["PI-1", "PI-3", "PI-4", "PI-10"],
+      "tests": 41,
+      "config_version": "v1.18",
+      "rc_fixes": {
+        "RC-1_CRB-1": "resolved — cache moved to config/teaching.py",
+        "CRA-1": "resolved — board_size parameter added to identify_candidates()"
+      }
+    },
+    "phase_b": {
+      "status": "complete",
+      "governance": "GOV-CLOSEOUT-APPROVED",
+      "items": ["PI-2", "PI-5", "PI-6", "PI-9"],
+      "tests": 37,
+      "config_version": "v1.19",
+      "observability_gap_resolved": "opponent_response_emitted added",
+      "rc_fixes": {
+        "RC-1_CRA-1": "resolved — tautological MH-4 test replaced with behavioral build_solution_tree() test",
+        "RC-2_CRA-3": "resolved — adaptive/boost override documented in AGENTS.md PI-2"
+      }
+    },
+    "phase_c": {
+      "status": "complete",
+      "governance": "GOV-CLOSEOUT-APPROVED",
+      "items": ["PI-7", "PI-8", "PI-12"],
+      "tests": 41,
+      "config_version": "v1.20",
+      "rc_fixes": {
+        "RC-1_CRA-1": "resolved — disagreement metric changed to sibling winrate comparison",
+        "RC-2_CRA-2": "resolved — PI-8 merge re-sorts by policy_prior before capping",
+        "RC-4_CRB-2": "resolved — extracted _calculate_effective_noise() shared helper",
+        "CRB-1": "resolved — redundant None check removed at PI-12",
+        "RC-5_MH-7": "resolved — max_queries_per_puzzle added to BatchSummary",
+        "RC-3": "resolved — 13 algorithm integration tests added"
+      }
+    },
+    "phase_d": {
+      "status": "complete",
+      "governance": "GOV-CLOSEOUT-APPROVED",
+      "items": ["PI-11"],
+      "tests": 17,
+      "config_version": "v1.21"
+    }
+  },
+  "scope_revision": {
+    "date": "2026-03-15",
+    "change": "DF-2/3/4/5 reclassified from deferred to implement (PI-9/10/11/12). Scope expanded from 8 to 12 PI items, 3 to 4 phases. PI-10 composition formula refined (Gate 5): 12 condition-keyed templates, 5 emit opponent-response, 7 suppress, VP-1 through VP-5 voice principles established.",
+    "governance_status_code": "GOV-PLAN-CONDITIONAL",
+    "all_rcs_resolved": true
+  },
+  "updated_at": "2026-03-17T10:00:00Z"
+}

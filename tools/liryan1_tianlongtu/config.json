@@ -1,0 +1,49 @@
+{
+  "_comment": "Configuration for Tian Long Tu puzzle ingestor",
+  "_version": "1.0.0",
+
+  "source": {
+    "name": "liryan1_tianlongtu",
+    "display_name": "Tian Long Tu (天龙图)",
+    "url": "https://raw.githubusercontent.com/liryan1/101weiqi/main/data/json/tian_long_tu.json",
+    "repository": "liryan1/101weiqi",
+    "description": "Classical Go life-and-death problems collection"
+  },
+
+  "output": {
+    "directory": "./downloads",
+    "save_sgf": true,
+    "save_raw_json": true,
+    "save_metadata": true
+  },
+
+  "network": {
+    "timeout_seconds": 30,
+    "retries": 3,
+    "user_agent": "YenGo-TianLongTu-Ingestor/1.0"
+  },
+
+  "behavior": {
+    "skip_existing": true
+  },
+
+  "logging": {
+    "level": "INFO",
+    "to_file": true,
+    "log_directory": "./logs"
+  },
+
+  "level_mapping": {
+    "_comment": "Maps source difficulty ratings to YenGo levels",
+    "3K+": { "level": "intermediate", "sub_level": 1 },
+    "3K":  { "level": "intermediate", "sub_level": 1 },
+    "2K+": { "level": "intermediate", "sub_level": 2 },
+    "2K":  { "level": "intermediate", "sub_level": 2 },
+    "1K+": { "level": "intermediate", "sub_level": 3 },
+    "1K":  { "level": "intermediate", "sub_level": 3 },
+    "1D":  { "level": "advanced", "sub_level": 1 },
+    "1D+": { "level": "advanced", "sub_level": 1 },
+    "2D":  { "level": "advanced", "sub_level": 2 },
+    "2D+": { "level": "advanced", "sub_level": 2 }
+  }
+}

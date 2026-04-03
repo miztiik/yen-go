@@ -1,0 +1,143 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://yen-go.github.io/schemas/puzzle-quality.schema.json",
+  "title": "Puzzle Quality Configuration Schema",
+  "description": "Schema for puzzle quality level definitions in Yen-Go. Scale: 1=worst, 5=best.",
+  "type": "object",
+  "required": ["schema_version", "levels", "display"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Config format version (MAJOR.MINOR)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this config file"
+    },
+    "last_updated": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "ISO date of last modification (YYYY-MM-DD)"
+    },
+    "changelog": {
+      "type": "array",
+      "description": "Version history for auditability.",
+      "items": {
+        "type": "object",
+        "required": ["version", "date", "author", "changes"],
+        "additionalProperties": false,
+        "properties": {
+          "version": { "type": "string" },
+          "date": { "type": "string" },
+          "author": { "type": "string" },
+          "changes": { "type": "string" }
+        }
+      }
+    },
+    "levels": {
+      "type": "object",
+      "description": "Quality level definitions keyed by level number (1=worst, 5=best)",
+      "propertyNames": {
+        "pattern": "^[1-5]$"
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/levelDefinition"
+      },
+      "minProperties": 5,
+      "maxProperties": 5
+    },
+    "display": {
+      "type": "object",
+      "description": "Display configuration for quality indicators",
+      "required": ["star_colors", "level_colors"],
+      "properties": {
+        "star_colors": {
+          "type": "object",
+          "required": ["filled", "empty"],
+          "properties": {
+            "filled": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$",
+              "description": "Hex color for filled stars"
+            },
+            "empty": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$",
+              "description": "Hex color for empty stars"
+            }
+          }
+        },
+        "level_colors": {
+          "type": "object",
+          "description": "Hex colors for each quality level indicator",
+          "propertyNames": {
+            "pattern": "^[1-5]$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "levelDefinition": {
+      "type": "object",
+      "required": ["name", "display_label", "stars", "description", "requirements", "selection_weight"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": ["unverified", "basic", "standard", "high", "premium"],
+          "description": "Machine-readable quality level name (slug)"
+        },
+        "display_label": {
+          "type": "string",
+          "description": "Human-readable quality label for UI"
+        },
+        "stars": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Number of stars to display (1-5)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Tooltip/help text explaining the quality level"
+        },
+        "requirements": {
+          "type": "object",
+          "description": "Criteria for assigning this quality level",
+          "properties": {
+            "refutation_count_min": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Minimum number of refutation branches required"
+            },
+            "min_comment_level": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2,
+              "description": "Minimum comment level required (0=none, 1=markers, 2=teaching)"
+            },
+            "has_solution_tree": {
+              "type": "boolean",
+              "description": "Whether a solution tree is required"
+            }
+          }
+        },
+        "selection_weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10,
+          "description": "Weight multiplier for daily challenge selection"
+        }
+      }
+    }
+  }
+}

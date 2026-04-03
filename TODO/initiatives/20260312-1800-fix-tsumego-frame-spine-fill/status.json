@@ -1,0 +1,32 @@
+{
+  "initiative_id": "20260312-1800-fix-tsumego-frame-spine-fill",
+  "initiative_type": "fix",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "completed",
+    "validate": "completed",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "V3.1 checkerboard produces fragmented groups (10W+7B components). No compatibility needed."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": true,
+      "rationale": "Replace checkerboard skip with connectivity-preserving spine fill."
+    }
+  },
+  "open_issues": [
+    {"id": "OI-1", "desc": "Density 59.2% vs 35-50% target — parameter tuning follow-up"},
+    {"id": "OI-2", "desc": "RC-3/5-8 deferred to separate initiatives"},
+    {"id": "OI-3", "desc": "docs/concepts/tsumego-frame.md staleness notice added; full rewrite tracked under RC-8"}
+  ],
+  "updated_at": "2026-03-12"
+}

@@ -1,0 +1,32 @@
+{
+  "initiative_id": "20260314-feature-enrichment-lab-config-panel",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "User chose no backward compat — breaking change to EnrichRequest OK"
+    },
+    "legacy_code_removal": {
+      "remove_old_code": false,
+      "rationale": "User chose to keep old code if not blocking"
+    },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Delivers 90% user value (G-1-G-7) in Phase A; isolates serialization risk in Phase B; respects Q4 sidebar redesign; unanimous governance 7/7"
+    }
+  },
+  "updated_at": "2026-03-15"
+}

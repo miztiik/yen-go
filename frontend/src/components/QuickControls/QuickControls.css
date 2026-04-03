@@ -1,0 +1,157 @@
+/**
+ * Quick Controls Styles
+ * @module components/QuickControls/QuickControls.css
+ * 
+ * UX-redesigned: Minimal icon-only circular buttons
+ * - No boxes, no labels on desktop (tooltip on hover)
+ * - Keyboard shortcuts hidden visually, still functional
+ * - Clean, modern, minimal design following UX best practices
+ */
+
+.quick-controls {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.control-button:hover:not(:disabled) {
+  background: rgba(14, 165, 233, 0.1);
+  color: #0ea5e9;
+  transform: scale(1.1);
+}
+
+.control-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.control-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.control-button:focus-visible {
+  outline: 2px solid #0ea5e9;
+  outline-offset: 2px;
+  background: rgba(14, 165, 233, 0.1);
+}
+
+.control-button .icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+/* Hide labels on desktop - icon only, accessible via title/aria-label */
+.control-button .label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Hide keyboard shortcuts visually - still work via JS */
+.control-button .shortcut {
+  display: none;
+}
+
+/* Specific button colors - subtle on hover */
+.control-button.rotate:hover:not(:disabled) {
+  background: rgba(14, 165, 233, 0.15);
+  color: #0284c7;
+}
+
+.control-button.undo:hover:not(:disabled) {
+  background: rgba(100, 116, 139, 0.15);
+  color: #475569;
+}
+
+.control-button.reset:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.control-button.hint:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+}
+
+/* Hint has a subtle glow when available */
+.control-button.hint:not(:disabled) {
+  color: #f59e0b;
+}
+
+/* Hint exhausted state */
+.control-button.hint.exhausted {
+  opacity: 0.4;
+  color: #94a3b8;
+}
+
+/* Hint count badge */
+.control-button .hint-count {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: #f59e0b;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Explore button - solution tree toggle */
+.control-button.explore:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+}
+
+/* Explore active state - tree is visible */
+.control-button.explore.active {
+  background: rgba(34, 197, 94, 0.2);
+  color: #16a34a;
+}
+
+.control-button.explore.active:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.3);
+  color: #15803d;
+}
+
+/* Mobile - slightly larger touch targets */
+@media (max-width: 480px) {
+  .control-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .control-button .icon {
+    font-size: 1.375rem;
+  }
+}

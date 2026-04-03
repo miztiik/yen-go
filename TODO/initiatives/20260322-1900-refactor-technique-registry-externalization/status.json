@@ -1,0 +1,32 @@
+{
+  "initiative_id": "20260322-1900-refactor-technique-registry-externalization",
+  "initiative_type": "refactor",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "Q1:B — Only consumed inside test_technique_calibration.py. No external importers." },
+    "legacy_code_removal": { "remove_old_code": true, "rationale": "Q2:A — Remove hardcoded dict entirely after externalization." },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "JSON Data File + Thin Loader — clean data/code separation, matches project conventions, KISS/YAGNI compliant. Approved unanimously by governance panel."
+    }
+  },
+  "research": {
+    "planning_confidence_score": 75,
+    "risk_level": "low",
+    "research_invoked": false,
+    "rationale": "Score >= 70, risk low, clear ownership boundaries, no external precedent needed"
+  },
+  "updated_at": "2026-03-26"
+}

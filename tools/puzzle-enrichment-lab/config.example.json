@@ -1,0 +1,8 @@
+{
+    "katago_path": "katago",
+    "model_path": "models-data/kata1-b15c192.bin.gz",
+    "config_path": "",
+    "default_max_visits": 200,
+    "default_board_size": 19,
+    "num_threads": 2
+}

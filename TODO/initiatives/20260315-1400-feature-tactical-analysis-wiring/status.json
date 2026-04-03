@@ -1,0 +1,41 @@
+{
+  "initiative_id": "20260315-1400-feature-tactical-analysis-wiring",
+  "initiative_type": "feature",
+  "current_phase": "archived",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "not_started",
+    "plan": "not_started",
+    "tasks": "not_started",
+    "execute": "not_started",
+    "validate": "not_started",
+    "governance_review": "approved",
+    "closeout": "not_started"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "Auto-tags are additive (ENRICH_IF_ABSENT). Quality/classifier/hints signals are new outputs — no existing consumers to break." },
+    "legacy_code_removal": { "remove_old_code": false, "rationale": "No legacy code to remove; this is wiring new connections to existing modules." },
+    "option_selection": { "selected_option_id": "pending", "rationale": "pending" }
+  },
+  "governance_history": [
+    {
+      "gate": "charter",
+      "attempt": 1,
+      "decision": "change_requested",
+      "status_code": "GOV-CHARTER-REVISE",
+      "rc_count": 8,
+      "key_finding": "Auto-tag wiring IS already implemented at analyze.py L349-358. F-2/F-5 factually incorrect."
+    },
+    {
+      "gate": "charter",
+      "attempt": 2,
+      "decision": "approve",
+      "status_code": "GOV-CHARTER-APPROVED",
+      "unanimous": true,
+      "key_finding": "All 8 RCs addressed. 7/7 panel members approved. Auto-tag wiring confirmed live. 3 real gaps verified."
+    }
+  ],
+  "updated_at": "2026-03-15"
+}

@@ -1,0 +1,40 @@
+{
+  "$comment": "DB-2 schema descriptor for yengo-content.db — backend-only SQLite content store. Source of truth: backend/puzzle_manager/core/content_db.py (_SCHEMA_SQL). Last Updated: 2026-03-14",
+  "title": "yengo-content.db (DB-2) Schema",
+  "description": "Backend-only SQLite content store. Holds full SGF text, canonical position hashes for deduplication, and board setup data. Never shipped to browser. Used by the publish stage for incremental builds and dedup detection.",
+  "database": "yengo-content.db",
+  "scope": "backend",
+  "tables": [
+    {
+      "name": "sgf_files",
+      "description": "One row per ingested puzzle. Stores full SGF content and extracted position data for deduplication. The canonical position_hash allows detecting puzzles with identical board setups regardless of source filename or SGF metadata differences.",
+      "columns": [
+        { "name": "content_hash",  "type": "TEXT",    "constraints": ["PRIMARY KEY"],             "description": "16-char lowercase hex. SHA-256(sgf_content)[:16]. Matches GN property, SGF filename, and DB-1 puzzles.content_hash." },
+        { "name": "sgf_content",   "type": "TEXT",    "constraints": ["NOT NULL"],                "description": "Full canonical SGF text as written to yengo-puzzle-collections/sgf/{batch}/{content_hash}.sgf." },
+        { "name": "position_hash", "type": "TEXT",    "constraints": [],                          "description": "16-char hex derived from canonical board setup: SHA-256('SZ{n}:B[sorted_ab]:W[sorted_aw]:PL[B|W]')[:16]. NULL if extraction failed. Used for duplicate detection across sources." },
+        { "name": "board_size",    "type": "INTEGER", "constraints": ["NOT NULL", "DEFAULT 19"],  "description": "SGF SZ property value. Almost always 19." },
+        { "name": "black_stones",  "type": "TEXT",    "constraints": ["NOT NULL"],                "description": "JSON array of AB stone coordinates in SGF lowercase notation (e.g. '[\"pd\",\"qd\"]'). Sorted for determinism." },
+        { "name": "white_stones",  "type": "TEXT",    "constraints": ["NOT NULL"],                "description": "JSON array of AW stone coordinates in SGF lowercase notation. Sorted for determinism." },
+        { "name": "first_player",  "type": "TEXT",    "constraints": ["NOT NULL", "DEFAULT 'B'"], "description": "SGF PL property: 'B' (Black moves first) or 'W' (White moves first)." },
+        { "name": "stone_count",   "type": "INTEGER", "constraints": ["NOT NULL", "DEFAULT 0"],   "description": "Total stones on board (len(black_stones) + len(white_stones)). Used with board_size for fast dedup pre-filtering." },
+        { "name": "source",        "type": "TEXT",    "constraints": [],                          "description": "Source adapter identifier (e.g. 'sanderland', 'ogs'). Populated from --source CLI flag at publish time." },
+        { "name": "created_at",    "type": "TEXT",    "constraints": [],                          "description": "ISO 8601 UTC timestamp of when this entry was inserted." },
+        { "name": "batch",         "type": "TEXT",    "constraints": [],                          "description": "4-digit zero-padded batch directory (e.g. '0001'). Used for path reconstruction and rollback." }
+      ],
+      "indexes": [
+        { "name": "idx_sgf_position", "columns": ["position_hash"], "description": "Fast lookup of duplicate board positions." },
+        { "name": "idx_sgf_stones",   "columns": ["board_size", "stone_count"], "description": "Fast narrowing for dedup check: same size + count before comparing position_hash." },
+        { "name": "idx_sgf_source",   "columns": ["source"], "description": "Filter all puzzles from a given source (e.g. for rollback)." }
+      ]
+    }
+  ],
+  "dedup_logic": {
+    "description": "Two puzzles are duplicates if position_hash matches. Computed via canonical_position_hash() in content_db.py: sort AB and AW stones independently, join as comma-separated, hash 'SZ{n}:B[ab_sorted]:W[aw_sorted]:PL[player]' with SHA-256[:16].",
+    "function": "backend.puzzle_manager.core.content_db.canonical_position_hash"
+  },
+  "see_also": [
+    { "path": "config/schemas/db-search.schema.json", "description": "DB-1 (yengo-search.db) schema — the frontend search index shipped to browser." },
+    { "path": "docs/concepts/sqlite-index-architecture.md", "description": "Full architecture narrative, incremental publish flow, and rollback/reconcile operations." },
+    { "path": "backend/puzzle_manager/core/content_db.py", "description": "Python implementation: schema DDL, canonical_position_hash(), extract_position_data()." }
+  ]
+}

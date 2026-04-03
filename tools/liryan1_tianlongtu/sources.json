@@ -1,0 +1,42 @@
+{
+  "_comment": "Source definitions for Tian Long Tu puzzle ingestor",
+  "_version": "1.0.0",
+
+  "sources": {
+    "tianlongtu": {
+      "name": "Tian Long Tu (天龙图)",
+      "description": "Classical Go life-and-death problems from ancient Chinese collection",
+      "enabled": true,
+      "url": "https://raw.githubusercontent.com/liryan1/101weiqi/main/data/json/tian_long_tu.json",
+      "repository": "liryan1/101weiqi",
+      "format": "json",
+      "puzzle_count": {
+        "type": "static",
+        "count": 82
+      },
+      "difficulty_range": {
+        "min": "3K+",
+        "max": "2D+",
+        "yengo_levels": ["intermediate", "advanced"]
+      },
+      "board_size": 19,
+      "output_pattern": "tlt_p{puzzle_num:04d}"
+    }
+  },
+
+  "_available_sources": {
+    "_comment": "Other JSON files in the same repository that could be added",
+    "guan_zi_pu": {
+      "url": "https://raw.githubusercontent.com/liryan1/101weiqi/main/data/json/guan_zi_pu.json",
+      "description": "官子谱 - Classical endgame problems"
+    },
+    "qi_jing_zhong_miao": {
+      "url": "https://raw.githubusercontent.com/liryan1/101weiqi/main/data/json/qi_jing_zhong_miao.json",
+      "description": "棋经众妙 - Various classical problems"
+    },
+    "xuan_xuan_qi_jing": {
+      "url": "https://raw.githubusercontent.com/liryan1/101weiqi/main/data/json/xuan_xuan_qi_jing.json",
+      "description": "玄玄棋经 - Mysterious Chess Classic"
+    }
+  }
+}

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html class="" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>YenGo - Home Dashboard</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#359EFF", "background-light": "#f5f7f8", "background-dark": "#0f1923", "card-light": "#ffffff", "card-dark": "#1e293b"}, fontFamily: {display: "Spline Sans", sans: ["Nunito", "sans-serif"]}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, backgroundImage: {"texture-light": "url('https://www.transparenttextures.com/patterns/cubes.png')"}}}};</script>
+<style>::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }@keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+        .mascot-float {
+            animation: float 4s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen transition-colors duration-300 relative overflow-x-hidden">
+<div class="absolute inset-0 opacity-40 pointer-events-none bg-texture-light dark:opacity-5 mix-blend-multiply"></div>
+<nav class="relative z-10 w-full px-6 py-4 flex justify-between items-center max-w-7xl mx-auto">
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform duration-300">
+<span class="material-icons-round text-white">grid_view</span>
+</div>
+<span class="text-2xl font-extrabold text-slate-700 dark:text-slate-200 tracking-tight">Yen<span class="text-indigo-500">Go</span></span>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-white/50 dark:hover:bg-slate-700 transition-colors" onclick="document.documentElement.classList.toggle('dark')">
+<span class="material-icons-round text-slate-600 dark:text-slate-300">dark_mode</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center text-slate-600 dark:text-slate-300 hover:shadow-md transition-all">
+<span class="material-icons-round">person</span>
+</button>
+</div>
+</nav>
+<main class="relative z-10 max-w-6xl mx-auto px-6 pb-20 pt-8">
+<div class="text-center max-w-2xl mx-auto mb-16">
+<h1 class="text-4xl md:text-6xl font-black text-slate-800 dark:text-slate-100 mb-4 tracking-tight leading-tight">
+            Ready for Go, <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500">Sensei?</span>
+</h1>
+<p class="text-xl text-slate-500 dark:text-slate-400 font-medium">Pick a mode to sharpen your Go skills today.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="group relative bg-white dark:bg-card-dark rounded-[2rem] p-8 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border-b-8 border-amber-400 overflow-hidden cursor-pointer">
+<div class="absolute -right-6 top-6 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-xs font-bold py-1 px-8 rotate-45">NEW</div>
+<div class="flex justify-between items-start mb-6">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<div class="bg-amber-100 dark:bg-amber-900/30 p-2 rounded-lg">
+<span class="material-icons-round text-amber-500">local_fire_department</span>
+</div>
+<span class="text-amber-500 font-bold text-sm tracking-wide uppercase">Streak: 5 Days</span>
+</div>
+<h2 class="text-3xl font-black text-slate-800 dark:text-white">Daily Challenge</h2>
+</div>
+<img alt="Daily Mascot" class="w-24 h-24 rounded-full bg-amber-50 dark:bg-amber-900/10 p-2 mascot-float" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXZJ3SbLEmFu1dmPtp68ozR8b18Z-IB1OkTnpksjoSZW62Hg2VDsnS6RYSpLXOvu-qJ9qJ_LkKlUgMMeUcwKRAZO2Eot7I4yT3wag62ZdfbtDecdp6bOmDGcMonyFTjVmqynyfgtEClUHK_-RzAC20Qp-VxQlBUsjZ-CBzLXekIwRSe7M-b-TXoi58XpyN2wHu1dhfGywQXBJOmobHMjn1iN4cRNVLABR8ieKr-pKjTkqNHoCwR3I6UVsP5R5KaOwfYWJasG2OgfY"/>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-lg font-medium mb-6">Solve 3 problems today to keep your fire burning!</p>
+<div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
+<div class="bg-amber-400 h-full rounded-full" style="width: 60%"></div>
+</div>
+<div class="flex justify-between mt-2 text-xs font-bold text-slate-400">
+<span>1/3 Solved</span>
+<span>Keep it up!</span>
+</div>
+</div>
+<div class="group relative bg-white dark:bg-card-dark rounded-[2rem] p-8 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border-b-8 border-rose-400 overflow-hidden cursor-pointer">
+<div class="flex justify-between items-start mb-6">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<div class="bg-rose-100 dark:bg-rose-900/30 p-2 rounded-lg">
+<span class="material-icons-round text-rose-500">timer</span>
+</div>
+<span class="text-rose-500 font-bold text-sm tracking-wide uppercase">Best: 2400</span>
+</div>
+<h2 class="text-3xl font-black text-slate-800 dark:text-white">Puzzle Rush</h2>
+</div>
+<img alt="Rush Mascot" class="w-24 h-24 rounded-full bg-rose-50 dark:bg-rose-900/10 p-2 mascot-float" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0x1k0iLQrTl46Dbum-_ZI9AeI-IK0xadsTxocEeh6rBS_oEc0TTGUFEVWYA2Ot7xOxnzGdZcC979-lF5XBKZMODwKrjUfOOJon_sC-s_njve-9qRg3qan8yRbAtm8ZgpAngPZLtFhhQXzNOBMy5kpO84t5Ipeb5BDjoYKSfMCsYAgBhe470tYEod7n-_SIZZ8Hu0J1HUSHjlYzcqUzviM6296Ij6yvmffS7SKuIipps-mzfACWZ5EfJtHk3_14WFnvz92MWbPRHA"/>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-lg font-medium mb-6">Race against the clock. How many can you solve?</p>
+<button class="w-full py-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-300 font-bold hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors flex items-center justify-center gap-2">
+<span class="material-icons-round">play_arrow</span> Start Rush
+            </button>
+</div>
+<div class="group relative bg-white dark:bg-card-dark rounded-[2rem] p-8 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border-b-8 border-purple-400 overflow-hidden cursor-pointer">
+<div class="flex justify-between items-start mb-6">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<div class="bg-purple-100 dark:bg-purple-900/30 p-2 rounded-lg">
+<span class="material-icons-round text-purple-500">search</span>
+</div>
+<span class="text-purple-500 font-bold text-sm tracking-wide uppercase">50+ Sets</span>
+</div>
+<h2 class="text-3xl font-black text-slate-800 dark:text-white">Collections</h2>
+</div>
+<img alt="Collections Mascot" class="w-24 h-24 rounded-full bg-purple-50 dark:bg-purple-900/10 p-2 mascot-float" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtusFD7kb6G520I-iH2dWL069U3xKrBAGU6l8XULujEa2OT9aJPWoMZrm5EL-kFVggXOR6NScjTcfqSdRAiP6GKuyn2FjD7lNny3KGYm5RZWzzsi1Ql78emJ0j2pJXUJxEb-PpGcCfqOFRnyjUPxDU6JUVVVX39BCFm1-0ZsgyyOCDe62I_1fZPNL0WYLJE1z19XmTD_IYiaQrAbXIFYCZJm-_abzlMEzsXGHMtlZlJBynPwnccRL1_52OuR0BbPsGD97ysk0_dHk"/>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-lg font-medium mb-6">Browse curated problems by topic, shape, or pro player.</p>
+<div class="flex items-center gap-2">
+<span class="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">Tesuji</span>
+<span class="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">Life &amp; Death</span>
+<span class="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">Endgame</span>
+</div>
+</div>
+<div class="group relative bg-white dark:bg-card-dark rounded-[2rem] p-8 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border-b-8 border-primary overflow-hidden cursor-pointer">
+<div class="flex justify-between items-start mb-6">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<div class="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
+<span class="material-icons-round text-primary">school</span>
+</div>
+<span class="text-primary font-bold text-sm tracking-wide uppercase">Rank: 14 Kyu</span>
+</div>
+<h2 class="text-3xl font-black text-slate-800 dark:text-white">Training</h2>
+</div>
+<img alt="Training Mascot" class="w-24 h-24 rounded-full bg-blue-50 dark:bg-blue-900/10 p-2 mascot-float" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDy58wTEZ12bYGy0m3uo7muEFwmOZSZFvVPrVQoVAY1YbJlqa6LEZLDUPd75QKpl8ySeSlQGchHIcj3sU_wzpkhQ53GsHysbdnD7ADNBCgyQiMRJt3htWtzmTBFam_wYvUC0OR6uz-6UpfrMw9pmvln4thIl-6eCTYp1LcfbnLUqYCKAloWXEybJA_rcbNzsct9jDP67eW_VBD1lnpu2GFbKYdJcnOo9JTB3idNRKSW5j_bz9h2ppYMNKea35EcwA_dG7pfDGysDr0"/>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-lg font-medium mb-6">Progress through levels. Currently mastering Intermediate shapes.</p>
+<div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 75%"></div>
+</div>
+<div class="flex justify-between mt-2 text-xs font-bold text-slate-400">
+<span>Intermediate</span>
+<span>Next: Advanced</span>
+</div>
+</div>
+</div>
+</main>
+
+</body></html>

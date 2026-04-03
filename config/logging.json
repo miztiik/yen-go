@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "description": "Centralized logging configuration for YenGo project",
+  "last_updated": "2026-01-26",
+  "changelog": [
+    {
+      "version": "1.0",
+      "date": "unknown",
+      "author": "initial",
+      "changes": "Initial logging configuration with rotation, retention, and subdirectory settings."
+    }
+  ],
+  "log_root": "logs",
+  "default_level": "INFO",
+  "retention_days": 45,
+  "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+  "date_format": "%Y-%m-%d %H:%M:%S",
+  "rotation": {
+    "enabled": true,
+    "when": "midnight",
+    "backup_count": 45
+  },
+  "subdirectories": {
+    "puzzle_manager": "puzzle_manager",
+    "tools": "tools"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "initiative_id": "20260329-1500-feature-playing-modes-dry-compliance",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "Internal routes, testids, and component structure are not public API; clean break simplifies refactor" },
+    "legacy_code_removal": { "remove_old_code": true, "rationale": "Project dead code policy: Delete, don't deprecate. Git history preserves everything." },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Full PuzzleSetPlayer Unification — user requested full compliance, DailyChallengePage failOnWrong is proven reference, InlineSolver duplicates 60% of SolverView"
+    }
+  },
+  "open_issues": [],
+  "updated_at": "2026-03-29"
+}

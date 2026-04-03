@@ -1,0 +1,12 @@
+{
+  "github.copilot.chat.experimental.agents": true,
+  "github.copilot.chat.useProjectTemplates": true,
+  "diffEditor.maxComputationTime": 0,
+  "diffEditor.maxFileSize": 200,
+  // Prevent VS Code's JSON formatter from expanding alias arrays to multi-line.
+  // config/tags.json and config/puzzle-objectives.json use inline arrays for
+  // alias lists. Run `python tools/reformat_config_arrays.py` to re-inline if needed.
+  "[json]": {
+    "editor.formatOnSave": false
+  }
+}

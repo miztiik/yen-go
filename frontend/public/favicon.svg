@@ -1,0 +1,22 @@
+<svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Yen-Go Favicon: Stylized Go stone -->
+  <defs>
+    <!-- Stone body gradient -->
+    <radialGradient id="stoneGradient" cx="35%" cy="30%" r="60%" fx="35%" fy="30%">
+      <stop offset="0%" stop-color="#4a4a4a"/>
+      <stop offset="50%" stop-color="#2a2a2a"/>
+      <stop offset="100%" stop-color="#1a1a1a"/>
+    </radialGradient>
+    <!-- Highlight gradient -->
+    <radialGradient id="highlightGradient" cx="30%" cy="25%" r="40%" fx="30%" fy="25%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.25)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </radialGradient>
+  </defs>
+  <!-- Stone body -->
+  <circle cx="24" cy="24" r="20" fill="url(#stoneGradient)"/>
+  <!-- Highlight overlay -->
+  <circle cx="24" cy="24" r="20" fill="url(#highlightGradient)"/>
+  <!-- Reflection spot -->
+  <circle cx="16" cy="16" r="4" fill="rgba(255,255,255,0.15)"/>
+</svg>

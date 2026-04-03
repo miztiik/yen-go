@@ -1,0 +1,18 @@
+# Clarifications — Tactical Analysis Pipeline Wiring
+
+**Last Updated**: 2026-03-15
+
+---
+
+## Clarification Table
+
+| q_id | question | options | recommended | user_response | status |
+|------|----------|---------|-------------|---------------|--------|
+| Q1 | Is backward compatibility required? Should old pipeline output remain identical? | A: Yes, preserve all existing output / B: No, new behavior acceptable since current results are discarded / C: Partial — only preserve manually-tagged puzzles | **B** — Current tactical analysis results are discarded (zero consumers). Wiring creates new behavior, not changed behavior. | B — confirmed via audit: no existing consumers | ✅ resolved |
+| Q2 | Should old code be removed? | A: Yes, remove any unused paths / B: No, keep for reference / C: Not applicable | **C** — No legacy code to remove. This is additive wiring of existing algorithms. | C — no old code involved | ✅ resolved |
+| Q3 | Should the enrichment lab detectors also be modified in this initiative? | A: Yes, unify pipeline + enrichment lab detection / B: No, keep them separate (different approaches: board-sim vs KataGo) / C: Add a shared interface but keep separate implementations | **B** — Enrichment lab is already wired end-to-end with KataGo-based detection. Pipeline tactical analyzer is board-simulation-only. Different use cases, different architectures per `.claude/rules/03-architecture-rules.md`. | B — confirmed via architecture rules: core/ must not depend on adapters/tools | ✅ resolved |
+| Q4 | For ENRICH_IF_ABSENT policy: what happens when tactical analyzer says "ladder" but source/manual tag says "no ladder"? | A: Source always wins (auto-tag suppressed) / B: Both preserved / C: Log conflict and use source | **A** — Precision philosophy: human-curated tags are higher confidence than automated detection. Auto-tags only fill gaps. | A — already implemented at analyze.py L349-354: `if tag not in existing_tag_set` guard means source always wins | ✅ resolved |
+| Q5 | Should auto-tags be distinguishable from manually-set tags in the SGF? | A: Yes, add provenance marker / B: No, all tags are equal in YT / C: Track in pipeline log only | **C** — YT property has no provenance mechanism. Record auto-tag additions in pipeline log for audit, but YT itself is flat. | C — YT schema (v13) is flat comma-separated. No room for provenance. Pipeline log already captures operations | ✅ resolved |
+| Q6 | Should difficulty classifier use tactical complexity as additive or multiplicative signal? | A: Additive (bonus points) / B: Multiplicative (scaling factor) / C: Feature weight in existing scorer | **C** — Match existing classifier architecture. Pass tactical signals as additional features, let the scorer combine them with existing weights. | C — classifier.py uses a weighted-score model; tactical signals should be additional features | ✅ resolved |
+| Q7 | Should G-1 (auto-tag wiring) remain in scope given it's already implemented? | A: Remove from scope entirely / B: Reframe as "validate existing wiring" with acceptance tests / C: Keep as-is | **B** — Governance Panel verified auto-tags work. Reframed as validation: write acceptance tests confirming auto-tags flow from `derive_auto_tags()` through to YT in published SGF. | B — governance verified code is live; validation confirms correctness | ✅ resolved |
+| Q8 | Were F-2 and F-5 in research factually correct? | A: Yes / B: No, auto-tags ARE wired and there are 3 independent gaps not 1 root cause | **B** — Governance Panel independently audited analyze.py L349-358 and found auto-tag merge IS implemented. F-2 and F-5 corrected in 15-research.md. | B — corrected per governance code audit findings | ✅ resolved |

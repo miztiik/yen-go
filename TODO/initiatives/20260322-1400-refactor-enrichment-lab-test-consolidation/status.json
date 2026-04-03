@@ -1,0 +1,29 @@
+{
+  "initiative_id": "20260322-1400-refactor-enrichment-lab-test-consolidation",
+  "initiative_type": "refactor",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "Internal test infrastructure only — no external consumers" },
+    "option_selection": {
+      "selected_option_id": "OPT-B",
+      "rationale": "Migrate sprint tests to domain files + rename remediation file + fix sys.path DRY. Lane ordering: L2 → L3 → L1 → L4."
+    }
+  },
+  "updated_at": "2026-03-22",
+  "planning_confidence_score": 82,
+  "risk_level": "low",
+  "research_invoked": true,
+  "excluded_items": ["Subdirectory reorganization (too disruptive)", "Refutation phase file merge (distinct PI sets)"]
+}

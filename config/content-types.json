@@ -1,0 +1,50 @@
+{
+  "$schema": "./schemas/content-types.schema.json",
+  "schema_version": "1.0",
+  "description": "Content-type classification for puzzle quality tiers. Defines curated/practice/training categories and their detection rules.",
+  "last_updated": "2026-02-25",
+  "changelog": [
+    {
+      "version": "1.0",
+      "date": "2026-02-25",
+      "author": "initial",
+      "changes": "Initial content-type classification with curated/practice/training categories, teaching patterns, and thresholds."
+    }
+  ],
+  "types": {
+    "1": {
+      "name": "curated",
+      "display_label": "Curated",
+      "description": "High-quality puzzles with unique first moves, deep refutations, verified solution trees"
+    },
+    "2": {
+      "name": "practice",
+      "display_label": "Practice",
+      "description": "Standard puzzles suitable for regular training — proper solution trees without training noise"
+    },
+    "3": {
+      "name": "training",
+      "display_label": "Training",
+      "description": "Teaching examples, trivial captures, tutorial puzzles — useful for learning concepts"
+    }
+  },
+  "teaching_patterns": [
+    "\\bdemonstrates?\\b",
+    "\\bexplains?\\b",
+    "\\bshows?\\b",
+    "\\bconcepts?\\b",
+    "\\blessons?\\b",
+    "\\bexamples?\\b",
+    "\\btutorials?\\b",
+    "\\billustrates?\\b"
+  ],
+  "curated_thresholds": {
+    "min_quality": 3,
+    "min_refutations": 2,
+    "require_unique_first_move": true
+  },
+  "training_thresholds": {
+    "max_depth": 1,
+    "min_comment_level": 2
+  }
+}

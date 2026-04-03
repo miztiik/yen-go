@@ -1,0 +1,66 @@
+{
+  "name": "Yen-Go - Go Puzzles",
+  "short_name": "Yen-Go",
+  "description": "Offline Go puzzle platform for practicing tsumego",
+  "start_url": "/yen-go/",
+  "display": "standalone",
+  "background_color": "#f5f0e8",
+  "theme_color": "#3B6D96",
+  "orientation": "any",
+  "scope": "/yen-go/",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["games", "education"],
+  "icons": [
+    {
+      "src": "/yen-go/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/yen-go/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/yen-go/screenshots/puzzle-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Puzzle solving on mobile"
+    },
+    {
+      "src": "/yen-go/screenshots/puzzle-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Puzzle solving on desktop"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Daily Puzzle",
+      "short_name": "Daily",
+      "description": "Play today's puzzle",
+      "url": "/yen-go/modes/daily",
+      "icons": [{ "src": "/yen-go/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Puzzle Rush",
+      "short_name": "Rush",
+      "description": "Challenge yourself with timed puzzles",
+      "url": "/yen-go/modes/rush",
+      "icons": [{ "src": "/yen-go/icon.svg", "sizes": "any" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
+}

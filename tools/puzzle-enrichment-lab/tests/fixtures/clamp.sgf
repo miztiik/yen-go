@@ -1,0 +1,14 @@
+(;FF[4]GM[1]SZ[9]PL[B]
+YT[clamp]
+PC[https://senseis.xmp.net/?Clamp]
+C[Clamp (hasamitsuke) — from Sensei's Library.
+White's group has two potential eyes. The right eye at C2 is wide enough to live.
+Black attaches inside at C2 (the clamp) to reduce White's eye space to a false eye.]
+AB[aa][ba][ca][da][ab][db][ac][bc][dc]
+AW[ea][bb][cc][ec][cd][bd][ad]
+;B[cb]C[Correct! Black clamps at C2 — the inside attachment that destroys White's eye space.]
+(;W[bb]C[White captures one way...]
+;B[bc]C[...but only one real eye remains. White is dead.])
+(;W[bc]C[White tries to maintain shape...]
+;B[bb]C[...Black clamps through. White still dead.])
+(;W[pass]C[Wrong — White must respond to the clamp.]))

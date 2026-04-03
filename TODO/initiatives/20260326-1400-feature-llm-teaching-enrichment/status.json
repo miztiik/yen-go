@@ -1,0 +1,49 @@
+{
+  "initiative_id": "20260326-1400-feature-llm-teaching-enrichment",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": true, "rationale": "Q5: Add-only schema changes. No field removals." },
+    "legacy_code_removal": { "remove_old_code": false, "rationale": "Q6: Template system kept permanently. Signals are additive." },
+    "option_selection": {
+      "selected_option_id": "B",
+      "rationale": "Governance panel Q8: Rich Payload (9/9 panel votes). Option B selected with RC-1 (seki exception), RC-2 (config thresholds), RC-3 (conditional ownership)."
+    },
+    "scope_rescoping": {
+      "llm_code_removed": true,
+      "rationale": "User directive: Signal emission only. LLM client/stage is user's responsibility."
+    }
+  },
+  "research": {
+    "planning_confidence_score": 95,
+    "risk_level": "low",
+    "research_invoked": true,
+    "research_initiatives": [
+      "20260326-research-katago-llm-team-analysis",
+      "20260326-research-katascript-katago-patterns"
+    ],
+    "gap_analysis_complete": true,
+    "gaps_identified": ["Gap-1: score_delta dropped", "Gap-2: wrong_move_policy dropped", "Gap-3: ownership_delta ephemeral", "Gap-4: teaching_signals not persisted"],
+    "critical_bugs_found": ["CRITICAL-1: wrong_move_signals always empty (T5b fix)"],
+    "deep_research_complete": true,
+    "insertion_points_verified": true
+  },
+  "governance_decisions": [
+    { "id": 1, "date": "2026-03-26", "decision": "approve", "status_code": "GOV-PLAN-APPROVED", "scope": "original R-1+R-2", "superseded": true },
+    { "id": 2, "date": "2026-03-27", "decision": "approve_with_conditions", "status_code": "GOV-PLAN-CONDITIONAL", "score": 87, "superseded": true },
+    { "id": 3, "date": "2026-03-27", "decision": "approve", "status_code": "GOV-PLAN-APPROVED", "score": 95, "unanimous": true }
+  ],
+  "updated_at": "2026-03-27",
+  "notes": "CLOSED. All 20 tasks done. All 6 lanes merged. 38+345+1580 tests = 0 failures. 5 governance decisions (GOV-CLOSEOUT-APPROVED). Schema v10."
+}

@@ -1,0 +1,96 @@
+{
+  "$schema": "./schemas/puzzle-levels.schema.json",
+  "schema_version": "2.0",
+  "description": "9-level difficulty system for puzzle classification. Source of truth for both pipeline and frontend. Sparse IDs aligned to Go rank ranges (kyu=100s, dan=200s).",
+  "last_updated": "2026-02-17",
+  "changelog": [
+    {
+      "version": "2.0",
+      "date": "2026-02-17",
+      "author": "unknown",
+      "changes": "Added sparse numeric IDs aligned to Go rank ranges, shortName, rankRange."
+    },
+    {
+      "version": "1.0",
+      "date": "unknown",
+      "author": "initial",
+      "changes": "Initial 9-level system."
+    }
+  ],
+  "frozen": false,
+
+  "levels": [
+    {
+      "id": 110,
+      "slug": "novice",
+      "name": "Novice",
+      "shortName": "Nov",
+      "rankRange": { "min": "30k", "max": "26k" },
+      "description": "First patterns, single-move problems"
+    },
+    {
+      "id": 120,
+      "slug": "beginner",
+      "name": "Beginner",
+      "shortName": "Beg",
+      "rankRange": { "min": "25k", "max": "21k" },
+      "description": "Basic life/death shapes"
+    },
+    {
+      "id": 130,
+      "slug": "elementary",
+      "name": "Elementary",
+      "shortName": "Elem",
+      "rankRange": { "min": "20k", "max": "16k" },
+      "description": "Simple sequences (2-3 moves)"
+    },
+    {
+      "id": 140,
+      "slug": "intermediate",
+      "name": "Intermediate",
+      "shortName": "Int",
+      "rankRange": { "min": "15k", "max": "11k" },
+      "description": "Standard patterns"
+    },
+    {
+      "id": 150,
+      "slug": "upper-intermediate",
+      "name": "Upper Intermediate",
+      "shortName": "U.Int",
+      "rankRange": { "min": "10k", "max": "6k" },
+      "description": "Multi-step reading"
+    },
+    {
+      "id": 160,
+      "slug": "advanced",
+      "name": "Advanced",
+      "shortName": "Adv",
+      "rankRange": { "min": "5k", "max": "1k" },
+      "description": "Complex tesuji"
+    },
+    {
+      "id": 210,
+      "slug": "low-dan",
+      "name": "Low Dan",
+      "shortName": "L.Dan",
+      "rankRange": { "min": "1d", "max": "3d" },
+      "description": "Dan-level reading"
+    },
+    {
+      "id": 220,
+      "slug": "high-dan",
+      "name": "High Dan",
+      "shortName": "H.Dan",
+      "rankRange": { "min": "4d", "max": "6d" },
+      "description": "Professional patterns"
+    },
+    {
+      "id": 230,
+      "slug": "expert",
+      "name": "Expert",
+      "shortName": "Exp",
+      "rankRange": { "min": "7d", "max": "9d" },
+      "description": "Master-level problems"
+    }
+  ]
+}

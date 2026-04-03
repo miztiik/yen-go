@@ -1,0 +1,12 @@
+(;FF[4]GM[1]SZ[19]PL[W]
+YT[snapback]
+PC[https://senseis.xmp.net/?Snapback]
+C[Snapback — from Sensei's Library.
+The marked Black stones are caught in snapback.
+If Black captures the White stone, White immediately recaptures more stones.]
+AB[hh][hi][ji][ki][ij][ik][jk][il][kl][ll]
+AW[ih][jh][kh][ii][li][jj][lj][kk][lk]
+;W[jj]C[White plays the key point.]
+(;B[ji]C[Black captures, but...]
+;W[jj]C[Correct! Snapback — White recaptures three Black stones.])
+(;B[pass]C[Wrong — Black should try to capture.]))

@@ -1,0 +1,25 @@
+/**
+ * VirtualList component styles.
+ */
+
+.virtual-list {
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.virtual-list__content {
+  position: relative;
+}
+
+.virtual-list__visible {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  will-change: transform;
+}
+
+.virtual-list__item {
+  overflow: hidden;
+}

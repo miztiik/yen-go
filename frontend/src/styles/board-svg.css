@@ -1,0 +1,326 @@
+/**
+ * SVG Board Styles
+ * @module styles/board-svg
+ *
+ * Spec 118 - T1.8: CSS Variables Theme
+ * Styling for SVG-based Go board with CSS variables for theming
+ *
+ * Features:
+ * - CSS custom properties for easy theming
+ * - Dark mode support via prefers-color-scheme
+ * - Smooth transitions
+ * - Accessibility focus indicators
+ */
+
+/* Root variables for light mode (default) */
+:root {
+  /* Board colors */
+  --board-bg: #e3c076;
+  --board-grid: #8b7355;
+  --board-star-point: #5c4a32;
+  --board-coord-label: #6b5b45;
+
+  /* Stone colors */
+  --stone-black: #1a1a1a;
+  --stone-black-highlight: #3a3a3a;
+  --stone-white: #f8f8f8;
+  --stone-white-highlight: #ffffff;
+  --stone-white-border: #c0c0c0;
+  --stone-shadow: rgba(0, 0, 0, 0.32);
+
+  /* Markers and indicators */
+  --marker-last-move: #e84545;
+  --marker-hint: rgba(100, 180, 255, 0.6);
+  --marker-correct: #22c55e;
+  --marker-wrong: #dc26226;
+  --marker-focus: #4a90e2;
+
+  /* Opacity values */
+  --hover-stone-opacity: 0.4;
+  --shadow-opacity: 0.32;
+  --highlight-opacity: 0.3;
+}
+
+/* Dark mode variables */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --board-bg: #3d3525;
+    --board-grid: #6b5b45;
+    --board-star-point: #4a3a22;
+    --board-coord-label: #8b7b65;
+
+    /* Stones stay similar in dark mode */
+    --stone-black: #1a1a1a;
+    --stone-white: #e0e0e0;
+    --stone-white-border: #a0a0a0;
+    --stone-shadow: rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Board container */
+.board-container.svg-board {
+  width: 100%;
+  max-width: min(85vh, 600px);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  position: relative;
+  outline: none;
+}
+
+/* Main SVG element */
+.board-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+/* Stone styles */
+.svg-stone {
+  transition: opacity 0.2s ease;
+}
+
+.svg-stone.hover {
+  opacity: var(--hover-stone-opacity);
+  pointer-events: none;
+}
+
+/* Grid styles */
+.svg-grid .grid-lines line {
+  stroke: var(--board-grid);
+  stroke-width: 1;
+  stroke-linecap: square;
+}
+
+.svg-grid .star-points circle {
+  fill: var(--board-star-point);
+}
+
+/* Coordinate labels */
+.coord-labels text {
+  fill: var(--board-coord-label);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 28px;
+  font-weight: 500;
+  user-select: none;
+}
+
+/* Markers */
+.svg-markers circle,
+.svg-markers rect {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Hint marker pulsing animation */
+.hint-marker circle {
+  stroke: var(--marker-hint);
+  fill: none;
+}
+
+/* Hit targets (invisible interactive areas) */
+.hit-targets rect {
+  cursor: default;
+  fill: transparent;
+}
+
+.hit-targets rect:hover {
+  /* Visual feedback on hover - very subtle */
+  fill: rgba(255, 255, 255, 0.05);
+}
+
+/* Focus indicator for keyboard navigation only — no outline on mouse click */
+.board-container.svg-board:focus-visible {
+  outline: 2px solid var(--marker-focus);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.board-container.svg-board:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Accessibility: High contrast mode support */
+@media (prefers-contrast: high) {
+  .svg-grid .grid-lines line {
+    stroke-width: 2;
+  }
+
+  .coord-labels text {
+    font-weight: 700;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .svg-stone,
+  .svg-markers circle,
+  .svg-markers rect {
+    transition: none;
+  }
+
+  .hint-marker circle animate {
+    display: none;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 600px) {
+  .board-container.svg-board {
+    max-width: 100%;
+  }
+
+  .coord-labels text {
+    font-size: 24px;
+  }
+
+  /* Larger touch targets on mobile */
+  .hit-targets rect {
+    cursor: default;
+  }
+}
+
+/* Responsive breakpoints */
+@media (orientation: landscape) and (max-height: 600px) {
+  .board-container.svg-board {
+    max-width: min(80vh, 500px);
+  }
+}
+
+/* Print styles (hide interactive elements) */
+@media print {
+  .hit-targets,
+  .hint-marker {
+    display: none;
+  }
+
+  .board-container.svg-board:focus {
+    outline: none;
+  }
+}
+
+/* Loading state */
+.board-container.svg-board.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.board-container.svg-board.loading .board-svg {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Viewport Toggle Button - Spec 118 Phase 2 */
+.viewport-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 2px solid #d0d0d0;
+  border-radius: 8px;
+  background: white;
+  color: #333;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewport-toggle.compact {
+  padding: 6px 10px;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.viewport-toggle:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  color: #3b82f6;
+}
+
+.viewport-toggle:active {
+  transform: scale(0.95);
+}
+
+.viewport-toggle:focus-visible {
+  outline: 3px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.viewport-toggle.cropped {
+  border-color: #22c55e;
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.viewport-toggle.cropped:hover {
+  border-color: #16a34a;
+  background: #dcfce7;
+}
+
+.viewport-toggle svg {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.viewport-toggle:hover svg {
+  transform: scale(1.1);
+}
+
+.toggle-label {
+  white-space: nowrap;
+}
+
+/* Dark mode for viewport toggle */
+@media (prefers-color-scheme: dark) {
+  .viewport-toggle {
+    background: #1a1a1a;
+    border-color: #404040;
+    color: #e0e0e0;
+  }
+
+  .viewport-toggle:hover {
+    background: #1a2a3a;
+    border-color: #3b82f6;
+  }
+
+  .viewport-toggle.cropped {
+    background: #1a2e1a;
+    border-color: #22c55e;
+    color: #22c55e;
+  }
+
+  .viewport-toggle.cropped:hover {
+    background: #22331a;
+    border-color: #16a34a;
+  }
+}
+
+/* Viewport indicators */
+.viewport-indicators {
+  pointer-events: none;
+}
+
+.viewport-indicator line,
+.viewport-indicator path {
+  transition: opacity 0.3s ease;
+}
+
+/* Reduced motion for toggle */
+@media (prefers-reduced-motion: reduce) {
+  .viewport-toggle,
+  .viewport-toggle svg {
+    transition: none;
+  }
+}

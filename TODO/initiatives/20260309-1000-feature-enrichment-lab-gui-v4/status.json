@@ -1,0 +1,29 @@
+{
+  "initiative_id": "20260309-1000-feature-enrichment-lab-gui-v4",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "New additive feature, no existing GUI to be backward-compatible with" },
+    "legacy_code_removal": { "remove_old_code": false, "rationale": "gui_deprecated left as-is per user decision Q6; user will clean up separately" },
+    "option_selection": {
+      "selected_option_id": "OPT-1R",
+      "rationale": "OPT-1R: GhostBan Board + BesoGo Tree + No Build Step. Revised from OPT-1 to eliminate accidental complexity (custom SVG tree, Vite+npm). Bridge.py serves GUI via StaticFiles. Zero npm dependencies."
+    }
+  },
+  "planning_confidence_score": 85,
+  "risk_level": "low",
+  "research_invoked": true,
+  "updated_at": "2026-03-10"
+}

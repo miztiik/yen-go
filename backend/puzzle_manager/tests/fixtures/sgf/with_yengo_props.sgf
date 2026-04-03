@@ -1,0 +1,16 @@
+(;GM[1]FF[4]SZ[19]
+CA[UTF-8]
+GN[YenGo Test Puzzle]
+PB[Black]
+PW[White]
+DT[2025-01-01]
+PL[B]
+YG[5]
+YT[life-and-death,ladder]
+YH1[dd]
+AB[cc][cd][dc]
+AW[dd][de][ed]
+;B[ce]
+(;W[df];B[cf];W[cg];B[bg])
+(;W[cf];B[df])
+)

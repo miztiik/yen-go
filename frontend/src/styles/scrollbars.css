@@ -1,0 +1,40 @@
+/* Smart Scrollbar Styles - Spec 122 */
+
+.smart-scroll {
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+
+/* Thin scrollbar track */
+.smart-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.smart-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.smart-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-border-medium);
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Show on hover/scroll */
+.smart-scroll:hover::-webkit-scrollbar-thumb,
+.smart-scroll:active::-webkit-scrollbar-thumb {
+  opacity: 1;
+}
+
+/* Firefox scrollbar */
+.smart-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-medium) transparent;
+}
+
+/* Use overlay if supported */
+@supports (overflow: overlay) {
+  .smart-scroll { overflow: overlay; }
+}

@@ -1,0 +1,861 @@
+{
+  "version": "1.0",
+  "description": "Golden calibration set for instinct and entropy validation",
+  "puzzles": [
+    {
+      "sgf_file": "cho-advanced/prob0026.sgf",
+      "correct_move_sgf": "ba",
+      "correct_move_gtp": "B19",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0028.sgf",
+      "correct_move_sgf": "fb",
+      "correct_move_gtp": "F18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0031.sgf",
+      "correct_move_sgf": "cd",
+      "correct_move_gtp": "C16",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0033.sgf",
+      "correct_move_sgf": "bb",
+      "correct_move_gtp": "B18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0090.sgf",
+      "correct_move_sgf": "ba",
+      "correct_move_gtp": "B19",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0096.sgf",
+      "correct_move_sgf": "ab",
+      "correct_move_gtp": "A18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0105.sgf",
+      "correct_move_sgf": "ba",
+      "correct_move_gtp": "B19",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0115.sgf",
+      "correct_move_sgf": "ba",
+      "correct_move_gtp": "B19",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0143.sgf",
+      "correct_move_sgf": "db",
+      "correct_move_gtp": "D18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0204.sgf",
+      "correct_move_sgf": "ca",
+      "correct_move_gtp": "C19",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0224.sgf",
+      "correct_move_sgf": "eb",
+      "correct_move_gtp": "E18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0229.sgf",
+      "correct_move_sgf": "ib",
+      "correct_move_gtp": "J18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0239.sgf",
+      "correct_move_sgf": "ab",
+      "correct_move_gtp": "A18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0251.sgf",
+      "correct_move_sgf": "bb",
+      "correct_move_gtp": "B18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0282.sgf",
+      "correct_move_sgf": "cc",
+      "correct_move_gtp": "C17",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0430.sgf",
+      "correct_move_sgf": "ea",
+      "correct_move_gtp": "E19",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0433.sgf",
+      "correct_move_sgf": "ab",
+      "correct_move_gtp": "A18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0518.sgf",
+      "correct_move_sgf": "ca",
+      "correct_move_gtp": "C19",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0559.sgf",
+      "correct_move_sgf": "bb",
+      "correct_move_gtp": "B18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0575.sgf",
+      "correct_move_sgf": "ac",
+      "correct_move_gtp": "A17",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0605.sgf",
+      "correct_move_sgf": "bb",
+      "correct_move_gtp": "B18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0617.sgf",
+      "correct_move_sgf": "bb",
+      "correct_move_gtp": "B18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0655.sgf",
+      "correct_move_sgf": "fb",
+      "correct_move_gtp": "F18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0666.sgf",
+      "correct_move_sgf": "cb",
+      "correct_move_gtp": "C18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0693.sgf",
+      "correct_move_sgf": "fb",
+      "correct_move_gtp": "F18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0719.sgf",
+      "correct_move_sgf": "bb",
+      "correct_move_gtp": "B18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0734.sgf",
+      "correct_move_sgf": "eb",
+      "correct_move_gtp": "E18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0755.sgf",
+      "correct_move_sgf": "ca",
+      "correct_move_gtp": "C19",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0759.sgf",
+      "correct_move_sgf": "jb",
+      "correct_move_gtp": "K18",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-advanced/prob0760.sgf",
+      "correct_move_sgf": "ga",
+      "correct_move_gtp": "G19",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0026.sgf",
+      "correct_move_sgf": "aa",
+      "correct_move_gtp": "A19",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0028.sgf",
+      "correct_move_sgf": "ab",
+      "correct_move_gtp": "A18",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0031.sgf",
+      "correct_move_sgf": "ab",
+      "correct_move_gtp": "A18",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0033.sgf",
+      "correct_move_sgf": "ea",
+      "correct_move_gtp": "E19",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0090.sgf",
+      "correct_move_sgf": "ca",
+      "correct_move_gtp": "C19",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0096.sgf",
+      "correct_move_sgf": "ea",
+      "correct_move_gtp": "E19",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0105.sgf",
+      "correct_move_sgf": "ba",
+      "correct_move_gtp": "B19",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0115.sgf",
+      "correct_move_sgf": "ca",
+      "correct_move_gtp": "C19",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0143.sgf",
+      "correct_move_sgf": "ca",
+      "correct_move_gtp": "C19",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0204.sgf",
+      "correct_move_sgf": "bb",
+      "correct_move_gtp": "B18",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0224.sgf",
+      "correct_move_sgf": "ca",
+      "correct_move_gtp": "C19",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0229.sgf",
+      "correct_move_sgf": "eb",
+      "correct_move_gtp": "E18",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0239.sgf",
+      "correct_move_sgf": "ab",
+      "correct_move_gtp": "A18",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0251.sgf",
+      "correct_move_sgf": "ba",
+      "correct_move_gtp": "B19",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0282.sgf",
+      "correct_move_sgf": "cc",
+      "correct_move_gtp": "C17",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0430.sgf",
+      "correct_move_sgf": "ab",
+      "correct_move_gtp": "A18",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0433.sgf",
+      "correct_move_sgf": "fc",
+      "correct_move_gtp": "F17",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0518.sgf",
+      "correct_move_sgf": "bb",
+      "correct_move_gtp": "B18",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0559.sgf",
+      "correct_move_sgf": "da",
+      "correct_move_gtp": "D19",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0575.sgf",
+      "correct_move_sgf": "cb",
+      "correct_move_gtp": "C18",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0605.sgf",
+      "correct_move_sgf": "bb",
+      "correct_move_gtp": "B18",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0617.sgf",
+      "correct_move_sgf": "ab",
+      "correct_move_gtp": "A18",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0655.sgf",
+      "correct_move_sgf": "ba",
+      "correct_move_gtp": "B19",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0666.sgf",
+      "correct_move_sgf": "ja",
+      "correct_move_gtp": "K19",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0693.sgf",
+      "correct_move_sgf": "gb",
+      "correct_move_gtp": "G18",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0719.sgf",
+      "correct_move_sgf": "fb",
+      "correct_move_gtp": "F18",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0734.sgf",
+      "correct_move_sgf": "db",
+      "correct_move_gtp": "D18",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0755.sgf",
+      "correct_move_sgf": "fb",
+      "correct_move_gtp": "F18",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0759.sgf",
+      "correct_move_sgf": "da",
+      "correct_move_gtp": "D19",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-elementary/prob0760.sgf",
+      "correct_move_sgf": "fa",
+      "correct_move_gtp": "F19",
+      "human_difficulty": "elementary",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0026.sgf",
+      "correct_move_sgf": "cc",
+      "correct_move_gtp": "C17",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0028.sgf",
+      "correct_move_sgf": "eb",
+      "correct_move_gtp": "E18",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0031.sgf",
+      "correct_move_sgf": "ac",
+      "correct_move_gtp": "A17",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0033.sgf",
+      "correct_move_sgf": "ec",
+      "correct_move_gtp": "E17",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0090.sgf",
+      "correct_move_sgf": "ba",
+      "correct_move_gtp": "B19",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0096.sgf",
+      "correct_move_sgf": "ec",
+      "correct_move_gtp": "E17",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0105.sgf",
+      "correct_move_sgf": "ab",
+      "correct_move_gtp": "A18",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0115.sgf",
+      "correct_move_sgf": "db",
+      "correct_move_gtp": "D18",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0143.sgf",
+      "correct_move_sgf": "bb",
+      "correct_move_gtp": "B18",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0204.sgf",
+      "correct_move_sgf": "ba",
+      "correct_move_gtp": "B19",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0224.sgf",
+      "correct_move_sgf": "ca",
+      "correct_move_gtp": "C19",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0229.sgf",
+      "correct_move_sgf": "fa",
+      "correct_move_gtp": "F19",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0239.sgf",
+      "correct_move_sgf": "db",
+      "correct_move_gtp": "D18",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0251.sgf",
+      "correct_move_sgf": "cb",
+      "correct_move_gtp": "C18",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0282.sgf",
+      "correct_move_sgf": "cc",
+      "correct_move_gtp": "C17",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0430.sgf",
+      "correct_move_sgf": "bb",
+      "correct_move_gtp": "B18",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0433.sgf",
+      "correct_move_sgf": "ac",
+      "correct_move_gtp": "A17",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0518.sgf",
+      "correct_move_sgf": "aa",
+      "correct_move_gtp": "A19",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0559.sgf",
+      "correct_move_sgf": "ac",
+      "correct_move_gtp": "A17",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0575.sgf",
+      "correct_move_sgf": "bc",
+      "correct_move_gtp": "B17",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0605.sgf",
+      "correct_move_sgf": "cc",
+      "correct_move_gtp": "C17",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0617.sgf",
+      "correct_move_sgf": "ja",
+      "correct_move_gtp": "K19",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0655.sgf",
+      "correct_move_sgf": "fa",
+      "correct_move_gtp": "F19",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0666.sgf",
+      "correct_move_sgf": "fb",
+      "correct_move_gtp": "F18",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0693.sgf",
+      "correct_move_sgf": "ib",
+      "correct_move_gtp": "J18",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0719.sgf",
+      "correct_move_sgf": "da",
+      "correct_move_gtp": "D19",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0734.sgf",
+      "correct_move_sgf": "eb",
+      "correct_move_gtp": "E18",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0755.sgf",
+      "correct_move_sgf": "ec",
+      "correct_move_gtp": "E17",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0759.sgf",
+      "correct_move_sgf": "ea",
+      "correct_move_gtp": "E19",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "cho-intermediate/prob0760.sgf",
+      "correct_move_sgf": "da",
+      "correct_move_gtp": "D19",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Cho Chikun Encyclopedia of Life and Death",
+      "notes": ""
+    },
+    {
+      "sgf_file": "ko/ko_10000year.sgf",
+      "correct_move_sgf": "aa",
+      "correct_move_gtp": "A9",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Calibration fixture (ko)",
+      "notes": ""
+    },
+    {
+      "sgf_file": "ko/ko_approach_setup.sgf",
+      "correct_move_sgf": "ce",
+      "correct_move_gtp": "C5",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Calibration fixture (ko)",
+      "notes": ""
+    },
+    {
+      "sgf_file": "ko/ko_direct_capture.sgf",
+      "correct_move_sgf": "cb",
+      "correct_move_gtp": "C8",
+      "human_difficulty": "intermediate",
+      "labeling_method": "C",
+      "source": "Calibration fixture (ko)",
+      "notes": ""
+    },
+    {
+      "sgf_file": "ko/ko_double_seki.sgf",
+      "correct_move_sgf": "ac",
+      "correct_move_gtp": "A17",
+      "human_difficulty": "advanced",
+      "labeling_method": "C",
+      "source": "Calibration fixture (ko)",
+      "notes": ""
+    },
+    {
+      "sgf_file": "ko/ko_multistep_fight.sgf",
+      "correct_move_sgf": "aa",
+      "correct_move_gtp": "A9",
+      "human_difficulty": "upper-intermediate",
+      "labeling_method": "C",
+      "source": "Calibration fixture (ko)",
+      "notes": ""
+    }
+  ]
+}

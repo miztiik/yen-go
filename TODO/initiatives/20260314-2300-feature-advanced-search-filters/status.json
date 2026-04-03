@@ -1,0 +1,27 @@
+{
+  "initiative_id": "20260314-2300-feature-advanced-search-filters",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "Additive feature — new URL params and filter options. Existing URLs without depth params work as 'no filter'. No migration needed." },
+    "legacy_code_removal": { "remove_old_code": false, "rationale": "No old code to remove — this is a new feature addition, not a replacement." },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Unanimous governance approval. Minimal new files, reuses existing usePuzzleFilters/FilterBar/buildWhereClause patterns, meets all 11 AC, provides cross-filter count integration."
+    }
+  },
+  "open_issues": [],
+  "updated_at": "2026-03-21"
+}

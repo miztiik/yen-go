@@ -1,0 +1,168 @@
+name: Validate Puzzle Upload
+
+on:
+  pull_request:
+    paths:
+      - 'puzzles/data/*.json'
+      - 'puzzles/manifest.json'
+  push:
+    paths:
+      - 'puzzles/data/*.json'
+      - 'puzzles/manifest.json'
+    branches:
+      - main
+      - develop
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  validate-puzzles:
+    name: Validate Puzzles
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Need previous commit for diff
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            puzzles/data/*.json
+            puzzles/manifest.json
+
+      - name: Set up Python
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: puzzle_manager/pyproject.toml
+
+      - name: Install dependencies
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          cd puzzle_manager
+          pip install -e .
+
+      - name: Validate puzzle schema
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [[ "$file" == puzzles/data/*.json ]]; then
+              echo "Validating $file..."
+              yengo-pm puzzle validate "$file"
+            fi
+          done
+        env:
+          PYTHONPATH: ${{ github.workspace }}/puzzle_manager
+
+      - name: Validate manifest
+        if: contains(steps.changed-files.outputs.all_changed_files, 'manifest.json')
+        run: |
+          yengo-pm pipeline run --stage verify
+        env:
+          PYTHONPATH: ${{ github.workspace }}/puzzle_manager
+
+      - name: Check puzzle solutions
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [[ "$file" == puzzles/data/*.json ]]; then
+              echo "Validating solution for $file..."
+              yengo-pm puzzle validate "$file"
+            fi
+          done
+        env:
+          PYTHONPATH: ${{ github.workspace }}/puzzle_manager
+
+      - name: Verify puzzle structure
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          # Note: dedupe stage was removed in v3.1 (over-engineered for curated sources)
+          # Running verify stage to check overall structure
+          yengo-pm pipeline run --stage verify --dry-run
+        env:
+          PYTHONPATH: ${{ github.workspace }}/puzzle_manager
+
+      - name: Validate difficulty ratings
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [[ "$file" == puzzles/data/*.json ]]; then
+              echo "Analyzing difficulty for $file..."
+              yengo-pm puzzle show "$file" --format json | jq '.level'
+            fi
+          done
+        env:
+          PYTHONPATH: ${{ github.workspace }}/puzzle_manager
+
+      - name: Comment on PR (if validation fails)
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `❌ **Puzzle validation failed**\n\n` +
+                    `Please check the workflow logs for details:\n` +
+                    `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\n` +
+                    `Common issues:\n` +
+                    `- Invalid JSON format\n` +
+                    `- Missing required fields\n` +
+                    `- Solution doesn't solve the puzzle\n` +
+                    `- Duplicate puzzle detected`
+            });
+
+      - name: Comment on PR (if validation passes)
+        if: success() && github.event_name == 'pull_request' && steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const changedFiles = '${{ steps.changed-files.outputs.all_changed_files }}'.split(' ');
+            const puzzleFiles = changedFiles.filter(f => f.includes('puzzles/data/'));
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `✅ **Puzzle validation passed**\n\n` +
+                    `Validated ${puzzleFiles.length} puzzle file(s):\n` +
+                    puzzleFiles.map(f => `- \`${f}\``).join('\n')
+            });
+
+  lint-json:
+    name: Lint JSON Files
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get changed JSON files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            puzzles/**/*.json
+
+      - name: Setup Node.js
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check JSON formatting
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          npm install -g jsonlint
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "Linting $file..."
+            jsonlint -q "$file"
+          done

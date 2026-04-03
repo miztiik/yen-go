@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://yen-go.github.io/schemas/sgf-naming.schema.json",
+  "title": "SGF Filename Schema",
+  "description": "Defines the standard SGF filename format for Yen-Go puzzle collections. All adapters MUST produce filenames conforming to this schema.",
+  "type": "object",
+  "properties": {
+    "standard": {
+      "type": "object",
+      "description": "The naming standard specification",
+      "properties": {
+        "filename_pattern": {
+          "type": "string",
+          "const": "^[a-f0-9]{16}\\.sgf$",
+          "description": "Regex pattern for valid SGF filenames. Must be exactly 16 lowercase hex characters followed by .sgf extension."
+        },
+        "hash_algorithm": {
+          "type": "string",
+          "const": "sha256",
+          "description": "Hash algorithm used for content hashing"
+        },
+        "hash_length": {
+          "type": "integer",
+          "const": 16,
+          "description": "Number of hex characters from hash digest (first 16 characters of SHA-256)"
+        },
+        "encoding": {
+          "type": "string",
+          "const": "utf-8",
+          "description": "Content encoding before hashing"
+        }
+      },
+      "required": ["filename_pattern", "hash_algorithm", "hash_length", "encoding"]
+    }
+  },
+  "examples": [
+    {
+      "standard": {
+        "filename_pattern": "^[a-f0-9]{16}\\.sgf$",
+        "hash_algorithm": "sha256",
+        "hash_length": 16,
+        "encoding": "utf-8"
+      }
+    }
+  ],
+  "$defs": {
+    "valid_filename_examples": {
+      "description": "Examples of valid SGF filenames",
+      "examples": [
+        "a3f2c1b0d4e5f6a7.sgf",
+        "0123456789abcdef.sgf",
+        "fedcba9876543210.sgf"
+      ]
+    },
+    "invalid_filename_examples": {
+      "description": "Examples of invalid SGF filenames (for documentation)",
+      "examples": [
+        "gotoplay-000012.sgf",
+        "seidhiga-level1-001.sgf",
+        "a3f2c1b0d4e5.sgf",
+        "A3F2C1B0D4E5F6A7.sgf"
+      ]
+    }
+  }
+}

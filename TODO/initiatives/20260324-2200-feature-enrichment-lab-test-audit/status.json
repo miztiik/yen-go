@@ -1,0 +1,30 @@
+{
+  "initiative_id": "20260324-2200-feature-enrichment-lab-test-audit",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "Internal test files only — no external API or consumer" },
+    "legacy_code_removal": { "remove_old_code": true, "rationale": "4 duplicate detector files are the legacy code to remove" },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Phased Consolidation — 4 independent phases with per-commit validation. Unanimously selected by governance panel."
+    }
+  },
+  "planning_confidence_score": 92,
+  "risk_level": "low",
+  "research_invoked": true,
+  "prior_initiative": "20260322-1400-refactor-enrichment-lab-test-consolidation (completed — handled sprint files, sys.path DRY, remediation rename)",
+  "updated_at": "2026-03-24T22:00:00Z"
+}

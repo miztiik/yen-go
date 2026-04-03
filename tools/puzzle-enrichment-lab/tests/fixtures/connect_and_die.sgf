@@ -1,0 +1,14 @@
+(;FF[4]GM[1]SZ[9]PL[B]
+YT[connect-and-die]
+PC[https://senseis.xmp.net/?Oiotoshi]
+C[Connect-and-die (oiotoshi) — from Sensei's Library.
+White has two separate groups. Black plays atari forcing White to connect.
+After the connection, the combined group still has no life — connect-and-die.]
+AB[ca][da][ea][cb][eb][cc][dc][ec]
+AW[ba][fa][bb][fb][bc][fc][cd][dd][ed]
+;B[db]C[Correct! Black atari at D2 — White must connect the two groups.]
+(;W[cb]C[White connects...]
+;B[gb]C[...but the combined group is in atari with no escape. Connect-and-die.])
+(;W[fb]C[White connects the other way...]
+;B[cb]C[...still atari with no escape. Connect-and-die.])
+(;W[pass]C[Wrong — White's groups are in atari.]))

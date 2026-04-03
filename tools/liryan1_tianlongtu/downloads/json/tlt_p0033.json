@@ -1,0 +1,87 @@
+{
+  "Board size": 19,
+  "Black stones": [
+    "ds",
+    "dr",
+    "er",
+    "cq",
+    "cp",
+    "dp",
+    "do",
+    "eo"
+  ],
+  "White stones": [
+    "dq",
+    "cr",
+    "br",
+    "bq",
+    "bp",
+    "bo",
+    "cn",
+    "dn",
+    "en",
+    "fn",
+    "go",
+    "gp",
+    "hq",
+    "ir",
+    "jq"
+  ],
+  "Labels": {},
+  "Start": "B",
+  "Solution": [
+    "pf",
+    "qf",
+    "qe",
+    "of",
+    "rf",
+    "pe"
+  ],
+  "Comments": "1D",
+  "Other variations": [
+    [
+      "pf",
+      "qf",
+      "qe",
+      "of",
+      "rg",
+      "pe"
+    ],
+    [
+      "pf",
+      "qf",
+      "rg",
+      "of",
+      "qe",
+      "pe"
+    ],
+    [
+      "rg",
+      "qf",
+      "pf",
+      "of",
+      "qe",
+      "pe"
+    ],
+    [
+      "pf",
+      "qe",
+      "rg",
+      "sf",
+      "sg",
+      "qf",
+      "qg",
+      "rf",
+      "pe"
+    ],
+    [
+      "pf",
+      "qe",
+      "rg",
+      "qf",
+      "qg",
+      "of",
+      "rf"
+    ]
+  ]
+}

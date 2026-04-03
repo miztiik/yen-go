@@ -1,0 +1,16 @@
+{
+  "initiative_id": "20260315-research-gogogo-tactics-patterns",
+  "phase": "research-review",
+  "confidence_score": 78,
+  "risk_level": "low",
+  "created": "2026-03-15",
+  "last_updated": "2026-03-15",
+  "governance_status": "change_requested",
+  "governance_code": "GOV-CHARTER-REVISE",
+  "blocking_items": ["RC-1", "RC-2"],
+  "artifacts": {
+    "00-charter.md": "created",
+    "10-clarifications.md": "created",
+    "15-research.md": "created"
+  }
+}

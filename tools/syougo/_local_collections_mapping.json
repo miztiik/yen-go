@@ -1,0 +1,13 @@
+{
+  "_comment": "Maps syougo level directories to YenGo collection slugs from config/collections.json",
+  "_version": "1.0.0",
+  "_source": "syougo",
+  "_reference": "config/collections.json",
+  "mappings": {
+    "level_1_beginner": "beginner-essentials",
+    "level_2_intermediate": "elementary-essentials",
+    "level_3_advanced": "intermediate-essentials",
+    "level_4_dan": "low-dan-essentials",
+    "level_5_highdan": "high-dan-essentials"
+  }
+}

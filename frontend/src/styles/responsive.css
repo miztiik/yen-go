@@ -1,0 +1,436 @@
+/**
+ * Responsive styles for landscape/portrait layouts.
+ * Mobile-first approach with progressive enhancement.
+ */
+
+/* CSS Custom Properties for responsive values */
+:root {
+  /* Base spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Board sizing */
+  --board-min-size: 280px;
+  --board-max-size: 600px;
+  --board-margin: 16px;
+
+  /* Touch targets */
+  --touch-target-min: 44px;
+
+  /* Typography */
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+
+  /* Safe area insets */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* Base layout */
+.app-container {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+/* Main content area */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-md);
+  padding-left: calc(var(--spacing-md) + var(--safe-left));
+  padding-right: calc(var(--spacing-md) + var(--safe-right));
+}
+
+/* ========================================
+   MOBILE PORTRAIT (< 480px)
+   ======================================== */
+@media screen and (max-width: 479px) {
+  :root {
+    --board-margin: 8px;
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+  }
+
+  .page-title {
+    font-size: var(--font-size-lg);
+  }
+
+  /* Stack controls below board */
+  .puzzle-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+
+  .puzzle-board-wrapper {
+    width: 100%;
+    max-width: calc(100vw - var(--board-margin) * 2);
+    aspect-ratio: 1;
+  }
+
+  .puzzle-controls {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--spacing-sm);
+  }
+
+  /* Compact info display */
+  .puzzle-info {
+    font-size: var(--font-size-sm);
+  }
+
+  /* Bottom navigation */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding-bottom: var(--safe-bottom);
+    background: var(--bg-color, #1a1a2e);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 100;
+  }
+}
+
+/* ========================================
+   MOBILE LANDSCAPE (< 768px, landscape)
+   ======================================== */
+@media screen and (max-width: 767px) and (orientation: landscape) {
+  :root {
+    --board-max-size: 85vh;
+  }
+
+  /* Side-by-side layout */
+  .puzzle-layout {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: var(--spacing-lg);
+    height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 60px);
+    height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 60px);
+  }
+
+  .puzzle-board-wrapper {
+    height: 100%;
+    max-height: var(--board-max-size);
+    aspect-ratio: 1;
+    flex-shrink: 0;
+  }
+
+  .puzzle-sidebar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    max-width: 300px;
+  }
+
+  /* Compact header in landscape */
+  .page-header {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  /* Hide non-essential elements */
+  .hide-landscape {
+    display: none;
+  }
+}
+
+/* ========================================
+   TABLET PORTRAIT (768px - 1023px)
+   ======================================== */
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    --board-max-size: 500px;
+  }
+
+  .puzzle-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-lg);
+  }
+
+  .puzzle-board-wrapper {
+    width: var(--board-max-size);
+    max-width: 90vw;
+  }
+
+  .puzzle-controls {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+  }
+}
+
+/* ========================================
+   TABLET LANDSCAPE / DESKTOP (>= 1024px)
+   ======================================== */
+@media screen and (min-width: 1024px) {
+  :root {
+    --board-max-size: 600px;
+  }
+
+  .puzzle-layout {
+    display: grid;
+    grid-template-columns: 1fr var(--board-max-size) 1fr;
+    grid-template-rows: auto 1fr;
+    gap: var(--spacing-xl);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .puzzle-info {
+    grid-column: 1;
+    grid-row: 1 / -1;
+  }
+
+  .puzzle-board-wrapper {
+    grid-column: 2;
+    grid-row: 1 / -1;
+  }
+
+  .puzzle-controls {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .puzzle-sidebar {
+    grid-column: 3;
+    grid-row: 2;
+  }
+}
+
+/* ========================================
+   LARGE DESKTOP (>= 1440px)
+   ======================================== */
+@media screen and (min-width: 1440px) {
+  :root {
+    --board-max-size: 700px;
+  }
+
+  .puzzle-layout {
+    max-width: 1600px;
+  }
+}
+
+/* ========================================
+   COMPONENT RESPONSIVE STYLES
+   ======================================== */
+
+/* Board component */
+.board-container {
+  width: 100%;
+  max-width: var(--board-max-size);
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+
+.board-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Button responsive sizing */
+.btn {
+  min-height: var(--touch-target-min);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-base);
+}
+
+.btn-sm {
+  min-height: 36px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+}
+
+@media screen and (min-width: 768px) {
+  .btn {
+    min-height: 40px;
+    padding: var(--spacing-sm) var(--spacing-lg);
+  }
+}
+
+/* Card responsive */
+.card {
+  padding: var(--spacing-md);
+  border-radius: 8px;
+}
+
+@media screen and (min-width: 768px) {
+  .card {
+    padding: var(--spacing-lg);
+    border-radius: 12px;
+  }
+}
+
+/* Grid layouts */
+.grid-responsive {
+  display: grid;
+  gap: var(--spacing-md);
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+@media screen and (min-width: 768px) {
+  .grid-responsive {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+  }
+}
+
+/* Achievement grid */
+.achievements-grid {
+  display: grid;
+  gap: var(--spacing-sm);
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+@media screen and (min-width: 480px) {
+  .achievements-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--spacing-md);
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .achievements-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+/* Navigation */
+.nav-list {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+@media screen and (max-width: 767px) {
+  .nav-list {
+    justify-content: space-around;
+    width: 100%;
+  }
+
+  .nav-item {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+/* Modal responsive */
+.modal-content {
+  width: calc(100% - var(--spacing-lg) * 2);
+  max-width: 500px;
+  max-height: calc(100vh - var(--spacing-xl) * 2);
+  max-height: calc(100dvh - var(--spacing-xl) * 2);
+}
+
+@media screen and (max-width: 479px) {
+  .modal-content {
+    width: 100%;
+    max-width: none;
+    max-height: 100vh;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .modal-full-mobile {
+    position: fixed;
+    inset: 0;
+    border-radius: 0;
+  }
+}
+
+/* ========================================
+   ORIENTATION CHANGE HANDLING
+   ======================================== */
+
+/* Prevent layout shift during rotation */
+@media screen and (orientation: portrait) {
+  .orientation-aware {
+    /* Portrait: prefer vertical stacking */
+    flex-direction: column;
+  }
+}
+
+@media screen and (orientation: landscape) {
+  .orientation-aware {
+    /* Landscape: prefer horizontal layout */
+    flex-direction: row;
+  }
+}
+
+/* ========================================
+   HIGH DPI SCREENS
+   ======================================== */
+
+@media (-webkit-min-device-pixel-ratio: 2),
+       (min-resolution: 192dpi) {
+  /* High-res specific styles if needed */
+  .board-canvas {
+    image-rendering: -webkit-optimize-contrast;
+  }
+}
+
+/* ========================================
+   REDUCED MOTION
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ========================================
+   DARK MODE RESPONSIVE
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #1a1a2e;
+    --text-color: #eee;
+    --border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+
+@media print {
+  .no-print,
+  .bottom-nav,
+  .modal-overlay {
+    display: none !important;
+  }
+
+  .puzzle-layout {
+    display: block;
+  }
+
+  .board-canvas {
+    max-width: 100%;
+    height: auto;
+  }
+}

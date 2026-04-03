@@ -1,0 +1,59 @@
+{
+  "_comment": "Source definitions for syougo.jp puzzle downloader",
+  "_version": "1.0.0",
+  
+  "base_url": "https://www.syougo.jp",
+  "endpoint": "/jk/php/khantei.php",
+  
+  "levels": {
+    "1": {
+      "name": "Beginner",
+      "japanese": "初級",
+      "description": "Beginner level puzzles - basic capturing and life/death",
+      "puzzle_count": 26,
+      "board_size": 9,
+      "output_dir": "level_1_beginner"
+    },
+    "2": {
+      "name": "Intermediate", 
+      "japanese": "中級",
+      "description": "Intermediate level puzzles - more complex shapes",
+      "puzzle_count": 26,
+      "board_size": 9,
+      "output_dir": "level_2_intermediate"
+    },
+    "3": {
+      "name": "Advanced",
+      "japanese": "上級",
+      "description": "Advanced level puzzles - tesuji required",
+      "puzzle_count": 26,
+      "board_size": 9,
+      "output_dir": "level_3_advanced"
+    },
+    "4": {
+      "name": "Dan-level",
+      "japanese": "有段",
+      "description": "Dan-level puzzles - complex reading required",
+      "puzzle_count": 24,
+      "board_size": 9,
+      "output_dir": "level_4_dan"
+    },
+    "5": {
+      "name": "High-Dan",
+      "japanese": "高段",
+      "description": "High-Dan puzzles - professional level difficulty",
+      "puzzle_count": 24,
+      "board_size": 13,
+      "output_dir": "level_5_highdan"
+    }
+  },
+  
+  "_comment_levels": "YenGo level slugs from config/levels.json: novice, beginner, elementary, intermediate, upper-intermediate, advanced, low-dan, high-dan, expert",
+  "level_mapping": {
+    "1": "beginner",
+    "2": "elementary", 
+    "3": "intermediate",
+    "4": "low-dan",
+    "5": "high-dan"
+  }
+}

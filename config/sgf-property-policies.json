@@ -1,0 +1,76 @@
+{
+  "$schema": "./schemas/sgf-property-policies.schema.json",
+  "schema_version": "1.1",
+  "description": "Declarative SGF property handling policies for the pipeline. Controls what happens to each SGF property as it flows through ingest \u2192 analyze \u2192 publish stages.",
+  "last_updated": "2026-03-26",
+  "changelog": [
+    {
+      "version": "1.1",
+      "date": "2026-03-26",
+      "author": "config-standardization",
+      "changes": "Added $schema reference and bumped version. No policy changes."
+    },
+    {
+      "version": "1.0",
+      "date": "unknown",
+      "author": "initial",
+      "changes": "Initial SGF property policies for pipeline stages (blocked, preserve, hardcode, override, enrich_if_absent, enrich_if_partial, remove, configurable)."
+    }
+  ],
+  "policy_definitions": {
+    "blocked": "Property is dropped at parse time. Never enters the pipeline.",
+    "preserve": "Source value passed through unchanged. Pipeline never modifies it.",
+    "hardcode": "Always set to a fixed value regardless of source. Requires 'value' field.",
+    "override": "Always overwritten by pipeline computation. Source value discarded.",
+    "enrich_if_absent": "Computed only when source provides no value. Source value wins if present.",
+    "enrich_if_partial": "Source preserved if complete/valid. If malformed/partial, recomputed. Requires 'validator' field.",
+    "remove": "Explicitly deleted during processing.",
+    "configurable": "Behavior controlled by a runtime flag. Requires 'flag' and 'default' fields."
+  },
+  "policies": {
+    "DT": { "policy": "blocked", "description": "Date — provenance tracked in publish log" },
+    "CA": { "policy": "blocked", "description": "Character encoding — not needed" },
+    "RE": { "policy": "blocked", "description": "Result — not relevant for puzzles" },
+    "AP": { "policy": "blocked", "description": "Application name — not relevant" },
+    "KM": { "policy": "blocked", "description": "Komi — not relevant for puzzles" },
+    "HA": { "policy": "blocked", "description": "Handicap — not relevant for puzzles" },
+    "TM": { "policy": "blocked", "description": "Time limit — not relevant" },
+    "OT": { "policy": "blocked", "description": "Overtime — not relevant" },
+    "RU": { "policy": "blocked", "description": "Rules — not relevant for puzzles" },
+    "AN": { "policy": "preserve", "description": "Annotations — preserved if present" },
+    "BR": { "policy": "blocked", "description": "Black rank — not relevant" },
+    "WR": { "policy": "blocked", "description": "White rank — not relevant" },
+    "VW": { "policy": "blocked", "description": "View — not relevant" },
+    "ST": { "policy": "blocked", "description": "Style — not relevant" },
+
+    "SZ": { "policy": "enrich_if_absent", "default_value": 19, "description": "Board size — defaults to 19 if absent" },
+    "PL": { "policy": "preserve", "description": "Player to move" },
+    "AB": { "policy": "preserve", "description": "Black stones" },
+    "AW": { "policy": "preserve", "description": "White stones" },
+    "GC": { "policy": "preserve", "description": "Game comment" },
+    "PB": { "policy": "preserve", "description": "Player Black name" },
+    "PW": { "policy": "preserve", "description": "Player White name" },
+
+    "FF": { "policy": "hardcode", "value": "4", "description": "File format version" },
+    "GM": { "policy": "hardcode", "value": "1", "description": "Game type (Go)" },
+
+    "SO": { "policy": "remove", "stage": "analyze", "description": "Source — provenance tracked in pipeline state" },
+    "GN": { "policy": "override", "stage": "publish", "description": "Game name — set to YENGO-{content_hash}" },
+    "C":  { "policy": "configurable", "flag": "preserve_root_comment", "default": true, "description": "Root comment — cleaned and preserved by default" },
+
+    "YV": { "policy": "override", "stage": "analyze", "description": "Schema version — always set to current" },
+    "YM": { "policy": "override", "stage": "ingest", "description": "Pipeline metadata — set at ingest, updated at analyze/publish. Sub-fields: t(trace_id), f(filename), i(run_id), ct(content_type 1-3), tc(trivial_capture)" },
+
+    "YG": { "policy": "enrich_if_absent", "description": "Difficulty level — preserve source if valid" },
+    "YT": { "policy": "enrich_if_absent", "description": "Tags — preserve source tags if present" },
+    "YH": { "policy": "enrich_if_absent", "description": "Hints — preserve source hints if present" },
+    "YC": { "policy": "enrich_if_absent", "description": "Corner position — preserve if present" },
+    "YK": { "policy": "enrich_if_absent", "description": "Ko context — preserve if present" },
+    "YO": { "policy": "enrich_if_absent", "description": "Move order — preserve if present" },
+    "YR": { "policy": "enrich_if_absent", "description": "Refutation moves — preserve if present" },
+    "YL": { "policy": "enrich_if_absent", "description": "Collection membership — preserve if present" },
+
+    "YQ": { "policy": "enrich_if_partial", "validator": "quality_metrics", "description": "Quality metrics — preserve if complete, recompute if partial" },
+    "YX": { "policy": "enrich_if_partial", "validator": "complexity_metrics", "description": "Complexity metrics — preserve if complete, recompute if partial" }
+  }
+}

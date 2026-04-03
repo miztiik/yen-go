@@ -1,0 +1,64 @@
+{
+  "initiative_id": "20260325-1800-feature-instinct-calibration-golden-set",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "New fixture directory (instinct-calibration/). No changes to existing golden-calibration/ or benchmark/."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": false,
+      "rationale": "No old code to remove. Legacy confidence_thresholds dict kept for backward compat."
+    },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Two Standalone Scripts — pattern consistency, YAGNI compliance, charter alignment. Unanimous governance approval."
+    }
+  },
+  "governance_charter": {
+    "decision": "approve",
+    "status_code": "GOV-CHARTER-APPROVED",
+    "unanimous": true,
+    "date": "2026-03-25"
+  },
+  "governance_options": {
+    "decision": "approve",
+    "status_code": "GOV-OPTIONS-APPROVED",
+    "selected_option": "OPT-1",
+    "unanimous": true,
+    "date": "2026-03-25"
+  },
+  "governance_plan": {
+    "decision": "approve",
+    "status_code": "GOV-PLAN-APPROVED",
+    "unanimous": true,
+    "date": "2026-03-25"
+  },
+  "governance_review": {
+    "decision": "approve_with_conditions",
+    "status_code": "GOV-REVIEW-CONDITIONAL",
+    "unanimous": false,
+    "date": "2026-03-25"
+  },
+  "governance_closeout": {
+    "decision": "approve",
+    "status_code": "GOV-CLOSEOUT-APPROVED",
+    "unanimous": true,
+    "date": "2026-03-26"
+  },
+  "open_issues": [],
+  "updated_at": "2026-03-26"
+}

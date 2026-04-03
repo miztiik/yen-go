@@ -1,0 +1,40 @@
+{
+  "initiative_id": "2026-03-05-feature-publish-snapshot-wiring",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "User confirmed: no backward compat needed. Frontend is snapshot-only. Legacy view files are not consumed by anything."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": true,
+      "rationale": "User confirmed: remove old code. _update_indexes_flat, _update_collection_indexes, _update_indexes to be deleted."
+    },
+    "inventory_strategy": {
+      "approach": "slug-based-counters",
+      "rationale": "Keep separate slug-keyed counters (level_slug_counts, tag_slug_counts) alongside ShardEntry construction. InventoryUpdate expects slug keys — do not derive from numeric IDs."
+    }
+  },
+  "governance": {
+    "planning_decision": "approve_with_conditions",
+    "planning_status_code": "GOV-PLAN-CONDITIONAL",
+    "planning_conditions_met": true,
+    "implementation_decision": "approve",
+    "implementation_status_code": "GOV-REVIEW-APPROVED"
+  },
+  "open_issues": [],
+  "closed_at": "2026-03-05",
+  "updated_at": "2026-03-05"
+}

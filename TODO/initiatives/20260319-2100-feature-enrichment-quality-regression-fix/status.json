@@ -1,0 +1,27 @@
+{
+  "initiative_id": "20260319-2100-feature-enrichment-quality-regression-fix",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "Future-only — no retroactive re-enrichment" },
+    "legacy_code_removal": { "remove_old_code": true, "rationale": "Remove Close special-casing" },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Single bundled fix for all 5 RCs"
+    }
+  },
+  "open_issues": [],
+  "updated_at": "2026-03-19"
+}

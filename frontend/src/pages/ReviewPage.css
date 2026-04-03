@@ -1,0 +1,118 @@
+/**
+ * Styles for ReviewPage.
+ */
+
+.review-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-background, #f5f5f5);
+}
+
+.review-page--loading,
+.review-page--error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 1rem;
+}
+
+.review-page__error {
+  color: var(--color-error, #d32f2f);
+  font-size: 1rem;
+}
+
+.review-page__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: var(--color-surface, #fff);
+  border-bottom: 1px solid var(--color-border, #e0e0e0);
+}
+
+.review-page__back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--color-text-primary, #333);
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.review-page__back-btn:hover {
+  background-color: var(--color-hover, #f0f0f0);
+}
+
+.review-page__back-btn:focus-visible {
+  outline: 2px solid var(--color-focus, #2196f3);
+  outline-offset: 2px;
+}
+
+.review-page__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #333);
+}
+
+.review-page__main {
+  display: flex;
+  flex: 1;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .review-page__main {
+    flex-direction: column;
+  }
+}
+
+.review-page__board-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-surface, #fff);
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border, #e0e0e0);
+  min-height: 300px;
+}
+
+.review-page__board-placeholder {
+  text-align: center;
+  color: var(--color-text-secondary, #666);
+}
+
+.review-page__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 300px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .review-page__sidebar {
+    width: 100%;
+  }
+}
+
+.review-page__keyboard-hints {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, #888);
+}
+
+.review-page__keyboard-hints p {
+  margin: 0;
+}

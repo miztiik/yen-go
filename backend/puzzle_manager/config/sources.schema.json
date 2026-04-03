@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://yengo.dev/schemas/sources.schema.json",
+  "title": "Sources Configuration",
+  "description": "Configuration for puzzle source adapters in backend/puzzle_manager/config/sources.json",
+  "type": "object",
+  "required": ["active_adapter", "sources"],
+  "properties": {
+    "active_adapter": {
+      "type": "string",
+      "description": "ID of the currently active adapter. Must match an id in the sources array.",
+      "examples": ["ogs", "sanderland", "goproblems"]
+    },
+    "sources": {
+      "type": "array",
+      "description": "Array of all available puzzle sources",
+      "items": {
+        "$ref": "#/$defs/SourceConfig"
+      },
+      "minItems": 1
+    }
+  },
+  "$defs": {
+    "SourceConfig": {
+      "type": "object",
+      "description": "Configuration for a single puzzle source",
+      "required": ["id", "name", "adapter"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique source identifier",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "examples": ["ogs", "sanderland", "goproblems", "local-imports"]
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable source name",
+          "examples": ["Online-Go.com Puzzles", "Sanderland Collection"]
+        },
+        "adapter": {
+          "type": "string",
+          "description": "Adapter ID to use for this source (must be a registered adapter)",
+          "examples": ["ogs", "sanderland", "goproblems", "local", "url"]
+        },
+        "config": {
+          "type": "object",
+          "description": "Adapter-specific configuration",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "OGSConfig": {
+      "type": "object",
+      "description": "Configuration specific to OGS adapter",
+      "properties": {
+        "base_url": {
+          "type": "string",
+          "format": "uri",
+          "default": "https://online-go.com/api/v1"
+        },
+        "request_timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 30
+        },
+        "max_retries": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 5
+        },
+        "page_delay_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "default": 3.0
+        },
+        "puzzle_delay_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "default": 1.0
+        },
+        "has_solution": {
+          "type": "boolean",
+          "default": true
+        },
+        "strict_translation": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "GoProblemsConfig": {
+      "type": "object",
+      "description": "Configuration specific to GoProblems adapter",
+      "properties": {
+        "api_base_url": {
+          "type": "string",
+          "format": "uri",
+          "default": "https://www.goproblems.com/api/v2"
+        },
+        "rate_limit_min_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "default": 5.0
+        },
+        "rate_limit_max_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "default": 10.0
+        },
+        "rate_limit_jitter_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "default": 5.0
+        },
+        "batch_size": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 100
+        },
+        "max_retries": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 3
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 30
+        }
+      }
+    },
+    "LocalConfig": {
+      "type": "object",
+      "description": "Configuration specific to local file adapter",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path to local SGF files directory"
+        },
+        "move_processed_to": {
+          "type": ["string", "null"],
+          "description": "Optional path to move processed files to"
+        }
+      },
+      "required": ["path"]
+    }
+  },
+  "examples": [
+    {
+      "active_adapter": "ogs",
+      "sources": [
+        {
+          "id": "ogs",
+          "name": "Online-Go.com Puzzles",
+          "adapter": "ogs",
+          "config": {
+            "base_url": "https://online-go.com/api/v1",
+            "request_timeout_seconds": 30,
+            "max_retries": 5,
+            "page_delay_seconds": 3.0,
+            "has_solution": true
+          }
+        },
+        {
+          "id": "sanderland",
+          "name": "Sanderland Collection",
+          "adapter": "sanderland",
+          "config": {
+            "path": "external-sources/sanderland"
+          }
+        },
+        {
+          "id": "goproblems",
+          "name": "GoProblems.com",
+          "adapter": "goproblems",
+          "config": {
+            "api_base_url": "https://www.goproblems.com/api/v2",
+            "rate_limit_min_seconds": 5.0,
+            "rate_limit_max_seconds": 10.0,
+            "batch_size": 100
+          }
+        }
+      ]
+    }
+  ]
+}

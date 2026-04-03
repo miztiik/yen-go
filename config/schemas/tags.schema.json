@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://yen-go.github.io/schemas/tags.schema.json",
+  "title": "Tags Configuration",
+  "description": "Schema for config/tags.json — canonical puzzle tag dictionary with 28 standard tags across 3 categories (objective, tesuji, technique). Single source of truth for tag normalization.",
+  "type": "object",
+  "required": ["schema_version", "description", "last_updated", "changelog", "tags"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Schema version (MAJOR.MINOR)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this config file"
+    },
+    "last_updated": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "ISO date of last modification (YYYY-MM-DD)"
+    },
+    "changelog": {
+      "type": "array",
+      "description": "Version history for auditability.",
+      "items": {
+        "type": "object",
+        "required": ["version", "date", "author", "changes"],
+        "additionalProperties": false,
+        "properties": {
+          "version": { "type": "string" },
+          "date": { "type": "string" },
+          "author": { "type": "string" },
+          "changes": { "type": "string" }
+        }
+      }
+    },
+    "tags": {
+      "type": "object",
+      "description": "Tag definitions keyed by slug. 28 canonical tags across objective (10-16), tesuji (30-52), technique (60-82) ID ranges.",
+      "patternProperties": {
+        "^[a-z][a-z0-9-]*$": {
+          "$ref": "#/definitions/TagDefinition"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "TagDefinition": {
+      "type": "object",
+      "required": ["slug", "id", "name", "category", "description", "aliases"],
+      "properties": {
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Kebab-case identifier matching the object key"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 98,
+          "description": "Sparse numeric ID. Objectives: 10-28, Tesuji: 30-52, Techniques: 60-82"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable display name"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["objective", "tesuji", "technique"],
+          "description": "Tag category for UI grouping"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Pedagogical description of the tag"
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Alternate names for normalization (lowercase)"
+        },
+        "senseis_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://senseis\\.xmp\\.net/\\?",
+          "description": "Sensei's Library reference URL for the primary tag concept"
+        },
+        "alias_urls": {
+          "type": "object",
+          "description": "Sensei's Library URLs for aliases that have distinct reference pages. Keys are alias names (must exist in aliases array), values are URLs.",
+          "additionalProperties": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://senseis\\.xmp\\.net/\\?"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

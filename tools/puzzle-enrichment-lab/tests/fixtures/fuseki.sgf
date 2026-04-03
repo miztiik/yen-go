@@ -1,0 +1,14 @@
+(;FF[4]GM[1]SZ[19]PL[B]
+YT[fuseki]
+PC[https://senseis.xmp.net/?Fuseki]
+C[Fuseki — urgent over big — from Sensei's Library.
+White has just approached at R5. Black's corner at Q4 is under pressure.
+Black must respond to the approach before taking any big point elsewhere.]
+AB[dd][pp]
+AW[qo][cc]
+;B[qm]C[Correct! Black pincer at R7 — responding to White's approach is urgent. Corner defense takes priority over tengen.]
+(;W[oo]C[White jumps out...]
+;B[np]C[...Black extends — standard joseki flow.])
+(;W[qq]C[White invades the corner...]
+;B[qp]C[...Black blocks — natural response.])
+(;W[pass]C[Wrong — Black's pincer is the urgent fuseki move.]))

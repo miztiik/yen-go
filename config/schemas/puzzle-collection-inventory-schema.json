@@ -1,0 +1,233 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://yen-go.github.io/schemas/puzzle-collection-inventory-schema.json",
+  "title": "Puzzle Collection Inventory",
+  "description": "Schema for puzzle-collection-inventory.json - tracks aggregate statistics for the puzzle collection",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "collection",
+    "stages",
+    "metrics",
+    "audit",
+    "last_updated",
+    "last_run_id"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Schema version for migration support",
+      "pattern": "^\\d+\\.\\d+$",
+      "default": "1.0"
+    },
+    "schema_ref": {
+      "type": "string",
+      "description": "Path to this schema file",
+      "default": "config/schemas/puzzle-collection-inventory-schema.json"
+    },
+    "collection": {
+      "$ref": "#/definitions/CollectionStats"
+    },
+    "stages": {
+      "$ref": "#/definitions/StagesStats"
+    },
+    "metrics": {
+      "$ref": "#/definitions/ComputedMetrics"
+    },
+    "audit": {
+      "$ref": "#/definitions/AuditMetrics"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of last update"
+    },
+    "last_run_id": {
+      "type": "string",
+      "description": "Run ID of the operation that last modified this file",
+      "pattern": "^[0-9]{8}-[a-f0-9]+$"
+    }
+  },
+  "definitions": {
+    "CollectionStats": {
+      "type": "object",
+      "description": "Aggregate statistics for the puzzle collection",
+      "required": ["total_puzzles", "by_puzzle_level", "by_tag", "by_puzzle_quality"],
+      "properties": {
+        "total_puzzles": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of published puzzles"
+        },
+        "by_puzzle_level": {
+          "type": "object",
+          "description": "Puzzle count per level slug",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "propertyNames": {
+            "enum": [
+              "novice",
+              "beginner",
+              "elementary",
+              "intermediate",
+              "upper-intermediate",
+              "advanced",
+              "low-dan",
+              "high-dan",
+              "expert"
+            ]
+          }
+        },
+        "by_tag": {
+          "type": "object",
+          "description": "Puzzle count per tag (multi-tag puzzles counted in each)",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "by_puzzle_quality": {
+          "type": "object",
+          "description": "Puzzle count per quality level (1=Unverified through 5=Premium)",
+          "additionalProperties": false,
+          "required": ["1", "2", "3", "4", "5"],
+          "properties": {
+            "1": {"type": "integer", "minimum": 0, "description": "Unverified quality"},
+            "2": {"type": "integer", "minimum": 0, "description": "Basic quality"},
+            "3": {"type": "integer", "minimum": 0, "description": "Standard quality"},
+            "4": {"type": "integer", "minimum": 0, "description": "High quality"},
+            "5": {"type": "integer", "minimum": 0, "description": "Premium quality"}
+          }
+        },
+        "avg_quality_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 5,
+          "description": "Average YQ quality score (1-5 scale)"
+        },
+        "hint_coverage_pct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percentage of puzzles with YH hints"
+        }
+      }
+    },
+    "IngestMetrics": {
+      "type": "object",
+      "description": "Metrics for the INGEST stage",
+      "required": ["attempted", "passed", "failed"],
+      "properties": {
+        "attempted": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Puzzles attempted to fetch"
+        },
+        "passed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Puzzles passing validation"
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Puzzles failing validation"
+        }
+      }
+    },
+    "AnalyzeMetrics": {
+      "type": "object",
+      "description": "Metrics for the ANALYZE stage",
+      "required": ["enriched", "skipped"],
+      "properties": {
+        "enriched": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Puzzles successfully enriched"
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Puzzles skipped (already enriched)"
+        }
+      }
+    },
+    "PublishMetrics": {
+      "type": "object",
+      "description": "Metrics for the PUBLISH stage",
+      "required": ["new"],
+      "properties": {
+        "new": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "New puzzles published"
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Puzzles that failed to publish"
+        }
+      }
+    },
+    "StagesStats": {
+      "type": "object",
+      "description": "Aggregate metrics across all pipeline stages",
+      "required": ["ingest", "analyze", "publish"],
+      "properties": {
+        "ingest": {
+          "$ref": "#/definitions/IngestMetrics"
+        },
+        "analyze": {
+          "$ref": "#/definitions/AnalyzeMetrics"
+        },
+        "publish": {
+          "$ref": "#/definitions/PublishMetrics"
+        }
+      }
+    },
+    "ComputedMetrics": {
+      "type": "object",
+      "description": "Computed metrics derived from stage statistics",
+      "required": ["daily_publish_throughput", "error_rate_ingest", "error_rate_publish"],
+      "properties": {
+        "daily_publish_throughput": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Puzzles published in the most recent run"
+        },
+        "error_rate_ingest": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Ingest failure rate (0.0 - 1.0)"
+        },
+        "error_rate_publish": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Publish failure rate (0.0 - 1.0)"
+        }
+      }
+    },
+    "AuditMetrics": {
+      "type": "object",
+      "description": "Audit metrics tracking rollback operations",
+      "required": ["total_rollbacks"],
+      "properties": {
+        "total_rollbacks": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of rollback operations performed"
+        },
+        "last_rollback_date": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of last rollback (null if never)"
+        }
+      }
+    }
+  }
+}

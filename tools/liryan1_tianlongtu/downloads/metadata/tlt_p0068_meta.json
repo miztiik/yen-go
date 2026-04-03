@@ -1,0 +1,14 @@
+{
+  "source": "liryan1_tianlongtu",
+  "source_url": "https://raw.githubusercontent.com/liryan1/101weiqi/main/data/json/tian_long_tu.json",
+  "problem_id": 68,
+  "unique_id": "tlt_p0068",
+  "board_size": 19,
+  "first_to_play": "black",
+  "original_difficulty": "2D",
+  "yengo_level": "advanced",
+  "yengo_sublevel": 2,
+  "solution_length": 5,
+  "variation_count": 5,
+  "processed_at": "2026-01-25T16:52:19.449968"
+}

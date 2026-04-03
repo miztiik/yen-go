@@ -1,0 +1,144 @@
+{
+  "initiative_id": "20260315-1700-feature-enrichment-lab-tactical-hints",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": true,
+      "rationale": "Existing enrichment output (AiAnalysisResult schema v9) must remain compatible. New signals are additive — enriched hints and difficulty features supplement but don't replace existing outputs."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": false,
+      "rationale": "No legacy code to remove. This initiative adds new capabilities to existing enrichment lab infrastructure."
+    },
+    "option_selection": {
+      "selected_option_id": "OPT-2",
+      "selected_option_title": "New InstinctStage (Parallel Stage Architecture)",
+      "rationale": "Instinct classification is conceptually distinct from technique detection. Dedicated stage provides independent ErrorPolicy.DEGRADE, automatic timing observability, natural cross-instinct ranking, clean rollback, and GV-5 alignment."
+    }
+  },
+  "supersedes": "20260315-1400-feature-tactical-analysis-wiring",
+  "governance_history": [
+    {
+      "gate": "consultation",
+      "attempt": 1,
+      "decision": "approve",
+      "status_code": "GOV-CHARTER-CONSULTATION-COMPLETE",
+      "unanimous": true,
+      "key_findings": [
+        "Instinct classification adds genuine pedagogical value (7/7 approve)",
+        "Policy entropy is strongest new difficulty signal (7/7 unanimous)",
+        "Multi-orientation test infrastructure is critical correctness gate (6/7)",
+        "Top-K rank: supplementary only (6/7)",
+        "Game phase taxonomy: skip, existing detectors cover it (6/7)",
+        "Level-adaptive hint content endorsed (7/7)"
+      ]
+    },
+    {
+      "gate": "charter",
+      "attempt": 1,
+      "decision": "approve",
+      "status_code": "GOV-CHARTER-APPROVED",
+      "unanimous": true,
+      "key_findings": [
+        "All 9 technical claims source-verified",
+        "Scope boundaries explicit and well-bounded",
+        "Calibration-first (C-3) prevents premature productionization",
+        "Planning confidence 82/100 meets 80 floor"
+      ]
+    },
+    {
+      "gate": "options",
+      "attempt": 1,
+      "decision": "approve",
+      "status_code": "GOV-OPTIONS-APPROVED",
+      "unanimous": true,
+      "selected_option": "OPT-2",
+      "key_findings": [
+        "Instinct is conceptually distinct from technique — separate stage",
+        "Independent ErrorPolicy.DEGRADE for experimental classifier",
+        "OPT-3 rejected: semantic mismatch (instinct != technique)",
+        "5 must-hold constraints defined"
+      ]
+    },
+    {
+      "gate": "plan",
+      "attempt": 1,
+      "decision": "approve_with_conditions",
+      "status_code": "GOV-PLAN-CONDITIONAL",
+      "unanimous": false,
+      "key_findings": [
+        "Stage ordering verified against actual enrich_single.py source",
+        "All 25 tasks trace to charter goals with valid DAG",
+        "RC-1: Documentation plan expanded with global doc updates",
+        "RC-2: DRY note added to T9 for group BFS code"
+      ]
+    },
+    {
+      "gate": "implementation-review",
+      "attempt": 1,
+      "decision": "approve_with_conditions",
+      "status_code": "GOV-REVIEW-CONDITIONAL",
+      "unanimous": true,
+      "key_findings": [
+        "7/7 unanimous approve",
+        "RC-1: rank description doc fix (resolved)",
+        "1882 tests passed, 35 new tests added",
+        "All 7 constraints verified"
+      ]
+    },
+    {
+      "gate": "closeout",
+      "attempt": 1,
+      "decision": "approve",
+      "status_code": "GOV-CLOSEOUT-APPROVED",
+      "unanimous": true,
+      "key_findings": [
+        "All 6 charter goals delivered",
+        "Documentation complete (AGENTS.md, hints.md, katago-enrichment-lab.md)",
+        "AC-2/AC-4 deferred to golden set calibration (infrastructure ready)",
+        "No unresolved blockers"
+      ]
+    },
+    {
+      "gate": "implementation-review",
+      "attempt": 2,
+      "decision": "approve",
+      "status_code": "GOV-REVIEW-APPROVED",
+      "unanimous": true,
+      "key_findings": [
+        "RC-1 resolved: 20 detector orientation tests added (5 detectors × 4 rotations)",
+        "RC-2 resolved: InstinctConfig.enabled=False gates instinct phrases per C-3",
+        "RC-3 resolved: entropy docstring matches implementation",
+        "687 targeted tests pass, 0 failures"
+      ]
+    },
+    {
+      "gate": "closeout",
+      "attempt": 2,
+      "decision": "approve",
+      "status_code": "GOV-CLOSEOUT-APPROVED",
+      "unanimous": true,
+      "key_findings": [
+        "15/15 closeout checks pass",
+        "All 6 lifecycle RCs resolved",
+        "Deferred items reduced from 3 to 2 (detector orientation tests resolved)",
+        "Documentation update-first policy followed"
+      ]
+    }
+  ],
+  "open_issues": [],
+  "updated_at": "2026-03-15"
+}

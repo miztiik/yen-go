@@ -1,0 +1,4 @@
+# Calibration results are machine-specific and non-deterministic
+# across model versions. Do not commit.
+*
+!.gitignore

@@ -1,0 +1,146 @@
+/**
+ * Rush Score Component Styles
+ */
+
+.rush-score {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+  background: var(--surface-secondary, #f5f5f5);
+  border-radius: var(--radius-md, 8px);
+  min-width: 100px;
+}
+
+/* Main score display */
+.rush-score__main {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-xs, 4px);
+}
+
+.rush-score__label {
+  font-size: var(--font-size-xs, 10px);
+  color: var(--text-secondary, #757575);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rush-score__value {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--font-size-xl, 20px);
+  font-weight: bold;
+  color: var(--text-primary, #212121);
+}
+
+.rush-score__perfect {
+  font-size: var(--font-size-lg, 18px);
+  animation: sparkle 1s ease-in-out infinite;
+}
+
+/* Streak display */
+.rush-score__streak {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  font-size: var(--font-size-sm, 12px);
+}
+
+.rush-score__streak-label {
+  color: var(--text-secondary, #757575);
+}
+
+.rush-score__streak-value {
+  font-weight: 600;
+  color: var(--color-warning, #f57c00);
+}
+
+/* Score breakdown (animated popup) */
+.rush-score__breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs, 4px);
+  font-size: var(--font-size-xs, 10px);
+  animation: slide-up 0.3s ease-out;
+}
+
+.rush-score__breakdown-item {
+  padding: 2px 6px;
+  border-radius: var(--radius-sm, 4px);
+  font-weight: 600;
+}
+
+.rush-score__breakdown-item--base {
+  background: var(--color-success-light, #e8f5e9);
+  color: var(--color-success, #4caf50);
+}
+
+.rush-score__breakdown-item--time {
+  background: var(--color-info-light, #e3f2fd);
+  color: var(--color-info, #2196f3);
+}
+
+.rush-score__breakdown-item--streak {
+  background: var(--color-warning-light, #fff3e0);
+  color: var(--color-warning, #f57c00);
+}
+
+.rush-score__breakdown-item--penalty {
+  background: var(--color-error-light, #ffebee);
+  color: var(--color-error, #d32f2f);
+}
+
+/* Compact score variant */
+.rush-score-compact {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+}
+
+.rush-score-compact__score {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--font-size-lg, 18px);
+  font-weight: bold;
+  color: var(--text-primary, #212121);
+}
+
+.rush-score-compact__streak {
+  font-size: var(--font-size-sm, 12px);
+  font-weight: 600;
+  color: var(--color-warning, #f57c00);
+}
+
+/* Animations */
+@keyframes sparkle {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .rush-score {
+    background: var(--surface-secondary, #2d2d2d);
+  }
+
+  .rush-score__value,
+  .rush-score-compact__score {
+    color: var(--text-primary, #ffffff);
+  }
+}

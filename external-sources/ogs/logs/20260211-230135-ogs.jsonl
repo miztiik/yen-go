@@ -1,0 +1,25 @@
+{"ts": "2026-02-11T22:01:35.734261+00:00", "level": "INFO", "logger": "ogs", "message": "Log: external-sources/ogs/logs/20260211-230135-ogs.jsonl"}
+{"ts": "2026-02-11T22:01:35.736328+00:00", "level": "INFO", "logger": "ogs", "message": "START external-sources/ogs max=10000 mode=fresh", "event_type": "run_start", "data": {"output_dir": "external-sources/ogs", "max_items": 10000, "resume": false, "dry_run": false}}
+{"ts": "2026-02-11T22:01:35.744244+00:00", "level": "INFO", "logger": "ogs", "message": "Found 100 indexed puzzles"}
+{"ts": "2026-02-11T22:01:36.582710+00:00", "level": "INFO", "logger": "ogs", "message": "Objective parsing enabled (--fetch-objective): will fetch puzzle HTML for extra tags"}
+{"ts": "2026-02-11T22:01:36.584739+00:00", "level": "INFO", "logger": "ogs", "message": "Fetching puzzle count from OGS..."}
+{"ts": "2026-02-11T22:01:37.720626+00:00", "level": "INFO", "logger": "ogs", "message": "Total puzzles available: 58582 (1172 pages)"}
+{"ts": "2026-02-11T22:01:37.721833+00:00", "level": "INFO", "logger": "ogs", "message": "Will download up to 10000 new puzzles this session"}
+{"ts": "2026-02-11T22:01:37.723640+00:00", "level": "INFO", "logger": "ogs", "message": "GET page 1/1172", "event_type": "page_start", "data": {"page": 1, "total_pages": 1172, "url": "https://online-go.com/api/v1/puzzles/?page=1&page_size=50"}}
+{"ts": "2026-02-11T22:01:38.029533+00:00", "level": "INFO", "logger": "ogs", "message": "FETCHED page 1: 50 puzzles", "event_type": "page_fetch", "data": {"page": 1, "url": "https://online-go.com/api/v1/puzzles/?page=1&page_size=50", "puzzle_count": 50}}
+{"ts": "2026-02-11T22:01:38.030003+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 45 (Already downloaded)", "event_type": "item_skip", "data": {"item_id": "45", "reason": "Already downloaded", "status": "skipped"}}
+{"ts": "2026-02-11T22:01:38.030320+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 1555 (Already downloaded)", "event_type": "item_skip", "data": {"item_id": "1555", "reason": "Already downloaded", "status": "skipped"}}
+{"ts": "2026-02-11T22:01:38.030624+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 6544 (Already downloaded)", "event_type": "item_skip", "data": {"item_id": "6544", "reason": "Already downloaded", "status": "skipped"}}
+{"ts": "2026-02-11T22:01:38.031013+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 7994 (Already downloaded)", "event_type": "item_skip", "data": {"item_id": "7994", "reason": "Already downloaded", "status": "skipped"}}
+{"ts": "2026-02-11T22:01:38.031240+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 8037 (Already downloaded)", "event_type": "item_skip", "data": {"item_id": "8037", "reason": "Already downloaded", "status": "skipped"}}
+{"ts": "2026-02-11T22:01:38.031430+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 8061 (Already downloaded)", "event_type": "item_skip", "data": {"item_id": "8061", "reason": "Already downloaded", "status": "skipped"}}
+{"ts": "2026-02-11T22:01:38.031669+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 8341 (Already downloaded)", "event_type": "item_skip", "data": {"item_id": "8341", "reason": "Already downloaded", "status": "skipped"}}
+{"ts": "2026-02-11T22:01:38.031999+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 10496 (Already downloaded)", "event_type": "item_skip", "data": {"item_id": "10496", "reason": "Already downloaded", "status": "skipped"}}
+{"ts": "2026-02-11T22:01:38.032271+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 13605 (Already downloaded)", "event_type": "item_skip", "data": {"item_id": "13605", "reason": "Already downloaded", "status": "skipped"}}
+{"ts": "2026-02-11T22:01:38.032493+00:00", "level": "INFO", "logger": "ogs", "message": "GET puzzle 13723", "event_type": "item_fetch", "data": {"puzzle_id": 13723, "url": "https://online-go.com/api/v1/puzzles/13723/"}}
+{"ts": "2026-02-11T22:01:38.215729+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 13723 (Rejected puzzle 13723: Solution too long (52 moves). Max allowed is 20 moves.)", "event_type": "item_skip", "data": {"item_id": "13723", "reason": "Rejected puzzle 13723: Solution too long (52 moves). Max allowed is 20 moves.", "status": "skipped"}}
+{"ts": "2026-02-11T22:01:38.216171+00:00", "level": "INFO", "logger": "ogs", "message": "SKIP 14458 (Already downloaded)", "event_type": "item_skip", "data": {"item_id": "14458", "reason": "Already downloaded", "status": "skipped"}}
+{"ts": "2026-02-11T22:01:39.453885+00:00", "level": "WARNING", "logger": "ogs", "message": "\nReceived interrupt signal. Saving checkpoint..."}
+{"ts": "2026-02-11T22:01:39.457550+00:00", "level": "DEBUG", "logger": "ogs.checkpoint", "message": "Saved checkpoint: 0 puzzles"}
+{"ts": "2026-02-11T22:01:39.457925+00:00", "level": "INFO", "logger": "ogs", "message": "Checkpoint saved. Run with --resume to continue."}
+{"ts": "2026-02-11T22:01:39.458560+00:00", "level": "INFO", "logger": "ogs", "message": "END saved=0 skipped=0 errors=0 [3.7s]", "event_type": "run_end", "data": {"downloaded": 0, "skipped": 0, "errors": 0, "duration_sec": 3.723694086074829}}

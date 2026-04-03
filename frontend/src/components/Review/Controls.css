@@ -1,0 +1,109 @@
+/**
+ * Styles for ReviewControls component.
+ */
+
+.review-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: var(--color-surface, #fafafa);
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border, #e0e0e0);
+}
+
+.review-controls__buttons {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.review-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background-color: var(--color-button-bg, #fff);
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.review-btn:hover:not(:disabled) {
+  background-color: var(--color-button-hover, #f0f0f0);
+  border-color: var(--color-border-hover, #bdbdbd);
+}
+
+.review-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.review-btn:focus-visible {
+  outline: 2px solid var(--color-focus, #2196f3);
+  outline-offset: 2px;
+}
+
+.review-btn--disabled,
+.review-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.review-btn__icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.review-controls__progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.review-controls__move-display {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary, #333);
+}
+
+.review-controls__slider {
+  width: 100%;
+  max-width: 200px;
+  height: 6px;
+  appearance: none;
+  background-color: var(--color-slider-track, #e0e0e0);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.review-controls__slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background-color: var(--color-primary, #2196f3);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.review-controls__slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.review-controls__slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background-color: var(--color-primary, #2196f3);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.review-controls__slider:focus-visible {
+  outline: 2px solid var(--color-focus, #2196f3);
+  outline-offset: 2px;
+}

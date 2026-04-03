@@ -1,0 +1,29 @@
+target-version = "py312"
+line-length = 100
+
+[lint]
+select = ["E", "W", "F", "I", "B", "C4", "UP"]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "B008",  # do not perform function calls in argument defaults
+    "B017",  # assert-raises-exception — tests use broad Exception for Pydantic ValidationError
+    "UP031", # printf-string-formatting — existing pattern, low priority
+]
+
+[lint.per-file-ignores]
+# Tools use sys.path manipulation before imports — intentional pattern
+"**/tests/**/*.py" = ["E402"]
+"**/scripts/**/*.py" = ["E402"]
+"**/__main__.py" = ["E402"]
+"**/conftest.py" = ["E402"]
+# Standalone tool scripts with sys.path setup
+"bridge.py" = ["E402"]
+"cli.py" = ["E402"]
+"config.py" = ["E402"]
+"update_*.py" = ["E402"]
+"puzzle-manager-scripts/**/*.py" = ["E402"]
+# Enrichment lab uses try/except ImportError with dual import paths
+"puzzle-enrichment-lab/analyzers/**/*.py" = ["F401"]
+"puzzle-enrichment-lab/config/__init__.py" = ["F401"]
+# Core __init__.py re-exports for public API
+"core/__init__.py" = ["F401"]

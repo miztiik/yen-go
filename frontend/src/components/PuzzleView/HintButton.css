@@ -1,0 +1,76 @@
+/**
+ * Styles for HintButton component.
+ */
+
+.hint-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary, #333);
+  background-color: var(--color-hint-bg, #fff8e1);
+  border: 2px solid var(--color-hint-border, #ffc107);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px; /* Touch target */
+  min-width: 44px;
+}
+
+.hint-button:hover:not(:disabled) {
+  background-color: var(--color-hint-bg-hover, #ffecb3);
+  border-color: var(--color-hint-border-hover, #ffa000);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.hint-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.hint-button:focus-visible {
+  outline: 2px solid var(--color-focus, #2196f3);
+  outline-offset: 2px;
+}
+
+.hint-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--color-hint-bg-disabled, #f5f5f5);
+  border-color: var(--color-hint-border-disabled, #bdbdbd);
+}
+
+.hint-button__icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.hint-button__text {
+  white-space: nowrap;
+}
+
+.hint-button__level {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, #666);
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+}
+
+/* Level-specific styling */
+.hint-button--level-1 {
+  background-color: var(--color-hint-level1-bg, #fff8e1);
+}
+
+.hint-button--level-2 {
+  background-color: var(--color-hint-level2-bg, #ffecb3);
+  border-color: var(--color-hint-level2-border, #ffa000);
+}
+
+.hint-button--level-3 {
+  background-color: var(--color-hint-level3-bg, #ffe082);
+  border-color: var(--color-hint-level3-border, #ff8f00);
+}

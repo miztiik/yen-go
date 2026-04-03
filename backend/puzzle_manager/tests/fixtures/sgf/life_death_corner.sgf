@@ -1,0 +1,13 @@
+(;GM[1]FF[4]SZ[19]
+CA[UTF-8]
+GN[Life and Death - Corner]
+PB[Black]
+PW[White]
+DT[2025-01-01]
+PL[B]
+AB[aa][ab][ac][ba][bb][ca][cb]
+AW[ad][ae][bd][be][cd][ce][da][db][dc][dd]
+;B[bc]
+(;W[cc];B[ac])
+(;W[ac];B[cc])
+)

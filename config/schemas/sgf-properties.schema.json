@@ -1,0 +1,390 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://yen-go.github.io/schemas/sgf-properties.schema.json",
+  "title": "YenGo SGF Custom Properties Schema",
+  "description": "Schema defining YenGo's custom SGF properties for tsumego puzzles. This is the SINGLE SOURCE OF TRUTH for SGF property validation.",
+  "schema_version": 15,
+  "last_updated": "2026-03-17",
+  "version_history": [
+    { "version": 15, "date": "2026-03-17", "changes": "Added ac (analysis completeness) field to YQ quality metrics. YQ format now q:{1-5};rc:{N};hc:{0-2};ac:{0-3}. hc expanded to 3-level (0=none, 1=correctness markers, 2=teaching text). ac tracks pipeline processing state (0=untouched, 1=enriched, 2=ai_solved, 3=verified). All four fields are now required." },
+    { "version": 14, "date": "2026-06-17", "changes": "Extended YL to support optional chapter/position suffix (slug:CHAPTER/POSITION format). Chapter is a string identifier, position is an integer. Enables source-provided learning sequence preservation. Backward compatible: bare slugs still valid." },
+    { "version": 13, "date": "2026-02-20", "changes": "Consolidated YS (source) and YI (run_id) into YM pipeline metadata JSON. YS and YI no longer emitted as separate properties. YM format: {t, f, s, i}. Backward compat: parser still reads legacy YS/YI if present." },
+    { "version": 12, "date": "2026-02-20", "changes": "Added YM (pipeline metadata JSON) embedding trace_id and original_filename directly in SGF. Eliminates trace map sidecar files. Schema bump v10→v12 (skip v11) to mark rebuild-centric architecture change." },
+    { "version": 10, "date": "2026-02-10", "changes": "Added YL (collection membership) for curated puzzle collections (spec-126). Comma-separated sorted slugs referencing config/collections.json." },
+    { "version": 9, "date": "2026-02-04", "changes": "Added YS (source adapter ID) for accurate publish log tracking when stages run separately." },
+    { "version": 8, "date": "2026-01-31", "changes": "SGF enrichment refactor (spec-053): Removed YH1/YH2/YH3 (no backward compat), standardized GN format, SO must be empty, remove root C[], keep move C[], no empty lines in output." },
+    { "version": 7, "date": "2026-01-30", "changes": "Compact hints format - YH[hint1|hint2|...] replaces YH1/YH2/YH3 (spec-042). Backward compatibility maintained for reading." },
+    { "version": 6, "date": "2026-01-29", "changes": "Changed YI format to date-prefixed YYYYMMDD-xxxxxxxx (spec-041). Clean rewrite - legacy format not supported." },
+    { "version": 5, "date": "2026-01-29", "changes": "Added YI (run_id) for rollback lineage (spec-036). Made YQ, YX required. YT now optional. Removed YM (use YX.d instead)." },
+    { "version": 4, "date": "2026-01-27", "changes": "Previous version" }
+  ],
+
+  "definitions": {
+    "YV": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Schema version number (integer). Used for migration compatibility. Increments by 1 for each major schema change (no decimal versions).",
+      "examples": [5, 6, 7, 8, 9, 10, 12, 13, 14, 15],
+      "current_version": 15,
+      "required": true,
+      "note": "Version is always an integer. Versions may skip numbers for architectural changes (e.g., v10→v12). No decimal versions."
+    },
+    
+    "YG": {
+      "type": "string",
+      "description": "Difficulty level with optional sub-level. Format: 'level' or 'level:sublevel'. Level must be a valid slug from config/puzzle-levels.json. Sub-level (1-3) provides finer granularity within each level.",
+      "pattern": "^(novice|beginner|elementary|intermediate|upper-intermediate|advanced|low-dan|high-dan|expert)(:[1-3])?$",
+      "valid_levels": [
+        "novice",
+        "beginner",
+        "elementary",
+        "intermediate",
+        "upper-intermediate",
+        "advanced",
+        "low-dan",
+        "high-dan",
+        "expert"
+      ],
+      "sub_level_range": [1, 2, 3],
+      "examples": ["intermediate:2", "beginner:1", "low-dan:3", "novice"],
+      "required": true,
+      "enricher_authoritative": true,
+      "property_policy": "enrich_if_absent",
+      "note": "Policy: enrich_if_absent — source YG preserved if valid; classifier runs only when missing. See config/sgf-property-policies.json."
+    },
+    
+    "YT": {
+      "type": "string",
+      "description": "Comma-separated technique tags (alphabetically sorted, deduplicated). Each tag must exist in config/tags.json. Optional if tags cannot be determined.",
+      "pattern": "^[a-z-]+(,[a-z-]+)*$",
+      "examples": ["life-and-death", "ko,snapback", "ladder,life-and-death,net"],
+      "required": false,
+      "enricher_authoritative": true,
+      "property_policy": "enrich_if_absent",
+      "note": "Policy: enrich_if_absent — source YT preserved if present; tags computed only when missing. See config/sgf-property-policies.json."
+    },
+
+    "YH": {
+      "type": "string",
+      "description": "Compact hints format: pipe-separated list of 1-3 hints. Format: hint1|hint2|hint3.",
+      "pattern": "^[^|]+(?:\\|[^|]+){0,2}$",
+      "maxLength": 700,
+      "examples": ["Focus on corner|snapback|The throw-in at ba creates a dead shape", "Look at top-left|cb"],
+      "required": false,
+      "note": "YH1/YH2/YH3 are REMOVED in v8 - no backward compatibility."
+    },
+
+    "YR": {
+      "type": "string",
+      "description": "Refutation move coordinates (comma-separated). Common wrong first moves for educational feedback.",
+      "pattern": "^[a-s]{2}(,[a-s]{2})*$",
+      "examples": ["bb,cd", "ab"],
+      "required": false
+    },
+    
+    "YC": {
+      "type": "string",
+      "description": "Board region identifier. Enables region-based filtering.",
+      "enum": [
+        "TL", "TR", "BL", "BR",
+        "T", "B", "L", "R",
+        "C",
+        "TL:3-3", "TL:4-4", "TL:3-4",
+        "TR:3-3", "TR:4-4", "TR:3-4",
+        "BL:3-3", "BL:4-4", "BL:3-4",
+        "BR:3-3", "BR:4-4", "BR:3-4",
+        "T:edge", "B:edge", "L:edge", "R:edge",
+        "C:star"
+      ],
+      "examples": ["TL", "TL:3-3", "T:edge"],
+      "required": false
+    },
+    
+    "YQ": {
+      "type": "string",
+      "description": "Quality metrics: measures DATA RICHNESS (how well documented). Quality level (q:1-5) indicates documentation completeness, refutation count (rc) is number of wrong-move branches, comment level (hc: 0=none, 1=correctness markers, 2=teaching text), analysis completeness (ac: 0=untouched, 1=enriched, 2=ai_solved, 3=verified).",
+      "pattern": "^q:[1-5];rc:[0-9]+;hc:[0-2];ac:[0-3]$",
+      "examples": ["q:2;rc:3;hc:1;ac:0", "q:4;rc:0;hc:0;ac:1", "q:1;rc:5;hc:2;ac:2"],
+      "required": true,
+      "properties_detail": {
+        "q": {
+          "description": "Quality level (1=Unverified (worst), 2=Basic, 3=Standard, 4=High, 5=Premium (best))",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "rc": {
+          "description": "Refutation count - number of wrong-move branches in solution tree",
+          "type": "integer",
+          "minimum": 0
+        },
+        "hc": {
+          "description": "Comment level - 0 (no comments), 1 (correctness markers only), 2 (genuine teaching text)",
+          "type": "integer",
+          "enum": [0, 1, 2]
+        },
+        "ac": {
+          "description": "Analysis completeness - 0 (untouched), 1 (enriched), 2 (ai_solved), 3 (verified)",
+          "type": "integer",
+          "enum": [0, 1, 2, 3]
+        }
+      },
+      "quality_level_criteria": {
+        "1_unverified": "no solution tree (worst)",
+        "2_basic": "solution tree only, no refutations",
+        "3_standard": "solution tree + ≥1 refutation",
+        "4_high": "solution tree + ≥2 refutations + comments",
+        "5_premium": "solution tree + ≥3 refutations + comments (best)"
+      }
+    },
+    
+    "YX": {
+      "type": "string",
+      "description": "Complexity metrics: measures PUZZLE DIFFICULTY (how hard to solve). All metrics computable from tree analysis - NO AI required.",
+      "pattern": "^d:[0-9]+(;r:[0-9]+)?(;s:[0-9]+)?(;u:[01])?(;a:[0-9]+)?$",
+      "examples": ["d:5;r:13;s:24;u:1", "d:3;r:7;s:15;u:1;a:2", "d:10;r:45;s:30;u:0;a:0"],
+      "required": true,
+      "properties_detail": {
+        "d": {
+          "description": "Solution depth - moves in main correct line",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "r": {
+          "description": "Reading count - total nodes in solution tree (workload)",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 999
+        },
+        "s": {
+          "description": "Stone count - total stones on board (position complexity)",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 361
+        },
+        "u": {
+          "description": "Uniqueness - 1 if single correct first move, 0 if miai (multiple correct)",
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "a": {
+          "description": "Average refutation depth - mean depth of wrong-move branches (0 if no refutations)",
+          "type": "integer",
+          "minimum": 0,
+          "optional": true
+        }
+      }
+    },
+    
+    "YK": {
+      "type": "string",
+      "description": "Ko context for puzzles involving ko fights.",
+      "pattern": "^(none|direct|approach|multi|picnic|unconditional|ko-for-life|eternal)(:.+)?$",
+      "examples": ["none", "direct", "direct:B2,W1", "approach", "multi:2", "picnic:B"],
+      "required": false,
+      "enum_base": ["none", "direct", "approach", "multi", "picnic", "unconditional", "ko-for-life", "eternal"]
+    },
+    
+    "YO": {
+      "type": "string",
+      "description": "Move order flexibility. Default (no YO property) means strict order required.",
+      "pattern": "^(strict|([0-9,]+:)?flexible|all:flexible)$",
+      "examples": ["strict", "1,2:flexible", "all:flexible"],
+      "required": false,
+      "default": "strict"
+    },
+    
+    "YL": {
+      "type": "string",
+      "description": "Collection membership: comma-separated entries referencing config/collections.json. Each entry is either a bare slug, slug:CHAPTER/POSITION (chapter string + 1-based integer position), or slug:POSITION (position-only, no chapter). The forward-slash separates chapter from position unambiguously.",
+      "pattern": "^[a-z0-9-]+(:[a-z0-9-]+/[0-9]+|:[0-9]+)?(,[a-z0-9-]+(:[a-z0-9-]+/[0-9]+|:[0-9]+)?)*$",
+      "examples": ["essential-life-and-death", "ko-problems,tesuji-training", "cho-chikun-elementary:3/12", "life-and-death:5,tesuji-training", "cho-elementary:intro-a/5"],
+      "required": false,
+      "added_in_version": 10,
+      "updated_in_version": 14,
+      "note": "Each slug must exist in config/collections.json. Bare slugs are valid (backward compatible). When :CHAPTER/POSITION suffix is present, publish stage groups by chapter then sorts by position within chapter, instead of alphabetical hash ordering. Chapter is a string identifier (supports numeric or named chapters like 'intro-a'). Position-only format (:N) omits chapter. Set by source tools (e.g., weiqi101) or analyze stage."
+    },
+
+    "YM": {
+      "type": "string",
+      "description": "Pipeline metadata JSON: embeds trace_id directly in SGF for cross-stage correlation. Format: {\"t\":\"<trace_id>\",\"i\":\"<run_id>\"}. Set at ingest, read by analyze/publish. Replaces trace map sidecar files.",
+      "pattern": "^\\{.*\\}$",
+      "examples": ["{\"t\":\"a1b2c3d4e5f67890\",\"i\":\"20260220-abc12345\"}", "{\"t\":\"fedcba9876543210\"}"],
+      "required": false,
+      "added_in_version": 12,
+      "note": "v13: YM now contains all pipeline metadata. Fields: 't' (trace_id), 'i' (run_id — was YI). 'f' (original_filename) is set at ingest but stripped at publish — publish log records it independently. 's' (source adapter ID — was YS) removed in v13. All fields optional except 't'. Kept in published files for forensic debugging via trace_id."
+    }
+  },
+
+  "removed_properties": {
+    "YM_v5": {
+      "removed_in_version": 5,
+      "reason": "Redundant with YX.d (solution_depth). Use YX.d instead. Note: YM was re-introduced in v12 with a completely different meaning (pipeline metadata JSON)."
+    },
+    "YS": {
+      "removed_in_version": 13,
+      "reason": "Folded into YM.s field. Source adapter ID now lives inside YM JSON. Parser still reads legacy YS for backward compatibility."
+    },
+    "YI": {
+      "removed_in_version": 13,
+      "reason": "Folded into YM.i field. Run ID now lives inside YM JSON. Parser still reads legacy YI for backward compatibility."
+    },
+    "YH1": {
+      "removed_in_version": 8,
+      "reason": "Replaced by YH compact format. No backward compatibility."
+    },
+    "YH2": {
+      "removed_in_version": 8,
+      "reason": "Replaced by YH compact format. No backward compatibility."
+    },
+    "YH3": {
+      "removed_in_version": 8,
+      "reason": "Replaced by YH compact format. No backward compatibility."
+    }
+  },
+
+  "standard_properties": {
+    "description": "Standard SGF FF[4] properties that YenGo uses",
+    "required": ["GM", "FF", "CA", "SZ", "PL", "GN"],
+    "properties": {
+      "GM": {
+        "const": 1,
+        "description": "Game type. Always 1 for Go."
+      },
+      "FF": {
+        "const": 4,
+        "description": "File format version. Always 4."
+      },
+      "CA": {
+        "const": "UTF-8",
+        "description": "Character encoding. Always UTF-8."
+      },
+      "SZ": {
+        "type": "integer",
+        "minimum": 5,
+        "maximum": 19,
+        "description": "Board size. Common values: 9, 13, 19."
+      },
+      "PL": {
+        "enum": ["B", "W"],
+        "description": "Player to move."
+      },
+      "GN": {
+        "type": "string",
+        "pattern": "^YENGO-[a-f0-9]{16}$",
+        "description": "Game/puzzle name. Format: YENGO-{16-char-hex}. Must match filename (minus .sgf).",
+        "enricher_authoritative": true,
+        "property_policy": "override"
+      },
+      "SO": {
+        "const": "",
+        "description": "Source. MUST be empty or absent. Provenance stored in pipeline state, not SGF.",
+        "enricher_removes": true
+      },
+      "AB": {
+        "type": "array",
+        "items": { "pattern": "^[a-s]{2}$" },
+        "description": "Black stones (setup)."
+      },
+      "AW": {
+        "type": "array",
+        "items": { "pattern": "^[a-s]{2}$" },
+        "description": "White stones (setup)."
+      },
+      "C": {
+        "type": "string",
+        "description": "Comment. Root-level C[] is REMOVED by enricher. Move variation C[] (pedagogical feedback) is PRESERVED."
+      },
+      "VW": {
+        "type": "string",
+        "description": "View region (cropped board display)."
+      }
+    }
+  },
+
+  "comment_handling": {
+    "description": "Rules for C[] comment property handling. See config/sgf-property-policies.json for configurable policy.",
+    "root_level_comment": {
+      "action": "CONFIGURABLE",
+      "config_flag": "preserve_root_comment",
+      "default": true,
+      "reason": "Root-level comments are preserved by default (configurable via preserve_root_comment). HTML/CJK stripped."
+    },
+    "move_variation_comment": {
+      "action": "PRESERVE",
+      "reason": "Move variation comments explain WHY moves are correct/wrong. Essential for learning. Examples: 'Correct!', 'Wrong - white lives'."
+    }
+  },
+
+  "output_formatting": {
+    "description": "SGF output formatting rules",
+    "rules": [
+      "No empty lines in output SGF",
+      "No unnecessary whitespace between properties",
+      "Compact single-line format preferred for small puzzles",
+      "Properties in logical order: standard SGF props → YenGo props → solution tree"
+    ]
+  },
+
+  "move_annotation_properties": {
+    "description": "Standard FF[4] move annotations to use in solution trees",
+    "properties": {
+      "TE": {
+        "const": 1,
+        "description": "Tesuji marker. Use on correct moves."
+      },
+      "BM": {
+        "const": 1,
+        "description": "Bad move marker. Use on refutation/wrong moves."
+      }
+    }
+  },
+
+  "enricher_responsibilities": {
+    "description": "Property handling is config-driven. See config/sgf-property-policies.json for the declarative policy registry.",
+    "policy_config": "config/sgf-property-policies.json",
+    "policy_types": ["blocked", "preserve", "hardcode", "override", "enrich_if_absent", "enrich_if_partial", "remove", "configurable"],
+    "override_properties": ["GN", "YV"],
+    "enrich_if_absent_properties": ["YG", "YT", "YL", "YH", "SZ", "YC", "YK", "YO", "YR"],
+    "enrich_if_partial_properties": ["YQ", "YX"],
+    "blocked_properties": ["DT", "CA", "RE", "AP", "KM", "HA", "TM", "OT", "RU", "BR", "WR", "VW", "ST"],
+    "removed_properties": ["SO"],
+    "preserved_properties": ["PL", "GC", "PB", "PW", "GN", "AN"],
+    "configurable_properties": ["C"],
+    "notes": [
+      "Property policies are declarative — add/modify entries in sgf-property-policies.json without code changes",
+      "BLOCKED: dropped at parse time (DT, CA, RE, AP, etc.)",
+      "PRESERVE: source value kept as-is (AN, PL, GC, PB, PW)",
+      "HARDCODE: forced to fixed value (FF=4, GM=1)",
+      "OVERRIDE: always overwritten (GN by publisher, YV to current version)",
+      "ENRICH_IF_ABSENT: source value preserved; pipeline computes only when missing (YG, YT, YH, YC, YK, YO, YR, YL, SZ)",
+      "ENRICH_IF_PARTIAL: re-computed if value fails validation (YQ, YX)",
+      "REMOVE: parsed but deleted before output (SO)",
+      "CONFIGURABLE: behavior controlled by runtime flag (C[] via preserve_root_comment)",
+      "SZ defaults to 19 when absent (enrich_if_absent with default_value)"
+    ]
+  },
+
+  "validation_rules": [
+    "YV must be present in root node (current version: 12)",
+    "YG must reference valid level slug from config/puzzle-levels.json",
+    "All tags in YT must exist in config/tags.json",
+    "YT tags must be comma-separated, alphabetically sorted, deduplicated",
+    "YL slugs must exist in config/collections.json and be comma-separated/sorted",
+    "Only one YG property allowed per SGF",
+    "Only one YT property allowed per SGF",
+    "YH uses pipe-separated format: hint1|hint2|hint3 (max 3 hints)",
+    "YH1/YH2/YH3 are NOT supported (removed in v8)",
+    "GN must match pattern YENGO-{16-hex-chars}",
+    "SO must be empty or absent",
+    "Root-level C[] must be removed",
+    "Move variation C[] must be preserved",
+    "No empty lines in SGF output"
+  ],
+
+  "example_sgf": {
+    "v12_format": "(;GM[1]FF[4]CA[UTF-8]SZ[19]GN[YENGO-a1b2c3d4e5f67890]PL[B]YV[12]YG[intermediate]YT[life-and-death,snapback]YH[Focus on the corner|cb]YQ[q:3;rc:2;hc:1]YX[d:3;r:12;s:15;u:1]YC[TL]YI[20260131-12345678]YM[{\"t\":\"fedcba9876543210\",\"f\":\"puzzle.sgf\"}]AB[ba][ca][da]AW[ab][bb][cb](;B[cb]C[Correct!])(;B[db]C[Wrong - white escapes]))",
+    "note": "v12 adds YM pipeline metadata JSON. No YH1/YH2/YH3. No root C[]. No SO[]. GN is YENGO-{hash}."
+  }
+}

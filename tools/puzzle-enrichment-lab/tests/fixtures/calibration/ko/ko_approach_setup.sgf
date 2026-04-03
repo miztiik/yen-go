@@ -1,0 +1,14 @@
+(;FF[4]GM[1]SZ[9]
+AB[cc][cd][dc][ec][dd]
+AW[cb][db][bc][bd][be][de][ee][ed]
+PL[B]
+YK[approach]
+YT[10,12]
+YG[intermediate]
+PC[https://senseis.xmp.net/?ApproachKo]
+C[Approach ko: Black plays C1 first to create the ko threat before taking.
+Calibration fixture: exercises ko-aware rules routing (tromp-taylor) for approach moves.]
+;B[ce]
+(;W[ce]C[Wrong])
+(;W[dd]
+;B[cd]C[Correct — ko threat established]))

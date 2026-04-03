@@ -1,0 +1,5 @@
+# Puzzles in log but not on disk
+# Generated: "investigate_missing.py"
+# Count: 1
+
+i000n0

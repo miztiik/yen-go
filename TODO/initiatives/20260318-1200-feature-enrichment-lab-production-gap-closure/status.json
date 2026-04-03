@@ -1,0 +1,59 @@
+{
+  "initiative_id": "20260318-1200-feature-enrichment-lab-production-gap-closure",
+  "initiative_type": "feature",
+  "current_phase": "superseded",
+  "superseded_by": "20260318-1400-feature-enrichment-lab-production-readiness",
+  "superseded_at": "2026-03-18",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "superseded",
+    "validate": "not_started",
+    "governance_review": "approved",
+    "closeout": "not_started"
+  },
+  "governance": {
+    "charter": {
+      "decision": "approve",
+      "status_code": "GOV-CHARTER-APPROVED",
+      "last_reviewed_at": "2026-03-18",
+      "required_changes": []
+    },
+    "options": {
+      "decision": "approve_with_conditions",
+      "status_code": "GOV-OPTIONS-CONDITIONAL",
+      "last_reviewed_at": "2026-03-18",
+      "required_changes": [
+        "RC-4 Record option election in status/governance",
+        "RC-5 Add player-impact validation in plan",
+        "RC-6 Map ripple owners to concrete tasks",
+        "RC-7 Raise confidence with evidence-backed mitigations"
+      ]
+    },
+    "plan": {
+      "decision": "approve",
+      "status_code": "GOV-PLAN-APPROVED",
+      "last_reviewed_at": "2026-03-18",
+      "required_changes": []
+    }
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "User selected Q1-C: no backward compatibility path; prioritize clean production-final implementation."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": true,
+      "rationale": "User selected Q1-C and requested final production-focused alignment."
+    },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Governance options election selected OPT-1 Production Hardening First (GOV-OPTIONS-CONDITIONAL)."
+    }
+  },
+  "updated_at": "2026-03-18"
+}

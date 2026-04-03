@@ -1,0 +1,249 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://yen-go.github.io/schemas/teaching-comments.schema.json",
+  "title": "Teaching Comments Configuration",
+  "description": "Schema for config/teaching-comments.json — teaching comment templates for SGF C[] embedding and YH hint text.",
+  "type": "object",
+  "required": ["schema_version", "description", "last_updated", "design_principles", "correct_move_comments", "wrong_move_comments"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Schema version (MAJOR.MINOR)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this config file"
+    },
+    "last_updated": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "ISO date of last modification (YYYY-MM-DD)"
+    },
+    "changelog": {
+      "type": "array",
+      "description": "Version history for auditability.",
+      "items": {
+        "type": "object",
+        "required": ["version", "date", "author", "changes"],
+        "additionalProperties": false,
+        "properties": {
+          "version": { "type": "string" },
+          "date": { "type": "string" },
+          "author": { "type": "string" },
+          "changes": { "type": "string" }
+        }
+      }
+    },
+    "design_principles": {
+      "type": "object",
+      "description": "Guiding principles for teaching comment authorship",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "correct_move_comments": {
+      "type": "object",
+      "description": "Teaching comments keyed by canonical tag slug from tags.json",
+      "additionalProperties": {
+        "$ref": "#/definitions/TagCommentEntry"
+      },
+      "minProperties": 28
+    },
+    "wrong_move_comments": {
+      "$ref": "#/definitions/WrongMoveComments"
+    },
+    "signal_templates": {
+      "$ref": "#/definitions/SignalTemplates"
+    },
+    "assembly_rules": {
+      "$ref": "#/definitions/AssemblyRules"
+    },
+    "annotation_policy": {
+      "$ref": "#/definitions/AnnotationPolicy"
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "ConfidenceLevel": {
+      "type": "string",
+      "enum": ["HIGH", "CERTAIN"],
+      "description": "Minimum tag classification confidence required to emit the comment"
+    },
+    "TagCommentEntry": {
+      "type": "object",
+      "required": ["comment", "hint_text", "min_confidence"],
+      "properties": {
+        "comment": {
+          "type": "string",
+          "description": "Teaching comment for SGF C[] embedding. Format: '{Technique} ({jp_term}) — {mechanism}'. Max 15 words."
+        },
+        "technique_phrase": {
+          "type": "string",
+          "description": "Short technique name (2-4 words) for Layer 1 composition. Parenthetical Japanese terms count as 1 word."
+        },
+        "vital_move_comment": {
+          "type": "string",
+          "description": "Comment for the decisive tesuji deeper in the solution tree. Uses alias-specific language where available."
+        },
+        "hint_text": {
+          "type": "string",
+          "description": "Technique name + Japanese term only (no mechanism). Used for YH Tier 1 hints."
+        },
+        "min_confidence": {
+          "$ref": "#/definitions/ConfidenceLevel"
+        },
+        "alias_comments": {
+          "type": "object",
+          "description": "Specialized comments for high-value aliases of this tag",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "WrongMoveTemplate": {
+      "type": "object",
+      "required": ["condition", "comment"],
+      "properties": {
+        "condition": {
+          "type": "string",
+          "description": "Template selection condition identifier"
+        },
+        "comment": {
+          "type": "string",
+          "description": "Wrong-move explanation text"
+        },
+        "guard": {
+          "type": "string",
+          "description": "Human-readable guard condition for when this template may be used"
+        }
+      },
+      "additionalProperties": false
+    },
+    "DeltaAnnotation": {
+      "type": "object",
+      "required": ["threshold", "template"],
+      "properties": {
+        "threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Winrate delta threshold (0-1 scale)"
+        },
+        "template": {
+          "type": "string",
+          "description": "Annotation template. Supports {delta_pct} placeholder."
+        }
+      },
+      "additionalProperties": false
+    },
+    "WrongMoveComments": {
+      "type": "object",
+      "required": ["templates", "delta_annotations"],
+      "properties": {
+        "templates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WrongMoveTemplate"
+          },
+          "minItems": 1
+        },
+        "delta_annotations": {
+          "type": "object",
+          "properties": {
+            "significant_loss": {
+              "$ref": "#/definitions/DeltaAnnotation"
+            },
+            "moderate_loss": {
+              "$ref": "#/definitions/DeltaAnnotation"
+            }
+          },
+          "required": ["significant_loss", "moderate_loss"],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "SignalTemplates": {
+      "type": "object",
+      "description": "Layer 2 signal phrase templates keyed by signal type",
+      "properties": {
+        "vital_point": { "type": "string" },
+        "forcing": { "type": "string" },
+        "non_obvious": { "type": "string" },
+        "unique_solution": { "type": "string" },
+        "sacrifice_setup": { "type": "string" },
+        "opponent_takes_vital": { "type": "string" }
+      },
+      "required": ["vital_point", "forcing", "non_obvious", "unique_solution", "sacrifice_setup", "opponent_takes_vital"],
+      "additionalProperties": { "type": "string" }
+    },
+    "AssemblyRules": {
+      "type": "object",
+      "description": "Rules for composing Layer 1 + Layer 2 into final comment",
+      "required": ["composition", "max_words", "overflow_strategy"],
+      "properties": {
+        "composition": {
+          "type": "string",
+          "description": "Template pattern for combining technique_phrase and signal_phrase"
+        },
+        "max_words": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum word count for assembled comment"
+        },
+        "overflow_strategy": {
+          "type": "string",
+          "enum": ["signal_replaces_mechanism"],
+          "description": "Strategy when assembled comment exceeds max_words"
+        },
+        "parenthetical_counting": {
+          "type": "string",
+          "description": "Rule for counting parenthetical terms in word count"
+        },
+        "coord_token": {
+          "type": "string",
+          "description": "Coordinate token format used in templates"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AnnotationPolicy": {
+      "type": "object",
+      "description": "Policy controlling comment placement on solution tree nodes",
+      "required": ["max_correct_node_annotations", "vital_move_annotation_scope", "max_causal_wrong_moves"],
+      "properties": {
+        "max_correct_node_annotations": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum number of correct-path nodes that receive comments"
+        },
+        "vital_move_annotation_scope": {
+          "type": "string",
+          "enum": ["strict_only"],
+          "description": "When vital move annotations are allowed"
+        },
+        "alias_placement": {
+          "type": "string",
+          "description": "Where alias-specific phrases are placed"
+        },
+        "max_causal_wrong_moves": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum wrong moves receiving causal (non-default) explanations"
+        },
+        "causal_wrong_move_ranking": {
+          "type": "string",
+          "description": "How wrong moves are ranked for causal annotation selection"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

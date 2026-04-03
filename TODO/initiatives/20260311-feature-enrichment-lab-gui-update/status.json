@@ -1,0 +1,31 @@
+{
+  "initiative_id": "20260311-feature-enrichment-lab-gui-update",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": true,
+      "rationale": "All changes scoped to gui/ directory. rm -rf gui/ safe. No API changes to bridge.py."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": false,
+      "rationale": "No legacy code to remove. Changes are additive."
+    },
+    "option_selection": {
+      "selected_option_id": "A",
+      "rationale": "Overlay-on-BesoGo with DOM Relocation — preserves working BesoGo internals, adds SVG overlay for score/PV visualization. Selected over replacement (B) and headless+custom (C) due to lower risk and prior failures with those approaches."
+    }
+  },
+  "updated_at": "2026-03-11"
+}

@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "source": "101weiqi",
+  "description": "Calibration offsets for 101weiqi difficulty levels. Chinese kyu ratings are inflated ~10 stones relative to international standards (e.g., 101weiqi 15K performs like international 25K). Dan ratings do not need offset.",
+  "calibration": {
+    "kyu_offset": 10,
+    "dan_offset": 0,
+    "reasoning": "101weiqi uses a Chinese rating system where kyu ranks are approximately 10 stones weaker than their international equivalents. A puzzle labeled 15K+ on 101weiqi contains beginner-level captures, not intermediate content. Dan ratings roughly align between systems."
+  },
+  "overrides": {}
+}

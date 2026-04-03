@@ -1,0 +1,100 @@
+{
+  "active_adapter": "sanderland",
+  "sources": [
+    {
+      "id": "local-imports",
+      "name": "Local Imports",
+      "adapter": "local",
+      "config": {
+        "path": "external-sources/manual-imports",
+        "include_folders": [
+          "ogs-part-batch-001"
+        ],
+        "exclude_folders": [],
+        "move_processed_to": null
+      }
+    },
+    {
+      "id": "ambak-tsumego",
+      "name": "Ambak Tsumego Collection",
+      "adapter": "local",
+      "config": {
+        "path": "external-sources/ambak-tsumego/problems",
+        "include_folders": [],
+        "exclude_folders": [],
+        "resume": false,
+        "validate": true,
+        "move_processed_to": null
+      }
+    },
+    {
+      "id": "sanderland",
+      "name": "sanderland",
+      "adapter": "sanderland",
+      "config": {
+        "path": "external-sources/sanderland",
+        "exclude_folders": [
+          "1a-tsumego-beginner",
+          "1b-tsumego-intermediate",
+          "1c-tsumego-advanced",
+          "1d-hashimoto-utaro-tsumego",
+          "2a-tesuji",
+          "2b-lee-changho-tesuji",
+          "2c-great-tesuji-encyclopedia"
+        ],
+        "include_folders": [
+          "1a-tsumego-beginner",
+          "2a-tesuji",
+          "2c-great-tesuji-encyclopedia"
+        ]
+      }
+    },
+    {
+      "id": "kisvadim",
+      "name": "Kisvadim GoProblems",
+      "adapter": "kisvadim",
+      "config": {
+        "path": "external-sources/kisvadim-goproblems"
+      }
+    },
+    {
+      "id": "travisgk",
+      "name": "TravisGK Go Problems",
+      "adapter": "travisgk",
+      "config": {
+        "base_url": "https://raw.githubusercontent.com/travisgk/go-problems/main",
+        "categories": [
+          "life-death",
+          "tesuji",
+          "joseki"
+        ]
+      }
+    },
+    {
+      "id": "ogs",
+      "name": "OGS",
+      "adapter": "local",
+      "config": {
+        "path": "external-sources/ogs/sgf",
+        "include_folders": [
+          "batch-001"
+        ],
+        "exclude_folders": [],
+        "move_processed_to": null
+      }
+    },
+    {
+      "id": "goproblems",
+      "name": "GoProblems",
+      "adapter": "local",
+      "config": {
+        "path": "external-sources/goproblems/sgf",
+        "include_folders": [
+          "batch-001"
+        ],
+        "exclude_folders": [],
+        "move_processed_to": null
+      }
+    }
+  ]
+}

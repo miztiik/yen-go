@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://yen-go.github.io/schemas/depth-presets.schema.json",
+  "title": "Depth Presets Configuration Schema",
+  "description": "Schema for solution depth preset filter definitions in Yen-Go.",
+  "type": "object",
+  "required": ["schema_version", "presets"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Config format version (MAJOR.MINOR)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this config file"
+    },
+    "last_updated": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "ISO date of last modification (YYYY-MM-DD)"
+    },
+    "changelog": {
+      "type": "array",
+      "description": "Version history for auditability.",
+      "items": {
+        "type": "object",
+        "required": ["version", "date", "author", "changes"],
+        "additionalProperties": false,
+        "properties": {
+          "version": { "type": "string" },
+          "date": { "type": "string" },
+          "author": { "type": "string" },
+          "changes": { "type": "string" }
+        }
+      }
+    },
+    "presets": {
+      "type": "array",
+      "description": "Ordered list of depth presets. Each maps to a cx_depth range.",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "minDepth", "maxDepth"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "Unique slug identifier for the preset"
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable display label"
+          },
+          "minDepth": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Minimum cx_depth for this bucket (inclusive)"
+          },
+          "maxDepth": {
+            "type": ["integer", "null"],
+            "minimum": 1,
+            "description": "Maximum cx_depth for this bucket (inclusive). null means unbounded."
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false
+}

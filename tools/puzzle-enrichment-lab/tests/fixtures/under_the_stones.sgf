@@ -1,0 +1,15 @@
+(;FF[4]GM[1]SZ[9]PL[B]
+YT[under-the-stones]
+PC[https://senseis.xmp.net/?UnderTheStones]
+C[Under the stones (ishi no shita) — from Sensei's Library.
+Black sacrifices two stones inside White's group.
+After White captures, Black plays at the vacated point — the space under the captured stones.]
+AB[ba][ca][ab][cb][db][ac][cc][dc][bc]
+AW[aa][da][ea][eb][ec][ed][cd][bd][ad]
+;B[bb]C[Correct! Black sacrifices at B2 — plays inside White's group.]
+(;W[ab]C[White captures the sacrifice...]
+;B[ba]C[...Black plays under-the-stones at A2 — the just-captured point creates a false eye for White!]
+;W[pass]C[White cannot avoid death — the eye at A2 is now false.])
+(;W[ba]C[White captures elsewhere...]
+;B[ab]C[...Black still plays under the stones. Same result.])
+(;W[pass]C[Wrong — White must capture the sacrifice.]))

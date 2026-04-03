@@ -1,0 +1,33 @@
+{
+  "initiative_id": "2026-03-05-feature-teaching-comments-overhaul",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "completed",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "User confirmed no backward compatibility needed. Lab tool only — no production consumers depend on current hardcoded dict structure."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": true,
+      "rationale": "User confirmed: remove all hardcoded TECHNIQUE_COMMENTS, WRONG_MOVE_TEMPLATES, TECHNIQUE_HINTS, REASONING_HINTS dicts from Python files after config migration."
+    },
+    "governance_conditions_resolved": {
+      "ad3_ad3b_conflict": "Resolved — AD-3b removed, consolidated on AD-3 sgfmill approach",
+      "hint_text_boundary": "Resolved — hint_text field added to config, T-11 uses hint_text not comment",
+      "v1_limitation_docs": "Resolved — T-18 includes Known Limitations section, joseki/fuseki set to CERTAIN"
+    }
+  },
+  "open_issues": [],
+  "updated_at": "2026-03-06"
+}

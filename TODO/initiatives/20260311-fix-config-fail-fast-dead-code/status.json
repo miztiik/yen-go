@@ -1,0 +1,31 @@
+{
+  "initiative_id": "20260311-fix-config-fail-fast-dead-code",
+  "initiative_type": "fix",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "generate_yh2() is deprecated legacy code; callers already use config-driven methods"
+    },
+    "legacy_code_removal": {
+      "remove_old_code": true,
+      "rationale": "Dead fallback paths are unreachable since config is mandatory; TECHNIQUE_HINTS tuple[0] no longer needed"
+    },
+    "option_selection": {
+      "selected_option_id": "A",
+      "rationale": "User explicitly constrained direction to fail-fast; single viable approach aligned with ConfigLoader._load_json() pattern"
+    }
+  },
+  "updated_at": "2026-03-11"
+}

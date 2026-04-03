@@ -1,0 +1,54 @@
+{
+  "initiative_id": "2026-03-06-feature-teaching-comments-v2",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "completed",
+    "validate": "completed",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "One system. No transition period. All puzzles enriched through the lab. No lab/production distinction."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": true,
+      "rationale": "V1 analyzers/teaching_comments.py deleted in T7. Imports migrated to phase_b.teaching_comments."
+    },
+    "option_selection": {
+      "selected_option_id": "OPT-3",
+      "rationale": "Layered Composition — Technique Base + Signal Overlay. Unanimous panel selection (6/6). Fewest templates (34 vs 168), safe V1 fallback, additive config, independently testable layers."
+    }
+  },
+  "governance": {
+    "options_gate": {
+      "decision": "approve",
+      "status_code": "GOV-OPTIONS-APPROVED",
+      "date": "2026-03-06"
+    },
+    "plan_gate": {
+      "decision": "approve_with_conditions",
+      "status_code": "GOV-PLAN-CONDITIONAL",
+      "date": "2026-03-06",
+      "conditions_resolved": true,
+      "applied_corrections": ["RC-1", "RC-2", "RC-3", "RC-4"]
+    },
+    "implementation_review": {
+      "decision": "approve",
+      "status_code": "GOV-REVIEW-APPROVED",
+      "date": "2026-03-06",
+      "unanimous": true
+    }
+  },
+  "open_issues": [],
+  "supersedes": "2026-03-05-feature-teaching-comments-overhaul",
+  "updated_at": "2026-03-06"
+}

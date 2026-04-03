@@ -1,0 +1,26 @@
+{
+  "initiative_id": "2026-03-08-fix-katago-perspective",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "Not required — previously enriched puzzles have incorrect data and must be re-processed" },
+    "legacy_code_removal": { "remove_old_code": true, "rationale": "Delete dead code aggressively per user directive and project dead code policy" },
+    "option_selection": { "selected_option_id": "OPT-1", "rationale": "Config-First Fix — code was written for SIDETOMOVE, config was the sole error" }
+  },
+  "planning_confidence_score": 85,
+  "risk_level": "medium",
+  "research_invoked": true,
+  "updated_at": "2026-03-08"
+}

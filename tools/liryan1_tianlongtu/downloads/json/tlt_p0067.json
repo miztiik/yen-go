@@ -1,0 +1,62 @@
+{
+  "Board size": 19,
+  "Black stones": [
+    "fo",
+    "fn",
+    "eq",
+    "ep",
+    "bp",
+    "bo",
+    "cn",
+    "dn",
+    "en",
+    "dr",
+    "fp"
+  ],
+  "White stones": [
+    "fr",
+    "aq",
+    "br",
+    "cr",
+    "ds",
+    "es",
+    "fq",
+    "gp",
+    "go",
+    "gn",
+    "ap",
+    "ao",
+    "bn",
+    "fm",
+    "em",
+    "dm",
+    "cm",
+    "bm"
+  ],
+  "Labels": {},
+  "Start": "B",
+  "Solution": [
+    "qc",
+    "qb",
+    "oc",
+    "re",
+    "qd"
+  ],
+  "Comments": "2D",
+  "Other variations": [
+    [
+      "qc",
+      "re",
+      "od",
+      "qd",
+      "pc"
+    ],
+    [
+      "qc",
+      "qb",
+      "oc",
+      "pd",
+      "od"
+    ]
+  ]
+}

@@ -1,0 +1,263 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://yen-go.github.io/schemas/view-index.schema.json",
+  "title": "View Index Schema v4.0",
+  "description": "Shared JSON Schema contract for all view index files produced by PaginationWriter. Compact numeric wire format with always-paginated directory structure. ViewEnvelope v4.0, MasterIndex v2.0.",
+  "oneOf": [
+    { "$ref": "#/$defs/PageDocument" },
+    { "$ref": "#/$defs/DirectoryIndex" },
+    { "$ref": "#/$defs/LevelMasterIndex" },
+    { "$ref": "#/$defs/TagMasterIndex" },
+    { "$ref": "#/$defs/CollectionMasterIndex" },
+    { "$ref": "#/$defs/DailyMasterIndex" }
+  ],
+  "$defs": {
+    "ViewType": {
+      "type": "string",
+      "enum": ["level", "tag", "collection", "daily"],
+      "description": "View dimension discriminator."
+    },
+
+    "CompactEntry": {
+      "type": "object",
+      "description": "Compact puzzle entry with numeric IDs. Universal across all view types. ~68 bytes wire format.",
+      "properties": {
+        "p": {
+          "type": "string",
+          "pattern": "^[0-9]{4}/[a-f0-9]{16}$",
+          "description": "Path reference: '{batch}/{content_hash}'. Reconstructed as 'sgf/{p}.sgf'."
+        },
+        "l": {
+          "type": "integer",
+          "description": "Level numeric ID (sparse 110-230). Maps to level slug via config."
+        },
+        "t": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "description": "Tag numeric IDs (sparse: Obj 10-28, Tesuji 30-52, Tech 60-82). Sorted, deduplicated."
+        },
+        "c": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "description": "Collection numeric IDs (sequential 1-159+). Sorted."
+        },
+        "x": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "minItems": 4,
+          "maxItems": 4,
+          "description": "Complexity metrics: [depth, responses, size, unique]. Default [0,0,0,0]."
+        }
+      },
+      "required": ["p", "l", "t", "c", "x"],
+      "additionalProperties": false
+    },
+
+    "CompactCollectionEntry": {
+      "type": "object",
+      "description": "Compact entry for collection views. Extends CompactEntry with sequence number.",
+      "properties": {
+        "p": {
+          "type": "string",
+          "pattern": "^[0-9]{4}/[a-f0-9]{16}$",
+          "description": "Path reference: '{batch}/{content_hash}'."
+        },
+        "l": {
+          "type": "integer",
+          "description": "Level numeric ID (sparse 110-230)."
+        },
+        "t": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "description": "Tag numeric IDs (sparse: Obj 10-28, Tesuji 30-52, Tech 60-82)."
+        },
+        "c": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "description": "Collection numeric IDs (sequential 1-159+)."
+        },
+        "x": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "minItems": 4,
+          "maxItems": 4,
+          "description": "Complexity metrics: [depth, responses, size, unique]."
+        },
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Author-curated sequence number within collection."
+        }
+      },
+      "required": ["p", "l", "t", "c", "x", "n"],
+      "additionalProperties": false
+    },
+
+    "PageDocument": {
+      "type": "object",
+      "description": "Paginated page file. Contains a subset of compact entries for one page.",
+      "properties": {
+        "type": { "$ref": "#/$defs/ViewType" },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Entity identifier (numeric ID as string for level/tag, slug for collection)."
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "1-indexed page number."
+        },
+        "entries": {
+          "type": "array",
+          "description": "Compact puzzle entries for this page."
+        }
+      },
+      "required": ["type", "name", "page", "entries"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "level" } } },
+          "then": { "properties": { "entries": { "items": { "$ref": "#/$defs/CompactEntry" } } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "tag" } } },
+          "then": { "properties": { "entries": { "items": { "$ref": "#/$defs/CompactEntry" } } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "collection" } } },
+          "then": { "properties": { "entries": { "items": { "$ref": "#/$defs/CompactCollectionEntry" } } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "daily" } } },
+          "then": { "properties": { "entries": { "items": { "$ref": "#/$defs/CompactEntry" } } } }
+        }
+      ]
+    },
+
+    "DirectoryIndex": {
+      "type": "object",
+      "description": "Paginated directory index. Metadata for a paginated entity (no entries, just page info).",
+      "properties": {
+        "type": { "$ref": "#/$defs/ViewType" },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Entity identifier."
+        },
+        "total_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total entries across all pages."
+        },
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Entries per page."
+        },
+        "pages": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Total number of pages."
+        }
+      },
+      "required": ["type", "name", "total_count", "page_size", "pages"],
+      "additionalProperties": false
+    },
+
+    "DistributionMap": {
+      "type": "object",
+      "description": "Distribution counts keyed by numeric ID (as string). Used in master indexes for cross-dimensional filtering.",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+
+    "MasterIndexEntry": {
+      "type": "object",
+      "description": "Entry in a master index catalog v2.0.",
+      "properties": {
+        "id": { "type": "integer", "description": "Numeric ID for the entity." },
+        "name": { "type": "string", "minLength": 1 },
+        "slug": { "type": "string", "minLength": 1 },
+        "count": { "type": "integer", "minimum": 0 },
+        "pages": { "type": "integer", "minimum": 0 },
+        "levels": { "$ref": "#/$defs/DistributionMap", "description": "Level distribution (for tag/collection/daily indexes)." },
+        "tags": { "$ref": "#/$defs/DistributionMap", "description": "Tag distribution (for level/collection/daily indexes)." }
+      },
+      "required": ["id", "name", "slug", "count", "pages"],
+      "additionalProperties": false
+    },
+
+    "LevelMasterIndex": {
+      "type": "object",
+      "description": "Master index for by-level views v2.0.",
+      "properties": {
+        "version": { "type": "string", "const": "2.0" },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "levels": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/MasterIndexEntry" }
+        }
+      },
+      "required": ["version", "generated_at", "levels"],
+      "additionalProperties": false
+    },
+
+    "TagMasterIndex": {
+      "type": "object",
+      "description": "Master index for by-tag views v2.0.",
+      "properties": {
+        "version": { "type": "string", "const": "2.0" },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "tags": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/MasterIndexEntry" }
+        }
+      },
+      "required": ["version", "generated_at", "tags"],
+      "additionalProperties": false
+    },
+
+    "CollectionMasterIndex": {
+      "type": "object",
+      "description": "Master index for by-collection views v2.0.",
+      "properties": {
+        "version": { "type": "string", "const": "2.0" },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "collections": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/MasterIndexEntry" }
+        }
+      },
+      "required": ["version", "generated_at", "collections"],
+      "additionalProperties": false
+    },
+
+    "DailyMasterIndex": {
+      "type": "object",
+      "description": "Master index for daily challenge views v2.0.",
+      "properties": {
+        "version": { "type": "string", "const": "2.0" },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "dates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+              "count": { "type": "integer", "minimum": 0 },
+              "levels": { "$ref": "#/$defs/DistributionMap" },
+              "tags": { "$ref": "#/$defs/DistributionMap" }
+            },
+            "required": ["date", "count"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["version", "generated_at", "dates"],
+      "additionalProperties": false
+    }
+  }
+}

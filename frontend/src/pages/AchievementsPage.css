@@ -1,0 +1,86 @@
+/**
+ * Achievements Page Styles
+ */
+
+.achievements-page {
+  min-height: 100vh;
+}
+
+/* Header hover effects */
+.achievements-page header button:hover {
+  transform: scale(1.1);
+}
+
+/* Filter buttons hover */
+.achievements-page [style*="filterButton"]:hover {
+  transform: translateY(-1px);
+}
+
+/* Smooth transitions */
+.achievements-page section {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .achievements-page {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+  }
+
+  .achievements-page header {
+    background: rgba(30, 30, 30, 0.9) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .achievements-page header h1,
+  .achievements-page header button {
+    color: #ffffff !important;
+  }
+
+  .achievements-page header > div {
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+
+  .achievements-page main > div:first-child {
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .achievements-page main > div:first-child span:first-child {
+    color: #ffffff !important;
+  }
+
+  .achievements-page main section h2 {
+    color: #ffffff !important;
+  }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .achievements-page header {
+    padding: 0.75rem !important;
+  }
+
+  .achievements-page main {
+    padding: 0.75rem !important;
+  }
+
+  .achievements-page main > div:first-child {
+    gap: 1rem !important;
+    padding: 1rem !important;
+  }
+
+  .achievements-page main > div:first-child span:first-child {
+    font-size: 1.5rem !important;
+  }
+}

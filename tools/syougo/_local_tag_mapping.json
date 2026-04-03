@@ -1,0 +1,22 @@
+{
+  "_comment": "Maps syougo.jp prompt patterns to YenGo tag slugs. No defaults — empty prompt gets no tags.",
+  "_version": "1.0.0",
+  "_source": "syougo",
+  "_reference": "config/tags.json",
+  "mappings": {
+    "capture": ["life-and-death"],
+    "save": ["life-and-death", "living"],
+    "make * live": ["life-and-death", "living"],
+    "ko": ["ko"],
+    "snapback": ["snapback"],
+    "shortage of liberties": ["liberty-shortage"],
+    "killing tesuji": ["tesuji"],
+    "tesuji": ["tesuji"],
+    "dead shape": ["dead-shapes", "eye-shape"],
+    "flower six": ["dead-shapes", "eye-shape"],
+    "defense": ["life-and-death"],
+    "endgame": ["endgame"],
+    "connection": ["connection"],
+    "cut off": ["cutting"]
+  }
+}

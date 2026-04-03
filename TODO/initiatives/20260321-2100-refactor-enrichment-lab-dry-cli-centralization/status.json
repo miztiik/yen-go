@@ -1,0 +1,30 @@
+{
+  "initiative_id": "20260321-2100-refactor-enrichment-lab-dry-cli-centralization",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "Internal tooling refactor — no external API consumers" },
+    "legacy_code_removal": { "remove_old_code": true, "rationale": "User explicitly wants centralization; old scattered patterns must be removed" },
+    "option_selection": {
+      "selected_option_id": "OPT-3",
+      "rationale": "Unanimous governance approval. 90% DRY elimination, SOLID/KISS/YAGNI compliant, 6-phase phased execution."
+    }
+  },
+  "updated_at": "2026-03-22",
+  "planning_confidence_score": 88,
+  "risk_level": "low",
+  "research_invoked": true,
+  "excluded_items": ["P5 — probe_frame merge (user explicitly excluded)"]
+}

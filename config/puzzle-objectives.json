@@ -1,0 +1,556 @@
+{
+  "$schema": "./schemas/puzzle-objectives.schema.json",
+  "schema_version": "2.5",
+  "description": "Canonical puzzle objective definitions mapping SGF comment patterns to structured objectives with category, side, type, and engine-verifiability. Used by tools/puzzle_intent for intent extraction.",
+  "last_updated": "2026-03-26",
+  "precision_mode": "strict",
+  "changelog": [
+    {
+      "version": "2.5",
+      "date": "2026-03-26",
+      "author": "config-standardization",
+      "changes": "Added $schema, description, and last_updated metadata fields to match project config conventions."
+    },
+    {
+      "version": "2.4",
+      "date": "2026-03-09",
+      "author": "senseis-library-enrichment",
+      "changes": "Added Sensei's Library cross-referenced aliases: CAPTURE objectives gained 'to take'/'take stones'; WIN_SEMEAI objectives gained 'wins the liberty count'. Total aliases ~170+."
+    },
+    {
+      "version": "2.3",
+      "date": "2026-03-02",
+      "author": "chinese-alias-enrichment",
+      "changes": "Added Chinese puzzle-catalogue derived aliases from Baidu/101Weiqi taxonomy: capture objectives gained 'eat' surface forms (bao chi translations); semeai objectives gained 'fight'/'race' phrasings; ko objectives gained 'robbery' phrasings; life-and-death objectives gained 'make life' and side-explicit life/death phrasings. All aliases conform to pattern ^[a-z0-9 '-]+$."
+    },
+    {
+      "version": "2.2",
+      "date": "2026-02-13",
+      "author": "slug-name-enrichment",
+      "changes": "Added slug (kebab-case backend identifier) and name (human-readable frontend label) to all 23 objectives. Naming follows standard Go literature conventions (e.g. 'Black to Play', 'Black to Live')."
+    },
+    {
+      "version": "2.1",
+      "date": "2026-02-13",
+      "author": "alias-expansion",
+      "changes": "Expanded aliases for underrepresented objectives (ESCAPE, CONNECT, CUT, SEMEAI, KO, SEKI). Added common wild-phrasing variants. Total aliases ~160+."
+    },
+    {
+      "version": "2.0",
+      "date": "2026-02-12",
+      "author": "expert-review",
+      "changes": "Expert-reviewed expansion: 17->23 objectives. Added ESCAPE (distinct from LIVE), TESUJI (generic tactical), ENDGAME (yose) objectives. Expanded aliases from ~40 to ~100+ including romanized CJK terms. Added changelog for auditability."
+    },
+    {
+      "version": "1.0",
+      "date": "2026-02-12",
+      "author": "initial",
+      "changes": "Initial schema: 17 objectives across 5 categories (MOVE_ORDER, LIFE_AND_DEATH, CAPTURING, SHAPE, FIGHT) with ~40 aliases."
+    }
+  ],
+  "objectives": {
+    "MOVE.BLACK.PLAY": {
+      "slug": "black-to-play",
+      "name": "Black to Play",
+      "category": "MOVE_ORDER",
+      "side": "BLACK",
+      "objective_type": "PLAY",
+      "result_condition": null,
+      "engine_verifiable": false,
+      "aliases": [
+        "black to play",
+        "black to move",
+        "b to play",
+        "play as black",
+        "black's turn",
+        "black plays first",
+        "black plays next",
+        "black first",
+        "black moves first",
+        "kurosaki",
+        "heukseon",
+        "black goes first",
+        "it is black's turn"
+      ]
+    },
+    "MOVE.WHITE.PLAY": {
+      "slug": "white-to-play",
+      "name": "White to Play",
+      "category": "MOVE_ORDER",
+      "side": "WHITE",
+      "objective_type": "PLAY",
+      "result_condition": null,
+      "engine_verifiable": false,
+      "aliases": [
+        "white to play",
+        "white to move",
+        "w to play",
+        "play as white",
+        "white's turn",
+        "white plays first",
+        "white plays next",
+        "white first",
+        "white moves first",
+        "shirosaki",
+        "baekseon",
+        "white goes first",
+        "it is white's turn"
+      ]
+    },
+    "LIFE_AND_DEATH.BLACK.LIVE": {
+      "slug": "black-to-live",
+      "name": "Black to Live",
+      "category": "LIFE_AND_DEATH",
+      "side": "BLACK",
+      "objective_type": "LIVE",
+      "result_condition": "group_alive",
+      "engine_verifiable": true,
+      "aliases": [
+        "black to live",
+        "black must live",
+        "black survives",
+        "save black",
+        "save the black group",
+        "black makes two eyes",
+        "make life for black",
+        "black lives",
+        "black make life",
+        "black must survive",
+        "black to survive",
+        "protect black",
+        "black group must live",
+        "black to make life",
+        "life and death black lives",
+        "basic life and death black lives",
+        "shikatsu black"
+      ]
+    },
+    "LIFE_AND_DEATH.WHITE.LIVE": {
+      "slug": "white-to-live",
+      "name": "White to Live",
+      "category": "LIFE_AND_DEATH",
+      "side": "WHITE",
+      "objective_type": "LIVE",
+      "result_condition": "group_alive",
+      "engine_verifiable": true,
+      "aliases": [
+        "white to live",
+        "white must live",
+        "white survives",
+        "save white",
+        "save the white group",
+        "white makes two eyes",
+        "make life for white",
+        "white lives",
+        "white make life",
+        "white must survive",
+        "white to survive",
+        "protect white",
+        "white group must live",
+        "white to make life",
+        "life and death white lives",
+        "basic life and death white lives",
+        "shikatsu white"
+      ]
+    },
+    "LIFE_AND_DEATH.BLACK.KILL": {
+      "slug": "black-to-kill",
+      "name": "Black to Kill",
+      "category": "LIFE_AND_DEATH",
+      "side": "BLACK",
+      "objective_type": "KILL",
+      "result_condition": "opponent_group_dead",
+      "engine_verifiable": true,
+      "aliases": [
+        "black to kill",
+        "black kills",
+        "kill white",
+        "black kills white",
+        "black attacks",
+        "attack white",
+        "make white dead",
+        "destroy white",
+        "kill the white group",
+        "white is dead",
+        "black eats white",
+        "life and death black kills",
+        "satsujin black"
+      ]
+    },
+    "LIFE_AND_DEATH.WHITE.KILL": {
+      "slug": "white-to-kill",
+      "name": "White to Kill",
+      "category": "LIFE_AND_DEATH",
+      "side": "WHITE",
+      "objective_type": "KILL",
+      "result_condition": "opponent_group_dead",
+      "engine_verifiable": true,
+      "aliases": [
+        "white to kill",
+        "white kills",
+        "kill black",
+        "white kills black",
+        "white attacks",
+        "attack black",
+        "make black dead",
+        "destroy black",
+        "kill the black group",
+        "black is dead",
+        "white eats black",
+        "life and death white kills",
+        "satsujin white"
+      ]
+    },
+    "LIFE_AND_DEATH.BLACK.ESCAPE": {
+      "slug": "black-to-escape",
+      "name": "Black to Escape",
+      "category": "LIFE_AND_DEATH",
+      "side": "BLACK",
+      "objective_type": "ESCAPE",
+      "result_condition": "group_escaped",
+      "engine_verifiable": true,
+      "aliases": [
+        "black to escape",
+        "black escapes",
+        "save black by escaping",
+        "black runs",
+        "black connects out",
+        "black breaks out",
+        "black gets away",
+        "black must escape",
+        "rescue black",
+        "black runs away",
+        "black to run away",
+        "black flees"
+      ]
+    },
+    "LIFE_AND_DEATH.WHITE.ESCAPE": {
+      "slug": "white-to-escape",
+      "name": "White to Escape",
+      "category": "LIFE_AND_DEATH",
+      "side": "WHITE",
+      "objective_type": "ESCAPE",
+      "result_condition": "group_escaped",
+      "engine_verifiable": true,
+      "aliases": [
+        "white to escape",
+        "white escapes",
+        "save white by escaping",
+        "white runs",
+        "white connects out",
+        "white breaks out",
+        "white gets away",
+        "white must escape",
+        "rescue white",
+        "white runs away",
+        "white to run away",
+        "white flees"
+      ]
+    },
+    "CAPTURE.BLACK": {
+      "slug": "black-to-capture",
+      "name": "Black to Capture",
+      "category": "CAPTURING",
+      "side": "BLACK",
+      "objective_type": "CAPTURE",
+      "result_condition": "stones_removed",
+      "engine_verifiable": true,
+      "aliases": [
+        "black to capture",
+        "capture with black",
+        "black takes",
+        "black captures",
+        "take the white stones",
+        "capture the white stones",
+        "capture the white stone",
+        "capture white stones",
+        "capture white",
+        "remove white stones",
+        "remove the white stones",
+        "black takes white",
+        "black to eat",
+        "black eats",
+        "eat white stones",
+        "black bao chi",
+        "black to take",
+        "take stones"
+      ]
+    },
+    "CAPTURE.WHITE": {
+      "slug": "white-to-capture",
+      "name": "White to Capture",
+      "category": "CAPTURING",
+      "side": "WHITE",
+      "objective_type": "CAPTURE",
+      "result_condition": "stones_removed",
+      "engine_verifiable": true,
+      "aliases": [
+        "white to capture",
+        "capture with white",
+        "white takes",
+        "white captures",
+        "take the black stones",
+        "capture the black stones",
+        "capture the black stone",
+        "capture black stones",
+        "capture black",
+        "remove black stones",
+        "remove the black stones",
+        "white takes black",
+        "white to eat",
+        "white eats",
+        "eat black stones",
+        "white bao chi",
+        "white to take"
+      ]
+    },
+    "SHAPE.BLACK.CONNECT": {
+      "slug": "black-to-connect",
+      "name": "Black to Connect",
+      "category": "SHAPE",
+      "side": "BLACK",
+      "objective_type": "CONNECT",
+      "result_condition": "groups_connected",
+      "engine_verifiable": true,
+      "aliases": [
+        "black to connect",
+        "connect black groups",
+        "black connects",
+        "connect with black",
+        "link black groups",
+        "join black groups",
+        "black must connect"
+      ]
+    },
+    "SHAPE.WHITE.CONNECT": {
+      "slug": "white-to-connect",
+      "name": "White to Connect",
+      "category": "SHAPE",
+      "side": "WHITE",
+      "objective_type": "CONNECT",
+      "result_condition": "groups_connected",
+      "engine_verifiable": true,
+      "aliases": [
+        "white to connect",
+        "connect white groups",
+        "white connects",
+        "connect with white",
+        "link white groups",
+        "join white groups",
+        "white must connect"
+      ]
+    },
+    "SHAPE.BLACK.CUT": {
+      "slug": "black-to-cut",
+      "name": "Black to Cut",
+      "category": "SHAPE",
+      "side": "BLACK",
+      "objective_type": "CUT",
+      "result_condition": "groups_separated",
+      "engine_verifiable": true,
+      "aliases": [
+        "black to cut",
+        "cut with black",
+        "black cuts",
+        "separate white groups",
+        "cut off white",
+        "disconnect white",
+        "divide white groups"
+      ]
+    },
+    "SHAPE.WHITE.CUT": {
+      "slug": "white-to-cut",
+      "name": "White to Cut",
+      "category": "SHAPE",
+      "side": "WHITE",
+      "objective_type": "CUT",
+      "result_condition": "groups_separated",
+      "engine_verifiable": true,
+      "aliases": [
+        "white to cut",
+        "cut with white",
+        "white cuts",
+        "separate black groups",
+        "cut off black",
+        "disconnect black",
+        "divide black groups"
+      ]
+    },
+    "FIGHT.BLACK.WIN_SEMEAI": {
+      "slug": "black-to-win-semeai",
+      "name": "Black to Win Semeai",
+      "category": "FIGHT",
+      "side": "BLACK",
+      "objective_type": "WIN_SEMEAI",
+      "result_condition": "liberty_race_won",
+      "engine_verifiable": true,
+      "aliases": [
+        "black wins semeai",
+        "black wins the capturing race",
+        "black wins liberty race",
+        "semeai black wins",
+        "black wins the semeai",
+        "winning the capturing race for black",
+        "black wins the fight",
+        "black wins the race",
+        "fight black wins",
+        "black captures first",
+        "black wins the liberty count"
+      ]
+    },
+    "FIGHT.WHITE.WIN_SEMEAI": {
+      "slug": "white-to-win-semeai",
+      "name": "White to Win Semeai",
+      "category": "FIGHT",
+      "side": "WHITE",
+      "objective_type": "WIN_SEMEAI",
+      "result_condition": "liberty_race_won",
+      "engine_verifiable": true,
+      "aliases": [
+        "white wins semeai",
+        "white wins the capturing race",
+        "white wins liberty race",
+        "semeai white wins",
+        "white wins the semeai",
+        "winning the capturing race for white",
+        "white wins the fight",
+        "white wins the race",
+        "fight white wins",
+        "white captures first",
+        "white wins the liberty count"
+      ]
+    },
+    "FIGHT.BLACK.WIN_KO": {
+      "slug": "black-to-win-ko",
+      "name": "Black to Win Ko",
+      "category": "FIGHT",
+      "side": "BLACK",
+      "objective_type": "WIN_KO",
+      "result_condition": "ko_resolved_favorably",
+      "engine_verifiable": true,
+      "aliases": [
+        "black wins ko",
+        "black to win ko",
+        "black wins the ko",
+        "ko black wins",
+        "black wins the ko fight",
+        "ko fight black wins",
+        "black wins the robbery",
+        "robbery black wins",
+        "ko black"
+      ]
+    },
+    "FIGHT.WHITE.WIN_KO": {
+      "slug": "white-to-win-ko",
+      "name": "White to Win Ko",
+      "category": "FIGHT",
+      "side": "WHITE",
+      "objective_type": "WIN_KO",
+      "result_condition": "ko_resolved_favorably",
+      "engine_verifiable": true,
+      "aliases": [
+        "white wins ko",
+        "white to win ko",
+        "white wins the ko",
+        "ko white wins",
+        "white wins the ko fight",
+        "ko fight white wins",
+        "white wins the robbery",
+        "robbery white wins",
+        "ko white"
+      ]
+    },
+    "FIGHT.SEKI": {
+      "slug": "make-seki",
+      "name": "Make Seki",
+      "category": "FIGHT",
+      "side": null,
+      "objective_type": "SEKI",
+      "result_condition": "mutual_life",
+      "engine_verifiable": true,
+      "aliases": [
+        "seki",
+        "mutual life",
+        "make seki",
+        "result is seki",
+        "achieve seki",
+        "make it seki",
+        "both groups live"
+      ]
+    },
+    "TESUJI.BLACK": {
+      "slug": "black-tesuji",
+      "name": "Black Tesuji",
+      "category": "TESUJI",
+      "side": "BLACK",
+      "objective_type": "FIND_TESUJI",
+      "result_condition": "tactical_advantage",
+      "engine_verifiable": false,
+      "aliases": [
+        "black finds the tesuji",
+        "find the tesuji for black",
+        "black tesuji",
+        "find the best move for black",
+        "best move for black",
+        "what is black's best move",
+        "find black's tesuji",
+        "the tesuji for black"
+      ]
+    },
+    "TESUJI.WHITE": {
+      "slug": "white-tesuji",
+      "name": "White Tesuji",
+      "category": "TESUJI",
+      "side": "WHITE",
+      "objective_type": "FIND_TESUJI",
+      "result_condition": "tactical_advantage",
+      "engine_verifiable": false,
+      "aliases": [
+        "white finds the tesuji",
+        "find the tesuji for white",
+        "white tesuji",
+        "find the best move for white",
+        "best move for white",
+        "what is white's best move",
+        "find white's tesuji",
+        "the tesuji for white"
+      ]
+    },
+    "ENDGAME.BLACK": {
+      "slug": "black-endgame",
+      "name": "Black Endgame (Yose)",
+      "category": "ENDGAME",
+      "side": "BLACK",
+      "objective_type": "FIND_BEST_MOVE",
+      "result_condition": "points_maximized",
+      "engine_verifiable": false,
+      "aliases": [
+        "black endgame",
+        "black yose",
+        "find the biggest endgame move for black",
+        "black endgame tesuji",
+        "yose for black",
+        "black yose move",
+        "endgame move for black"
+      ]
+    },
+    "ENDGAME.WHITE": {
+      "slug": "white-endgame",
+      "name": "White Endgame (Yose)",
+      "category": "ENDGAME",
+      "side": "WHITE",
+      "objective_type": "FIND_BEST_MOVE",
+      "result_condition": "points_maximized",
+      "engine_verifiable": false,
+      "aliases": [
+        "white endgame",
+        "white yose",
+        "find the biggest endgame move for white",
+        "white endgame tesuji",
+        "yose for white",
+        "white yose move",
+        "endgame move for white"
+      ]
+    }
+  }
+}

@@ -1,0 +1,375 @@
+/**
+ * Level Components Styles
+ * @module styles/level
+ */
+
+/* ============================================
+   Level List Styles
+   ============================================ */
+
+.level-list {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.level-list__header {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.level-list__title {
+  margin: 0 0 var(--spacing-sm);
+  font-size: var(--font-size-xl);
+  color: var(--color-text);
+}
+
+.level-list__stats {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.level-list__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.level-list__item {
+  display: contents;
+}
+
+.level-list__message {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--color-text-secondary);
+}
+
+.level-list__message--error {
+  color: var(--color-error);
+}
+
+.level-list__retry {
+  display: block;
+  margin: var(--spacing-md) auto 0;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background-color: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+}
+
+.level-list__retry:hover {
+  background-color: #d13650;
+}
+
+/* ============================================
+   Level Card Styles
+   ============================================ */
+
+.level-card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--border-radius-lg);
+  border: 2px solid transparent;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+}
+
+.level-card--unlocked {
+  border-color: var(--color-success);
+}
+
+.level-card--unlocked:hover,
+.level-card--unlocked:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(78, 204, 163, 0.3);
+}
+
+.level-card--completed {
+  border-color: var(--color-warning);
+}
+
+.level-card--completed:hover,
+.level-card--completed:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 211, 105, 0.3);
+}
+
+.level-card--locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.level-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.level-card__status {
+  font-size: 1.25rem;
+}
+
+.level-card__date {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.level-card__title {
+  margin: 0 0 var(--spacing-sm);
+  font-size: var(--font-size-lg);
+  color: var(--color-text);
+}
+
+.level-card__stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.level-card__puzzle-count {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.level-card__difficulties {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.level-card__difficulty {
+  font-size: var(--font-size-sm);
+}
+
+.level-card__lock-message {
+  margin: var(--spacing-sm) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* ============================================
+   Puzzle Grid Styles
+   ============================================ */
+
+.puzzle-grid {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.puzzle-grid__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.puzzle-grid__filter {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.puzzle-grid__filter:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.puzzle-grid__filter--active {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.puzzle-grid__filter--beginner.puzzle-grid__filter--active {
+  background-color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.puzzle-grid__filter--intermediate.puzzle-grid__filter--active {
+  background-color: var(--color-warning);
+  border-color: var(--color-warning);
+  color: var(--color-bg);
+}
+
+.puzzle-grid__filter--advanced.puzzle-grid__filter--active {
+  background-color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.puzzle-grid__progress {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.puzzle-grid__progress-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.puzzle-grid__progress-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background-color: var(--color-bg-secondary);
+  border: none;
+  overflow: hidden;
+}
+
+.puzzle-grid__progress-bar::-webkit-progress-bar {
+  background-color: var(--color-bg-secondary);
+  border-radius: 4px;
+}
+
+.puzzle-grid__progress-bar::-webkit-progress-value {
+  background-color: var(--color-success);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.puzzle-grid__progress-bar::-moz-progress-bar {
+  background-color: var(--color-success);
+  border-radius: 4px;
+}
+
+.puzzle-grid__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.puzzle-grid__item {
+  display: contents;
+}
+
+.puzzle-grid__message {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--color-text-secondary);
+}
+
+.puzzle-grid__message--error {
+  color: var(--color-error);
+}
+
+/* ============================================
+   Puzzle Card Styles
+   ============================================ */
+
+.puzzle-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  min-height: 100px;
+  background-color: var(--color-bg-secondary);
+  border: 2px solid transparent;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.puzzle-card:hover,
+.puzzle-card:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.puzzle-card--beginner {
+  border-color: rgba(78, 204, 163, 0.3);
+}
+
+.puzzle-card--beginner:hover,
+.puzzle-card--beginner:focus {
+  border-color: var(--color-success);
+}
+
+.puzzle-card--intermediate {
+  border-color: rgba(255, 211, 105, 0.3);
+}
+
+.puzzle-card--intermediate:hover,
+.puzzle-card--intermediate:focus {
+  border-color: var(--color-warning);
+}
+
+.puzzle-card--advanced {
+  border-color: rgba(233, 69, 96, 0.3);
+}
+
+.puzzle-card--advanced:hover,
+.puzzle-card--advanced:focus {
+  border-color: var(--color-error);
+}
+
+.puzzle-card--completed {
+  background-color: rgba(78, 204, 163, 0.1);
+}
+
+.puzzle-card__icon {
+  font-size: 1.5rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.puzzle-card__number {
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+  color: var(--color-text);
+}
+
+.puzzle-card__difficulty {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.puzzle-card__category {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+
+@media (max-width: 480px) {
+  .level-list__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .puzzle-grid__filters {
+    justify-content: center;
+  }
+
+  .puzzle-grid__list {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+
+  .puzzle-card {
+    min-height: 80px;
+    padding: var(--spacing-sm);
+  }
+}

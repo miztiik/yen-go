@@ -1,0 +1,121 @@
+/**
+ * VariantStyleToggle Styles
+ * @module components/SolutionTree/VariantStyleToggle.css
+ *
+ * Styles for the variant style toggle control.
+ * FR-019: 44pt touch targets
+ * FR-020: WCAG AA contrast
+ */
+
+.variant-style-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.toggle-label {
+  color: var(--color-text-muted, #6c757d);
+  font-weight: 500;
+}
+
+.toggle-options {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--color-surface, #f8f9fa);
+  border-radius: 6px;
+  padding: 0.125rem;
+  border: 1px solid var(--color-border, #dee2e6);
+}
+
+.toggle-option {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  /* FR-019: Minimum touch targets */
+  min-height: 36px;
+  min-width: 36px;
+  padding: 0.375rem 0.625rem;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-muted, #6c757d);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.toggle-option:hover:not(:disabled) {
+  background: var(--color-hover, rgba(32, 201, 151, 0.1));
+  color: var(--color-text, #212529);
+}
+
+.toggle-option:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary, #20c997);
+}
+
+.toggle-option.selected {
+  background: var(--color-primary, #20c997);
+  color: white;
+  font-weight: 500;
+}
+
+.toggle-option.selected:hover:not(:disabled) {
+  background: var(--color-primary-dark, #1aa179);
+}
+
+.toggle-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.option-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.option-label {
+  font-weight: 500;
+}
+
+/* Compact mode for mobile */
+@media (max-width: 480px) {
+  .variant-style-toggle {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+  }
+
+  .toggle-label {
+    font-size: 0.75rem;
+  }
+
+  .toggle-options {
+    justify-content: stretch;
+  }
+
+  .toggle-option {
+    flex: 1;
+    justify-content: center;
+    /* FR-019: Maintain touch targets on mobile */
+    min-height: 44px;
+  }
+
+  .option-label {
+    display: none; /* Hide label on mobile, show icon only */
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .variant-style-toggle {
+    --color-surface: #2d2d2d;
+    --color-border: #404040;
+    --color-text: #e9ecef;
+    --color-text-muted: #adb5bd;
+    --color-hover: rgba(32, 201, 151, 0.15);
+    --color-primary: #20c997;
+    --color-primary-dark: #1aa179;
+  }
+}

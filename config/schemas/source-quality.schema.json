@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://yen-go.github.io/schemas/source-quality.schema.json",
+  "title": "Source Quality Configuration",
+  "description": "Schema for config/source-quality.json — 5-tier quality rating for puzzle source adapters (1=Unrated to 5=Professional).",
+  "type": "object",
+  "required": ["schema_version", "description", "last_updated", "tiers"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Config format version (MAJOR.MINOR)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this config file"
+    },
+    "last_updated": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "ISO date of last modification (YYYY-MM-DD)"
+    },
+    "changelog": {
+      "type": "array",
+      "description": "Version history for auditability.",
+      "items": {
+        "type": "object",
+        "required": ["version", "date", "author", "changes"],
+        "additionalProperties": false,
+        "properties": {
+          "version": { "type": "string" },
+          "date": { "type": "string" },
+          "author": { "type": "string" },
+          "changes": { "type": "string" }
+        }
+      }
+    },
+    "tiers": {
+      "type": "object",
+      "description": "Quality tier definitions keyed by tier number (1=worst, 5=best)",
+      "propertyNames": {
+        "pattern": "^[1-5]$"
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/TierDefinition"
+      },
+      "minProperties": 5,
+      "maxProperties": 5
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "TierDefinition": {
+      "type": "object",
+      "required": ["name", "stars", "description", "criteria"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Machine-readable tier name"
+        },
+        "stars": {
+          "type": "string",
+          "pattern": "^[★☆]{5}$",
+          "description": "Unicode star display (5 characters of ★ or ☆)"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Brief description of the quality tier"
+        },
+        "criteria": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Criteria for assigning this quality tier to a source"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

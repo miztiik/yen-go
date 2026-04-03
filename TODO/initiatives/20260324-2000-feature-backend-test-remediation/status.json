@@ -1,0 +1,26 @@
+{
+  "initiative_id": "20260324-2000-feature-backend-test-remediation",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "complete",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "v1.0 schema fully removed per user decision" },
+    "legacy_code_removal": { "remove_old_code": true, "rationale": "44 test deletions + dead code decommissioning tracked" },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Minimal-risk test remediation with 1 genuine production fix"
+    }
+  },
+  "updated_at": "2026-03-24"
+}

@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://yen-go.github.io/schemas/sgf-property-policies.schema.json",
+  "title": "SGF Property Policies Configuration",
+  "description": "Schema for config/sgf-property-policies.json — declarative SGF property handling policies controlling what happens to each property as it flows through ingest → analyze → publish stages.",
+  "type": "object",
+  "required": ["schema_version", "description", "last_updated", "policy_definitions", "policies"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Config format version (MAJOR.MINOR)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this config file"
+    },
+    "last_updated": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "ISO date of last modification (YYYY-MM-DD)"
+    },
+    "changelog": {
+      "type": "array",
+      "description": "Version history for auditability.",
+      "items": {
+        "type": "object",
+        "required": ["version", "date", "author", "changes"],
+        "additionalProperties": false,
+        "properties": {
+          "version": { "type": "string" },
+          "date": { "type": "string" },
+          "author": { "type": "string" },
+          "changes": { "type": "string" }
+        }
+      }
+    },
+    "policy_definitions": {
+      "type": "object",
+      "description": "Lookup of policy type names to human-readable descriptions.",
+      "additionalProperties": { "type": "string" }
+    },
+    "policies": {
+      "type": "object",
+      "description": "Per-property policy entries, keyed by SGF property code (e.g. GN, YV, C).",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["policy", "description"],
+        "properties": {
+          "policy": {
+            "type": "string",
+            "enum": [
+              "blocked",
+              "preserve",
+              "hardcode",
+              "override",
+              "enrich_if_absent",
+              "enrich_if_partial",
+              "remove",
+              "configurable"
+            ],
+            "description": "How the pipeline handles this property."
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable explanation of why this policy applies."
+          },
+          "value": {
+            "type": "string",
+            "description": "Fixed value for 'hardcode' policy."
+          },
+          "default_value": {
+            "description": "Default value for 'enrich_if_absent' when source provides none."
+          },
+          "validator": {
+            "type": "string",
+            "description": "Named validator for 'enrich_if_partial' policy."
+          },
+          "flag": {
+            "type": "string",
+            "description": "Runtime flag name for 'configurable' policy."
+          },
+          "default": {
+            "type": "boolean",
+            "description": "Default flag value for 'configurable' policy."
+          },
+          "stage": {
+            "type": "string",
+            "enum": ["ingest", "analyze", "publish"],
+            "description": "Pipeline stage where this policy takes effect."
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

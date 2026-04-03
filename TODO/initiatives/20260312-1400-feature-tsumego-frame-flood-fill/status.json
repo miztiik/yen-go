@@ -1,0 +1,39 @@
+{
+  "initiative_id": "20260312-1400-feature-tsumego-frame-flood-fill",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "User confirmed Q1:A — no backward compat, old fill produces provably wrong results (dead checker stones). Re-enrich all puzzles with new frame."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": true,
+      "rationale": "Q6:A — remove offence_to_win parameter entirely, Q7:A — remove _choose_scan_order. Clean break."
+    },
+    "option_selection": {
+      "selected_option_id": "OPT-3",
+      "rationale": "Unanimous 6/6 panel approval. Full Rewrite + Validation Hardening. Only option meeting all 6 goals (G1-G6). User explicitly requested validation (Q5:A). Incremental cost (~40 lines over OPT-2) proportionate to correctness guarantee."
+    }
+  },
+  "research": {
+    "planning_confidence_score_pre": 55,
+    "planning_confidence_score_post": 88,
+    "risk_level": "low",
+    "research_invoked": true,
+    "research_artifact": "../20260312-research-tsumego-frame-flood-fill/15-research.md"
+  },
+  "updated_at": "2026-03-12"
+}

@@ -1,0 +1,14 @@
+(;FF[4]GM[1]SZ[9]
+AB[ba][ab][bc]
+AW[ca][bb][db][cc]
+PL[B]
+YK[direct]
+YT[10,12]
+YG[intermediate]
+PC[https://senseis.xmp.net/?Ko]
+C[Direct ko: Black captures at C8 to start a ko fight.
+W at B8 is in atari (only liberty C8). After B captures, the B stone at C8 is also in atari.
+Calibration fixture: exercises ko-aware rules routing (tromp-taylor).]
+;B[cb]
+(;W[pass]C[White must find a ko threat before recapturing at B8.])
+(;W[bb]C[Wrong - ko rule prevents immediate recapture.]))

@@ -1,0 +1,15 @@
+(;FF[4]GM[1]SZ[19]PL[B]
+YK[direct]
+YT[ko,seki]
+PC[https://senseis.xmp.net/?DoubleKoSeki]
+C[Double Ko Seki — from Sensei's Library.
+If Black takes at a (ac) White takes at b (da), and vice versa.
+Neither side can continue locally — this is seki.]
+AB[ca][ea][db][eb][cc][dc][bd][dd][ae][be][ce][de]
+AW[ba][fa][ab][bb][cb][fb][bc][ec][fc][ad][ed][ee][af][bf][cf][df][ef]
+LB[ac:a][da:b]
+;B[ac]C[Black takes the ko at a.]
+(;W[da]C[Correct — White takes the other ko. Double ko seki.])
+(;W[pass]C[Wrong — White must respond.]))
+
+(;AP[goproblems]AB[ab]AB[bc]AB[cb]AB[ba]AW[ae]AW[be]AW[bd]AW[cd]AW[cc]AW[dc]AW[db]AW[eb]AW[ea](;W[ac];B[ad]MA[ac](;W[ca];B[da]MA[ca]C[](;W[ac]C[Double Ko, black cannot win them bothRIGHT])(;W[ca]C[NOTTHIS]))(;W[da];B[ca]C[Ko is not best])(;W[ac]C[NOTTHIS]))(;W[ca];B[da]MA[ca](;W[ac];B[ad]MA[ac](;W[ca]C[RIGHT])(;W[ac]C[NOTTHIS]))(;W[ad];B[ac]C[Ko is not best])(;W[ca]C[NOTTHIS]))(;W[ad];B[ac](;W[ca];B[da]C[Ko is not best])(;W[da];B[ca]C[Black is alive]))(;W[da];B[ca](;W[ac];B[ad]C[Ko is not best])(;W[ad];B[ac]C[Black is alive])))

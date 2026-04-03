@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puzzle Enrichment Lab — Yen-Go</title>
+
+    <!-- BesoGo CSS (local vendor copy) -->
+    <link rel="stylesheet" type="text/css" href="vendor/besogo/css/besogo.css">
+    <link rel="stylesheet" type="text/css" href="vendor/besogo/css/board-wood.css">
+    <link rel="stylesheet" type="text/css" href="css/lab.css">
+</head>
+<body>
+    <header class="lab-header">
+        <h1>Puzzle Enrichment Lab</h1>
+        <span class="lab-subtitle">Validate &middot; Refute &middot; Rate</span>
+        <div class="lab-status" id="engine-status">
+            <span class="status-dot offline" id="status-dot"></span>
+            <span id="status-text">Disconnected</span>
+        </div>
+    </header>
+
+    <main class="lab-main">
+        <!-- Left: Source SGF Input + Board -->
+        <section class="lab-source">
+            <div class="section-header">
+                <h2>Source SGF</h2>
+                <div class="source-actions">
+                    <button id="btn-load-sample" title="Load a sample puzzle">Sample</button>
+                    <button id="btn-clear-source" title="Clear input">Clear</button>
+                </div>
+            </div>
+            <textarea id="sgf-input" class="sgf-textarea" placeholder="Paste SGF here...&#10;&#10;(;FF[4]GM[1]SZ[19]&#10; AB[cd][dd][de]AW[ce][df]&#10; ;B[cf];W[bf];B[be])"></textarea>
+            <div class="source-board-area">
+                <div id="source-viewer" class="besogo-viewer-wrap"></div>
+            </div>
+        </section>
+
+        <!-- Center: Controls + Analysis -->
+        <section class="lab-controls">
+            <div class="section-header">
+                <h2>Analysis</h2>
+            </div>
+
+            <!-- LOCAL ENGINE PANEL -->
+            <fieldset class="engine-config" id="local-engine-controls">
+                <legend>Local KataGo</legend>
+                <label>
+                    <span>Model</span>
+                    <select id="model-select" class="config-input">
+                        <option value="">Loading...</option>
+                    </select>
+                </label>
+                <label>
+                    <span>Bridge URL</span>
+                    <input type="text" id="bridge-url" value="http://localhost:8999" class="config-input">
+                </label>
+                <label>
+                    <span>Max Visits</span>
+                    <input type="number" id="max-visits" value="200" min="10" max="10000" class="config-input">
+                </label>
+                <div class="engine-control-buttons">
+                    <button id="btn-start-engine" class="btn-small btn-start">Start</button>
+                    <button id="btn-stop-engine" class="btn-small btn-stop" disabled>Stop</button>
+                    <button id="btn-health" class="btn-small btn-secondary">Check</button>
+                </div>
+                <div class="engine-control-buttons" style="margin-top:4px">
+                    <button id="btn-analyze" class="btn-primary" disabled>Analyze (Local)</button>
+                </div>
+                <div class="engine-status-line">
+                    <span class="status-dot offline" id="local-status-dot"></span>
+                    <span id="local-status-text" class="status-text-small">Not checked</span>
+                </div>
+            </fieldset>
+
+            <!-- BROWSER ENGINE PANEL -->
+            <fieldset class="engine-config" id="browser-engine-controls">
+                <legend>Browser Engine (TF.js)</legend>
+                <p class="engine-placeholder">Coming soon — TF.js + MCTS browser engine.<br>
+                See <a href="../../TODO/katago-puzzle-enrichment/004-plan-browser-engine-option-b.md">plan</a> for details.</p>
+                <div class="engine-status-line">
+                    <span class="status-dot offline" id="browser-status-dot"></span>
+                    <span id="browser-status-text" class="status-text-small">Not implemented</span>
+                </div>
+            </fieldset>
+
+            <!-- Shared Settings -->
+            <fieldset class="engine-config">
+                <legend>Refutation Settings</legend>
+                <label>
+                    <span>Max Refutations</span>
+                    <input type="number" id="max-refutations" value="3" min="1" max="5" class="config-input">
+                </label>
+                <label>
+                    <span>Min Policy</span>
+                    <input type="number" id="min-policy" value="0.05" min="0.01" max="0.5" step="0.01" class="config-input">
+                </label>
+            </fieldset>
+
+            <!-- Stop Button -->
+            <div class="action-buttons">
+                <button id="btn-stop" class="btn-danger" disabled>Stop</button>
+            </div>
+
+            <!-- Progress -->
+            <div id="progress-area" class="progress-area hidden">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <span id="progress-text">Analyzing...</span>
+            </div>
+
+            <!-- Results Summary -->
+            <div id="results-summary" class="results-summary hidden">
+                <h3>Results</h3>
+
+                <!-- Validation -->
+                <div class="result-card" id="card-validation">
+                    <div class="result-card-header">
+                        <span class="result-icon" id="validation-icon">?</span>
+                        <span class="result-title">Move Validation</span>
+                    </div>
+                    <div class="result-card-body" id="validation-body">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Refutations -->
+                <div class="result-card" id="card-refutations">
+                    <div class="result-card-header">
+                        <span class="result-icon">&#9876;</span>
+                        <span class="result-title">Refutations</span>
+                    </div>
+                    <div class="result-card-body" id="refutations-body">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Difficulty -->
+                <div class="result-card" id="card-difficulty">
+                    <div class="result-card-header">
+                        <span class="result-icon">&#9733;</span>
+                        <span class="result-title">Difficulty</span>
+                    </div>
+                    <div class="result-card-body" id="difficulty-body">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right: Enriched SGF + Board -->
+        <section class="lab-result">
+            <div class="section-header">
+                <h2>Enriched SGF</h2>
+                <div class="result-actions">
+                    <button id="btn-copy-enriched" title="Copy enriched SGF to clipboard" disabled>Copy</button>
+                    <button id="btn-download-enriched" title="Download enriched SGF" disabled>Download</button>
+                </div>
+            </div>
+            <textarea id="sgf-output" class="sgf-textarea" placeholder="Enriched SGF will appear here after analysis...&#10;You can also paste SGF here to view it."></textarea>
+            <div class="result-board-area">
+                <div id="result-viewer" class="besogo-viewer-wrap"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="lab-footer">
+        <span>Puzzle Enrichment Lab v0.1.0 — Yen-Go</span>
+        <span class="footer-links">
+            <a href="../../TODO/katago-puzzle-enrichment/001-research-browser-and-local-katago-for-tsumego.md">Research</a>
+            <a href="../../TODO/katago-puzzle-enrichment/002-implementation-plan-katago-enrichment.md">Plan</a>
+        </span>
+    </footer>
+
+    <!-- BesoGo JavaScript (local vendor copy) -->
+    <script src="vendor/besogo/js/besogo.js"></script>
+    <script src="vendor/besogo/js/editor.js"></script>
+    <script src="vendor/besogo/js/gameRoot.js"></script>
+    <script src="vendor/besogo/js/svgUtil.js"></script>
+    <script src="vendor/besogo/js/parseSgf.js"></script>
+    <script src="vendor/besogo/js/loadSgf.js"></script>
+    <script src="vendor/besogo/js/saveSgf.js"></script>
+    <script src="vendor/besogo/js/boardDisplay.js"></script>
+    <script src="vendor/besogo/js/coord.js"></script>
+    <script src="vendor/besogo/js/toolPanel.js"></script>
+    <script src="vendor/besogo/js/filePanel.js"></script>
+    <script src="vendor/besogo/js/controlPanel.js"></script>
+    <script src="vendor/besogo/js/namesPanel.js"></script>
+    <script src="vendor/besogo/js/commentPanel.js"></script>
+    <script src="vendor/besogo/js/treePanel.js"></script>
+
+    <!-- Puzzle Enrichment Lab JavaScript -->
+    <script src="js/katago-client.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

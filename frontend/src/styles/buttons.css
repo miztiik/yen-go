@@ -1,0 +1,67 @@
+/* Consolidated Button Styles - Spec 122 */
+
+/* Base button reset */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  min-height: 44px;  /* Touch target */
+  min-width: 44px;
+}
+
+/* Icon-only buttons (back, rotate, etc.) */
+.btn-icon {
+  /* 44px touch target */
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-full);
+  color: var(--color-text-primary);
+}
+.btn-icon:hover { background: var(--color-bg-hover); }
+.btn-icon:active { transform: scale(0.95); }
+.btn-icon:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+.btn-icon:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Navigation buttons (prev/next) */
+.btn-nav {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  gap: var(--spacing-xs);
+}
+/* ... add hover, active, focus-visible, disabled states */
+
+/* Primary action button */
+.btn-primary {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-md);
+}
+/* ... add states */
+
+/* Secondary button */
+.btn-secondary {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+}
+/* ... add states */
+
+/* IMPORTANT: Use :focus-visible, NOT :focus */

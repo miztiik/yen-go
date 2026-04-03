@@ -1,0 +1,8 @@
+{
+  "katago_path": "katago/katago.exe",
+  "model_path": "models-data/kata1-b28c512nbt-s12192929536-d5655876072.bin.gz",
+  "config_path": "katago/tsumego_analysis.cfg",
+  "default_max_visits": 500,
+  "default_board_size": 19,
+  "num_threads": 2
+}

@@ -1,0 +1,14 @@
+(;FF[4]GM[1]SZ[19]PL[B]
+YT[corner]YC[TL]
+PC[https://senseis.xmp.net/?CornerShapes]
+C[Corner life-and-death — top left corner — from Sensei's Library.
+White is alive in the corner but can be killed if Black finds the right move.
+The key is the vital point of White's corner shape.]
+AB[ab][bb][cb][db][bc][dc][bd][cd][dd]
+AW[aa][ba][ca][da][ea][ac][ec][ad][ed][ae][be][ce][de][ee]
+;B[cc]C[Correct! Black plays the corner vital point at C3 — kills White's corner group.]
+(;W[cb]C[White tries to maintain a corner eye...]
+;B[bb]C[...the corner eye is false. White dead.])
+(;W[bb]C[White extends into the corner...]
+;B[cb]C[...Black blocks — the vital point achieved its purpose.])
+(;W[pass]C[Wrong — Black has played the corner killing move.]))

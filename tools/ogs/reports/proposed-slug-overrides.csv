@@ -1,0 +1,20 @@
+ogs_id,puzzle_count,original_name,action,proposed_slug,proposed_name,reasoning
+9389,41,базовые формы 1,override,basic-shapes-1,Basic Shapes 1,Direct translation from Russian
+951,41,Задачи на взятие камней.1,override,capturing-stones-1,Capturing Stones 1,Russian series part 1
+4004,43,Задачи на взятие камней. 2,override,capturing-stones-2,Capturing Stones 2,Russian series part 2
+4034,37,Задачи на взятие камней. 3,override,capturing-stones-3,Capturing Stones 3,Russian series part 3
+2384,392,Стань сильным в тэсудзи,override,become-strong-tesuji,Become Strong in Tesuji,Direct translation (largest collection: 392 puzzles)
+2020,39,Рин Кайхо - Золотые возможности,override,golden-opportunities,Golden Opportunities,Strip author; Rin Kaiho (林海峰) kept as alias
+5442,30,ปิดประตู,override,net-capturing,Net Capturing (Door Closing),Thai geta/net technique
+8714,31,[camp] ท้ายเกม - ปัญหาช่วงท้ายเกม,override,endgame-problems-camp,Endgame Problems (Camp),Thai camp series: endgame
+8705,31,[camp] เปิดเกม - เชพหมาก,override,opening-shapes-camp,Opening Shapes (Camp),Thai camp series: opening
+9924,92,ห้องจริง ห้องปลอม และ การจับกิน,override,real-false-eyes,Real and False Eyes,Eye shape recognition + capturing
+5615,30,ท่าจับกิน Krun,map_existing,krun,,Already matched by first entry จับกิน Krun — same series
+8479,50,ภีมคุง,skip,,,Username only — no Go topic identifiable
+10325,32,โจทย์คนหน้าตาดี,skip,,,Username only — no Go topic identifiable
+5625,40,權甲龍精妙收官,override,exquisite-endgame,Exquisite Endgame,Strip author (Kwon Kap-ryong); technique is endgame
+10247,61,四路官子譜,override,four-line-endgame,Four-Line Endgame Manual,Endgame on 4th line
+5783,32,基本手筋事典 吃子 capturing,override,basic-tesuji-capturing,Basic Tesuji: Capturing,Distinguishes from generic 'capturing' slug
+6544,39,金柜角  Carpenter's Square,map_existing,carpenter-square,,Same Go concept as existing carpenter-square entry
+4895,35,수근대사전,override,tesuji-encyclopedia,Tesuji Encyclopedia,Korean 수근 = tesuji; 대사전 = encyclopedia
+10382,48,佑林中級D講義,override,intermediate-lectures-d,Intermediate Lectures D,Strip school name; graded lecture series

@@ -1,0 +1,572 @@
+/**
+ * Solution Tree Styles
+ * @module components/SolutionTree/SolutionTree.css
+ *
+ * Styles for the solution tree visualization.
+ * Updated: Uses Sky-500 (#0ea5e9) primary color from UI mock
+ * 
+ * FR-002: Stone icons (●/○)
+ * FR-019: Touch targets minimum 44x44pt
+ * FR-020: WCAG AA contrast ratio 4.5:1
+ * FR-021: Smooth auto-scroll animation
+ * FR-003: Setup node styling
+ */
+
+/* ==========================================================================
+   CSS Custom Properties (Design Tokens) - Sky-500 Theme
+   ========================================================================== */
+.solution-tree {
+  --tree-primary: #0ea5e9;         /* Sky-500 */
+  --tree-primary-light: #bae6fd;   /* Sky-200 */
+  --tree-primary-dark: #0284c7;    /* Sky-600 */
+  --tree-success: #10b981;         /* Emerald-500 */
+  --tree-error: #ef4444;           /* Red-500 */
+  --tree-line-color: var(--color-border, #e2e8f0);
+  --tree-node-spacing: 0.25rem;
+  --tree-indent: 1.5rem;
+  --tree-connector-width: 0.75rem;
+  
+  font-family: var(--font-mono, 'SF Mono', Consolas, monospace);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  padding: 0.5rem;
+  overflow-x: auto;
+  background: transparent;
+  border-radius: 8px;
+  /* FR-021: Smooth scroll behavior */
+  scroll-behavior: smooth;
+  scroll-snap-type: y proximity;
+}
+
+/* Mobile: Larger font for readability */
+@media (max-width: 768px) {
+  .solution-tree {
+    font-size: 0.9375rem; /* 15px for better mobile readability */
+  }
+}
+
+.tree-node {
+  display: flex;
+  flex-direction: column;
+  padding-left: calc(var(--depth, 0) * var(--tree-indent));
+  position: relative;
+}
+
+/* Vertical connector line */
+.tree-node::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--depth, 0) * var(--tree-indent) - var(--tree-connector-width) - 2px);
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--tree-line-color);
+  border-radius: 1px;
+}
+
+/* Horizontal connector to node */
+.tree-node::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--depth, 0) * var(--tree-indent) - var(--tree-connector-width) - 2px);
+  top: 22px; /* Center of 44px touch target */
+  width: var(--tree-connector-width);
+  height: 2px;
+  background: var(--tree-line-color);
+  border-radius: 1px;
+}
+
+/* Hide connectors for root node */
+.tree-node[style*="--depth: 0"]::before,
+.tree-node[style*="--depth: 0"]::after {
+  display: none;
+}
+
+.tree-node:first-child::before {
+  top: 22px;
+}
+
+.tree-node:last-child::before {
+  bottom: calc(100% - 22px);
+}
+
+/* Only child - just horizontal line */
+.tree-node:only-child::before {
+  display: none;
+}
+
+.node-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  /* FR-019: Minimum 44x44pt touch targets */
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5rem 0.75rem;
+  margin: var(--tree-node-spacing) 0;
+  border-radius: 6px;
+  cursor: pointer;
+  /* Smooth transitions for all state changes */
+  transition: 
+    background-color 0.2s ease-out,
+    border-color 0.2s ease-out,
+    transform 0.15s ease-out,
+    box-shadow 0.15s ease-out;
+  background: var(--color-background, #ffffff);
+  border: 1px solid var(--color-border-light, #e2e8f0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.node-content:hover {
+  /* Sky-500 hover (10% opacity) */
+  background: rgba(14, 165, 233, 0.1);
+  transform: translateX(2px);
+}
+
+.node-content:active {
+  transform: translateX(0);
+}
+
+.tree-node:focus {
+  outline: none;
+}
+
+.tree-node:focus > .node-content {
+  box-shadow: 0 0 0 2px var(--tree-primary, #0ea5e9);
+}
+
+/* Path highlighting - Sky-500 theme */
+.tree-node.on-path > .node-content {
+  background: rgba(14, 165, 233, 0.15);
+  border-color: var(--tree-primary, #0ea5e9);
+}
+
+.tree-node.current > .node-content {
+  /* Current node: solid Sky-500 background */
+  background: var(--tree-primary, #0ea5e9);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(14, 165, 233, 0.3);
+}
+
+/* Correct vs wrong styling */
+.tree-node.correct > .node-content {
+  border-left: 3px solid var(--tree-success, #10b981);
+}
+
+.tree-node.wrong > .node-content {
+  border-left: 3px dashed var(--tree-error, #ef4444);
+  opacity: 0.8;
+  background: #fef2f2;
+}
+
+.tree-node.wrong.on-path > .node-content {
+  background: var(--color-danger-light, #f8d7da);
+  opacity: 1;
+}
+
+/* Tesuji (key move) styling - Spec 012 */
+.tree-node.tesuji > .node-content {
+  border-left: 3px solid var(--color-warning, #ffc107);
+  background: var(--color-warning-subtle, #fffbeb);
+}
+
+.tree-node.tesuji > .node-content::after {
+  content: '⭐';
+  margin-left: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.tree-node.tesuji.on-path > .node-content {
+  background: var(--color-warning-light, #fff3cd);
+}
+
+.tree-node.tesuji.current > .node-content {
+  background: var(--color-warning, #ffc107);
+  color: var(--color-text, #212529);
+}
+
+/* Setup node styling - FR-003 */
+.tree-node.setup-node > .node-content {
+  background: var(--color-setup-bg, #e9ecef);
+  border: 1px dashed var(--color-border, #dee2e6);
+  color: var(--color-text-muted, #6c757d);
+}
+
+.tree-node.setup-node > .node-content .move-coord {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.tree-node.setup-node.current > .node-content {
+  background: var(--color-setup-current, #adb5bd);
+  color: white;
+}
+
+.tree-node.tesuji.current > .node-content::after {
+  content: '⭐';
+}
+
+/* User vs opponent moves */
+.tree-node.user-move > .node-content {
+  /* User moves are black stones */
+}
+
+.tree-node.opponent-move > .node-content {
+  color: var(--color-text-muted, #6c757d);
+}
+
+.tree-node.opponent-move.on-path > .node-content {
+  color: inherit;
+}
+
+/* ==========================================================================
+   FR-002: Stone Icons
+   ========================================================================== */
+.stone-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.stone-icon.black {
+  color: var(--color-stone-black, #1a1a1a);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.stone-icon.white {
+  color: var(--color-stone-white, #f5f5f5);
+  text-shadow: 
+    0 0 1px rgba(0, 0, 0, 0.5),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Ensure visibility on different backgrounds */
+.tree-node.current .stone-icon.black {
+  color: #333;
+}
+
+.tree-node.current .stone-icon.white {
+  color: #fff;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Move number */
+.move-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--color-number-bg, #e9ecef);
+  border-radius: 50%;
+  color: var(--color-text, #212529);
+}
+
+.tree-node.current .move-number {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+/* Move coordinate */
+.move-coord {
+  font-weight: 500;
+}
+
+/* Dead end marker */
+.dead-end {
+  color: var(--color-danger, #dc3545);
+  font-weight: bold;
+  margin-left: 0.25rem;
+}
+
+/* Children container */
+.tree-children {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Branching indicator */
+.tree-node > .tree-children > .tree-node:not(:first-child) {
+  position: relative;
+}
+
+.tree-node > .tree-children > .tree-node:not(:first-child)::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--depth, 0) * 1.25rem - 0.75rem);
+  top: 50%;
+  width: 0.5rem;
+  height: 1px;
+  background: var(--color-border, #dee2e6);
+}
+
+/* Responsive - FR-019: Maintain 44pt minimum touch targets */
+@media (max-width: 480px) {
+  .solution-tree {
+    font-size: 0.8125rem;
+    padding: 0.375rem;
+  }
+
+  .tree-node {
+    padding-left: calc(var(--depth, 0) * 1rem);
+  }
+
+  .node-content {
+    /* FR-019: MUST maintain 44pt minimum on mobile */
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.5rem 0.625rem;
+    gap: 0.25rem;
+  }
+
+  .move-number {
+    min-width: 1.25rem;
+    height: 1.25rem;
+    font-size: 0.6875rem;
+  }
+}
+
+/* Force light mode only - no dark mode (per UX requirement) */
+
+/* Animation for new nodes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tree-node:not(.on-path) {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Error State - FR-011, T018, T019 */
+.solution-tree-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  background: var(--color-danger-subtle, #fff5f5);
+  border: 1px solid var(--color-danger, #dc3545);
+  border-radius: 8px;
+  min-height: 120px;
+}
+
+.solution-tree-error .error-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.solution-tree-error .error-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--color-danger, #dc3545);
+}
+
+.solution-tree-error .error-message {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #6c757d);
+  margin: 0 0 1rem 0;
+  max-width: 280px;
+}
+
+.solution-tree-error .error-retry-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: var(--color-danger, #dc3545);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.solution-tree-error .error-retry-button:hover {
+  background: var(--color-danger-dark, #bb2d3b);
+}
+
+/* Empty State - Edge case for empty puzzles */
+.solution-tree-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  background: var(--color-surface, #f8f9fa);
+  border: 1px dashed var(--color-border, #dee2e6);
+  border-radius: 8px;
+  min-height: 120px;
+}
+
+.solution-tree-empty .empty-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.5;
+}
+
+.solution-tree-empty .empty-message {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #6c757d);
+  margin: 0;
+}
+
+/* Loading Skeleton */
+.solution-tree-loading {
+  padding: 0.5rem;
+  background: var(--color-surface, #f8f9fa);
+  border-radius: 8px;
+}
+
+.solution-tree-loading .skeleton-node {
+  height: 44px;
+  width: 120px;
+  background: linear-gradient(
+    90deg,
+    var(--color-border, #dee2e6) 25%,
+    var(--color-background, #ffffff) 50%,
+    var(--color-border, #dee2e6) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin: 0.25rem 0;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ==========================================================================
+   Reduced Motion Support (P4 Accessibility)
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .solution-tree {
+    scroll-behavior: auto;
+  }
+
+  .node-content {
+    transition: none;
+  }
+
+  .node-content:hover {
+    transform: none;
+  }
+
+  .tree-node:not(.on-path) {
+    animation: none;
+  }
+
+  .solution-tree-loading .skeleton-node {
+    animation: none;
+    background: var(--color-border, #dee2e6);
+  }
+}
+
+/* ==========================================================================
+   Print Stylesheet (P4 Polish)
+   ========================================================================== */
+@media print {
+  .solution-tree {
+    background: white;
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    page-break-inside: avoid;
+    font-size: 10pt;
+  }
+
+  /* Remove interactive hover states */
+  .node-content {
+    cursor: default;
+    box-shadow: none;
+    transition: none;
+  }
+
+  .node-content:hover {
+    background: inherit;
+    transform: none;
+  }
+
+  /* Simplify colors for print */
+  .tree-node.on-path > .node-content {
+    background: #e6f7f2 !important;
+    border-color: #20c997 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .tree-node.current > .node-content {
+    background: #20c997 !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .tree-node.wrong > .node-content {
+    background: #fff5f5 !important;
+    border-left-color: #dc3545 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .tree-node.tesuji > .node-content {
+    background: #fffbeb !important;
+    border-left-color: #ffc107 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Connector lines for print */
+  .tree-node::before,
+  .tree-node::after {
+    background: #999 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Stone icons print-friendly */
+  .stone-icon.black {
+    color: #000 !important;
+    text-shadow: none;
+  }
+
+  .stone-icon.white {
+    color: #666 !important;
+    text-shadow: none;
+  }
+
+  /* Hide loading/error states in print */
+  .solution-tree-loading,
+  .solution-tree-error .error-retry-button {
+    display: none;
+  }
+
+  /* Move number styling for print */
+  .move-number {
+    background: #eee !important;
+    border: 1px solid #ccc;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

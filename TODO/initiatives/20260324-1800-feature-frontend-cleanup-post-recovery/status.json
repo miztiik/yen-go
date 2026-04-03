@@ -1,0 +1,38 @@
+{
+  "initiative_id": "20260324-1800-feature-frontend-cleanup-post-recovery",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "Dead code has 0 active imports; all in git history. No user-facing behavior changes."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": true,
+      "rationale": "Delete all dead code. Delete stale docs outright (no archive). Per project CLAUDE.md: Delete, don't deprecate."
+    },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Unanimous panel selection — best balance of risk isolation, review clarity, and execution speed"
+    }
+  },
+  "research": {
+    "code_audit": "TODO/initiatives/20260324-research-frontend-cleanup-deep-audit/15-research.md",
+    "docs_audit": "TODO/initiatives/frontend-docs-gap-audit/15-research.md",
+    "planning_confidence_score": 88,
+    "risk_level": "low"
+  },
+  "updated_at": "2026-03-24T13:30:00Z"
+}

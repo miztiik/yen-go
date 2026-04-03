@@ -1,0 +1,142 @@
+/**
+ * CommentPanel Styles
+ * @module components/SolutionTree/CommentPanel.css
+ *
+ * Styles for the comment panel component.
+ * FR-013: Dedicated panel adjacent to board
+ * FR-014: Preserve line breaks and whitespace
+ * FR-020: WCAG AA contrast compliance
+ */
+
+.comment-panel {
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface, #f8f9fa);
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #dee2e6);
+  min-height: 80px;
+  max-height: 200px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+/* Header with move context */
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border, #dee2e6);
+  font-size: 0.8125rem;
+}
+
+.comment-move-number {
+  font-weight: 600;
+  color: var(--color-text, #212529);
+}
+
+.comment-move-coord {
+  font-family: var(--font-mono, 'SF Mono', Consolas, monospace);
+  background: var(--color-background, #ffffff);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  color: var(--color-text-muted, #6c757d);
+}
+
+.comment-status {
+  margin-left: auto;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.comment-status.correct {
+  color: var(--color-success, #198754);
+}
+
+.comment-status.wrong {
+  color: var(--color-danger, #dc3545);
+}
+
+/* Comment content */
+.comment-content {
+  color: var(--color-text, #212529);
+}
+
+.comment-text {
+  margin: 0;
+  white-space: pre-wrap; /* FR-014: Preserve line breaks */
+  word-wrap: break-word;
+}
+
+.comment-line {
+  display: inline;
+}
+
+.comment-line.comment-correct {
+  color: var(--color-success, #198754);
+  font-weight: 500;
+}
+
+.comment-line.comment-wrong {
+  color: var(--color-danger, #dc3545);
+  font-weight: 500;
+}
+
+/* Empty state - FR-015 */
+.comment-placeholder {
+  margin: 0;
+  color: var(--color-text-muted, #6c757d);
+  font-style: italic;
+  text-align: center;
+  padding: 1rem;
+}
+
+.comment-panel.empty {
+  opacity: 0.7;
+  border-style: dashed;
+}
+
+/* Move correctness indicators */
+.comment-panel.correct-move {
+  border-left: 3px solid var(--color-success, #198754);
+}
+
+.comment-panel.wrong-move {
+  border-left: 3px solid var(--color-danger, #dc3545);
+  background: var(--color-danger-subtle, #fff5f5);
+}
+
+/* Force light mode - no dark mode (per UX requirement) */
+
+/* Responsive */
+@media (max-width: 480px) {
+  .comment-panel {
+    font-size: 0.8125rem;
+    padding: 0.5rem 0.75rem;
+    min-height: 60px;
+    max-height: 150px;
+  }
+
+  .comment-header {
+    font-size: 0.75rem;
+  }
+}
+
+/* Animation for comment changes */
+@keyframes commentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.comment-panel.has-comment .comment-text {
+  animation: commentFadeIn 0.2s ease-out;
+}

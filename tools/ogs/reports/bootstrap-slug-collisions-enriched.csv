@@ -1,0 +1,20 @@
+priority_score,puzzle_count,ogs_id,slug_generated,slug_unidecode,original_name,english_translation,language,go_topic,tier,would_fix_with_unidecode
+0.5746,41,9389,ogs-1,bazovye-formy-1,базовые формы 1,Basic Shapes 1,Russian,Shape recognition,premier,True
+0.5389,30,5615,krun,thaacchabkin-krun,ท่าจับกิน Krun,Capturing Moves: Krun,Thai,Capturing techniques,premier,True
+0.5338,50,8479,ogs-unknown,phiimkhung,ภีมคุง,Bhimkhung (creator name),Thai,General,premier,True
+0.531,30,5442,ogs-unknown,pidpratuu,ปิดประตู,Close the Door (Net/Geta),Thai,Capturing technique (geta),premier,True
+0.5261,31,8714,ogs-unknown,thaayekm-payhaachwngthaayekm,"[camp] ท้ายเกม - ปัญหาช่วงท้ายเกม",Endgame - Endgame Problems,Thai,Endgame,premier,True
+0.5214,43,4004,ogs-2,zadachi-na-vziatie-kamnei-2,Задачи на взятие камней. 2,Problems on Capturing Stones 2,Russian,Capturing,curated,True
+0.5179,392,2384,ogs-unknown,stan-sil-nym-v-tesudzi,Стань сильным в тэсудзи,Become Strong in Tesuji,Russian,Tesuji,curated,True
+0.5114,31,8705,ogs-unknown,epidekm-echphhmaak,"[camp] เปิดเกม - เชพหมาก",Opening Game - Stone Shapes,Thai,Opening / shape,curated,True
+0.4996,41,951,ogs-1,zadachi-na-vziatie-kamnei-1,Задачи на взятие камней.1,Problems on Capturing Stones 1,Russian,Capturing,curated,True
+0.4951,40,5625,ogs-unknown,quan-jia-long-jing-miao-shou-guan,權甲龍精妙收官,"Kwon Kap-ryong's Exquisite Endgame",Chinese,Endgame (author: Kwon Kap-ryong),curated,True
+0.489,61,10247,ogs-unknown,si-lu-guan-zi-pu,四路官子譜,4-Line Endgame Manual,Chinese,Endgame,curated,True
+0.4878,32,5783,capturing,ji-ben-shou-jin-shi-dian-chi-zi-capturing,基本手筋事典 吃子 capturing,Basic Tesuji Encyclopedia: Capturing,Chinese/Japanese,Tesuji / capturing,curated,True
+0.484,39,6544,carpenter-square,jin-ju-jiao-carpenter-square,"金柜角  Carpenter's Square",Golden Corner (Carpenter's Square),Chinese,Corner shape technique,curated,True
+0.4838,35,4895,ogs-unknown,sugeundaesajeon,수근대사전,Tesuji Encyclopedia,Korean,Tesuji,curated,True
+0.479,32,10325,ogs-unknown,occhthykhnhnaataadii,โจทย์คนหน้าตาดี,Problems by Good-Looking Person (username),Thai,General,curated,True
+0.476,48,10382,ogs-d,you-lin-zhong-ji-djiang-yi,佑林中級D講義,Youlin Intermediate Level D Lectures,Chinese,Graded (intermediate),curated,True
+0.472,92,9924,ogs-unknown,h-ngcchring-h-ngpl-m-aela-kaarcchabkin,ห้องจริง ห้องปลอม และ การจับกิน,"Real Eyes, False Eyes, and Capturing",Thai,Life & death / eye shape,curated,True
+0.4684,37,4034,ogs-3,zadachi-na-vziatie-kamnei-3,Задачи на взятие камней. 3,Problems on Capturing Stones 3,Russian,Capturing,curated,True
+0.4662,39,2020,ogs-unknown,rin-kaikho-zolotye-vozmozhnosti,Рин Кайхо - Золотые возможности,"Rin Kaiho - Golden Opportunities (author: Lin Haifeng 林海峰)",Russian,Author collection (Rin Kaiho),curated,True

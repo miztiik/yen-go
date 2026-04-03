@@ -1,0 +1,21 @@
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+norecursedirs = [
+    "gui_deprecated",
+    ".lab-runtime",
+    "models-data",
+    "tests/fixtures/scale",
+    ".embedding_cache",
+    "__pycache__",
+    ".pytest_cache",
+    "katago",
+    "scripts",
+]
+markers = [
+    "unit: fast isolated unit tests with no external dependencies",
+    "integration: integration tests requiring KataGo binary and model files",
+    "slow: long-running tests (performance, scale, model comparison)",
+    "golden5: canonical 5-puzzle integration tests (1 L and D, 1 ko, 1 tesuji, 1 small-board, 1 miai)",
+    "calibration: calibration tests against reference collections (never run during fixes)",
+]

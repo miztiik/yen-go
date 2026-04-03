@@ -1,0 +1,49 @@
+{
+  "Board size": 19,
+  "Black stones": [
+    "bq",
+    "co",
+    "cm",
+    "bm",
+    "dn",
+    "en",
+    "eo",
+    "ep",
+    "fq",
+    "fr",
+    "br"
+  ],
+  "White stones": [
+    "cr",
+    "do",
+    "dp",
+    "dq",
+    "bp",
+    "bo",
+    "bn",
+    "cn"
+  ],
+  "Labels": {},
+  "Start": "B",
+  "Solution": [
+    "rd",
+    "qc",
+    "sc",
+    "re",
+    "se"
+  ],
+  "Comments": "1K",
+  "Other variations": [
+    [
+      "rd",
+      "re",
+      "qc",
+      "sd",
+      "pc",
+      "sb",
+      "qe",
+      "rd",
+      "ra"
+    ]
+  ]
+}

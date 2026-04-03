@@ -1,0 +1,3 @@
+(;SZ[19]FF[4]GM[1]PL[B]PB[Black]PW[White]C[black-to-live]YV[10]YG[intermediate]YT[life-and-death]YQ[q:5;rc:0;hc:0]YL[corner-life-and-death]AB[rb][pc][pd][rd][pe][qe][re][rf]AW[ra][ob][pb][qb][oc][od][oe][pf][qf][og][rg][qh](;B[qc];W[sb](;B[sf];W[sd];B[rc];W[sc];B[se]C[RIGHT
+])(;B[sc];W[rc]C[only ko
+])(;B[rc];W[sf](;B[sc];W[se])(;B[se];W[sc])))(;B[rc];W[qc])(;B[sb];W[qc])(;B[sf];W[qc]))

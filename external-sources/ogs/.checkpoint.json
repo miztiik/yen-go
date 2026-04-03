@@ -1,0 +1,15 @@
+{
+  "current_batch": 52,
+  "files_in_current_batch": 996,
+  "version": "1.0.0",
+  "last_updated": "2026-02-25T08:42:50.164929+00:00",
+  "last_page": 1173,
+  "last_puzzle_id": 103265,
+  "puzzle_index_in_page": -1,
+  "puzzles_downloaded": 51996,
+  "puzzles_skipped": 25391,
+  "puzzles_errors": 1,
+  "recent_errors": [
+    "puzzle 97821: HTTP error 500: https://online-go.com/api/v1/puzzles/97821/"
+  ]
+}

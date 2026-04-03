@@ -1,0 +1,33 @@
+{
+  "initiative_id": "20260310-docs-consolidated-backlog",
+  "initiative_type": "docs",
+  "title": "Consolidated Backlog Index and Initiative Mirror",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "created": "2026-03-10",
+  "updated_at": "2026-03-20",
+  "risk_level": "low",
+  "planning_confidence_score": 92,
+  "decisions": {
+    "single_source_of_truth": {
+      "required": true,
+      "rationale": "Backlog entry point is docs/reference/backlog/consolidated-backlog.md"
+    },
+    "source_todo_retention": {
+      "required": true,
+      "rationale": "Keep source TODO files as detailed execution notes until fully migrated"
+    }
+  },
+  "open_issues": []
+}

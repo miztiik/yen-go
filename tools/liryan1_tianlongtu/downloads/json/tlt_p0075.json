@@ -1,0 +1,108 @@
+{
+  "Board size": 19,
+  "Black stones": [
+    "qd",
+    "re",
+    "pe",
+    "oe",
+    "ne",
+    "md",
+    "ld",
+    "lc",
+    "lb",
+    "la",
+    "sb",
+    "rc"
+  ],
+  "White stones": [
+    "rb",
+    "qb",
+    "qc",
+    "od",
+    "nd",
+    "ob",
+    "mc",
+    "mb"
+  ],
+  "Labels": {},
+  "Start": "B",
+  "Solution": [
+    "pc",
+    "oc",
+    "nb",
+    "na",
+    "ma",
+    "nc",
+    "pb",
+    "pd",
+    "pa"
+  ],
+  "Comments": "2D",
+  "Other variations": [
+    [
+      "pc",
+      "pb",
+      "ma",
+      "pd",
+      "oa"
+    ],
+    [
+      "pc",
+      "pb",
+      "oc",
+      "ma",
+      "pd",
+      "nb",
+      "ra",
+      "qa",
+      "oa"
+    ],
+    [
+      "pc",
+      "pd",
+      "na"
+    ],
+    [
+      "pc",
+      "pd",
+      "na",
+      "nb",
+      "oc",
+      "nc",
+      "ma"
+    ],
+    [
+      "pc",
+      "pd",
+      "ma",
+      "pb",
+      "oa",
+      "pa",
+      "ra"
+    ],
+    [
+      "pc",
+      "pd",
+      "na",
+      "nb",
+      "oc",
+      "nc",
+      "oa",
+      "pa",
+      "ma",
+      "pb",
+      "ra"
+    ],
+    [
+      "pc",
+      "pd",
+      "ma",
+      "pb",
+      "ra",
+      "qa",
+      "oa",
+      "nb",
+      "oc"
+    ]
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Puzzle Validation Configuration",
+  "description": "Configuration for centralized puzzle validation rules. v2.0: min_solution_depth replaces require_solution.",
+  "type": "object",
+  "required": ["schema_version"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Schema version (MAJOR.MINOR)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this config file"
+    },
+    "last_updated": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "ISO date of last modification (YYYY-MM-DD)"
+    },
+    "changelog": {
+      "type": "array",
+      "description": "Version history for auditability.",
+      "items": {
+        "type": "object",
+        "required": ["version", "date", "author", "changes"],
+        "additionalProperties": false,
+        "properties": {
+          "version": { "type": "string" },
+          "date": { "type": "string" },
+          "author": { "type": "string" },
+          "changes": { "type": "string" }
+        }
+      }
+    },
+    "min_board_dimension": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 19,
+      "default": 5,
+      "description": "Minimum allowed board dimension (inclusive)"
+    },
+    "max_board_dimension": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 19,
+      "default": 19,
+      "description": "Maximum allowed board dimension (inclusive)"
+    },
+    "min_solution_depth": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 1,
+      "description": "Minimum required solution depth (moves). 1 = solution must exist. 0 = no solution required."
+    },
+    "min_stones": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 2,
+      "description": "Minimum total stones required on board"
+    },
+    "max_solution_depth": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 30,
+      "description": "Maximum allowed solution tree depth (moves)"
+    }
+  },
+  "additionalProperties": false
+}

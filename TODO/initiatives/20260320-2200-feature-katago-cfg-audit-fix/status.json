@@ -1,0 +1,26 @@
+{
+  "initiative_id": "20260320-2200-feature-katago-cfg-audit-fix",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "Config changes affect future enrichment runs only. Published SGFs are immutable static files. Git history preserves old values." },
+    "legacy_code_removal": { "remove_old_code": true, "rationale": "Remove unused/invalid keys. No backward compatibility layer needed for a .cfg file." },
+    "option_selection": {
+      "selected_option_id": "OPT-B",
+      "rationale": "Unanimous governance approval. Tsumego-Optimized: fixes 4 unused keys, restores exploration defaults, adds early-phase tesuji boost (tempEarly=1.5). Bounded risk, meaningful upside for puzzle quality."
+    }
+  },
+  "updated_at": "2026-03-21"
+}

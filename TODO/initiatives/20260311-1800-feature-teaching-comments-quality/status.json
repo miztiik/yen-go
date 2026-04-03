@@ -1,0 +1,53 @@
+{
+  "initiative_id": "20260311-1800-feature-teaching-comments-quality",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "User confirmed: no backward compatibility. Re-enrich all with new comments."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": true,
+      "rationale": "No legacy code — replacing default template and adding new conditions inline"
+    },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Unanimous 6/6 panel approval. Incremental enhancement: V2 architecture designed for this extension. Each finding maps to existing extension points. 60-80 lines across 4 files."
+    }
+  },
+  "governance": {
+    "charter_gate": {
+      "decision": "approve_with_conditions",
+      "status_code": "GOV-CHARTER-CONDITIONAL",
+      "date": "2026-03-11",
+      "required_changes": ["RC-2", "RC-3", "RC-4"]
+    },
+    "options_gate": {
+      "decision": "approve",
+      "status_code": "GOV-OPTIONS-APPROVED",
+      "date": "2026-03-11",
+      "selected_option": "OPT-1",
+      "must_hold": ["MH-5", "MH-6", "MH-7"]
+    },
+    "plan_gate": {
+      "decision": "approve",
+      "status_code": "GOV-PLAN-APPROVED",
+      "date": "2026-03-11",
+      "non_blocking_rcs": ["RC-1", "RC-2"]
+    }
+  },
+  "updated_at": "2026-03-12"
+}

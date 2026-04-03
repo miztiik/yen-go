@@ -1,0 +1,30 @@
+{
+  "initiative_id": "20260312-1600-feature-browse-filter-navigation-fix",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": true, "rationale": "Existing /contexts/ URLs must keep working — new shorthand routes added as aliases (Q1, Q6)" },
+    "legacy_code_removal": { "remove_old_code": true, "rationale": "Dead code policy — cosmetic ContentTypeFilter on CollectionsPage deleted per Q2" },
+    "option_selection": {
+      "selected_option_id": "A",
+      "rationale": "Unanimous panel approval (GOV-OPTIONS-APPROVED) — best isolation/DRY balance, zero routing infra changes, 3 immediate consumers justify abstraction"
+    }
+  },
+  "planning_confidence_score": 85,
+  "risk_level": "medium",
+  "research_invoked": true,
+  "open_issues": [],
+  "updated_at": "2026-03-13"
+}

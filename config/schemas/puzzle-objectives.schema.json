@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "puzzle-objectives.schema.json",
+  "title": "Puzzle Objectives Configuration",
+  "description": "Schema for config/puzzle-objectives.json — canonical puzzle objectives and aliases used by tools/puzzle_intent for intent extraction from SGF comments.",
+  "type": "object",
+  "required": ["$schema", "schema_version", "description", "last_updated", "precision_mode", "changelog", "objectives"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Relative path to the JSON Schema file."
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "description": "Semantic version of the objectives schema (e.g. '2.0')."
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable purpose and scope of this config file."
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO date of last update (YYYY-MM-DD)."
+    },
+    "precision_mode": {
+      "type": "string",
+      "enum": ["strict", "relaxed"],
+      "description": "Matching precision: 'strict' requires high confidence, 'relaxed' allows looser matches."
+    },
+    "changelog": {
+      "type": "array",
+      "description": "Version history for auditability.",
+      "items": {
+        "type": "object",
+        "required": ["version", "date", "author", "changes"],
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+$"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "author": {
+            "type": "string"
+          },
+          "changes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "objectives": {
+      "type": "object",
+      "description": "Map of objective_id to objective definition.",
+      "patternProperties": {
+        "^[A-Z][A-Z0-9_.]+$": {
+          "$ref": "#/$defs/objective"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "objective": {
+      "type": "object",
+      "required": ["slug", "name", "category", "side", "objective_type", "result_condition", "engine_verifiable", "aliases"],
+      "additionalProperties": false,
+      "properties": {
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "description": "Kebab-case identifier for backend/URLs (e.g. 'black-to-play')."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable display name for frontend (e.g. 'Black to Play')."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "MOVE_ORDER",
+            "LIFE_AND_DEATH",
+            "CAPTURING",
+            "SHAPE",
+            "FIGHT",
+            "TESUJI",
+            "ENDGAME"
+          ],
+          "description": "Broad category grouping related objectives."
+        },
+        "side": {
+          "type": ["string", "null"],
+          "enum": ["BLACK", "WHITE", null],
+          "description": "Which side the objective applies to. Null for side-neutral objectives (e.g. SEKI)."
+        },
+        "objective_type": {
+          "type": "string",
+          "enum": [
+            "PLAY",
+            "LIVE",
+            "KILL",
+            "ESCAPE",
+            "CAPTURE",
+            "CONNECT",
+            "CUT",
+            "WIN_SEMEAI",
+            "WIN_KO",
+            "SEKI",
+            "FIND_TESUJI",
+            "FIND_BEST_MOVE"
+          ],
+          "description": "The specific type of puzzle objective."
+        },
+        "result_condition": {
+          "type": ["string", "null"],
+          "enum": [
+            null,
+            "group_alive",
+            "opponent_group_dead",
+            "group_escaped",
+            "stones_removed",
+            "groups_connected",
+            "groups_separated",
+            "liberty_race_won",
+            "ko_resolved_favorably",
+            "mutual_life",
+            "tactical_advantage",
+            "points_maximized"
+          ],
+          "description": "The verifiable end-state condition. Null when objective is purely instructional (e.g. PLAY)."
+        },
+        "engine_verifiable": {
+          "type": "boolean",
+          "description": "Whether the result can be verified programmatically by a Go engine."
+        },
+        "aliases": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9 '\\-]+$"
+          },
+          "description": "Lowercase surface forms for matching. Must contain at least one alias. Only lowercase alphanumeric, spaces, apostrophes, and hyphens."
+        }
+      }
+    }
+  }
+}

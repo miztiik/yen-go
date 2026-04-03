@@ -1,0 +1,44 @@
+{
+  "_comment": "Configuration for Tsumego Hero puzzle downloader",
+  "_version": "1.0.0",
+  
+  "output": {
+    "directory": "../../external-sources/tsumego-hero",
+    "save_sgf": true,
+    "save_metadata": true
+  },
+  
+  "network": {
+    "base_url": "https://tsumego.com",
+    "base_delay_seconds": 1,
+    "jitter_factor": 0.4,
+    "max_delay_seconds": 60.0,
+    "request_timeout_seconds": 30,
+    "max_retries": 3,
+    "backoff_multiplier": 2.0,
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+  },
+  
+  "behavior": {
+    "skip_existing": true,
+    "verify_sgf": true,
+    "stop_on_consecutive_failures": 5,
+    "batch_size": 1000
+  },
+  
+  "logging": {
+    "level": "INFO",
+    "to_file": true,
+    "include_timestamp": true,
+    "include_run_id": true
+  },
+  
+  "extraction": {
+    "sgf_pattern": "options\\.sgf2\\s*=\\s*\"(.+?)\"\\s*;",
+    "tsumego_id_pattern": "var tsumegoID = (\\d+);",
+    "set_id_pattern": "var setID = (\\d+);",
+    "description_pattern": "id=\"descriptionText\">([^<]+)<",
+    "difficulty_pattern": "<font size=\"4\">\\s*(\\d+[kd])",
+    "tags_pattern": "tags: \\[(.+?)\\]"
+  }
+}

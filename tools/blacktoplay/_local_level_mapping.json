@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "source": "blacktoplay",
+  "description": "BTP 0-3000 rating → YenGo level slug via Go rank formula: rank = 21 - round(rating/100), clamped to [-8, 20]",
+  "rating_formula": "rank = 21 - round(rating / 100); clamp(rank, -8, 20)",
+  "breakpoints": [
+    { "min_rating": 0,    "max_rating": 99,   "go_rank": "below 20k", "yengo_level": "novice",              "level_id": 110 },
+    { "min_rating": 100,  "max_rating": 549,  "go_rank": "20k-16k",   "yengo_level": "elementary",          "level_id": 130 },
+    { "min_rating": 550,  "max_rating": 1049, "go_rank": "15k-11k",   "yengo_level": "intermediate",        "level_id": 140 },
+    { "min_rating": 1050, "max_rating": 1549, "go_rank": "10k-6k",    "yengo_level": "upper-intermediate",  "level_id": 150 },
+    { "min_rating": 1550, "max_rating": 2049, "go_rank": "5k-1k",     "yengo_level": "advanced",            "level_id": 160 },
+    { "min_rating": 2050, "max_rating": 2349, "go_rank": "1d-3d",     "yengo_level": "low-dan",             "level_id": 170 },
+    { "min_rating": 2350, "max_rating": 2649, "go_rank": "4d-6d",     "yengo_level": "high-dan",            "level_id": 180 },
+    { "min_rating": 2650, "max_rating": 3000, "go_rank": "7d-9d",     "yengo_level": "expert",              "level_id": 230 }
+  ],
+  "coverage_gaps": [
+    "beginner (25k-21k) has no BTP puzzles — BTP lowest Go rank is 20k at rating 100"
+  ]
+}

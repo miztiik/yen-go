@@ -1,0 +1,29 @@
+{
+  "initiative_id": "20260313-1000-feature-gp-frame-swap",
+  "initiative_type": "feature",
+  "current_phase": "closed",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "User explicitly chose to skip old BFS tests, keep BFS code but not use it" },
+    "legacy_code_removal": { "remove_old_code": false, "rationale": "Keep BFS code, skip its tests — GP becomes the active implementation" },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Thin adapter module. Satisfies C1 (GP purity), C3 (consumer stability), C5 (single-file rollback). Unanimous governance approval."
+    }
+  },
+  "planning_confidence_score": 80,
+  "risk_level": "low",
+  "research_invoked": false,
+  "updated_at": "2026-03-13"
+}

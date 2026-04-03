@@ -1,0 +1,13 @@
+(;FF[4]GM[1]SZ[19]PL[B]
+YT[life-and-death,throw-in]YC[TL]
+C[Advanced corner life-and-death with throw-in tesuji. Black to kill White's corner group. Multi-step reading required. Source: Sensei's Library — ThrowIn, CornerShapes.]
+PC[https://senseis.xmp.net/?ThrowIn]
+AB[bo][co][ap][bp][dp][ep][aq][dq][ar][br][dr][as][bs]
+AW[bn][cn][ao][do][bq][cq][eq][cr][er][cs][ds][es]
+;B[cp]C[Correct! The throw-in at C4 is the key move.]
+(;W[cp]
+;B[bq]C[Now Black connects underneath.]
+(;W[br];B[ar]C[White is dead — cannot make two eyes.])
+(;W[ar];B[br]C[Same result.]))
+(;W[bq]
+;B[cp]C[Black captures and White dies.]))

@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://yen-go.github.io/schemas/content-types.schema.json",
+  "title": "Content-Type Classification Schema",
+  "description": "Schema for content-type classification config in Yen-Go. Defines curated/practice/training categories and their detection rules.",
+  "type": "object",
+  "required": ["schema_version", "types", "teaching_patterns", "curated_thresholds", "training_thresholds"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Config format version (MAJOR.MINOR)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this config file"
+    },
+    "last_updated": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "ISO date of last modification (YYYY-MM-DD)"
+    },
+    "changelog": {
+      "type": "array",
+      "description": "Version history for auditability.",
+      "items": {
+        "type": "object",
+        "required": ["version", "date", "author", "changes"],
+        "additionalProperties": false,
+        "properties": {
+          "version": { "type": "string" },
+          "date": { "type": "string" },
+          "author": { "type": "string" },
+          "changes": { "type": "string" }
+        }
+      }
+    },
+    "types": {
+      "type": "object",
+      "description": "Content type definitions keyed by numeric ID. These are architectural constants — IDs are frozen and must not change.",
+      "propertyNames": {
+        "pattern": "^[1-3]$"
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/typeDefinition"
+      },
+      "minProperties": 3,
+      "maxProperties": 3
+    },
+    "teaching_patterns": {
+      "type": "array",
+      "description": "Regex patterns (Python re syntax) to detect teaching root comments. Matched case-insensitively.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "curated_thresholds": {
+      "$ref": "#/definitions/curatedThresholds"
+    },
+    "training_thresholds": {
+      "$ref": "#/definitions/trainingThresholds"
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "typeDefinition": {
+      "type": "object",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": ["curated", "practice", "training"],
+          "description": "Machine-readable slug for this content type"
+        },
+        "display_label": {
+          "type": "string",
+          "description": "Human-readable display label"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of this content type"
+        }
+      },
+      "additionalProperties": false
+    },
+    "curatedThresholds": {
+      "type": "object",
+      "description": "Thresholds for classifying a puzzle as curated (content_type=1)",
+      "required": ["min_quality", "min_refutations", "require_unique_first_move"],
+      "properties": {
+        "min_quality": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Minimum quality level (YQ.q) to qualify as curated"
+        },
+        "min_refutations": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Minimum refutation count (YQ.rc) to qualify as curated"
+        },
+        "require_unique_first_move": {
+          "type": "boolean",
+          "description": "Whether unique first move (YX.u=1) is required for curated"
+        }
+      },
+      "additionalProperties": false
+    },
+    "trainingThresholds": {
+      "type": "object",
+      "description": "Thresholds for single-move tutorial detection (content_type=3). Puzzle is training if depth <= max_depth AND comment_level >= min_comment_level.",
+      "required": ["max_depth", "min_comment_level"],
+      "properties": {
+        "max_depth": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum solution depth (YX.d) for tutorial detection"
+        },
+        "min_comment_level": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Minimum comment level (YQ.hc) for tutorial detection"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

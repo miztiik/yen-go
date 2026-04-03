@@ -1,0 +1,420 @@
+{
+  "$schema": "./schemas/tags.schema.json",
+  "schema_version": "8.3",
+  "description": "Canonical puzzle tag dictionary - maps any incoming tag to our 28 standard tags. This is the SINGLE SOURCE OF TRUTH for tag normalization. Frontend fetches this at runtime.",
+  "last_updated": "2026-03-09",
+  "changelog": [
+    {
+      "version": "8.3",
+      "date": "2026-03-09",
+      "author": "senseis-library-enrichment",
+      "changes": "Added Sensei's Library cross-referenced aliases: ko gained superko/ko rule; seki gained impasse; ladder gained ladder breaker/shicho breaker; net gained net tesuji/geta tesuji; snapback gained snap/recapture; throw-in gained sacrifice inside/reduce eye space; capture-race gained liberty count/liberty counting/approach move; double-atari gained fork/two-way atari; eye-shape gained real eye/one eye/big eye/small eye/me; dead-shapes gained pyramid four/crossed five/five-point eye/four-point eye/three-point eye; liberty-shortage gained uchikaki/approach move shortage; connection gained kosumi connection/bamboo connection/tiger connection/nozoki connection; cutting gained crosscut/double cut/peep/nozoki; corner gained corner enclosure/shimari; sacrifice gained capturing sacrifice/sacrificial stone/give up to gain; shape gained empty triangle/bad shape/hane shape/ponnuki; tesuji gained atekomi/warikomi/descent/sagari/nose tesuji/hanezeki. Added corresponding alias_urls for all new aliases with distinct Sensei's Library pages."
+    },
+    {
+      "version": "8.2",
+      "date": "2026-03-02",
+      "author": "chinese-alias-enrichment",
+      "changes": "Added Chinese puzzle-book aliases from Baidu/101Weiqi catalogue (pounce, backward, levy, flutter, clip, mass kill, falling boots, robbery, hyperactive, etc.) and alias_urls for subconcepts missing Sensei's Library links (SqueezeTesuji, Placement, DoubleKo, Eye, FalseEye, ConnectAndDie, EyeVersusNoEyeCapturingRace, EyeVersusEyeCapturingRace, Oshitsubushi, JGroup, TripodGroupWithExtraLeg, CarpentersSquare). Added classic-tesuji alias cluster to tesuji tag (Hane, Kosumi, Keima, TigersMouth, OnePointJump, Wedge, MenChi, BaoChi, Sabaki, CranesNestTesuji, TwoStoneEdgeSqueeze, MouseStealingOil, TanukiNoHaraTsuzumi, twoheadeddragon, BlindSpot, UnderneathAttachment, StrikingAtTheWaistOfTheKeima)."
+    },
+    {
+      "version": "8.1",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Added senseis_url per tag and alias_urls for aliases with distinct Sensei's Library pages. All URLs validated."
+    },
+    {
+      "version": "8.0",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Renamed numericId to id, old id to slug (D31). Shifted tesuji IDs +10 (30-52), technique IDs +10 (60-82) (D30). Objectives unchanged (10-16)."
+    },
+    {
+      "version": "7.0",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Added sparse numericId per tag (10-79 by category)."
+    },
+    {
+      "version": "6.0",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Expanded taxonomy from 18 to 28 tags."
+    },
+    {
+      "version": "5.0",
+      "date": "unknown",
+      "author": "unknown",
+      "changes": "Renamed tags for universal recognition."
+    }
+  ],
+  "tags": {
+    "life-and-death": {
+      "slug": "life-and-death",
+      "id": 10,
+      "name": "Life & Death",
+      "category": "objective",
+      "description": "Kill opponent's group or make your group live - the core tsumego objective",
+      "aliases": ["killing", "kill", "death", "dead", "capture", "life-death", "tsumego", "l&d", "life and death", "killing problem", "death problem", "satsujin", "shikatsu", "basic life and death"],
+      "senseis_url": "https://senseis.xmp.net/?LifeAndDeath",
+      "alias_urls": {
+        "tsumego": "https://senseis.xmp.net/?Tsumego"
+      }
+    },
+    "living": {
+      "slug": "living",
+      "id": 14,
+      "name": "Living",
+      "category": "objective",
+      "description": "Make your group live with two eyes",
+      "aliases": ["life", "alive", "survive", "make life", "two eyes", "live", "ikiru", "katsu"],
+      "senseis_url": "https://senseis.xmp.net/?TwoEyes"
+    },
+    "ko": {
+      "slug": "ko",
+      "id": 12,
+      "name": "Ko",
+      "category": "objective",
+      "description": "Solution involves ko fight or ko threat",
+      "aliases": ["ko fight", "ko threat", "kou", "kofight", "robbery", "serial robbery", "ko rule", "superko", "positional superko"],
+      "senseis_url": "https://senseis.xmp.net/?Ko",
+      "alias_urls": {
+        "serial robbery": "https://senseis.xmp.net/?DoubleKo",
+        "superko": "https://senseis.xmp.net/?Superko",
+        "positional superko": "https://senseis.xmp.net/?Superko"
+      }
+    },
+    "seki": {
+      "slug": "seki",
+      "id": 16,
+      "name": "Seki",
+      "category": "objective",
+      "description": "Mutual life - neither side can kill",
+      "aliases": ["mutual life", "dual life", "shared life", "hyperactive", "impasse"],
+      "senseis_url": "https://senseis.xmp.net/?Seki"
+    },
+    "capture-race": {
+      "slug": "capture-race",
+      "id": 60,
+      "name": "Capture Race",
+      "category": "technique",
+      "description": "Liberty race between groups - who captures first",
+      "aliases": ["capturing-race", "capturing race", "semeai", "race", "liberty race", "liberties race", "fight", "eyes kill without eyes", "big eye kill small eye", "liberty count", "liberty counting", "approach move"],
+      "senseis_url": "https://senseis.xmp.net/?CapturingRace",
+      "alias_urls": {
+        "semeai": "https://senseis.xmp.net/?Semeai",
+        "eyes kill without eyes": "https://senseis.xmp.net/?EyeVersusNoEyeCapturingRace",
+        "big eye kill small eye": "https://senseis.xmp.net/?EyeVersusEyeCapturingRace"
+      }
+    },
+    "escape": {
+      "slug": "escape",
+      "id": 66,
+      "name": "Escape",
+      "category": "technique",
+      "description": "Save a group by running or connecting out",
+      "aliases": ["run", "flee", "break out", "running", "escaping", "runaway", "escape direction"],
+      "senseis_url": "https://senseis.xmp.net/?Escape"
+    },
+    "snapback": {
+      "slug": "snapback",
+      "id": 30,
+      "name": "Snapback",
+      "category": "tesuji",
+      "description": "Sacrifice stone(s) to immediately recapture more",
+      "aliases": ["snap back", "snap-back", "uttegaeshi", "pounce", "backward", "snap", "recapture"],
+      "senseis_url": "https://senseis.xmp.net/?Snapback"
+    },
+    "throw-in": {
+      "slug": "throw-in",
+      "id": 38,
+      "name": "Throw-in",
+      "category": "tesuji",
+      "description": "Sacrifice inside opponent's shape to reduce liberties or create false eye",
+      "aliases": ["throwin", "throw in", "horikomi", "sacrifice throw", "flutter", "sacrifice inside", "reduce eye space"],
+      "senseis_url": "https://senseis.xmp.net/?ThrowIn"
+    },
+    "ladder": {
+      "slug": "ladder",
+      "id": 34,
+      "name": "Ladder",
+      "category": "tesuji",
+      "description": "Diagonal staircase chase pattern",
+      "aliases": ["shicho", "staircase", "chase", "levy", "ladder breaker", "shicho breaker", "ladder block"],
+      "senseis_url": "https://senseis.xmp.net/?Ladder",
+      "alias_urls": {
+        "ladder breaker": "https://senseis.xmp.net/?LadderBreaker",
+        "shicho breaker": "https://senseis.xmp.net/?LadderBreaker",
+        "ladder block": "https://senseis.xmp.net/?LadderBreaker"
+      }
+    },
+    "net": {
+      "slug": "net",
+      "id": 36,
+      "name": "Net",
+      "category": "tesuji",
+      "description": "Loose surrounding capture (not tight like ladder)",
+      "aliases": ["geta", "loose ladder", "loose net", "net capture", "flail", "flail and pinch", "net tesuji", "geta tesuji"],
+      "senseis_url": "https://senseis.xmp.net/?Net"
+    },
+    "liberty-shortage": {
+      "slug": "liberty-shortage",
+      "id": 48,
+      "name": "Liberty Shortage",
+      "category": "tesuji",
+      "description": "Exploit shortage of liberties to capture",
+      "aliases": ["squeeze", "damezumari", "shortage of liberties", "squeezing", "tightening", "roll pack", "uchikaki", "approach move shortage"],
+      "senseis_url": "https://senseis.xmp.net/?ShortageOfLiberties",
+      "alias_urls": {
+        "squeeze": "https://senseis.xmp.net/?SqueezeTesuji",
+        "roll pack": "https://senseis.xmp.net/?SqueezeTesuji"
+      }
+    },
+    "connect-and-die": {
+      "slug": "connect-and-die",
+      "id": 44,
+      "name": "Connect & Die",
+      "category": "tesuji",
+      "description": "Opponent's stones connect but still get captured",
+      "aliases": ["oiotoshi", "connect and die", "connection death", "chase and capture", "no return"],
+      "senseis_url": "https://senseis.xmp.net/?Oiotoshi",
+      "alias_urls": {
+        "connect and die": "https://senseis.xmp.net/?ConnectAndDie"
+      }
+    },
+    "under-the-stones": {
+      "slug": "under-the-stones",
+      "id": 46,
+      "name": "Under the Stones",
+      "category": "tesuji",
+      "description": "Capture stones then play in the space they occupied",
+      "aliases": ["ishi no shita", "under stones", "recapture space", "under the stone", "falling boots"],
+      "senseis_url": "https://senseis.xmp.net/?UnderTheStones"
+    },
+    "double-atari": {
+      "slug": "double-atari",
+      "id": 32,
+      "name": "Double Atari",
+      "category": "tesuji",
+      "description": "Simultaneous atari on two groups - forcing capture of at least one",
+      "aliases": ["ryo-atari", "ryoatari", "double threat", "twin atari", "two atari", "doubles", "fork", "two-way atari"],
+      "senseis_url": "https://senseis.xmp.net/?DoubleAtari"
+    },
+    "vital-point": {
+      "slug": "vital-point",
+      "id": 50,
+      "name": "Vital Point",
+      "category": "tesuji",
+      "description": "Interior placement to reduce eyes or liberties",
+      "aliases": ["placement", "oki", "interior placement", "inside play", "vital point placement", "dots"],
+      "senseis_url": "https://senseis.xmp.net/?VitalPoint",
+      "alias_urls": {
+        "placement": "https://senseis.xmp.net/?Placement",
+        "dots": "https://senseis.xmp.net/?Placement"
+      }
+    },
+    "clamp": {
+      "slug": "clamp",
+      "id": 40,
+      "name": "Clamp",
+      "category": "tesuji",
+      "description": "Attachment reducing opponent's eye space from inside",
+      "aliases": ["hasami-tsuke", "hasamitsuke", "clamping", "inside attachment", "clip"],
+      "senseis_url": "https://senseis.xmp.net/?Clamp"
+    },
+    "eye-shape": {
+      "slug": "eye-shape",
+      "id": 62,
+      "name": "Eye Shape",
+      "category": "technique",
+      "description": "Creating, stealing, or destroying eyes",
+      "aliases": ["eye-technique", "eye", "eye steal", "eye stealing", "steal eye", "false eye", "fake eye", "false-eye", "eye-steal", "make eye", "make eyes", "destroy eye", "broken eye", "real eye", "one eye", "big eye", "small eye", "me"],
+      "senseis_url": "https://senseis.xmp.net/?EyeShape",
+      "alias_urls": {
+        "false eye": "https://senseis.xmp.net/?FalseEye",
+        "make eye": "https://senseis.xmp.net/?Eye",
+        "make eyes": "https://senseis.xmp.net/?Eye",
+        "broken eye": "https://senseis.xmp.net/?FalseEye",
+        "real eye": "https://senseis.xmp.net/?Eye",
+        "one eye": "https://senseis.xmp.net/?Eye",
+        "big eye": "https://senseis.xmp.net/?BigEye",
+        "small eye": "https://senseis.xmp.net/?SmallEye"
+      }
+    },
+    "dead-shapes": {
+      "slug": "dead-shapes",
+      "id": 64,
+      "name": "Dead Shapes",
+      "category": "technique",
+      "description": "Recognizing shapes that cannot live",
+      "aliases": ["dead shape", "killable shape", "dead shape recognition", "bent-four", "bent four", "l-four", "corner bent four", "magari-shi-moku", "bulky-five", "bulky five", "bulky 5", "fattened five", "guzumi", "l-group", "l-shape", "l shape", "eru-gata", "straight-three", "straight three", "straight 3", "three in a row", "choku-san", "flower-six", "rabbity-six", "table shape", "disc corner four", "bulging bull", "big mouth", "piggy mouth", "golden cabinet corner", "pyramid four", "crossed five", "five-point eye", "four-point eye", "three-point eye"],
+      "senseis_url": "https://senseis.xmp.net/?KillableEyeshapes",
+      "alias_urls": {
+        "bent-four": "https://senseis.xmp.net/?BentFourInTheCorner",
+        "disc corner four": "https://senseis.xmp.net/?BentFourInTheCorner",
+        "bulky-five": "https://senseis.xmp.net/?BulkyFive",
+        "rabbity-six": "https://senseis.xmp.net/?RabbitySix",
+        "bulging bull": "https://senseis.xmp.net/?Oshitsubushi",
+        "big mouth": "https://senseis.xmp.net/?JGroup",
+        "piggy mouth": "https://senseis.xmp.net/?TripodGroupWithExtraLeg",
+        "golden cabinet corner": "https://senseis.xmp.net/?CarpentersSquare",
+        "pyramid four": "https://senseis.xmp.net/?PyramidFour",
+        "crossed five": "https://senseis.xmp.net/?CrossedFive"
+      }
+    },
+    "nakade": {
+      "slug": "nakade",
+      "id": 42,
+      "name": "Nakade",
+      "category": "tesuji",
+      "description": "Killing technique using vital point inside opponent's group to prevent two eyes",
+      "aliases": ["vital-point-kill", "inside kill", "eye-killing placement", "mass kill"],
+      "senseis_url": "https://senseis.xmp.net/?Nakade"
+    },
+    "connection": {
+      "slug": "connection",
+      "id": 68,
+      "name": "Connection",
+      "category": "technique",
+      "description": "Connecting stones or groups to strengthen position",
+      "aliases": ["connect", "connecting", "link", "join", "bamboo joint", "tsugu", "kosumi connection", "bamboo connection", "tiger connection", "nozoki connection"],
+      "senseis_url": "https://senseis.xmp.net/?Connection",
+      "alias_urls": {
+        "bamboo joint": "https://senseis.xmp.net/?BambooJoint",
+        "bamboo connection": "https://senseis.xmp.net/?BambooJoint",
+        "tiger connection": "https://senseis.xmp.net/?TigersMouth",
+        "kosumi connection": "https://senseis.xmp.net/?Kosumi"
+      }
+    },
+    "cutting": {
+      "slug": "cutting",
+      "id": 70,
+      "name": "Cutting",
+      "category": "technique",
+      "description": "Separating opponent's stones or groups to weaken them",
+      "aliases": ["cut", "disconnect", "discovered cut", "kiri", "separation", "crosscut", "double cut", "peep", "nozoki"],
+      "senseis_url": "https://senseis.xmp.net/?Cut",
+      "alias_urls": {
+        "crosscut": "https://senseis.xmp.net/?Crosscut",
+        "peep": "https://senseis.xmp.net/?Peep",
+        "nozoki": "https://senseis.xmp.net/?Peep"
+      }
+    },
+    "corner": {
+      "slug": "corner",
+      "id": 74,
+      "name": "Corner",
+      "category": "technique",
+      "description": "Problems focused on corner positions and corner-specific tactics",
+      "aliases": ["corner life-death", "corner pattern", "corner shape", "sumi", "corner enclosure", "shimari"],
+      "alias_urls": {
+        "corner enclosure": "https://senseis.xmp.net/?Shimari",
+        "shimari": "https://senseis.xmp.net/?Shimari"
+      },
+      "senseis_url": "https://senseis.xmp.net/?CornerShapes"
+    },
+    "sacrifice": {
+      "slug": "sacrifice",
+      "id": 72,
+      "name": "Sacrifice",
+      "category": "technique",
+      "description": "Intentionally giving up stones to gain a bigger advantage",
+      "aliases": ["suteishi", "give up", "abandon", "sacrificial", "abandoned child", "capturing sacrifice", "sacrificial stone", "give up to gain"],
+      "senseis_url": "https://senseis.xmp.net/?Sacrifice"
+    },
+    "shape": {
+      "slug": "shape",
+      "id": 76,
+      "name": "Shape",
+      "category": "technique",
+      "description": "Efficient stone formations and good shape recognition",
+      "aliases": ["good shape", "katachi", "stone shape", "shape recognition", "chess", "empty triangle", "bad shape", "hane shape", "ponnuki"],
+      "senseis_url": "https://senseis.xmp.net/?Shape",
+      "alias_urls": {
+        "empty triangle": "https://senseis.xmp.net/?EmptyTriangle",
+        "bad shape": "https://senseis.xmp.net/?BadShape",
+        "ponnuki": "https://senseis.xmp.net/?Ponnuki"
+      }
+    },
+    "endgame": {
+      "slug": "endgame",
+      "id": 78,
+      "name": "Endgame",
+      "category": "technique",
+      "description": "Late-game tactics and yose techniques",
+      "aliases": ["yose", "end game", "late game", "endgame problem"],
+      "senseis_url": "https://senseis.xmp.net/?Endgame",
+      "alias_urls": {
+        "yose": "https://senseis.xmp.net/?Yose"
+      }
+    },
+    "tesuji": {
+      "slug": "tesuji",
+      "id": 52,
+      "name": "Tesuji",
+      "category": "tesuji",
+      "description": "General tactical move or brilliant play in a local situation",
+      "aliases": ["tactical", "trick move", "clever play", "best move", "pull", "hane", "tip", "kosumi", "fly", "keima", "knight's move", "tiger", "tiger's mouth", "tiger mouth", "jump", "one-point jump", "cross", "waist of keima", "care", "underneath attachment", "dig", "dig and eat", "wedge", "door to eat", "men chi", "gate capture", "bao chi", "eater", "the turtle does not begin", "crane's nest", "big head ghost", "mouse steal oil", "orioles flapping butterflies", "panlongan", "two-headed dragon", "blind spot", "tennor", "sabaki", "atekomi", "warikomi", "descent", "sagari", "nose tesuji", "hanezeki"],
+      "senseis_url": "https://senseis.xmp.net/?Tesuji",
+      "alias_urls": {
+        "pull": "https://senseis.xmp.net/?Hane",
+        "hane": "https://senseis.xmp.net/?Hane",
+        "tip": "https://senseis.xmp.net/?Kosumi",
+        "kosumi": "https://senseis.xmp.net/?Kosumi",
+        "fly": "https://senseis.xmp.net/?KnightsMove",
+        "keima": "https://senseis.xmp.net/?KnightsMove",
+        "knight's move": "https://senseis.xmp.net/?KnightsMove",
+        "tiger": "https://senseis.xmp.net/?TigersMouth",
+        "tiger's mouth": "https://senseis.xmp.net/?TigersMouth",
+        "tiger mouth": "https://senseis.xmp.net/?TigersMouth",
+        "jump": "https://senseis.xmp.net/?OnePointJump",
+        "one-point jump": "https://senseis.xmp.net/?OnePointJump",
+        "cross": "https://senseis.xmp.net/?StrikingAtTheWaistOfTheKeima",
+        "waist of keima": "https://senseis.xmp.net/?StrikingAtTheWaistOfTheKeima",
+        "care": "https://senseis.xmp.net/?UnderneathAttachment",
+        "underneath attachment": "https://senseis.xmp.net/?UnderneathAttachment",
+        "dig": "https://senseis.xmp.net/?Wedge",
+        "dig and eat": "https://senseis.xmp.net/?Wedge",
+        "wedge": "https://senseis.xmp.net/?Wedge",
+        "door to eat": "https://senseis.xmp.net/?MenChi",
+        "men chi": "https://senseis.xmp.net/?MenChi",
+        "gate capture": "https://senseis.xmp.net/?MenChi",
+        "bao chi": "https://senseis.xmp.net/?BaoChi",
+        "eater": "https://senseis.xmp.net/?BaoChi",
+        "the turtle does not begin": "https://senseis.xmp.net/?CranesNestTesuji",
+        "crane's nest": "https://senseis.xmp.net/?CranesNestTesuji",
+        "big head ghost": "https://senseis.xmp.net/?TwoStoneEdgeSqueeze",
+        "mouse steal oil": "https://senseis.xmp.net/?MouseStealingOil",
+        "orioles flapping butterflies": "https://senseis.xmp.net/?TanukiNoHaraTsuzumi",
+        "panlongan": "https://senseis.xmp.net/?twoheadeddragon",
+        "two-headed dragon": "https://senseis.xmp.net/?twoheadeddragon",
+        "blind spot": "https://senseis.xmp.net/?BlindSpot",
+        "tennor": "https://senseis.xmp.net/?Sabaki",
+        "sabaki": "https://senseis.xmp.net/?Sabaki",
+        "atekomi": "https://senseis.xmp.net/?Atekomi",
+        "warikomi": "https://senseis.xmp.net/?Warikomi",
+        "descent": "https://senseis.xmp.net/?Sagari",
+        "sagari": "https://senseis.xmp.net/?Sagari",
+        "nose tesuji": "https://senseis.xmp.net/?NoseTesuji",
+        "hanezeki": "https://senseis.xmp.net/?Hanezeki"
+      }
+    },
+    "joseki": {
+      "slug": "joseki",
+      "id": 80,
+      "name": "Joseki",
+      "category": "technique",
+      "description": "Standard corner sequences and their variations",
+      "aliases": ["corner sequence", "standard corner", "joseki pattern", "joseki problem"],
+      "senseis_url": "https://senseis.xmp.net/?Joseki"
+    },
+    "fuseki": {
+      "slug": "fuseki",
+      "id": 82,
+      "name": "Fuseki",
+      "category": "technique",
+      "description": "Opening patterns and whole-board strategy",
+      "aliases": ["opening", "opening pattern", "opening problem", "whole board"],
+      "senseis_url": "https://senseis.xmp.net/?Fuseki"
+    }
+  }
+}

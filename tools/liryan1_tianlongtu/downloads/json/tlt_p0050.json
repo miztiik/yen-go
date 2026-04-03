@@ -1,0 +1,70 @@
+{
+  "Board size": 19,
+  "Black stones": [
+    "br",
+    "cr",
+    "cq",
+    "dq",
+    "dp",
+    "do",
+    "dn",
+    "dm",
+    "dl",
+    "cl",
+    "ck",
+    "bm",
+    "ar"
+  ],
+  "White stones": [
+    "bp",
+    "aq",
+    "bq",
+    "cp",
+    "bn",
+    "cn",
+    "bl",
+    "bk",
+    "dj",
+    "cj",
+    "dk",
+    "el",
+    "fm",
+    "fo",
+    "fq",
+    "dr",
+    "er"
+  ],
+  "Labels": {},
+  "Start": "B",
+  "Solution": [
+    "na",
+    "oa",
+    "oc",
+    "ma",
+    "ob"
+  ],
+  "Comments": "1D+",
+  "Other variations": [
+    [
+      "na",
+      "mc",
+      "ob",
+      "ma",
+      "oc"
+    ],
+    [
+      "na",
+      "oc",
+      "oa",
+      "mc",
+      "ma"
+    ],
+    [
+      "na",
+      "oa",
+      "oc",
+      "ob",
+      "ma"
+    ]
+  ]
+}

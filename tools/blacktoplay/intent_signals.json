@@ -1,0 +1,51 @@
+{
+  "_comment": "BTP category → objective domain signal for intent derivation. Internal use only.",
+  "_last_updated": "2026-02-25",
+  "_note": "Categories primarily map to collections (see collections.json). This table provides a SECONDARY signal for deriving specific puzzle objectives.",
+  "category_to_objective_domain": {
+    "attachments": "TESUJI",
+    "basics": "LIFE_AND_DEATH",
+    "capturing": "CAPTURING",
+    "endgame": "ENDGAME",
+    "eyes": "LIFE_AND_DEATH",
+    "ko": "FIGHT",
+    "placements": "TESUJI",
+    "reductions": "TESUJI",
+    "sacrifice": "TESUJI",
+    "seki": "LIFE_AND_DEATH",
+    "semeai": "FIGHT",
+    "shape": "SHAPE",
+    "shortage": "FIGHT",
+    "tactics": "TESUJI",
+    "vital-point": "TESUJI"
+  },
+  "tag_refinement": {
+    "_comment": "Within each objective domain, these tag groups refine to specific objectives",
+    "FIGHT": {
+      "ko_tags": ["ko", "ko-fight", "permanent-ko", "mannen-ko", "two-step-ko", "eternal-life"],
+      "semeai_tags": ["semeai", "shortage-of-liberties", "squeeze"],
+      "seki_tags": ["seki"],
+      "default": "WIN_SEMEAI"
+    },
+    "LIFE_AND_DEATH": {
+      "escape_tags": ["running", "escape"],
+      "live_tags": ["making-eyes", "alive", "big-eye"],
+      "kill_tags": ["denying-eyes", "dead", "vital-point", "seal-in"],
+      "default": "KILL"
+    },
+    "SHAPE": {
+      "cut_tags": ["cut", "crosscut"],
+      "connect_tags": ["connect", "bamboo-joint"],
+      "default": "CONNECT"
+    },
+    "CAPTURING": {
+      "default": "CAPTURE"
+    },
+    "TESUJI": {
+      "default": "FIND_TESUJI"
+    },
+    "ENDGAME": {
+      "default": "FIND_BEST_MOVE"
+    }
+  }
+}

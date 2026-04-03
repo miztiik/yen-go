@@ -1,0 +1,14 @@
+(;FF[4]GM[1]SZ[9]
+AB[ba][bb][cb][da][db][ea]
+AW[ca][aa][ab][ac][bc][dc]
+PL[B]
+YK[direct]
+YT[10,12]
+YG[advanced]
+PC[https://senseis.xmp.net/?TenThousandYearKo]
+C[Ten-thousand-year ko: A ko that one side can never afford to lose.
+Calibration fixture: long PV sequences need analysisPVLen=30 under tromp-taylor.]
+;B[aa]
+(;W[ba]
+;B[aa]C[Correct — eternal ko])
+(;W[pass]C[Wrong]))

@@ -1,0 +1,94 @@
+{
+  "Board size": 19,
+  "Black stones": [
+    "ar",
+    "br",
+    "cq",
+    "dr",
+    "dp",
+    "ep",
+    "eo",
+    "dn",
+    "dm",
+    "cl",
+    "ck",
+    "bj",
+    "ci"
+  ],
+  "White stones": [
+    "bk",
+    "bl",
+    "cm",
+    "cn",
+    "bn",
+    "do",
+    "bp",
+    "bq"
+  ],
+  "Labels": {},
+  "Start": "B",
+  "Solution": [
+    "ma",
+    "na",
+    "la",
+    "ka",
+    "pa"
+  ],
+  "Comments": "2K",
+  "Other variations": [
+    [
+      "ma",
+      "na",
+      "ja",
+      "mb",
+      "ka",
+      "la",
+      "pa"
+    ],
+    [
+      "ma",
+      "na",
+      "ja",
+      "mb",
+      "pa"
+    ],
+    [
+      "ma",
+      "na",
+      "la",
+      "ka",
+      "ja",
+      "mb",
+      "pa"
+    ],
+    [
+      "ma",
+      "na",
+      "ka",
+      "mb",
+      "pa",
+      "qa",
+      "ob"
+    ],
+    [
+      "ma",
+      "na",
+      "pa",
+      "qa",
+      "ob",
+      "oa",
+      "oc"
+    ],
+    [
+      "ma",
+      "na",
+      "ka",
+      "mb",
+      "ja",
+      "la",
+      "pa",
+      "qa",
+      "ob"
+    ]
+  ]
+}

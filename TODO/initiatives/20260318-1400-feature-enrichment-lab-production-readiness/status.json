@@ -1,0 +1,211 @@
+{
+  "initiative_id": "20260318-1400-feature-enrichment-lab-production-readiness",
+  "initiative_type": "feature",
+  "current_phase": "execute",
+  "planning_confidence_score": 88,
+  "risk_level": "medium",
+  "research_completed": true,
+  "supersedes": [
+    "20260317-1400-feature-enrichment-data-liberation",
+    "20260318-1200-feature-enrichment-lab-production-gap-closure"
+  ],
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "conditional_complete",
+    "validate": "conditional_pass",
+    "governance_review": "approved",
+    "closeout": "conditional_approved"
+  },
+  "addendum": {
+    "scope": "log-report-generation",
+    "date": "2026-03-20",
+    "status": "closeout_approved",
+    "phase_gates": ["PGR-LR-0", "PGR-LR-1", "PGR-LR-2", "PGR-LR-3", "PGR-LR-4", "PGR-LR-5", "PGR-LR-6"],
+    "task_range": "T71-T100",
+    "work_stream": "K",
+    "governance_gate": "GOV-PLAN-APPROVED",
+    "completed_gates": ["PGR-LR-0", "PGR-LR-1", "PGR-LR-2", "PGR-LR-3", "PGR-LR-4", "PGR-LR-6"],
+    "blocked_gates": ["PGR-LR-5"],
+    "tasks_completed": 24,
+    "tasks_blocked": 2,
+    "tests_added": 78,
+    "regression_result": "201 passed, 0 new failures"
+  },
+  "governance_history": {
+    "gate_1_charter_preflight": {
+      "decision": "change_requested",
+      "status_code": "GOV-CHARTER-REVISE",
+      "date": "2026-03-18",
+      "rc_count": 6
+    },
+    "gate_2_options_advisory": {
+      "decision": "change_requested",
+      "status_code": "GOV-OPTIONS-REVISE",
+      "date": "2026-03-18",
+      "rc_count": 8,
+      "selected_option_advisory": "OPT-1"
+    },
+    "gate_3_charter_quality": {
+      "decision": "change_requested",
+      "status_code": "GOV-CHARTER-REVISE",
+      "date": "2026-03-18",
+      "rc_count": 9,
+      "technical_decisions_validated": ["GQ-1_qk_algorithm", "GQ-2_no_goal_storage", "GQ-3_yx_yq_partition"]
+    },
+    "gate_4_charter_options": {
+      "decision": "approve",
+      "status_code": "GOV-OPTIONS-APPROVED",
+      "date": "2026-03-18",
+      "selected_option": "OPT-1"
+    },
+    "gate_5_plan_review": {
+      "decision": "approve_with_conditions",
+      "status_code": "GOV-PLAN-CONDITIONAL",
+      "date": "2026-03-18",
+      "rc_count": 1,
+      "rc_resolved": true
+    },
+    "pgr_4a_phase_1a_1c": {
+      "decision": "approve",
+      "status_code": "GOV-REVIEW-APPROVED",
+      "date": "2026-03-19",
+      "initial_decision": "change_requested",
+      "rc_count": 6,
+      "rc_resolved": true,
+      "re_review": true,
+      "unanimous": true
+    },
+    "pgr_4b_phase_2_budget": {
+      "decision": "approve_with_conditions",
+      "status_code": "GOV-REVIEW-CONDITIONAL",
+      "date": "2026-03-19",
+      "rc_count": 3,
+      "rc_resolved": true
+    },
+    "log_report_addendum_plan_review": {
+      "decision": "change_requested",
+      "status_code": "GOV-PLAN-REVISE",
+      "date": "2026-03-20",
+      "rc_count": 4,
+      "rc_resolved": 3,
+      "rc_pending": 1,
+      "note": "RC-LR-1 through RC-LR-3 resolved; RC-LR-4 (GV-7 player dispatch) pending re-review"
+    },
+    "log_report_addendum_plan_re_review": {
+      "decision": "approve",
+      "status_code": "GOV-PLAN-APPROVED",
+      "date": "2026-03-20",
+      "rc_count": 0,
+      "unanimous": true,
+      "note": "All 4 RC-LR items resolved. Plan approved. PGR-LR-5 remains blocked."
+    },
+    "pgr_lr_1_toggle_precedence": {
+      "decision": "approve",
+      "status_code": "PGR-LR-1-APPROVED",
+      "date": "2026-03-20",
+      "approver": "Plan-Executor",
+      "evidence": "38 tests passed (25 toggle + 13 CLI)"
+    },
+    "pgr_lr_2_auto_trigger": {
+      "decision": "approve",
+      "status_code": "PGR-LR-2-APPROVED",
+      "date": "2026-03-20",
+      "approver": "Plan-Executor",
+      "evidence": "4 tests passed; non-blocking failure verified"
+    },
+    "pgr_lr_3_markdown_engine": {
+      "decision": "approve",
+      "status_code": "PGR-LR-3-APPROVED",
+      "date": "2026-03-20",
+      "approver": "Plan-Executor",
+      "evidence": "36 tests passed; no ASCII/CSV rendering path"
+    },
+    "pgr_lr_4_production_boundary": {
+      "decision": "approve",
+      "status_code": "PGR-LR-4-APPROVED",
+      "date": "2026-03-20",
+      "approver": "Plan-Executor",
+      "evidence": "4 production boundary tests; architecture doc updated"
+    },
+    "pgr_lr_5_magnitude_glossary": {
+      "decision": "blocked",
+      "status_code": "PGR-LR-5-BLOCKED",
+      "date": "2026-03-20",
+      "note": "Awaits governance glossary approval for change-magnitude levels"
+    },
+    "pgr_lr_6_validation_docs": {
+      "decision": "approve",
+      "status_code": "PGR-LR-6-APPROVED",
+      "date": "2026-03-20",
+      "approver": "Plan-Executor",
+      "evidence": "78 report tests pass; 201 regression tests pass; docs updated"
+    },
+    "ws_k_execution_review": {
+      "decision": "approve_with_conditions",
+      "status_code": "GOV-REVIEW-CONDITIONAL",
+      "date": "2026-03-20",
+      "unanimous": true,
+      "rc_count": 1,
+      "rc_resolved": true,
+      "note": "RC-K-1 (version assertion 1.25→1.26) resolved. 24/26 tasks complete. PGR-LR-5 blocked."
+    },
+    "ws_k_closeout_audit": {
+      "decision": "approve",
+      "status_code": "GOV-CLOSEOUT-WS-K-APPROVED",
+      "date": "2026-03-20",
+      "unanimous": true,
+      "note": "7/7. All evidence verified. DQ-1..3 dates fixed. Parent initiative state unchanged."
+    }
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "User Q13:C — no backward compat needed" },
+    "legacy_code_removal": { "remove_old_code": true, "rationale": "Remove unused code after showing user" },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Phased Activation — unanimous panel endorsement (82/100 score)"
+    },
+    "log_report_production_enforcement": {
+      "decision": "backend_hard_forces_off",
+      "rationale": "Q17:A — safest operational default, least accidental report generation in production",
+      "source": "User directive 2026-03-20"
+    },
+    "log_report_change_magnitude": {
+      "decision": "blocked_until_governance_glossary_approval",
+      "rationale": "Q18:C — keep semantics stable and auditable; implement after governance approval",
+      "source": "User directive 2026-03-20"
+    },
+    "log_report_output_format": {
+      "decision": "markdown_only",
+      "rationale": "No ASCII table rendering, no CSV. Single markdown file per enrichment run.",
+      "source": "User directive 2026-03-20"
+    }
+  },
+  "open_issues": [
+    "AC-10: Calibration on 95 fixtures (KataGo required — DEF-1)",
+    "AC-11: Player validation 20+ puzzles per qk tier (DEF-8)",
+    "AC-18: TODO archival — initiative archival blocked on calibration docs (DEF-7)",
+    "PGR-LR-5: Change-magnitude glossary — blocked until governance text approval"
+  ],
+  "deferred_work": {
+    "root_dependency": "KataGo runtime installation",
+    "deferred_task_count": 13,
+    "deferred_items": [
+      "DEF-1: T44/T44b — Run calibration on 95 fixtures",
+      "DEF-2: T45 — Human spot-check qk scores",
+      "DEF-3: T46 — Adjust quality_weights if needed",
+      "DEF-4: T47 — Phase 3 activation (instinct, elo_anchor, PI-4)",
+      "DEF-5: T48 — Phase 3 accuracy tests",
+      "DEF-6: T52/T53/T55 — Calibration-dependent docs",
+      "DEF-7: T67/T68 — Future work extraction + archival",
+      "DEF-8: T69 — Player validation",
+      "DEF-9: T70 — Final status.json closure"
+    ],
+    "follow_up_note": "Create follow-up initiative for calibration when KataGo is available"
+  },
+  "updated_at": "2026-03-20"
+}

@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Collections Configuration",
+  "description": "Source of truth for all curated puzzle collections. Follows same governance as config/tags.json.",
+  "type": "object",
+  "required": ["schema_version", "collections"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file"
+    },
+    "_reference": {
+      "type": "string",
+      "description": "Path to the canonical human-readable reference document for this configuration"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Schema version (semver MAJOR.MINOR)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this config file"
+    },
+    "last_updated": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "ISO date of last modification (YYYY-MM-DD)"
+    },
+    "changelog": {
+      "type": "array",
+      "description": "Version history for auditability.",
+      "items": {
+        "type": "object",
+        "required": ["version", "date", "author", "changes"],
+        "additionalProperties": false,
+        "properties": {
+          "version": { "type": "string" },
+          "date": { "type": "string" },
+          "author": { "type": "string" },
+          "changes": { "type": "string" }
+        }
+      }
+    },
+    "collections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Collection"
+      },
+      "minItems": 0
+    }
+  },
+  "definitions": {
+    "Collection": {
+      "type": "object",
+      "required": ["id", "slug", "name", "description", "curator", "source", "type", "ordering", "tier"],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Unique numeric identifier for the collection. Used in compact view entries and URL resolution."
+        },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$",
+          "maxLength": 64,
+          "description": "Unique kebab-case identifier for the collection"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Human-readable display name"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "1-2 sentence description of the collection"
+        },
+        "curator": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Author name, 'Curated', or 'System'"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Source adapter ID (e.g., 'sanderland', 'ogs') or 'mixed'"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["author", "reference", "graded", "technique", "system"],
+          "description": "Collection type for organizational purposes"
+        },
+        "ordering": {
+          "type": "string",
+          "enum": ["source", "difficulty", "manual"],
+          "description": "How puzzles in this collection should be ordered"
+        },
+        "tier": {
+          "type": "string",
+          "enum": ["editorial", "premier", "curated", "community"],
+          "description": "Quality tier indicating collection provenance and curation level"
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": [],
+          "description": "Alternate names, Japanese/Chinese terms, abbreviations for keyword matching during ingest and UI search. Must be globally unique across all collections."
+        },
+        "level_hint": {
+          "type": "string",
+          "enum": ["novice", "beginner", "elementary", "intermediate", "upper-intermediate", "advanced", "low-dan", "high-dan", "expert"],
+          "description": "Optional difficulty level override. When present, puzzles assigned to this collection will have their YG level forced to this value, overriding heuristic classification. Used for graded essentials and author collections with explicit difficulty in their name."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,257 @@
+/**
+ * Problem Navigation Styles — Minimal Dot Design
+ * @module components/ProblemNav/ProblemNav.css
+ * T11.8: Redesigned with small status dots, progress bar, streak badge
+ */
+
+.problem-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+}
+
+/* Top row: ← dots → */
+.nav-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* Navigation buttons — clean icons without borders (Apple HIG: no circular borders on symbols) */
+.nav-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  background: transparent;
+  color: var(--color-text-muted, #6c757d);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.nav-button:hover:not(:disabled) {
+  background: var(--color-bg-secondary, #f0f0f0);
+  color: var(--color-text, #212529);
+}
+
+.nav-button:active:not(:disabled) {
+  background: var(--color-bg-tertiary, #e0e0e0);
+}
+
+.nav-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.nav-button:focus-visible {
+  outline: 2px solid var(--color-primary, #0d6efd);
+  outline-offset: 2px;
+}
+
+/* Dots container */
+.problem-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 2px 0;
+}
+
+/* Individual dot — 10px default */
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  background: var(--color-border, #dee2e6);
+}
+
+.dot:hover:not(.current) {
+  transform: scale(1.3);
+  opacity: 0.8;
+}
+
+.dot:focus-visible {
+  outline: 2px solid var(--color-primary, #0d6efd);
+  outline-offset: 2px;
+}
+
+/* Status colors */
+.dot.unsolved {
+  background: var(--color-border, #dee2e6);
+}
+
+.dot.solved {
+  background: var(--color-success, #198754);
+}
+
+.dot.failed {
+  background: var(--color-danger, #dc3545);
+}
+
+/* Current dot — slightly larger with ring */
+.dot.current {
+  width: 12px;
+  height: 12px;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+  background: var(--color-primary, #0d6efd);
+}
+
+.dot.current.solved {
+  background: var(--color-success, #198754);
+  box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.25);
+}
+
+.dot.current.failed {
+  background: var(--color-danger, #dc3545);
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+}
+
+/* Counter for large sets (≥20) */
+.progress-counter {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text, #212529);
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+
+/* Progress bar — steel blue fill on soft neutral track */
+.progress-bar-track {
+  height: 5px;
+  background: color-mix(in srgb, var(--color-accent, #3B6D96) 12%, var(--color-bg-tertiary, #e9ecef));
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent, #3B6D96), color-mix(in srgb, var(--color-accent, #3B6D96) 80%, var(--color-warning, #E8A317)));
+  border-radius: 999px;
+  transition: width 0.3s ease;
+  min-width: 0;
+}
+
+/* Footer row: completion + streak */
+.nav-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.completion-text {
+  font-size: 11px;
+  color: var(--color-text-muted, #6c757d);
+  font-weight: 500;
+}
+
+.streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px 2px 6px;
+  border-radius: 9999px;
+  background: var(--color-accent-container);
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  user-select: none;
+  border: 1px solid transparent;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+/* Streak tier: elevated (5-9) */
+.streak-badge[data-tier="elevated"] {
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+}
+
+/* Streak tier: peak (10+) */
+.streak-badge[data-tier="peak"] {
+  background: color-mix(in srgb, var(--color-accent) 20%, transparent);
+  color: var(--color-accent-hover);
+  border-color: color-mix(in srgb, var(--color-accent) 25%, transparent);
+}
+
+/* Streak badge first appearance */
+.streak-badge[data-entering] {
+  animation: streak-enter 200ms ease-out;
+}
+
+@keyframes streak-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .nav-button {
+    width: 28px;
+    height: 28px;
+  }
+
+  .nav-button svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .dot.current {
+    width: 10px;
+    height: 10px;
+  }
+
+  .problem-dots {
+    gap: 4px;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .problem-nav {
+    --color-surface: #1e1e1e;
+    --color-background: #2d2d2d;
+    --color-button-bg: #3d3d3d;
+    --color-button-hover: #4d4d4d;
+    --color-hover: #3d3d3d;
+    --color-border: #404040;
+    --color-text: #e9ecef;
+    --color-text-muted: #adb5bd;
+    --color-primary: #0d6efd;
+    --color-success: #20c997;
+    --color-danger: #f06595;
+  }
+}
+
+/* Animation */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+.indicator.current.unsolved {
+  animation: pulse 2s ease-in-out infinite;
+}

@@ -1,0 +1,41 @@
+{
+  "initiative_id": "20260321-1400-feature-html-report-redesign",
+  "initiative_type": "feature",
+  "current_phase": "superseded",
+  "planning_confidence_score": 92,
+  "risk_level": "low",
+  "research_completed": false,
+  "research_needed": false,
+  "parent_initiative": "20260318-1400-feature-enrichment-lab-production-readiness",
+  "superseded_by": "20260321-1800-feature-enrichment-log-viewer",
+  "supersession_rationale": "R-20 Python-based report/ module was superseded by R-21 log-viewer (JavaScript/HTML). Log-viewer takes JSONL logs as input and renders enrichment data visually. Confirmed by user on 2026-03-24 audit. The report/ directory was never needed — log-viewer serves the same observability goal with a simpler architecture.",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "superseded",
+    "validate": "superseded",
+    "governance_review": "superseded",
+    "closeout": "superseded"
+  },
+  "open_issues": [],
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "User confirmed D1: HTML replaces markdown, not both formats"
+    },
+    "legacy_code_removal": {
+      "remove_old_code": true,
+      "rationale": "All markdown generation logic replaced with HTML; old tests updated"
+    },
+    "option_selection": {
+      "selected_option_id": "OPT-1",
+      "rationale": "Single-file HTML generator with inline CSS — simplest approach matching all constraints"
+    }
+  },
+  "updated_at": "2026-03-24",
+  "audit_note": "2026-03-24 audit found zero code for report/ module. User confirmed R-20 is superseded by R-21 (log-viewer). Log-viewer work was partially done in-session but some changes were lost — only base code remains in log-viewer/."
+}

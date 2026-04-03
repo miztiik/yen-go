@@ -1,0 +1,2207 @@
+{
+  "completed": {
+    "syougo_L1_P01": {
+      "timestamp": "2026-01-27T13:15:43.376162",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 1,
+        "puzzle_id": "syougo_L1_P01",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "白を取ってください。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 1,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P02": {
+      "timestamp": "2026-01-27T13:15:43.382881",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 2,
+        "puzzle_id": "syougo_L1_P02",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "白を取ってください。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 1,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P03": {
+      "timestamp": "2026-01-27T13:15:43.386484",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 3,
+        "puzzle_id": "syougo_L1_P03",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "白を取ってください。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 1,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P04": {
+      "timestamp": "2026-01-27T13:15:43.389888",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 4,
+        "puzzle_id": "syougo_L1_P04",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "黒１に打たれると白はダメ詰まりで黒の１目を取りに行けず、従って２眼できません。",
+        "prompt_english": "1shortage of liberties1 point ,2 eye.",
+        "player_to_move": "B",
+        "solution_length": 1,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P05": {
+      "timestamp": "2026-01-27T13:15:43.394459",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 5,
+        "puzzle_id": "syougo_L1_P05",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "黒１は「うってがえし」という殺しのテクニックです。",
+        "prompt_english": "1\"snapback\" is a killing technique.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P06": {
+      "timestamp": "2026-01-27T13:15:43.399399",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 6,
+        "puzzle_id": "syougo_L1_P06",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "黒１は一発即死の妙手筋です。このあと白はどうあがいても生きることができません。",
+        "prompt_english": "1a one-move killing tesuji. .",
+        "player_to_move": "B",
+        "solution_length": 1,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P07": {
+      "timestamp": "2026-01-27T13:15:43.403290",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 7,
+        "puzzle_id": "syougo_L1_P07",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "白３目を取ってください。",
+        "prompt_english": "3 point .",
+        "player_to_move": "B",
+        "solution_length": 1,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P08": {
+      "timestamp": "2026-01-27T13:15:43.407585",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 8,
+        "puzzle_id": "syougo_L1_P08",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "黒３目を助けてください。",
+        "prompt_english": "3 point Save.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P09": {
+      "timestamp": "2026-01-27T13:15:43.411779",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 9,
+        "puzzle_id": "syougo_L1_P09",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "白の３目を取ってください。",
+        "prompt_english": "3 point .",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P10": {
+      "timestamp": "2026-01-27T13:15:43.416752",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 10,
+        "puzzle_id": "syougo_L1_P10",
+        "yengo_level": "beginner",
+        "board_size": 13,
+        "prompt_japanese": "黒４子を逃げてください。",
+        "prompt_english": "4.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P11": {
+      "timestamp": "2026-01-27T13:15:43.420620",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 11,
+        "puzzle_id": "syougo_L1_P11",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "白３子を取ってください",
+        "prompt_english": "3",
+        "player_to_move": "B",
+        "solution_length": 1,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P12": {
+      "timestamp": "2026-01-27T13:15:43.424587",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 12,
+        "puzzle_id": "syougo_L1_P12",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "白４子を取ってください。",
+        "prompt_english": "4.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P13": {
+      "timestamp": "2026-01-27T13:15:43.429386",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 13,
+        "puzzle_id": "syougo_L1_P13",
+        "yengo_level": "beginner",
+        "board_size": 13,
+        "prompt_japanese": "白を取って下さい。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P14": {
+      "timestamp": "2026-01-27T13:15:43.434132",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 14,
+        "puzzle_id": "syougo_L1_P14",
+        "yengo_level": "beginner",
+        "board_size": 13,
+        "prompt_japanese": "白４子を取ってください。",
+        "prompt_english": "4.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P15": {
+      "timestamp": "2026-01-27T13:15:43.438764",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 15,
+        "puzzle_id": "syougo_L1_P15",
+        "yengo_level": "beginner",
+        "board_size": 13,
+        "prompt_japanese": "白２子を取ってください。",
+        "prompt_english": "2.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P16": {
+      "timestamp": "2026-01-27T13:15:43.443100",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 16,
+        "puzzle_id": "syougo_L1_P16",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "どう守るのが得ですか？",
+        "prompt_english": "What is the best defense?",
+        "player_to_move": "B",
+        "solution_length": 1,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P17": {
+      "timestamp": "2026-01-27T13:15:43.447999",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 17,
+        "puzzle_id": "syougo_L1_P17",
+        "yengo_level": "beginner",
+        "board_size": 13,
+        "prompt_japanese": "どう守るのが得ですか？",
+        "prompt_english": "What is the best defense?",
+        "player_to_move": "B",
+        "solution_length": 1,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P18": {
+      "timestamp": "2026-01-27T13:15:43.452643",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 18,
+        "puzzle_id": "syougo_L1_P18",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "どう守るのが得ですか？",
+        "prompt_english": "What is the best defense?",
+        "player_to_move": "B",
+        "solution_length": 1,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P19": {
+      "timestamp": "2026-01-27T13:15:43.456662",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 19,
+        "puzzle_id": "syougo_L1_P19",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "どう守るのが得ですか？",
+        "prompt_english": "What is the best defense?",
+        "player_to_move": "B",
+        "solution_length": 1,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P20": {
+      "timestamp": "2026-01-27T13:15:43.460977",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 20,
+        "puzzle_id": "syougo_L1_P20",
+        "yengo_level": "beginner",
+        "board_size": 13,
+        "prompt_japanese": "どう守るのが得ですか？",
+        "prompt_english": "What is the best defense?",
+        "player_to_move": "B",
+        "solution_length": 1,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P21": {
+      "timestamp": "2026-01-27T13:15:43.466424",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 21,
+        "puzzle_id": "syougo_L1_P21",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "どうヨセますか？",
+        "prompt_english": "What is the best endgame move?",
+        "player_to_move": "B",
+        "solution_length": 2,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P22": {
+      "timestamp": "2026-01-27T13:15:43.471282",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 22,
+        "puzzle_id": "syougo_L1_P22",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "どう守るのが得ですか？",
+        "prompt_english": "What is the best defense?",
+        "player_to_move": "B",
+        "solution_length": 1,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P23": {
+      "timestamp": "2026-01-27T13:15:43.475214",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 23,
+        "puzzle_id": "syougo_L1_P23",
+        "yengo_level": "beginner",
+        "board_size": 9,
+        "prompt_japanese": "どうヨセますか？",
+        "prompt_english": "What is the best endgame move?",
+        "player_to_move": "B",
+        "solution_length": 2,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P24": {
+      "timestamp": "2026-01-27T13:15:43.482347",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 24,
+        "puzzle_id": "syougo_L1_P24",
+        "yengo_level": "beginner",
+        "board_size": 13,
+        "prompt_japanese": "どう守るのが得ですか？",
+        "prompt_english": "What is the best defense?",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P25": {
+      "timestamp": "2026-01-27T13:15:43.486736",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 25,
+        "puzzle_id": "syougo_L1_P25",
+        "yengo_level": "beginner",
+        "board_size": 13,
+        "prompt_japanese": "どう守るのが得ですか？",
+        "prompt_english": "What is the best defense?",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L1_P26": {
+      "timestamp": "2026-01-27T13:15:43.490097",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "1",
+        "level_name": "Beginner",
+        "puzzle_num": 26,
+        "puzzle_id": "syougo_L1_P26",
+        "yengo_level": "beginner",
+        "board_size": 13,
+        "prompt_japanese": "どうヨセますか？",
+        "prompt_english": "What is the best endgame move?",
+        "player_to_move": "B",
+        "solution_length": 4,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P01": {
+      "timestamp": "2026-01-27T13:16:21.678842",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 1,
+        "puzzle_id": "syougo_L2_P01",
+        "yengo_level": "elementary",
+        "board_size": 9,
+        "prompt_japanese": "白を取ってください。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P02": {
+      "timestamp": "2026-01-27T13:16:21.684577",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 2,
+        "puzzle_id": "syougo_L2_P02",
+        "yengo_level": "elementary",
+        "board_size": 9,
+        "prompt_japanese": "白を取ってください。コウになります。",
+        "prompt_english": "Capture the white stones. It becomes ko.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P03": {
+      "timestamp": "2026-01-27T13:16:21.688786",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 3,
+        "puzzle_id": "syougo_L2_P03",
+        "yengo_level": "elementary",
+        "board_size": 9,
+        "prompt_japanese": "白を取ってください。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P04": {
+      "timestamp": "2026-01-27T13:16:21.692503",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 4,
+        "puzzle_id": "syougo_L2_P04",
+        "yengo_level": "elementary",
+        "board_size": 9,
+        "prompt_japanese": "白を取ってください。コウになります。",
+        "prompt_english": "Capture the white stones. It becomes ko.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P05": {
+      "timestamp": "2026-01-27T13:16:21.696833",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 5,
+        "puzzle_id": "syougo_L2_P05",
+        "yengo_level": "elementary",
+        "board_size": 13,
+        "prompt_japanese": "白石を分断して下さい。コウになります。",
+        "prompt_english": "Cut off the white stones. It becomes ko.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P06": {
+      "timestamp": "2026-01-27T13:16:21.700501",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 6,
+        "puzzle_id": "syougo_L2_P06",
+        "yengo_level": "elementary",
+        "board_size": 9,
+        "prompt_japanese": "白３子を取ってください。",
+        "prompt_english": "3.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P07": {
+      "timestamp": "2026-01-27T13:16:21.704594",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 7,
+        "puzzle_id": "syougo_L2_P07",
+        "yengo_level": "elementary",
+        "board_size": 13,
+        "prompt_japanese": "初手のツギがこの一手です。",
+        "prompt_english": "The first connection is the key move.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P08": {
+      "timestamp": "2026-01-27T13:16:21.708202",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 8,
+        "puzzle_id": "syougo_L2_P08",
+        "yengo_level": "elementary",
+        "board_size": 9,
+        "prompt_japanese": "隅の白を取ってください。",
+        "prompt_english": "Capture the white stones in the corner.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P09": {
+      "timestamp": "2026-01-27T13:16:21.711740",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 9,
+        "puzzle_id": "syougo_L2_P09",
+        "yengo_level": "elementary",
+        "board_size": 9,
+        "prompt_japanese": "隅の黒を助けてください",
+        "prompt_english": "Save the black stones in the corner",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P10": {
+      "timestamp": "2026-01-27T13:16:21.715456",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 10,
+        "puzzle_id": "syougo_L2_P10",
+        "yengo_level": "elementary",
+        "board_size": 9,
+        "prompt_japanese": "隅の白を取ってください。",
+        "prompt_english": "Capture the white stones in the corner.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P11": {
+      "timestamp": "2026-01-27T13:16:21.719067",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 11,
+        "puzzle_id": "syougo_L2_P11",
+        "yengo_level": "elementary",
+        "board_size": 13,
+        "prompt_japanese": "黒３子を助けてください。",
+        "prompt_english": "3Save.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P12": {
+      "timestamp": "2026-01-27T13:16:21.722294",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 12,
+        "puzzle_id": "syougo_L2_P12",
+        "yengo_level": "elementary",
+        "board_size": 9,
+        "prompt_japanese": "捕らわれの黒６子を助けてください。",
+        "prompt_english": "the captured black stones6Save.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P13": {
+      "timestamp": "2026-01-27T13:16:21.725940",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 13,
+        "puzzle_id": "syougo_L2_P13",
+        "yengo_level": "elementary",
+        "board_size": 9,
+        "prompt_japanese": "黒３子を助けてください",
+        "prompt_english": "3Save",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P14": {
+      "timestamp": "2026-01-27T13:16:21.730297",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 14,
+        "puzzle_id": "syougo_L2_P14",
+        "yengo_level": "elementary",
+        "board_size": 9,
+        "prompt_japanese": "どう守るのが得ですか？",
+        "prompt_english": "What is the best defense?",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P15": {
+      "timestamp": "2026-01-27T13:16:21.735106",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 15,
+        "puzzle_id": "syougo_L2_P15",
+        "yengo_level": "elementary",
+        "board_size": 9,
+        "prompt_japanese": "黒正しく受けてください。",
+        "prompt_english": "Find the correct response for black.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P16": {
+      "timestamp": "2026-01-27T13:16:21.741063",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 16,
+        "puzzle_id": "syougo_L2_P16",
+        "yengo_level": "elementary",
+        "board_size": 13,
+        "prompt_japanese": "どうヨセますか？",
+        "prompt_english": "What is the best endgame move?",
+        "player_to_move": "B",
+        "solution_length": 4,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P17": {
+      "timestamp": "2026-01-27T13:16:21.745484",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 17,
+        "puzzle_id": "syougo_L2_P17",
+        "yengo_level": "elementary",
+        "board_size": 13,
+        "prompt_japanese": "どうヨセますか？",
+        "prompt_english": "What is the best endgame move?",
+        "player_to_move": "B",
+        "solution_length": 4,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P18": {
+      "timestamp": "2026-01-27T13:16:21.750718",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 18,
+        "puzzle_id": "syougo_L2_P18",
+        "yengo_level": "elementary",
+        "board_size": 13,
+        "prompt_japanese": "どう守るのが得ですか？",
+        "prompt_english": "What is the best defense?",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P19": {
+      "timestamp": "2026-01-27T13:16:21.755073",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 19,
+        "puzzle_id": "syougo_L2_P19",
+        "yengo_level": "elementary",
+        "board_size": 9,
+        "prompt_japanese": "どうヨセますか？",
+        "prompt_english": "What is the best endgame move?",
+        "player_to_move": "B",
+        "solution_length": 4,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P20": {
+      "timestamp": "2026-01-27T13:16:21.758971",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 20,
+        "puzzle_id": "syougo_L2_P20",
+        "yengo_level": "elementary",
+        "board_size": 13,
+        "prompt_japanese": "どうヨセますか？",
+        "prompt_english": "What is the best endgame move?",
+        "player_to_move": "B",
+        "solution_length": 6,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P21": {
+      "timestamp": "2026-01-27T13:16:21.762510",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 21,
+        "puzzle_id": "syougo_L2_P21",
+        "yengo_level": "elementary",
+        "board_size": 19,
+        "prompt_japanese": "次の一手はA・Bのどちらが良いでしょう。",
+        "prompt_english": "A-B.",
+        "player_to_move": "B",
+        "solution_length": 2,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P22": {
+      "timestamp": "2026-01-27T13:16:21.768145",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 22,
+        "puzzle_id": "syougo_L2_P22",
+        "yengo_level": "elementary",
+        "board_size": 19,
+        "prompt_japanese": "次の一手はA・Bのどちらが良いでしょう。",
+        "prompt_english": "A-B.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P23": {
+      "timestamp": "2026-01-27T13:16:21.774120",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 23,
+        "puzzle_id": "syougo_L2_P23",
+        "yengo_level": "elementary",
+        "board_size": 19,
+        "prompt_japanese": "次の一手はA・Bのどちらが良いでしょう。",
+        "prompt_english": "A-B.",
+        "player_to_move": "B",
+        "solution_length": 7,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P24": {
+      "timestamp": "2026-01-27T13:16:21.777105",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 24,
+        "puzzle_id": "syougo_L2_P24",
+        "yengo_level": "elementary",
+        "board_size": 19,
+        "prompt_japanese": "次の一手はA・Bのどちらが良いでしょう。",
+        "prompt_english": "A-B.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P25": {
+      "timestamp": "2026-01-27T13:16:21.782060",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 25,
+        "puzzle_id": "syougo_L2_P25",
+        "yengo_level": "elementary",
+        "board_size": 19,
+        "prompt_japanese": "次の一手はA・Bのどちらが良いでしょう。",
+        "prompt_english": "A-B.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L2_P26": {
+      "timestamp": "2026-01-27T13:16:21.786674",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "2",
+        "level_name": "Intermediate",
+        "puzzle_num": 26,
+        "puzzle_id": "syougo_L2_P26",
+        "yengo_level": "elementary",
+        "board_size": 19,
+        "prompt_japanese": "次の一手はA・Bのどちらが良いでしょう。",
+        "prompt_english": "A-B.",
+        "player_to_move": "B",
+        "solution_length": 1,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P01": {
+      "timestamp": "2026-01-27T13:16:23.096851",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 1,
+        "puzzle_id": "syougo_L3_P01",
+        "yengo_level": "intermediate",
+        "board_size": 9,
+        "prompt_japanese": "白を取ってください。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P02": {
+      "timestamp": "2026-01-27T13:16:23.100882",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 2,
+        "puzzle_id": "syougo_L3_P02",
+        "yengo_level": "intermediate",
+        "board_size": 9,
+        "prompt_japanese": "白を取ってください。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P03": {
+      "timestamp": "2026-01-27T13:16:23.105434",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 3,
+        "puzzle_id": "syougo_L3_P03",
+        "yengo_level": "intermediate",
+        "board_size": 9,
+        "prompt_japanese": "白を取ってください。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P04": {
+      "timestamp": "2026-01-27T13:16:23.111571",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 4,
+        "puzzle_id": "syougo_L3_P04",
+        "yengo_level": "intermediate",
+        "board_size": 9,
+        "prompt_japanese": "白を取ってください。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P05": {
+      "timestamp": "2026-01-27T13:16:23.114994",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 5,
+        "puzzle_id": "syougo_L3_P05",
+        "yengo_level": "intermediate",
+        "board_size": 13,
+        "prompt_japanese": "白を取ってください。コウになります。",
+        "prompt_english": "Capture the white stones. It becomes ko.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P06": {
+      "timestamp": "2026-01-27T13:16:23.119615",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 6,
+        "puzzle_id": "syougo_L3_P06",
+        "yengo_level": "intermediate",
+        "board_size": 9,
+        "prompt_japanese": "隅の黒５子を助けて下さい。",
+        "prompt_english": "5.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P07": {
+      "timestamp": "2026-01-27T13:16:23.123632",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 7,
+        "puzzle_id": "syougo_L3_P07",
+        "yengo_level": "intermediate",
+        "board_size": 13,
+        "prompt_japanese": "黒どう打ちますか？３手まで示してください。",
+        "prompt_english": "How should black play?3.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P08": {
+      "timestamp": "2026-01-27T13:16:23.128291",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 8,
+        "puzzle_id": "syougo_L3_P08",
+        "yengo_level": "intermediate",
+        "board_size": 13,
+        "prompt_japanese": "黒３子を助けてください。",
+        "prompt_english": "3Save.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P09": {
+      "timestamp": "2026-01-27T13:16:23.133618",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 9,
+        "puzzle_id": "syougo_L3_P09",
+        "yengo_level": "intermediate",
+        "board_size": 9,
+        "prompt_japanese": "隅の黒を助けてください",
+        "prompt_english": "Save the black stones in the corner",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P10": {
+      "timestamp": "2026-01-27T13:16:23.136030",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 10,
+        "puzzle_id": "syougo_L3_P10",
+        "yengo_level": "intermediate",
+        "board_size": 9,
+        "prompt_japanese": "隅の黒を助けてください。コウになります。",
+        "prompt_english": "Save the black stones in the corner. It becomes ko.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P11": {
+      "timestamp": "2026-01-27T13:16:23.139761",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 11,
+        "puzzle_id": "syougo_L3_P11",
+        "yengo_level": "intermediate",
+        "board_size": 13,
+        "prompt_japanese": "白を取ってください。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P12": {
+      "timestamp": "2026-01-27T13:16:23.143296",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 12,
+        "puzzle_id": "syougo_L3_P12",
+        "yengo_level": "intermediate",
+        "board_size": 13,
+        "prompt_japanese": "黒４子を助けてください。",
+        "prompt_english": "4Save.",
+        "player_to_move": "B",
+        "solution_length": 7,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P13": {
+      "timestamp": "2026-01-27T13:16:23.147131",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 13,
+        "puzzle_id": "syougo_L3_P13",
+        "yengo_level": "intermediate",
+        "board_size": 13,
+        "prompt_japanese": "隅の白を取ってください",
+        "prompt_english": "Capture the white stones in the corner",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P14": {
+      "timestamp": "2026-01-27T13:16:23.150888",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 14,
+        "puzzle_id": "syougo_L3_P14",
+        "yengo_level": "intermediate",
+        "board_size": 13,
+        "prompt_japanese": "白を取って下さい。コウになります。",
+        "prompt_english": "Capture the white stones. It becomes ko.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P15": {
+      "timestamp": "2026-01-27T13:16:23.154760",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 15,
+        "puzzle_id": "syougo_L3_P15",
+        "yengo_level": "intermediate",
+        "board_size": 13,
+        "prompt_japanese": "隅の白を取って下さい。",
+        "prompt_english": "Capture the white stones in the corner.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P16": {
+      "timestamp": "2026-01-27T13:16:23.159438",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 16,
+        "puzzle_id": "syougo_L3_P16",
+        "yengo_level": "intermediate",
+        "board_size": 9,
+        "prompt_japanese": "どうヨセますか？",
+        "prompt_english": "What is the best endgame move?",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P17": {
+      "timestamp": "2026-01-27T13:16:23.162769",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 17,
+        "puzzle_id": "syougo_L3_P17",
+        "yengo_level": "intermediate",
+        "board_size": 9,
+        "prompt_japanese": "どうヨセますか？",
+        "prompt_english": "What is the best endgame move?",
+        "player_to_move": "B",
+        "solution_length": 4,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P18": {
+      "timestamp": "2026-01-27T13:16:23.166272",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 18,
+        "puzzle_id": "syougo_L3_P18",
+        "yengo_level": "intermediate",
+        "board_size": 9,
+        "prompt_japanese": "最善にヨセてください。",
+        "prompt_english": "Find the best endgame sequence.",
+        "player_to_move": "B",
+        "solution_length": 8,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P19": {
+      "timestamp": "2026-01-27T13:16:23.169308",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 19,
+        "puzzle_id": "syougo_L3_P19",
+        "yengo_level": "intermediate",
+        "board_size": 9,
+        "prompt_japanese": "最善にヨセてください。",
+        "prompt_english": "Find the best endgame sequence.",
+        "player_to_move": "B",
+        "solution_length": 4,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P20": {
+      "timestamp": "2026-01-27T13:16:23.172632",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 20,
+        "puzzle_id": "syougo_L3_P20",
+        "yengo_level": "intermediate",
+        "board_size": 9,
+        "prompt_japanese": "最善にヨセてください。",
+        "prompt_english": "Find the best endgame sequence.",
+        "player_to_move": "B",
+        "solution_length": 4,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P21": {
+      "timestamp": "2026-01-27T13:16:23.178097",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 21,
+        "puzzle_id": "syougo_L3_P21",
+        "yengo_level": "intermediate",
+        "board_size": 19,
+        "prompt_japanese": "次の一手はA・Bのどちらが良いでしょう。",
+        "prompt_english": "A-B.",
+        "player_to_move": "B",
+        "solution_length": 1,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P22": {
+      "timestamp": "2026-01-27T13:16:23.182338",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 22,
+        "puzzle_id": "syougo_L3_P22",
+        "yengo_level": "intermediate",
+        "board_size": 19,
+        "prompt_japanese": "次の一手はA・Bのどちらが良いでしょう。",
+        "prompt_english": "A-B.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P23": {
+      "timestamp": "2026-01-27T13:16:23.186443",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 23,
+        "puzzle_id": "syougo_L3_P23",
+        "yengo_level": "intermediate",
+        "board_size": 19,
+        "prompt_japanese": "次の一手はA・Bのどちらが良いでしょう。",
+        "prompt_english": "A-B.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P24": {
+      "timestamp": "2026-01-27T13:16:23.189662",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 24,
+        "puzzle_id": "syougo_L3_P24",
+        "yengo_level": "intermediate",
+        "board_size": 19,
+        "prompt_japanese": "次の一手はA・Bのどちらが良いでしょう。",
+        "prompt_english": "A-B.",
+        "player_to_move": "B",
+        "solution_length": 1,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P25": {
+      "timestamp": "2026-01-27T13:16:23.194204",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 25,
+        "puzzle_id": "syougo_L3_P25",
+        "yengo_level": "intermediate",
+        "board_size": 19,
+        "prompt_japanese": "次の一手はA・Bのどちらが良いでしょう。",
+        "prompt_english": "A-B.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L3_P26": {
+      "timestamp": "2026-01-27T13:16:23.198547",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "3",
+        "level_name": "Advanced",
+        "puzzle_num": 26,
+        "puzzle_id": "syougo_L3_P26",
+        "yengo_level": "intermediate",
+        "board_size": 19,
+        "prompt_japanese": "次の一手はA・Bのどちらが良いでしょう。",
+        "prompt_english": "A-B.",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P01": {
+      "timestamp": "2026-01-27T13:17:12.067975",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 1,
+        "puzzle_id": "syougo_L4_P01",
+        "yengo_level": "low-dan",
+        "board_size": 9,
+        "prompt_japanese": "白を取ってください。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P02": {
+      "timestamp": "2026-01-27T13:17:12.073210",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 2,
+        "puzzle_id": "syougo_L4_P02",
+        "yengo_level": "low-dan",
+        "board_size": 9,
+        "prompt_japanese": "白を取ってください。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P03": {
+      "timestamp": "2026-01-27T13:17:12.077166",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 3,
+        "puzzle_id": "syougo_L4_P03",
+        "yengo_level": "low-dan",
+        "board_size": 9,
+        "prompt_japanese": "白を取ってください。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P04": {
+      "timestamp": "2026-01-27T13:17:12.080976",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 4,
+        "puzzle_id": "syougo_L4_P04",
+        "yengo_level": "low-dan",
+        "board_size": 13,
+        "prompt_japanese": "隅の白を取ってください",
+        "prompt_english": "Capture the white stones in the corner",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P05": {
+      "timestamp": "2026-01-27T13:17:12.084889",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 5,
+        "puzzle_id": "syougo_L4_P05",
+        "yengo_level": "low-dan",
+        "board_size": 13,
+        "prompt_japanese": "白を取ってください。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P06": {
+      "timestamp": "2026-01-27T13:17:12.090561",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 6,
+        "puzzle_id": "syougo_L4_P06",
+        "yengo_level": "low-dan",
+        "board_size": 13,
+        "prompt_japanese": "生きてください",
+        "prompt_english": "",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P07": {
+      "timestamp": "2026-01-27T13:17:12.095695",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 7,
+        "puzzle_id": "syougo_L4_P07",
+        "yengo_level": "low-dan",
+        "board_size": 13,
+        "prompt_japanese": "生きてください。",
+        "prompt_english": "",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P08": {
+      "timestamp": "2026-01-27T13:17:12.101142",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 8,
+        "puzzle_id": "syougo_L4_P08",
+        "yengo_level": "low-dan",
+        "board_size": 13,
+        "prompt_japanese": "白１目を取って黒はつながって下さい",
+        "prompt_english": "1 point",
+        "player_to_move": "B",
+        "solution_length": 11,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P09": {
+      "timestamp": "2026-01-27T13:17:12.106397",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 9,
+        "puzzle_id": "syougo_L4_P09",
+        "yengo_level": "low-dan",
+        "board_size": 13,
+        "prompt_japanese": "黒６子を逃げてください。",
+        "prompt_english": "6.",
+        "player_to_move": "B",
+        "solution_length": 7,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P10": {
+      "timestamp": "2026-01-27T13:17:12.111856",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 10,
+        "puzzle_id": "syougo_L4_P10",
+        "yengo_level": "low-dan",
+        "board_size": 13,
+        "prompt_japanese": "黒２子を助けてください",
+        "prompt_english": "2Save",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P11": {
+      "timestamp": "2026-01-27T13:17:12.117375",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 11,
+        "puzzle_id": "syougo_L4_P11",
+        "yengo_level": "low-dan",
+        "board_size": 13,
+        "prompt_japanese": "知って損ない手筋です。",
+        "prompt_english": "tesuji.",
+        "player_to_move": "B",
+        "solution_length": 12,
+        "variation_count": 3
+      }
+    },
+    "syougo_L4_P12": {
+      "timestamp": "2026-01-27T13:17:12.122665",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 12,
+        "puzzle_id": "syougo_L4_P12",
+        "yengo_level": "low-dan",
+        "board_size": 9,
+        "prompt_japanese": "隅の白を取ってください。",
+        "prompt_english": "Capture the white stones in the corner.",
+        "player_to_move": "B",
+        "solution_length": 7,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P13": {
+      "timestamp": "2026-01-27T13:17:12.128356",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 13,
+        "puzzle_id": "syougo_L4_P13",
+        "yengo_level": "low-dan",
+        "board_size": 13,
+        "prompt_japanese": "黒４子を助けてください。コウになります。",
+        "prompt_english": "4Save. It becomes ko.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P14": {
+      "timestamp": "2026-01-27T13:17:12.132811",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 14,
+        "puzzle_id": "syougo_L4_P14",
+        "yengo_level": "low-dan",
+        "board_size": 9,
+        "prompt_japanese": "隅の白を取ってください。",
+        "prompt_english": "Capture the white stones in the corner.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P15": {
+      "timestamp": "2026-01-27T13:17:12.142381",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 15,
+        "puzzle_id": "syougo_L4_P15",
+        "yengo_level": "low-dan",
+        "board_size": 13,
+        "prompt_japanese": "黒７子を助けてください。",
+        "prompt_english": "7Save.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P16": {
+      "timestamp": "2026-01-27T13:17:12.147462",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 16,
+        "puzzle_id": "syougo_L4_P16",
+        "yengo_level": "low-dan",
+        "board_size": 13,
+        "prompt_japanese": "黒３子は白３子を取って逃げてください",
+        "prompt_english": "33",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P17": {
+      "timestamp": "2026-01-27T13:17:12.152076",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 17,
+        "puzzle_id": "syougo_L4_P17",
+        "yengo_level": "low-dan",
+        "board_size": 13,
+        "prompt_japanese": "右上隅をヨセてください。",
+        "prompt_english": "",
+        "player_to_move": "B",
+        "solution_length": 10,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P18": {
+      "timestamp": "2026-01-27T13:17:12.158079",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 18,
+        "puzzle_id": "syougo_L4_P18",
+        "yengo_level": "low-dan",
+        "board_size": 9,
+        "prompt_japanese": "ヨセを打ってください。",
+        "prompt_english": "",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P19": {
+      "timestamp": "2026-01-27T13:17:12.162438",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 19,
+        "puzzle_id": "syougo_L4_P19",
+        "yengo_level": "low-dan",
+        "board_size": 13,
+        "prompt_japanese": "ヨセを打ってください。",
+        "prompt_english": "",
+        "player_to_move": "B",
+        "solution_length": 6,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P20": {
+      "timestamp": "2026-01-27T13:17:12.167136",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 20,
+        "puzzle_id": "syougo_L4_P20",
+        "yengo_level": "low-dan",
+        "board_size": 13,
+        "prompt_japanese": "ヨセを打ってください。",
+        "prompt_english": "",
+        "player_to_move": "B",
+        "solution_length": 6,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P21": {
+      "timestamp": "2026-01-27T13:17:12.171763",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 21,
+        "puzzle_id": "syougo_L4_P21",
+        "yengo_level": "low-dan",
+        "board_size": 13,
+        "prompt_japanese": "ヨセを打って下さい",
+        "prompt_english": "",
+        "player_to_move": "B",
+        "solution_length": 6,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P22": {
+      "timestamp": "2026-01-27T13:17:12.176045",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 22,
+        "puzzle_id": "syougo_L4_P22",
+        "yengo_level": "low-dan",
+        "board_size": 19,
+        "prompt_japanese": "布石の問題です。初手は肝要の一着です。",
+        "prompt_english": ".",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P23": {
+      "timestamp": "2026-01-27T13:17:12.181040",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 23,
+        "puzzle_id": "syougo_L4_P23",
+        "yengo_level": "low-dan",
+        "board_size": 19,
+        "prompt_japanese": "布石の問題です。全局的観点に立って・・・",
+        "prompt_english": "---",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P24": {
+      "timestamp": "2026-01-27T13:17:12.188048",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 24,
+        "puzzle_id": "syougo_L4_P24",
+        "yengo_level": "low-dan",
+        "board_size": 19,
+        "prompt_japanese": "布石の問題です。黒Aの利かしに白Bと反発したところです。どう打ちますか？",
+        "prompt_english": "AB. ?",
+        "player_to_move": "B",
+        "solution_length": 11,
+        "variation_count": 1
+      }
+    },
+    "syougo_L4_P25": {
+      "timestamp": "2026-01-27T13:17:12.195339",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "4",
+        "level_name": "Dan-level",
+        "puzzle_num": 25,
+        "puzzle_id": "syougo_L4_P25",
+        "yengo_level": "low-dan",
+        "board_size": 19,
+        "prompt_japanese": "布石の問題定石の経過途上です。",
+        "prompt_english": "",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P01": {
+      "timestamp": "2026-01-27T13:17:13.501497",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 1,
+        "puzzle_id": "syougo_L5_P01",
+        "yengo_level": "high-dan",
+        "board_size": 13,
+        "prompt_japanese": "黒生きてください。",
+        "prompt_english": "Make black live.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P02": {
+      "timestamp": "2026-01-27T13:17:13.514333",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 2,
+        "puzzle_id": "syougo_L5_P02",
+        "yengo_level": "high-dan",
+        "board_size": 13,
+        "prompt_japanese": "コウになります。",
+        "prompt_english": "It becomes ko.",
+        "player_to_move": "B",
+        "solution_length": 4,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P03": {
+      "timestamp": "2026-01-27T13:17:13.525366",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 3,
+        "puzzle_id": "syougo_L5_P03",
+        "yengo_level": "high-dan",
+        "board_size": 13,
+        "prompt_japanese": "生きてください。",
+        "prompt_english": "",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P04": {
+      "timestamp": "2026-01-27T13:17:13.537612",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 4,
+        "puzzle_id": "syougo_L5_P04",
+        "yengo_level": "high-dan",
+        "board_size": 9,
+        "prompt_japanese": "生きて下さい。",
+        "prompt_english": "",
+        "player_to_move": "B",
+        "solution_length": 7,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P05": {
+      "timestamp": "2026-01-27T13:17:13.546301",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 5,
+        "puzzle_id": "syougo_L5_P05",
+        "yengo_level": "high-dan",
+        "board_size": 13,
+        "prompt_japanese": "生きて下さい。コウになります。",
+        "prompt_english": "It becomes ko.",
+        "player_to_move": "B",
+        "solution_length": 7,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P06": {
+      "timestamp": "2026-01-27T13:17:13.553818",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 6,
+        "puzzle_id": "syougo_L5_P06",
+        "yengo_level": "high-dan",
+        "board_size": 9,
+        "prompt_japanese": "生きてください。",
+        "prompt_english": "",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P07": {
+      "timestamp": "2026-01-27T13:17:13.559836",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 7,
+        "puzzle_id": "syougo_L5_P07",
+        "yengo_level": "high-dan",
+        "board_size": 13,
+        "prompt_japanese": "生きてください。",
+        "prompt_english": "",
+        "player_to_move": "B",
+        "solution_length": 11,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P08": {
+      "timestamp": "2026-01-27T13:17:13.564365",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 8,
+        "puzzle_id": "syougo_L5_P08",
+        "yengo_level": "high-dan",
+        "board_size": 13,
+        "prompt_japanese": "白を取ってください。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 7,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P09": {
+      "timestamp": "2026-01-27T13:17:13.569867",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 9,
+        "puzzle_id": "syougo_L5_P09",
+        "yengo_level": "high-dan",
+        "board_size": 13,
+        "prompt_japanese": "白を取ってください。コウになります。",
+        "prompt_english": "Capture the white stones. It becomes ko.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P10": {
+      "timestamp": "2026-01-27T13:17:13.575141",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 10,
+        "puzzle_id": "syougo_L5_P10",
+        "yengo_level": "high-dan",
+        "board_size": 13,
+        "prompt_japanese": "黒６子を助けてください",
+        "prompt_english": "6Save",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P11": {
+      "timestamp": "2026-01-27T13:17:13.580146",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 11,
+        "puzzle_id": "syougo_L5_P11",
+        "yengo_level": "high-dan",
+        "board_size": 13,
+        "prompt_japanese": "黒８子を逃げてください。",
+        "prompt_english": "8.",
+        "player_to_move": "B",
+        "solution_length": 9,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P12": {
+      "timestamp": "2026-01-27T13:17:13.583791",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 12,
+        "puzzle_id": "syougo_L5_P12",
+        "yengo_level": "high-dan",
+        "board_size": 13,
+        "prompt_japanese": "白４子を取ってください。コウになります。",
+        "prompt_english": "4. It becomes ko.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P13": {
+      "timestamp": "2026-01-27T13:17:13.587672",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 13,
+        "puzzle_id": "syougo_L5_P13",
+        "yengo_level": "high-dan",
+        "board_size": 9,
+        "prompt_japanese": "黒３子を助けてください。コウになります。",
+        "prompt_english": "3Save. It becomes ko.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P14": {
+      "timestamp": "2026-01-27T13:17:13.593409",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 14,
+        "puzzle_id": "syougo_L5_P14",
+        "yengo_level": "high-dan",
+        "board_size": 9,
+        "prompt_japanese": "隅の白を取ってください。",
+        "prompt_english": "Capture the white stones in the corner.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P15": {
+      "timestamp": "2026-01-27T13:17:13.597960",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 15,
+        "puzzle_id": "syougo_L5_P15",
+        "yengo_level": "high-dan",
+        "board_size": 13,
+        "prompt_japanese": "上辺の白を取ってください。",
+        "prompt_english": "Capture the white stones.",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P16": {
+      "timestamp": "2026-01-27T13:17:13.602270",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 16,
+        "puzzle_id": "syougo_L5_P16",
+        "yengo_level": "high-dan",
+        "board_size": 13,
+        "prompt_japanese": "右上ヨセを打ってください。黒がコウ立てが豊富です。",
+        "prompt_english": ".",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P17": {
+      "timestamp": "2026-01-27T13:17:13.607635",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 17,
+        "puzzle_id": "syougo_L5_P17",
+        "yengo_level": "high-dan",
+        "board_size": 13,
+        "prompt_japanese": "ヨセを打ってください。",
+        "prompt_english": "",
+        "player_to_move": "B",
+        "solution_length": 9,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P18": {
+      "timestamp": "2026-01-27T13:17:13.613156",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 18,
+        "puzzle_id": "syougo_L5_P18",
+        "yengo_level": "high-dan",
+        "board_size": 13,
+        "prompt_japanese": "ヨセを打って下さい",
+        "prompt_english": "",
+        "player_to_move": "B",
+        "solution_length": 8,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P19": {
+      "timestamp": "2026-01-27T13:17:13.617014",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 19,
+        "puzzle_id": "syougo_L5_P19",
+        "yengo_level": "high-dan",
+        "board_size": 13,
+        "prompt_japanese": "ヨセを打ってください。",
+        "prompt_english": "",
+        "player_to_move": "B",
+        "solution_length": 7,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P20": {
+      "timestamp": "2026-01-27T13:17:13.620325",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 20,
+        "puzzle_id": "syougo_L5_P20",
+        "yengo_level": "high-dan",
+        "board_size": 19,
+        "prompt_japanese": "布石の問題ヒント白実利、黒厚みの碁ですが、あまり実利を与えるのも・・・",
+        "prompt_english": ",---",
+        "player_to_move": "B",
+        "solution_length": 9,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P21": {
+      "timestamp": "2026-01-27T13:17:13.623857",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 21,
+        "puzzle_id": "syougo_L5_P21",
+        "yengo_level": "high-dan",
+        "board_size": 19,
+        "prompt_japanese": "布石の問題です。",
+        "prompt_english": "",
+        "player_to_move": "B",
+        "solution_length": 5,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P22": {
+      "timestamp": "2026-01-27T13:17:13.628471",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 22,
+        "puzzle_id": "syougo_L5_P22",
+        "yengo_level": "high-dan",
+        "board_size": 19,
+        "prompt_japanese": "布石の問題です。定石の経過途上です。",
+        "prompt_english": ".",
+        "player_to_move": "B",
+        "solution_length": 7,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P23": {
+      "timestamp": "2026-01-27T13:17:13.631532",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 23,
+        "puzzle_id": "syougo_L5_P23",
+        "yengo_level": "high-dan",
+        "board_size": 19,
+        "prompt_japanese": "布石の問題です。石は軽く打ちましょう。",
+        "prompt_english": ".",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P24": {
+      "timestamp": "2026-01-27T13:17:13.636001",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 24,
+        "puzzle_id": "syougo_L5_P24",
+        "yengo_level": "high-dan",
+        "board_size": 19,
+        "prompt_japanese": "布石の問題です。ここを逃すと碁は打てない。",
+        "prompt_english": ".",
+        "player_to_move": "B",
+        "solution_length": 3,
+        "variation_count": 1
+      }
+    },
+    "syougo_L5_P25": {
+      "timestamp": "2026-01-27T13:17:13.639899",
+      "metadata": {
+        "source": "syougo.jp",
+        "level_num": "5",
+        "level_name": "High-Dan",
+        "puzzle_num": 25,
+        "puzzle_id": "syougo_L5_P25",
+        "yengo_level": "high-dan",
+        "board_size": 19,
+        "prompt_japanese": "布石の問題です。左辺の白に模様を張負けたらいけません。",
+        "prompt_english": ".",
+        "player_to_move": "B",
+        "solution_length": 9,
+        "variation_count": 1
+      }
+    }
+  },
+  "failed": {},
+  "runs": [
+    {
+      "run_id": "20260127_131541_5f5b19c6",
+      "timestamp": "2026-01-27T13:15:44.490693",
+      "downloaded": 26,
+      "skipped": 0,
+      "failed": 0,
+      "total": 26
+    },
+    {
+      "run_id": "20260127_131619_84bf4fc4",
+      "timestamp": "2026-01-27T13:16:24.199191",
+      "downloaded": 52,
+      "skipped": 0,
+      "failed": 0,
+      "total": 52
+    },
+    {
+      "run_id": "20260127_131710_3df610bf",
+      "timestamp": "2026-01-27T13:17:14.640790",
+      "downloaded": 50,
+      "skipped": 0,
+      "failed": 0,
+      "total": 50
+    }
+  ]
+}

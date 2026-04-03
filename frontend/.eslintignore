@@ -1,0 +1,21 @@
+# Build outputs
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Coverage
+coverage/
+
+# Generated files
+*.min.js
+*.d.ts
+
+# Config files (handled by .eslintrc)
+vite.config.ts
+vitest.config.ts
+
+# Public assets
+public/
+

@@ -1,0 +1,140 @@
+/**
+ * Presentation CSS Custom Properties
+ * @module styles/presentation
+ *
+ * CSS variables for solution presentation features:
+ * - Explore mode colors (with colorblind alternatives)
+ * - Numbered stone styling
+ * - Animation transitions
+ * - Label styling
+ *
+ * Constitution Compliance:
+ * - IX. Accessibility: Colorblind-safe alternatives
+ * - X. Design Philosophy: Minimalist approach
+ */
+
+:root {
+  /* ==========================================================================
+     Explore Mode Colors (Default)
+     ========================================================================== */
+
+  /** Valid move indicator - green */
+  --color-valid-move: #22c55e;
+  --color-valid-move-bg: rgba(34, 197, 94, 0.3);
+
+  /** Invalid move indicator - red */
+  --color-invalid-move: #dc2626;
+  --color-invalid-move-bg: rgba(220, 38, 38, 0.3);
+
+  /** Optimal move indicator - gold */
+  --color-optimal-move: #f59e0b;
+  --color-optimal-move-bg: rgba(245, 158, 11, 0.3);
+
+  /* ==========================================================================
+     Numbered Stone Colors
+     ========================================================================== */
+
+  /** Number on black stones - white text */
+  --color-number-on-black: #ffffff;
+
+  /** Number on white stones - black text */
+  --color-number-on-white: #000000;
+
+  /** Move number font size (relative to stone size) */
+  --number-font-size-ratio: 0.5;
+
+  /** Move number font weight */
+  --number-font-weight: 600;
+
+  /* ==========================================================================
+     Labels
+     ========================================================================== */
+
+  /** Label text color */
+  --color-label-text: #1f2937;
+
+  /** Label background */
+  --color-label-bg: rgba(255, 255, 255, 0.9);
+
+  /** Label font size ratio */
+  --label-font-size-ratio: 0.4;
+
+  /* ==========================================================================
+     Animation
+     ========================================================================== */
+
+  /** Default animation delay between moves */
+  --animation-delay-default: 1500ms;
+
+  /** Transition for board state changes */
+  --transition-board-state: 150ms ease-out;
+
+  /** Transition for viewport changes */
+  --transition-viewport: 300ms ease-in-out;
+
+  /* ==========================================================================
+     Collision Caption
+     ========================================================================== */
+
+  /** Caption text color */
+  --color-collision-text: #4b5563;
+
+  /** Caption background */
+  --color-collision-bg: #f3f4f6;
+
+  /** Caption font size */
+  --collision-font-size: 0.875rem;
+
+  /* ==========================================================================
+     Controls
+     ========================================================================== */
+
+  /** Mode button active state */
+  --color-mode-active: #3b82f6;
+  --color-mode-active-bg: rgba(59, 130, 246, 0.1);
+
+  /** Mode button hover state */
+  --color-mode-hover-bg: rgba(0, 0, 0, 0.05);
+}
+
+/* ==========================================================================
+   Colorblind Mode Overrides
+   Uses blue/orange instead of green/red for deuteranopia/protanopia support
+   ========================================================================== */
+
+:root[data-colorblind='true'],
+.colorblind-mode {
+  /** Valid move indicator - blue (colorblind safe) */
+  --color-valid-move: #3b82f6;
+  --color-valid-move-bg: rgba(59, 130, 246, 0.3);
+
+  /** Invalid move indicator - orange (colorblind safe) */
+  --color-invalid-move: #f97316;
+  --color-invalid-move-bg: rgba(249, 115, 22, 0.3);
+}
+
+/* ==========================================================================
+   Prefers-reduced-motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-board-state: 0ms;
+    --transition-viewport: 0ms;
+    --animation-delay-default: 2000ms;
+  }
+}
+
+/* ==========================================================================
+   High Contrast Mode
+   ========================================================================== */
+
+@media (prefers-contrast: high) {
+  :root {
+    --color-valid-move: #00ff00;
+    --color-invalid-move: #ff0000;
+    --color-number-on-black: #ffffff;
+    --color-number-on-white: #000000;
+    --number-font-weight: 700;
+  }
+}

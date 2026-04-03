@@ -1,0 +1,81 @@
+{
+  "$schema": "./schemas/quality.schema.json",
+  "schema_version": "1.0",
+  "description": "Quality tier definitions for puzzle data completeness rating",
+  "last_updated": "2026-01-26",
+  "changelog": [
+    {
+      "version": "1.0",
+      "date": "unknown",
+      "author": "initial",
+      "changes": "Initial 5-tier quality system (premium to unverified) with display colors."
+    }
+  ],
+  
+  "tiers": {
+    "1": {
+      "name": "premium",
+      "display_label": "Premium",
+      "stars": 5,
+      "description": "Full solution tree with multiple lines, rich refutations, and explanatory comments",
+      "requirements": {
+        "refutation_count_min": 3,
+        "has_comments": true
+      },
+      "selection_weight": 3.0
+    },
+    "2": {
+      "name": "high",
+      "display_label": "High",
+      "stars": 4,
+      "description": "Complete solution with good refutation coverage and comments",
+      "requirements": {
+        "refutation_count_min": 2,
+        "has_comments": true
+      },
+      "selection_weight": 2.0
+    },
+    "3": {
+      "name": "standard",
+      "display_label": "Standard",
+      "stars": 3,
+      "description": "Valid solution with at least one refutation branch",
+      "requirements": {
+        "refutation_count_min": 1
+      },
+      "selection_weight": 1.0
+    },
+    "4": {
+      "name": "basic",
+      "display_label": "Basic",
+      "stars": 2,
+      "description": "Solution tree present but no refutation branches",
+      "requirements": {
+        "has_solution_tree": true
+      },
+      "selection_weight": 0.5
+    },
+    "5": {
+      "name": "unverified",
+      "display_label": "Unverified",
+      "stars": 1,
+      "description": "Problem setup only - solution not yet verified in our system",
+      "requirements": {},
+      "selection_weight": 0.1
+    }
+  },
+  
+  "display": {
+    "star_colors": {
+      "filled": "#FFD700",
+      "empty": "#CCCCCC"
+    },
+    "tier_colors": {
+      "1": "#4CAF50",
+      "2": "#2196F3",
+      "3": "#9E9E9E",
+      "4": "#FF9800",
+      "5": "#F44336"
+    }
+  }
+}

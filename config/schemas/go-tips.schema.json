@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://yen-go.github.io/schemas/go-tips.schema.json",
+  "title": "Go Tips Configuration",
+  "description": "Schema for config/go-tips.json — Japanese Go terminology tips displayed to users, filtered by difficulty level.",
+  "type": "object",
+  "required": ["schema_version", "description", "last_updated", "tips"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Schema version (MAJOR.MINOR)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this config file"
+    },
+    "last_updated": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "ISO date of last modification (YYYY-MM-DD)"
+    },
+    "changelog": {
+      "type": "array",
+      "description": "Version history for auditability.",
+      "items": {
+        "type": "object",
+        "required": ["version", "date", "author", "changes"],
+        "additionalProperties": false,
+        "properties": {
+          "version": { "type": "string" },
+          "date": { "type": "string" },
+          "author": { "type": "string" },
+          "changes": { "type": "string" }
+        }
+      }
+    },
+    "tips": {
+      "type": "array",
+      "description": "Array of Go terminology tips",
+      "items": {
+        "$ref": "#/definitions/TipDefinition"
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "TipDefinition": {
+      "type": "object",
+      "required": ["text", "category", "levels"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Tip text. Format: 'Term (Romanization): Explanation.'"
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Tip category (e.g. 'definition')"
+        },
+        "levels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "description": "Difficulty level slugs this tip is appropriate for (references puzzle-levels.json)"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

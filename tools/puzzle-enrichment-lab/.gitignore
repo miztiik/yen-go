@@ -1,0 +1,2 @@
+# Test artifact: created when MagicMock leaks into filesystem path resolution
+MagicMock/

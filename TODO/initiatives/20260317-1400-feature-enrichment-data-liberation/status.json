@@ -1,0 +1,31 @@
+{
+  "initiative_id": "20260317-1400-feature-enrichment-data-liberation",
+  "initiative_type": "feature",
+  "current_phase": "superseded",
+  "superseded_by": "20260318-1400-feature-enrichment-lab-production-readiness",
+  "superseded_at": "2026-03-18",
+  "research_completed": true,
+  "planning_confidence_score": 85,
+  "risk_level": "low",
+  "phase_state": {
+    "charter": "not_started",
+    "clarify": "superseded",
+    "options": "not_started",
+    "analyze": "not_started",
+    "plan": "not_started",
+    "tasks": "not_started",
+    "execute": "not_started",
+    "validate": "not_started",
+    "governance_review": "not_started",
+    "closeout": "not_started"
+  },
+  "decisions": {
+    "backward_compatibility": { "required": false, "rationale": "pending" },
+    "legacy_code_removal": { "remove_old_code": false, "rationale": "pending" },
+    "option_selection": {
+      "selected_option_id": "pending",
+      "rationale": "pending"
+    }
+  },
+  "updated_at": "2026-03-18"
+}

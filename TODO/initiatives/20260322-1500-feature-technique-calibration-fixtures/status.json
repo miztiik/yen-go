@@ -1,0 +1,38 @@
+{
+  "initiative_id": "20260322-1500-feature-technique-calibration-fixtures",
+  "initiative_type": "feature",
+  "current_phase": "closeout",
+  "phase_state": {
+    "charter": "approved",
+    "clarify": "approved",
+    "options": "approved",
+    "analyze": "approved",
+    "plan": "approved",
+    "tasks": "approved",
+    "execute": "approved",
+    "validate": "approved",
+    "governance_review": "approved",
+    "closeout": "approved"
+  },
+  "decisions": {
+    "backward_compatibility": {
+      "required": false,
+      "rationale": "User confirmed Q1:B — can rename/delete fixtures, update test imports. No external consumers of fixture paths."
+    },
+    "legacy_code_removal": {
+      "remove_old_code": true,
+      "rationale": "User confirmed: REMOVE 7 broken fixtures, replace with sourced alternatives. Delete _render_all_techniques.py temp script."
+    },
+    "option_selection": {
+      "selected_option_id": "OPT-3",
+      "rationale": "Python Registry + Parametrized Tests — merges ALL_TAG_FIXTURES and golden5 patterns. One file, one dict, KISS/YAGNI compliant. 4/4 reviewer approval."
+    }
+  },
+  "research": {
+    "planning_confidence_score": 75,
+    "risk_level": "medium",
+    "research_invoked": true,
+    "research_path": "TODO/initiatives/20260322-research-external-sources-fixture-sourcing/15-research.md"
+  },
+  "updated_at": "2026-03-22"
+}

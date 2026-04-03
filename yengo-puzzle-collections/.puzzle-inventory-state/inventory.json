@@ -1,0 +1,51 @@
+{
+  "schema_version": "2.0",
+  "collection": {
+    "total_puzzles": 0,
+    "by_puzzle_level": {
+      "novice": 0,
+      "beginner": 0,
+      "elementary": 0,
+      "intermediate": 0,
+      "upper-intermediate": 0,
+      "advanced": 0,
+      "low-dan": 0,
+      "high-dan": 0,
+      "expert": 0
+    },
+    "by_tag": {},
+    "by_puzzle_quality": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0
+    }
+  },
+  "stages": {
+    "ingest": {
+      "attempted": 0,
+      "passed": 0,
+      "failed": 0
+    },
+    "analyze": {
+      "enriched": 0,
+      "skipped": 0
+    },
+    "publish": {
+      "new": 0,
+      "failed": 0
+    }
+  },
+  "metrics": {
+    "daily_publish_throughput": 0,
+    "error_rate_ingest": 0.0,
+    "error_rate_publish": 0.0
+  },
+  "audit": {
+    "total_rollbacks": 0,
+    "last_rollback_date": null
+  },
+  "last_updated": "2026-03-30T21:18:06.376317Z",
+  "last_run_id": "clean-20260330211806"
+}
