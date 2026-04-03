@@ -186,6 +186,73 @@ function parseCommaSeparated(value: string): string[] {
   return [...new Set(items)].sort();
 }
 
+/** Structured collection membership parsed from a YL entry. */
+export interface CollectionMembership {
+  /** Collection slug (without chapter/position suffix). */
+  readonly slug: string;
+  /** Chapter string (empty = no chapter, "0" = chapterless sentinel). */
+  readonly chapter: string;
+  /** Position within chapter (0 = no position info). */
+  readonly position: number;
+}
+
+/**
+ * Parse YL property into bare slugs and structured memberships.
+ *
+ * Handles all YL formats:
+ * - `slug`              -> { slug, chapter: '', position: 0 }
+ * - `slug:42`           -> { slug, chapter: '', position: 42 }
+ * - `slug:3/12`         -> { slug, chapter: '3', position: 12 }
+ * - `slug:seki/3`       -> { slug, chapter: 'seki', position: 3 }
+ *
+ * Multiple entries are comma-separated.
+ */
+function parseCollectionsWithChapters(rawYL: string): {
+  slugs: readonly string[];
+  memberships: readonly CollectionMembership[];
+} {
+  const items = rawYL.split(',').map(s => s.trim()).filter(Boolean);
+  const slugs: string[] = [];
+  const memberships: CollectionMembership[] = [];
+  const seen = new Set<string>();
+
+  for (const item of items) {
+    const colonIdx = item.indexOf(':');
+    if (colonIdx === -1) {
+      // Bare slug: "life-and-death"
+      if (!seen.has(item)) {
+        seen.add(item);
+        slugs.push(item);
+        memberships.push({ slug: item, chapter: '', position: 0 });
+      }
+    } else {
+      const slug = item.substring(0, colonIdx);
+      const suffix = item.substring(colonIdx + 1);
+      const slashIdx = suffix.indexOf('/');
+
+      let chapter = '';
+      let position = 0;
+
+      if (slashIdx === -1) {
+        // Position only: "slug:42"
+        position = parseInt(suffix, 10) || 0;
+      } else {
+        // Chapter/position: "slug:3/12" or "slug:seki/3"
+        chapter = suffix.substring(0, slashIdx);
+        position = parseInt(suffix.substring(slashIdx + 1), 10) || 0;
+      }
+
+      if (!seen.has(slug)) {
+        seen.add(slug);
+        slugs.push(slug);
+      }
+      memberships.push({ slug, chapter, position });
+    }
+  }
+
+  return { slugs: slugs.sort(), memberships };
+}
+
 /**
  * Parse pipe-delimited string → array (max 3 items).
  */
@@ -238,6 +305,7 @@ export function extractMetadataFromTree(
   koContext: string;
   moveOrder: string;
   collections: readonly string[];
+  collectionMemberships: readonly CollectionMembership[];
   firstCorrectMove: string | null;
   cornerPosition: string | undefined;
   quality: number;
@@ -256,7 +324,8 @@ export function extractMetadataFromTree(
   const level = rawLevel ?? FALLBACK_LEVEL;
   const tags = rawTags ? parseCommaSeparated(rawTags) : [];
   const hints = rawHints ? parsePipeDelimited(rawHints) : [];
-  const collections = rawCollections ? parseCommaSeparated(rawCollections) : [];
+  const { slugs: collections, memberships: collectionMemberships } =
+    rawCollections ? parseCollectionsWithChapters(rawCollections) : { slugs: [] as string[], memberships: [] as CollectionMembership[] };
 
   // Ko context validation
   const koContext = (rawKo === 'none' || rawKo === 'direct' || rawKo === 'approach')
@@ -296,6 +365,7 @@ export function extractMetadataFromTree(
     koContext,
     moveOrder,
     collections,
+    collectionMemberships,
     firstCorrectMove,
     cornerPosition: rawCorner,
     quality,

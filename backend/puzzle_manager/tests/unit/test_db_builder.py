@@ -277,3 +277,127 @@ class TestSequenceNumberPopulated:
         assert rows[0] == ("aaa0000000000010", 1)
         assert rows[1] == ("bbb0000000000020", 2)
         assert rows[2] == ("ccc0000000000030", 3)
+
+
+# ── Chapter column tests ──────────────────────────────
+class TestChapterColumn:
+    """Verify chapter string is stored via chapter_map."""
+
+    def test_chapter_default_empty_when_no_map(self, tmp_path):
+        entry = _make_entry(cols=[1])
+        col = _make_collection(id=1)
+        db_path, _ = _build(tmp_path, entries=[entry], collections=[col])
+        conn = sqlite3.connect(db_path)
+        row = conn.execute(
+            "SELECT chapter FROM puzzle_collections WHERE content_hash=?",
+            (entry.content_hash,),
+        ).fetchone()
+        conn.close()
+        assert row[0] == ""
+
+    def test_named_chapter_stored(self, tmp_path):
+        entry = _make_entry(hash="ch_named_00000001", cols=[10])
+        col = _make_collection(id=10, slug="techniques", name="Techniques")
+        chapter_map = {("ch_named_00000001", 10): "seki"}
+        db_path, _ = _build(
+            tmp_path, entries=[entry], collections=[col], chapter_map=chapter_map,
+        )
+        conn = sqlite3.connect(db_path)
+        row = conn.execute(
+            "SELECT chapter FROM puzzle_collections WHERE content_hash=?",
+            (entry.content_hash,),
+        ).fetchone()
+        conn.close()
+        assert row[0] == "seki"
+
+    def test_numeric_chapter_stored(self, tmp_path):
+        entry = _make_entry(hash="ch_num_0000000001", cols=[11])
+        col = _make_collection(id=11, slug="cho-book", name="Cho Book")
+        chapter_map = {("ch_num_0000000001", 11): "3"}
+        db_path, _ = _build(
+            tmp_path, entries=[entry], collections=[col], chapter_map=chapter_map,
+        )
+        conn = sqlite3.connect(db_path)
+        row = conn.execute(
+            "SELECT chapter FROM puzzle_collections WHERE content_hash=?",
+            (entry.content_hash,),
+        ).fetchone()
+        conn.close()
+        assert row[0] == "3"
+
+    def test_mixed_chapters_in_collection(self, tmp_path):
+        entries = [
+            _make_entry(hash="mix_ch_0000000001", cols=[12]),
+            _make_entry(hash="mix_ch_0000000002", cols=[12]),
+            _make_entry(hash="mix_ch_0000000003", cols=[12]),
+        ]
+        col = _make_collection(id=12, slug="mixed", name="Mixed")
+        chapter_map = {
+            ("mix_ch_0000000001", 12): "seki",
+            ("mix_ch_0000000002", 12): "3",
+            # mix_ch_0000000003 has no chapter entry -> defaults to ""
+        }
+        db_path, _ = _build(
+            tmp_path, entries=entries, collections=[col], chapter_map=chapter_map,
+        )
+        conn = sqlite3.connect(db_path)
+        rows = conn.execute(
+            "SELECT content_hash, chapter FROM puzzle_collections "
+            "WHERE collection_id=12 ORDER BY content_hash"
+        ).fetchall()
+        conn.close()
+        assert rows[0] == ("mix_ch_0000000001", "seki")
+        assert rows[1] == ("mix_ch_0000000002", "3")
+        assert rows[2] == ("mix_ch_0000000003", "")
+
+
+# ── FTS chapter search tests ──────────────────────────
+class TestFtsChapterSearch:
+    """Verify named chapters are searchable via FTS."""
+
+    def test_named_chapters_searchable(self, tmp_path):
+        col = _make_collection(id=20, slug="go-techniques", name="Go Techniques")
+        col.attrs = {"chapters": ["seki", "ladder", "making-life"]}
+        db_path, _ = _build(tmp_path, collections=[col])
+        conn = sqlite3.connect(db_path)
+        rows = conn.execute(
+            "SELECT slug FROM collections_fts WHERE collections_fts MATCH ?",
+            ("seki",),
+        ).fetchall()
+        conn.close()
+        assert len(rows) == 1
+        assert rows[0][0] == "go-techniques"
+
+    def test_numeric_chapters_not_in_fts(self, tmp_path):
+        col = _make_collection(id=21, slug="cho-book", name="Cho Book")
+        col.attrs = {"chapters": ["1", "2", "3"]}
+        db_path, _ = _build(tmp_path, collections=[col])
+        conn = sqlite3.connect(db_path)
+        rows = conn.execute(
+            "SELECT slug FROM collections_fts WHERE collections_fts MATCH ?",
+            ("1",),
+        ).fetchall()
+        conn.close()
+        # "1" should not match because integer chapters are excluded from FTS
+        assert all(r[0] != "cho-book" for r in rows)
+
+    def test_no_chapters_fts_unchanged(self, tmp_path):
+        col = _make_collection(id=22, slug="plain-col", name="Plain Collection")
+        db_path, _ = _build(tmp_path, collections=[col])
+        conn = sqlite3.connect(db_path)
+        rows = conn.execute(
+            "SELECT slug FROM collections_fts WHERE collections_fts MATCH ?",
+            ("plain",),
+        ).fetchall()
+        conn.close()
+        assert len(rows) == 1
+        assert rows[0][0] == "plain-col"
+
+
+# ── Schema version test ───────────────────────────────
+class TestSchemaVersion:
+    """Verify DbVersionInfo uses schema version 2."""
+
+    def test_schema_version_is_2(self, tmp_path):
+        _, info = _build(tmp_path)
+        assert info.schema_version == 2

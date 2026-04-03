@@ -150,6 +150,8 @@ export class CollectionPuzzleLoader implements PuzzleSetLoader {
     private readonly contentTypeId: number = 0,
     /** Optional collection type for shuffle policy. Resolved from config if not provided. */
     private readonly collectionType?: CollectionType,
+    /** Optional chapter filter for chaptered collections. */
+    private readonly chapter?: string,
   ) {}
 
   /**
@@ -176,7 +178,7 @@ export class CollectionPuzzleLoader implements PuzzleSetLoader {
         return;
       }
 
-      const hasFilters = this.levelIds.length > 0 || this.tagIds.length > 0 || this.contentTypeId > 0;
+      const hasFilters = this.levelIds.length > 0 || this.tagIds.length > 0 || this.contentTypeId > 0 || !!this.chapter;
       const isTagBased = this.collectionId.startsWith('tag-');
       const isLevelBased = this.collectionId.startsWith('level-');
 
@@ -192,6 +194,7 @@ export class CollectionPuzzleLoader implements PuzzleSetLoader {
         if (this.levelIds.length === 1 && firstLevelId !== undefined) filters.levelId = firstLevelId;
         if (this.tagIds.length > 0) filters.tagIds = [...(filters.tagIds ?? []), ...this.tagIds];
         if (this.contentTypeId > 0) filters.contentType = this.contentTypeId;
+        if (this.chapter) filters.chapter = this.chapter;
         rows = getPuzzlesFiltered(filters);
       } else if (isTagBased) {
         rows = getPuzzlesByTag(numericId);

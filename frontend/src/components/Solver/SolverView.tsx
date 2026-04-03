@@ -32,7 +32,7 @@ import { resolveHintTokens } from '../../lib/hints/token-resolver';
 import { sgfToPosition } from '../../utils/coordinates';
 import { swapColorText } from '../../lib/colorTextTransform';
 import { sanitizeComment } from '../../lib/sanitizeComment';
-import { formatRankRange, humanizeCollectionName } from '../../lib/levelRanks';
+import { formatRankRange, formatCollectionPill } from '../../lib/levelRanks';
 
 // ============================================================================
 // Types
@@ -275,11 +275,14 @@ export function SolverView({
     return formatRankRange(metadata.level);
   }, [metadata.level]);
 
-  // UI-037: Collection names from YL property
+  // UI-037: Collection names from YL property (with chapter context)
   const collectionNames = useMemo(() => {
-    if (!metadata.collections || metadata.collections.length === 0) return [];
-    return metadata.collections.map(humanizeCollectionName);
-  }, [metadata.collections]);
+    const memberships = metadata.collectionMemberships;
+    if (memberships && memberships.length > 0) {
+      return memberships.map(m => formatCollectionPill(m.slug, m.chapter, m.position));
+    }
+    return [];
+  }, [metadata.collectionMemberships]);
 
   // UI-029 + UI-042: Combined colored circles — hint marker + move tree visual feedback
   // Unified into a single effect because setColoredCircles replaces the full array.
@@ -628,7 +631,7 @@ export function SolverView({
               </span>
             ))}
             {collectionNames.map((name: string, i: number) => (
-              <span key={`col-${i}`} className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--color-accent)]/10 text-[var(--color-text-primary)] border border-[var(--color-neutral-300)]">
+              <span key={`col-${i}`} title={name} className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--color-accent)]/10 text-[var(--color-text-primary)] border border-[var(--color-neutral-300)]">
                 <CollectionIcon size={16} />
                 {name}
               </span>

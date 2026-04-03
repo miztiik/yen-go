@@ -24,7 +24,8 @@ import { CollectionPuzzleLoader } from '../services/puzzleLoaders';
 import { recordCollectionPuzzleCompletion, getCollectionProgress } from '../services/progress';
 import { recordPlay } from '../services/streakManager';
 import { formatSlug } from '../lib/slug-formatter';
-import { loadCollectionMasterIndex, ensureCollectionIdsLoaded, resolveCollectionDirId } from '../services/collectionService';
+import { humanizeCollectionName } from '../lib/levelRanks';
+import { loadCollectionMasterIndex, ensureCollectionIdsLoaded, resolveCollectionDirId, getChaptersForCollection } from '../services/collectionService';
 import { getEditionCollections } from '../services/puzzleQueryService';
 import type { CollectionRow } from '../services/puzzleQueryService';
 import { EditionPicker } from '../components/Collections/EditionPicker';
@@ -112,6 +113,13 @@ export function CollectionViewPage({
     editions: CollectionRow[];
   } | null>(null);
 
+  // Chapter filter state
+  const [chapterData, setChapterData] = useState<{
+    chapters: string[];
+    chapterCounts: Record<string, number>;
+  }>({ chapters: [], chapterCounts: {} });
+  const [selectedChapter, setSelectedChapter] = useState<string | null>(null);
+
   // P1-1: Load previously-completed puzzle IDs from localStorage for dot hydration
   const [completedIds, setCompletedIds] = useState<readonly string[]>([]);
 
@@ -120,6 +128,15 @@ export function CollectionViewPage({
     if (result.success && result.data) {
       setCompletedIds(result.data.completed);
     }
+  }, [collectionId]);
+
+  // Load chapter data for this collection
+  useEffect(() => {
+    let cancelled = false;
+    void getChaptersForCollection(collectionId).then(data => {
+      if (!cancelled) setChapterData(data);
+    });
+    return () => { cancelled = true; };
   }, [collectionId]);
 
   // Resolve collection slug → numeric ID → query key
@@ -286,8 +303,8 @@ export function CollectionViewPage({
   // P0-NAV: Use stable filterLevelIds/filterTagIds from usePuzzleFilters (not
   // filterState spread copies which create new array refs every render).
   const loader = useMemo(
-    () => new CollectionPuzzleLoader(collectionId, startIndex, filterLevelIds, filterTagIds, contentType),
-    [collectionId, filterLevelIds, filterTagIds, contentType],
+    () => new CollectionPuzzleLoader(collectionId, startIndex, filterLevelIds, filterTagIds, contentType, undefined, selectedChapter ?? undefined),
+    [collectionId, filterLevelIds, filterTagIds, contentType, selectedChapter],
   );
 
   // Progress tracking: record collection puzzle completion + streak
@@ -358,6 +375,25 @@ export function CollectionViewPage({
             />
           )}
 
+          {/* Chapter FilterDropdown — only for chaptered collections */}
+          {chapterData.chapters.length > 0 && (
+            <FilterDropdown
+              label="Chapter"
+              placeholder="All Chapters"
+              groups={[{
+                label: 'Chapters',
+                options: chapterData.chapters.map(ch => {
+                  const isNumeric = /^\d+$/.test(ch);
+                  const label = isNumeric ? `Chapter ${ch}` : humanizeCollectionName(ch);
+                  return { id: ch, label, count: chapterData.chapterCounts[ch] ?? 0 };
+                }),
+              }]}
+              selected={selectedChapter}
+              onChange={(val) => setSelectedChapter(val)}
+              testId="collection-chapter-filter"
+            />
+          )}
+
           {/* Active filter chips */}
           <div className="ml-auto flex items-center gap-1.5">
             {filterState.selectedLevelLabels.map((label, i) => (
@@ -375,6 +411,13 @@ export function CollectionViewPage({
                 testId="collection-tag-chip"
               />
             )}
+            {selectedChapter && (
+              <ActiveFilterChip
+                label={/^\d+$/.test(selectedChapter) ? `Chapter ${selectedChapter}` : humanizeCollectionName(selectedChapter)}
+                onDismiss={() => setSelectedChapter(null)}
+                testId="collection-chapter-chip"
+              />
+            )}
             {filterState.activeFilterCount >= 2 && (
               <ClearAllFiltersButton
                 onClear={filterState.clearAll}
@@ -385,6 +428,15 @@ export function CollectionViewPage({
         </div>
       )
     : undefined;
+
+  // Chapter subtitle: show when a chapter is selected
+  const chapterSubtitle = useMemo(() => {
+    if (!selectedChapter) return undefined;
+    const isNumeric = /^\d+$/.test(selectedChapter);
+    const label = isNumeric ? `Chapter ${selectedChapter}` : humanizeCollectionName(selectedChapter);
+    const count = chapterData.chapterCounts[selectedChapter];
+    return count ? `${label} (${count} puzzles)` : label;
+  }, [selectedChapter, chapterData.chapterCounts]);
 
   // Unified header using PuzzleSetHeader (Option A compact toolbar)
   const renderHeaderWithFilters = (info: HeaderInfo): JSX.Element => {
@@ -405,6 +457,7 @@ export function CollectionViewPage({
     return (
       <PuzzleSetHeader
         title={collectionDisplayName}
+        {...(chapterSubtitle ? { subtitle: chapterSubtitle } : {})}
         currentIndex={info.currentIndex}
         totalPuzzles={info.totalPuzzles}
         {...(info.onBack ? { onBack: info.onBack } : {})}
@@ -418,7 +471,7 @@ export function CollectionViewPage({
   };
 
   // H5: Render EmptyFilterState when filters produce zero results
-  const hasAnyFilter = filterState.hasActiveFilters || contentType > 0;
+  const hasAnyFilter = filterState.hasActiveFilters || contentType > 0 || !!selectedChapter;
 
   const contentTypeInfo = contentType > 0
     ? (() => {
@@ -437,6 +490,7 @@ export function CollectionViewPage({
   const handleClearAllFilters = () => {
     filterState.clearAll();
     setContentType(0);
+    setSelectedChapter(null);
   };
 
   const renderEmptyWithFilters = hasAnyFilter

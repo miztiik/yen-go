@@ -55,7 +55,7 @@ class TestDbVersionInfo:
             "db_version": "20260313-aabbccdd",
             "puzzle_count": 42,
             "generated_at": "2026-03-13T10:00:00Z",
-            "schema_version": 1,
+            "schema_version": 2,
         }
 
 

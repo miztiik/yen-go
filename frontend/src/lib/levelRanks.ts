@@ -51,3 +51,32 @@ export function formatRankRange(levelSlug: string): string | null {
 export function humanizeCollectionName(slug: string): string {
   return slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
+
+/**
+ * Format a collection pill label with chapter context.
+ *
+ * For chapterless collections, returns the humanized slug unchanged.
+ * For integer chapters: "Cho Chikun Elementary - Ch.3 #12"
+ * For named chapters: "Essential Go Techniques - Seki #3"
+ *
+ * @param slug - Collection slug
+ * @param chapter - Chapter string ('' = no chapter)
+ * @param position - Position within chapter (0 = no position)
+ * @returns Formatted pill text
+ */
+export function formatCollectionPill(
+  slug: string,
+  chapter: string,
+  position: number,
+): string {
+  const name = humanizeCollectionName(slug);
+  if (!chapter || chapter === '0') return name;
+
+  const isNumeric = /^\d+$/.test(chapter);
+  const chapterLabel = isNumeric
+    ? `Ch.${chapter}`
+    : humanizeCollectionName(chapter);
+  const positionSuffix = position > 0 ? ` #${position}` : '';
+
+  return `${name} - ${chapterLabel}${positionSuffix}`;
+}

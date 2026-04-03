@@ -15,6 +15,7 @@ export interface PuzzleRow {
   ac: number;
   attrs: string; // JSON string
   sequence_number?: number | null;
+  chapter?: string | null;
 }
 
 export interface CollectionRow {
@@ -34,6 +35,7 @@ export interface QueryFilters {
   contentType?: number;
   minDepth?: number;
   maxDepth?: number;
+  chapter?: string;
 }
 
 export interface FilterCounts {
@@ -52,7 +54,7 @@ const BASE_SELECT = `SELECT p.content_hash, p.batch, p.level_id, p.quality, p.co
 
 function buildJoinClause(filters: QueryFilters): string {
   const joins: string[] = [];
-  if (filters.collectionId !== undefined) {
+  if (filters.collectionId !== undefined || filters.chapter !== undefined) {
     joins.push('JOIN puzzle_collections pc ON p.content_hash = pc.content_hash');
   }
   return joins.join(' ');
@@ -68,6 +70,7 @@ function buildWhereClause(filters: QueryFilters): string {
     );
   }
   if (filters.collectionId !== undefined) conditions.push('pc.collection_id = ?');
+  if (filters.chapter !== undefined) conditions.push('pc.chapter = ?');
   if (filters.quality !== undefined) conditions.push('p.quality >= ?');
   if (filters.contentType !== undefined) conditions.push('p.content_type = ?');
   if (filters.minDepth !== undefined) conditions.push('p.cx_depth >= ?');
@@ -83,6 +86,7 @@ function buildParams(filters: QueryFilters): (string | number)[] {
     params.push(filters.tagIds.length);
   }
   if (filters.collectionId !== undefined) params.push(filters.collectionId);
+  if (filters.chapter !== undefined) params.push(filters.chapter);
   if (filters.quality !== undefined) params.push(filters.quality);
   if (filters.contentType !== undefined) params.push(filters.contentType);
   if (filters.minDepth !== undefined) params.push(filters.minDepth);
@@ -110,12 +114,46 @@ export function getPuzzlesByTag(tagId: number): PuzzleRow[] {
 
 export function getPuzzlesByCollection(colId: number): PuzzleRow[] {
   return query<PuzzleRow>(
-    `${BASE_SELECT}, pc.sequence_number FROM puzzles p
+    `${BASE_SELECT}, pc.sequence_number, pc.chapter FROM puzzles p
      JOIN puzzle_collections pc ON p.content_hash = pc.content_hash
      WHERE pc.collection_id = ?
      ORDER BY pc.sequence_number`,
     [colId],
   );
+}
+
+/** Get distinct non-empty chapter strings for a collection. */
+export function getCollectionChapters(colId: number): string[] {
+  const rows = query<{ chapter: string }>(
+    `SELECT DISTINCT chapter FROM puzzle_collections
+     WHERE collection_id = ? AND chapter != '' AND chapter != '0'
+     ORDER BY chapter`,
+    [colId],
+  );
+  return rows.map(r => r.chapter);
+}
+
+/** Get puzzle count per chapter for a collection. */
+export function getCollectionChapterCounts(colId: number): Record<string, number> {
+  const rows = query<{ chapter: string; cnt: number }>(
+    `SELECT chapter, COUNT(*) as cnt FROM puzzle_collections
+     WHERE collection_id = ? AND chapter != '' AND chapter != '0'
+     GROUP BY chapter
+     ORDER BY chapter`,
+    [colId],
+  );
+  return Object.fromEntries(rows.map(r => [r.chapter, r.cnt]));
+}
+
+/** Get distinct chapter count per collection. 0 for chapterless collections. */
+export function getAllCollectionChapterCounts(): Record<number, number> {
+  const rows = query<{ collection_id: number; cnt: number }>(
+    `SELECT collection_id, COUNT(DISTINCT chapter) as cnt
+     FROM puzzle_collections
+     WHERE chapter != '' AND chapter != '0'
+     GROUP BY collection_id`,
+  );
+  return Object.fromEntries(rows.map(r => [r.collection_id, r.cnt]));
 }
 
 export function searchCollections(searchQuery: string): CollectionRow[] {

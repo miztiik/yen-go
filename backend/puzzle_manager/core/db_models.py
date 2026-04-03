@@ -57,7 +57,7 @@ class DbVersionInfo:
     db_version: str
     puzzle_count: int
     generated_at: str
-    schema_version: int = 1
+    schema_version: int = 2
 
     def to_dict(self) -> dict:
         return {

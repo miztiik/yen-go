@@ -598,6 +598,7 @@ class PublishStage:
         # Build sequence_map: use source-provided sequences (v14) when available,
         # fall back to deterministic alphabetical ordering by content_hash
         sequence_map: dict[tuple[str, int], int] = {}
+        chapter_map: dict[tuple[str, int], str] = {}
         src_seqs = source_collection_sequences or {}
         from collections import defaultdict
         col_entries: dict[int, list[str]] = defaultdict(list)
@@ -626,11 +627,29 @@ class PublishStage:
             for seq, ch in enumerate(sorted_hashes, start=1):
                 sequence_map[(ch, col_id)] = seq
 
+            # Build chapter_map from source sequences
+            for ch in hashes:
+                if (ch, col_id) in src_seqs:
+                    chapter_str, _ = src_seqs[(ch, col_id)]
+                    chapter_map[(ch, col_id)] = chapter_str
+
+        # Build per-collection chapter lists and inject into collection attrs
+        col_chapters: dict[int, list[str]] = defaultdict(list)
+        for (ch, col_id), chapter_str in chapter_map.items():
+            if chapter_str and chapter_str != "0":
+                col_chapters[col_id].append(chapter_str)
+        for col in collections:
+            distinct = sorted(set(col_chapters.get(col.collection_id, [])),
+                              key=_chapter_sort_key)
+            if distinct:
+                col.attrs = {**col.attrs, "chapters": distinct}
+
         version_info = build_search_db(
             entries=all_entries,
             collections=collections,
             output_path=tmp_db_path,
             sequence_map=sequence_map,
+            chapter_map=chapter_map,
         )
 
         # Atomic swap: replace live DB with completed temp file

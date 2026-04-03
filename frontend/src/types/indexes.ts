@@ -32,6 +32,8 @@ export interface CollectionEntry {
   readonly level: string;
   /** Author-curated ordering within collection (1-indexed). */
   readonly sequence_number: number;
+  /** Chapter string from YL property (empty = no chapter). */
+  readonly chapter?: string;
 }
 
 /** Union of all entry types for generic usage. */

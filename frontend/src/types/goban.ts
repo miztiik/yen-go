@@ -6,6 +6,7 @@
 /** 9-level difficulty system */
 import type { LevelSlug } from '../lib/levels/config';
 import type { ContentTypeSlug } from '../services/configService';
+import type { CollectionMembership } from '../lib/sgf-metadata';
 
 /** Metadata extracted from YenGo custom SGF properties (YG, YT, YH, YK, YO, YL, YQ, YM) */
 export interface YenGoMetadata {
@@ -21,9 +22,11 @@ export interface YenGoMetadata {
   readonly moveOrder: "strict" | "flexible";
   /** Collection membership from YL property (comma-separated slugs, schema v10) */
   readonly collections: readonly string[];
+  /** Structured collection memberships with chapter/position from YL property */
+  readonly collectionMemberships: readonly CollectionMembership[];
   /** First correct move SGF coordinate extracted from solution tree (e.g. 'dp'), null for pass/unknown */
   readonly firstCorrectMove: string | null;
-  /** Quality level (1–5) from YQ property q field. 0 = unscored. */
+  /** Quality level (1-5) from YQ property q field. 0 = unscored. */
   readonly quality: number;
   /** Content type from YM property ct field. */
   readonly contentType: ContentTypeSlug;

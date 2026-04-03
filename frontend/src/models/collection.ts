@@ -49,6 +49,10 @@ export interface CuratedCollection {
   readonly hasData: boolean;
   /** Optional level hint for graded collections (slug from config) */
   readonly levelHint?: string | undefined;
+  /** Number of distinct chapters (0 = chapterless). */
+  readonly chapterCount: number;
+  /** Whether chapters are named strings (technique names) vs numeric. */
+  readonly hasNamedChapters: boolean;
 }
 
 /**

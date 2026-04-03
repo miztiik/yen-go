@@ -31,7 +31,7 @@ import { safeFetchJson } from '@/utils/safeFetchJson';
 import { expandPath } from '@/services/entryDecoder';
 import { levelSlugToId, levelIdToSlug, tagSlugToId, getTagMeta } from '@/services/configService';
 import { init as initDb } from '@/services/sqliteService';
-import { getPuzzlesByCollection, getPuzzlesByLevel, getPuzzlesByTag, getTagCounts, getCollectionCounts, getFilterCounts } from '@/services/puzzleQueryService';
+import { getPuzzlesByCollection, getPuzzlesByLevel, getPuzzlesByTag, getTagCounts, getCollectionCounts, getFilterCounts, getCollectionChapters, getCollectionChapterCounts, getAllCollectionChapterCounts } from '@/services/puzzleQueryService';
 import { TAG_SLUGS } from '@/lib/tags/config';
 import { DEFAULT_LEVEL, FIRST_LEVEL, LAST_LEVEL } from '@/lib/levels/level-defaults';
 
@@ -75,6 +75,7 @@ interface CollectionViewEntry {
   path: string;
   level: string;
   sequence_number: number;
+  chapter?: string;
 }
 
 /** View file format for views/by-collection/{slug}.json */
@@ -211,6 +212,7 @@ async function loadCollectionViewIndex(slug: string): Promise<CollectionViewFile
       path: expandPath(`${row.batch}/${row.content_hash}`),
       level: levelIdToSlug(row.level_id),
       sequence_number: row.sequence_number ?? 0,
+      chapter: row.chapter ?? '',
     }));
 
     return {
@@ -224,8 +226,29 @@ async function loadCollectionViewIndex(slug: string): Promise<CollectionViewFile
   }
 }
 
+/**
+ * Get distinct chapter strings for a collection, with puzzle counts.
+ * Returns empty object for chapterless collections.
+ */
+export async function getChaptersForCollection(slug: string): Promise<{
+  chapters: string[];
+  chapterCounts: Record<string, number>;
+}> {
+  try {
+    await ensureCollectionIdsLoaded();
+    const colId = collectionSlugToId(slug);
+    if (colId === undefined) return { chapters: [], chapterCounts: {} };
+    await initDb();
+    const chapters = getCollectionChapters(colId);
+    if (chapters.length === 0) return { chapters: [], chapterCounts: {} };
+    const chapterCounts = getCollectionChapterCounts(colId);
+    return { chapters, chapterCounts };
+  } catch {
+    return { chapters: [], chapterCounts: {} };
+  }
+}
+
 // ============================================================================
-// Collection Index (from level indexes, tag indexes, and curated collections)
 // ============================================================================
 
 /** 
@@ -1200,6 +1223,9 @@ export async function loadCollectionCatalog(): Promise<LoaderResult<CollectionCa
 
     // Build a map of slug → count from the SQLite search database
     const viewCountMap = new Map<string, number>();
+    // Chapter data: collection numeric ID → chapter count, and whether named
+    const chapterCountMap = new Map<number, number>();
+    const namedChapterMap = new Map<number, boolean>();
     try {
       await initDb();
       const collCounts = getCollectionCounts();
@@ -1210,6 +1236,23 @@ export async function loadCollectionCatalog(): Promise<LoaderResult<CollectionCa
             viewCountMap.set(c.slug, cnt);
           }
         }
+      }
+      // Batch-query chapter counts for all collections
+      try {
+        const allChapterCounts = getAllCollectionChapterCounts();
+        for (const [colId, cnt] of Object.entries(allChapterCounts)) {
+          chapterCountMap.set(Number(colId), cnt);
+        }
+        // Determine named vs numeric: check first chapter for each collection with chapters
+        for (const c of configData.collections) {
+          if (typeof c.id === 'number' && (chapterCountMap.get(c.id) ?? 0) > 0) {
+            const chapters = getCollectionChapters(c.id);
+            const hasNamed = chapters.some(ch => !/^\d+$/.test(ch));
+            namedChapterMap.set(c.id, hasNamed);
+          }
+        }
+      } catch {
+        // Chapter data unavailable - graceful degradation
       }
     } catch {
       // Database not available — all collections show as "Coming Soon"
@@ -1230,6 +1273,8 @@ export async function loadCollectionCatalog(): Promise<LoaderResult<CollectionCa
       puzzleCount: viewCountMap.get(c.slug) ?? 0,
       hasData: viewCountMap.has(c.slug),
       levelHint: c.level_hint,
+      chapterCount: typeof c.id === 'number' ? (chapterCountMap.get(c.id) ?? 0) : 0,
+      hasNamedChapters: typeof c.id === 'number' ? (namedChapterMap.get(c.id) ?? false) : false,
     }));
 
     // Group by type

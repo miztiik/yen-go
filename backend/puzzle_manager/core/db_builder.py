@@ -40,6 +40,7 @@ CREATE TABLE puzzle_collections (
     content_hash    TEXT NOT NULL REFERENCES puzzles(content_hash),
     collection_id   INTEGER NOT NULL,
     sequence_number INTEGER,
+    chapter         TEXT DEFAULT '',
     PRIMARY KEY (content_hash, collection_id)
 );
 
@@ -135,12 +136,14 @@ def _insert_puzzle_collections(
     conn: sqlite3.Connection,
     entries: list[PuzzleEntry],
     sequence_map: dict[tuple[str, int], int] | None,
+    chapter_map: dict[tuple[str, int], str] | None = None,
 ) -> None:
     rows = [
         (
             e.content_hash,
             col_id,
             sequence_map.get((e.content_hash, col_id)) if sequence_map else None,
+            chapter_map.get((e.content_hash, col_id), "") if chapter_map else "",
         )
         for e in entries
         for col_id in e.collection_ids
@@ -148,7 +151,8 @@ def _insert_puzzle_collections(
     if rows:
         conn.executemany(
             "INSERT INTO puzzle_collections "
-            "(content_hash, collection_id, sequence_number) VALUES (?, ?, ?)",
+            "(content_hash, collection_id, sequence_number, chapter) "
+            "VALUES (?, ?, ?, ?)",
             rows,
         )
 
@@ -173,11 +177,33 @@ def _insert_collections(
             for c in collections
         ],
     )
-    # Populate FTS5 index
+    # Populate FTS5 index (include named chapter strings for searchability)
     conn.executemany(
         "INSERT INTO collections_fts (rowid, name, slug) VALUES (?, ?, ?)",
-        [(c.collection_id, c.name, c.slug) for c in collections],
+        [
+            (
+                c.collection_id,
+                _fts_name_with_chapters(c.name, c.attrs),
+                c.slug,
+            )
+            for c in collections
+        ],
     )
+
+
+def _fts_name_with_chapters(name: str, attrs: dict) -> str:
+    """Append named chapter strings to collection name for FTS indexing.
+
+    Integer-only chapters (e.g. "1", "3") are excluded from search text
+    since they carry no semantic meaning. Named chapters like "seki" or
+    "making-life" are appended as space-separated, hyphen-to-space
+    converted tokens.
+    """
+    chapters = attrs.get("chapters", [])
+    named = [ch.replace("-", " ") for ch in chapters if not ch.isdigit()]
+    if not named:
+        return name
+    return f"{name} {' '.join(named)}"
 
 
 def build_search_db(
@@ -186,6 +212,7 @@ def build_search_db(
     output_path: Path,
     *,
     sequence_map: dict[tuple[str, int], int] | None = None,
+    chapter_map: dict[tuple[str, int], str] | None = None,
     generated_at: str | None = None,
 ) -> DbVersionInfo:
     """Generate ``yengo-search.db`` with full schema.
@@ -201,6 +228,9 @@ def build_search_db(
     sequence_map:
         Optional mapping of ``(content_hash, collection_id)`` to
         ``sequence_number`` for ordered collections.
+    chapter_map:
+        Optional mapping of ``(content_hash, collection_id)`` to
+        chapter string from the YL property.
     generated_at:
         Optional ISO-8601 timestamp for deterministic builds. When
         omitted, defaults to ``datetime.now(UTC)``.
@@ -224,7 +254,7 @@ def build_search_db(
         with conn:
             _insert_puzzles(conn, entries)
             _insert_tags(conn, entries)
-            _insert_puzzle_collections(conn, entries, sequence_map)
+            _insert_puzzle_collections(conn, entries, sequence_map, chapter_map)
             _insert_collections(conn, collections)
             # Compute puzzle_count from actual puzzle_collections rows (RC-4: same transaction)
             conn.execute(

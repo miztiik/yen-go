@@ -204,7 +204,15 @@ function CollectionCard({
   } = {};
 
   if (collection.hasData) {
-    optionalProps.tags = [`${collection.puzzleCount} puzzles`];
+    const puzzleLabel = `${collection.puzzleCount} puzzles`;
+    if (collection.chapterCount > 0) {
+      const chapterLabel = collection.hasNamedChapters
+        ? `${collection.chapterCount} techniques`
+        : `${collection.chapterCount} chapters`;
+      optionalProps.tags = [puzzleLabel, chapterLabel];
+    } else {
+      optionalProps.tags = [puzzleLabel];
+    }
     optionalProps.mastery = getLocalMastery(progress);
     optionalProps.progress = progress
       ? { completed: progress.completedCount, total: progress.totalPuzzles }
