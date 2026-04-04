@@ -77,6 +77,7 @@ class ChineseTranslator:
         self.strict = strict
         self._dictionary: dict[str, str] = {}
         self._aliases: dict[str, str] = {}
+        self._punctuation_table: dict[int, str] = {}
         self._missing_terms: set[str] = set()
 
         if dictionary_path is None:
@@ -129,6 +130,18 @@ class ChineseTranslator:
                 elif isinstance(value, str):
                     # Direct mapping (shouldn't occur per schema, but handle gracefully)
                     self._dictionary[key] = value
+
+            # Build punctuation normalization table from single-char
+            # non-CJK entries (e.g., fullwidth → ASCII punctuation).
+            # These are applied via str.translate() before tokenization
+            # since the CJK tokenizer skips non-CJK characters.
+            for cn_char, en_char in list(self._dictionary.items()):
+                if (
+                    len(cn_char) == 1
+                    and len(en_char) == 1
+                    and not self._is_cjk_char(cn_char)
+                ):
+                    self._punctuation_table[ord(cn_char)] = en_char
 
             logger.debug(
                 "Loaded %d terms from dictionary", len(self._dictionary)
@@ -237,6 +250,10 @@ class ChineseTranslator:
 
         # Step 1: Resolve aliases (e.g., traditional -> simplified)
         work_text = self._resolve_aliases(text)
+
+        # Step 1b: Normalize fullwidth punctuation to ASCII equivalents
+        if self._punctuation_table:
+            work_text = work_text.translate(self._punctuation_table)
 
         # Step 2: Position-based longest-match tokenization
         sorted_terms = sorted(
