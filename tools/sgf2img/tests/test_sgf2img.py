@@ -5,6 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+
+PIL = pytest.importorskip("PIL", reason="Pillow not installed")
 from PIL import Image
 
 from tools.sgf2img.exporter import export_gif, export_png
