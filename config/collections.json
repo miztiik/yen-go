@@ -3,8 +3,14 @@
   "_reference": "docs/concepts/collections.md",
   "schema_version": "5.0",
   "description": "Curated puzzle collections organized by theme, difficulty, and author. Single source of truth for collection metadata and alias matching.",
-  "last_updated": "2026-02-25",
+  "last_updated": "2026-04-04",
   "changelog": [
+    {
+      "version": "5.1",
+      "date": "2026-04-04",
+      "author": "claude",
+      "changes": "Maeda Nobuaki enrichment: renamed 5 slugs to maeda-nobuaki-* format (old slugs preserved as aliases), added 4 new collections (advanced-tsumego, delightful-tsumego, tsumego-for-the-millions, newly-selected-100-continued). 9 total Maeda collections."
+    },
     {
       "version": "5.0",
       "date": "2026-02-25",
@@ -551,9 +557,9 @@
       "id": 18
     },
     {
-      "slug": "fujisawa-classroom",
-      "name": "Fujisawa: Classroom Series",
-      "description": "Fujisawa Shuuko's classroom teaching series designed for progressive learning in a structured study format.",
+      "slug": "fujisawa-shuuko-tsumego-classroom",
+      "name": "Fujisawa Shuuko: Tsumego Classroom",
+      "description": "Fujisawa Shuuko's tsumego classroom series (藤沢秀行詰碁教室, Yomiuri 1980, 2 volumes: beginner and intermediate/advanced).",
       "curator": "Fujisawa Shuuko",
       "source": "kisvadim",
       "type": "author",
@@ -561,14 +567,16 @@
       "tier": "editorial",
       "aliases": [
         "fujisawa classroom",
-        "藤沢教室"
+        "fujisawa-classroom",
+        "藤沢教室",
+        "藤沢秀行詰碁教室"
       ],
       "id": 19
     },
     {
-      "slug": "fujisawa-tsumego-graded",
-      "name": "Fujisawa: Graded Life & Death",
-      "description": "Fujisawa Shuuko's graded life-and-death collection spanning elementary to high-dan difficulty levels.",
+      "slug": "fujisawa-shuuko-tsumego-masterpiece",
+      "name": "Fujisawa Shuuko: Original Tsumego Masterpiece",
+      "description": "Original creative tsumego compositions by Fujisawa Shuuko, 6-time Kisei title holder (秀行創作詰碁傑作集, Nihon Ki-in 1980). 163 problems in 4 graded chapters.",
       "curator": "Fujisawa Shuuko",
       "source": "kisvadim",
       "type": "author",
@@ -579,23 +587,12 @@
         "fujisawa elementary",
         "fujisawa high dan",
         "fujisawa intermediate",
-        "藤沢死活"
-      ],
-      "id": 20
-    },
-    {
-      "slug": "fujisawa-tsumego-masterpiece",
-      "name": "Fujisawa: Original Tsumego Masterpiece",
-      "description": "Original creative tsumego compositions by Fujisawa Shuuko, 6-time Kisei title holder.",
-      "curator": "Fujisawa Shuuko",
-      "source": "kisvadim",
-      "type": "author",
-      "ordering": "source",
-      "tier": "editorial",
-      "aliases": [
+        "fujisawa-tsumego-graded",
+        "fujisawa-tsumego-masterpiece",
         "original masterpiece",
         "shuuko",
         "創作詰碁",
+        "藤沢死活",
         "藤沢秀行"
       ],
       "id": 21
@@ -707,8 +704,8 @@
       "id": 27
     },
     {
-      "slug": "hashimoto-1-year-tsumego",
-      "name": "Hashimoto: 1 Year of Tsumego",
+      "slug": "hashimoto-utaro-1-year-tsumego",
+      "name": "Hashimoto Utaro: 1 Year of Tsumego",
       "description": "A year-long daily tsumego study program by Hashimoto Utaro, featuring progressive difficulty across 365 problems.",
       "curator": "Hashimoto Utaro",
       "source": "kisvadim",
@@ -729,8 +726,8 @@
       "id": 28
     },
     {
-      "slug": "hashimoto-53-stations",
-      "name": "Hashimoto: Fifty-Three Stations",
+      "slug": "hashimoto-utaro-53-stations",
+      "name": "Hashimoto Utaro: Fifty-Three Stations",
       "description": "Hashimoto Utaro's collection named after the Tokaido road stations, featuring 53 progressively challenging problems.",
       "curator": "Hashimoto Utaro",
       "source": "kisvadim",
@@ -739,15 +736,14 @@
       "tier": "editorial",
       "aliases": [
         "53 stations",
-        "nakasendo",
         "tokaido",
         "五十三次"
       ],
       "id": 29
     },
     {
-      "slug": "hashimoto-attack-and-protect",
-      "name": "Hashimoto: Moves to Attack & Protect",
+      "slug": "hashimoto-utaro-attack-and-protect",
+      "name": "Hashimoto Utaro: Moves to Attack and Protect",
       "description": "Hashimoto Utaro's collection focused on attacking and defending tesuji in practical game situations.",
       "curator": "Hashimoto Utaro",
       "source": "kisvadim",
@@ -762,8 +758,8 @@
       "id": 30
     },
     {
-      "slug": "hashimoto-enjoy-tsumego",
-      "name": "Hashimoto: Enjoy Tsumego",
+      "slug": "hashimoto-utaro-enjoy-tsumego",
+      "name": "Hashimoto Utaro: Enjoy Tsumego",
       "description": "A collection by Hashimoto Utaro designed to be enjoyable and instructive, fostering a love for tsumego.",
       "curator": "Hashimoto Utaro",
       "source": "mixed",
@@ -776,8 +772,8 @@
       "id": 31
     },
     {
-      "slug": "hashimoto-famous-creations-300",
-      "name": "Hashimoto: Famous Creations 300",
+      "slug": "hashimoto-utaro-famous-creations-300",
+      "name": "Hashimoto Utaro: Famous Creations 300",
       "description": "300 carefully selected tsumego by Hashimoto Utaro, showcasing his creative and artistic problem construction.",
       "curator": "Hashimoto Utaro",
       "source": "kisvadim",
@@ -805,8 +801,8 @@
       "id": 32
     },
     {
-      "slug": "hashimoto-moments-of-wind",
-      "name": "Hashimoto: Moments of the Wind",
+      "slug": "hashimoto-utaro-moments-of-wind",
+      "name": "Hashimoto Utaro: Moments of the Wind",
       "description": "Multi-volume collection by Hashimoto Utaro featuring innovative tsumego compositions. All volumes in one collection.",
       "curator": "Hashimoto Utaro",
       "source": "kisvadim",
@@ -822,8 +818,8 @@
       "id": 33
     },
     {
-      "slug": "hashimoto-tsumego-millions",
-      "name": "Hashimoto: Tsumego for the Millions",
+      "slug": "hashimoto-utaro-tsumego-for-millions",
+      "name": "Hashimoto Utaro: Tsumego for the Millions",
       "description": "Classic popular tsumego collection by Hashimoto Utaro, aimed at a wide audience of Go players.",
       "curator": "Hashimoto Utaro",
       "source": "mixed",
@@ -908,7 +904,10 @@
       "tier": "editorial",
       "aliases": [
         "ishida",
-        "ishida akira"
+        "ishida akira",
+        "ishida akira tsumego",
+        "tsumego masterpiece",
+        "tsumego aesthetician"
       ],
       "id": 38
     },
@@ -1214,15 +1213,16 @@
       "id": 49
     },
     {
-      "slug": "maeda-god-of-tsumego",
-      "name": "Maeda: God of Tsumego",
-      "description": "Signature collection by Maeda Nobuaki, the 'God of Tsumego,' featuring his most creative and elegant compositions.",
+      "slug": "maeda-nobuaki-god-of-tsumego",
+      "name": "Maeda Nobuaki: God of Tsumego",
+      "description": "Signature collection by Maeda Nobuaki, the 'God of Tsumego,' featuring his most creative and elegant compositions. 210 problems across 2 volumes.",
       "curator": "Maeda Nobuaki",
       "source": "kisvadim",
       "type": "author",
       "ordering": "source",
       "tier": "editorial",
       "aliases": [
+        "maeda-god-of-tsumego",
         "god of tsumego",
         "前田陳爾",
         "詰碁の神様"
@@ -1230,31 +1230,34 @@
       "id": 50
     },
     {
-      "slug": "maeda-newly-selected-100",
-      "name": "Maeda: Newly Selected 100",
-      "description": "100 newly selected problems by Maeda Nobuaki, curated for study value and instructional quality.",
+      "slug": "maeda-nobuaki-newly-selected-100",
+      "name": "Maeda Nobuaki: Newly Selected 100",
+      "description": "100 newly selected problems by Maeda Nobuaki for 1-8k players, curated for study value and instructional quality.",
       "curator": "Maeda Nobuaki",
       "source": "kisvadim",
       "type": "author",
       "ordering": "source",
       "tier": "editorial",
       "aliases": [
+        "maeda-newly-selected-100",
         "maeda 100",
         "newly selected",
         "新選100題"
       ],
+      "level_hint": "intermediate",
       "id": 51
     },
     {
-      "slug": "maeda-tsumego-masterpieces",
-      "name": "Maeda: Tsumego Masterpieces",
-      "description": "Masterpiece collection by Maeda Nobuaki, featuring his finest life-and-death problem compositions.",
+      "slug": "maeda-nobuaki-tsumego-masterpieces",
+      "name": "Maeda Nobuaki: Tsumego Masterpieces",
+      "description": "100 masterpiece tsumego by Maeda Nobuaki, featuring his finest life-and-death problem compositions with original Japanese commentary.",
       "curator": "Maeda Nobuaki",
       "source": "kisvadim",
       "type": "author",
       "ordering": "source",
       "tier": "editorial",
       "aliases": [
+        "maeda-tsumego-masterpieces",
         "maeda masterpieces",
         "詰碁傑作集"
       ],
@@ -1729,6 +1732,54 @@
       "id": 68
     },
     {
+      "slug": "yamada-kimio-basic-tsumego",
+      "name": "Yamada Kimio: Basic Tsumego",
+      "description": "Book 1 of Yamada Kimio tsumego series. 101 problems across 4 chapters covering fundamental life and death.",
+      "curator": "Yamada Kimio",
+      "source": "kisvadim",
+      "type": "author",
+      "ordering": "source",
+      "tier": "editorial",
+      "aliases": [
+        "YAMADA KIMIO TSUMEGO BOOK1",
+        "yamada basic tsumego",
+        "yamada book 1"
+      ],
+      "id": 161
+    },
+    {
+      "slug": "yamada-kimio-high-speed-attack",
+      "name": "Yamada Kimio: High Speed Attack Tsumego",
+      "description": "Book 2 of Yamada Kimio tsumego series. 111 problems across 4 chapters focusing on fast attack techniques.",
+      "curator": "Yamada Kimio",
+      "source": "kisvadim",
+      "type": "author",
+      "ordering": "source",
+      "tier": "editorial",
+      "aliases": [
+        "YAMADA KIMIO TSUMEGO BOOK2",
+        "yamada high speed attack",
+        "yamada book 2"
+      ],
+      "id": 162
+    },
+    {
+      "slug": "yamada-kimio-road-to-3-dan",
+      "name": "Yamada Kimio: Road to 3 Dan",
+      "description": "Book 3 of Yamada Kimio tsumego series. 108 problems across 5 chapters for dan-level advancement.",
+      "curator": "Yamada Kimio",
+      "source": "kisvadim",
+      "type": "author",
+      "ordering": "source",
+      "tier": "editorial",
+      "aliases": [
+        "YAMADA KIMIO TSUMEGO BOOK3",
+        "yamada road to 3 dan",
+        "yamada book 3"
+      ],
+      "id": 163
+    },
+    {
       "slug": "9x9-problems",
       "name": "9x9 Board Problems",
       "description": "Problems specific to 9x9 board play including openings and corner fights.",
@@ -2146,31 +2197,37 @@
       "id": 95
     },
     {
-      "slug": "maeda-beginners-tsumego-isbn-4-488-00004-5",
-      "name": "Maeda Beginners Tsumego - ISBN 4-488-00004-5",
-      "description": "225 beginner tsumego by Maeda Nobuaki for building foundational life-and-death skills.",
+      "slug": "maeda-nobuaki-beginner-tsumego",
+      "name": "Maeda Nobuaki: Beginner Tsumego",
+      "description": "225 beginner tsumego by Maeda Nobuaki for building foundational life-and-death skills. SHOKYU (初級) volume.",
       "curator": "Maeda Nobuaki",
       "source": "ogs",
       "type": "author",
       "ordering": "source",
       "tier": "premier",
       "aliases": [
-        "Maeda Beginners Tsumego - ISBN 4-488-00004-5  [Atorrante]"
+        "maeda-beginners-tsumego-isbn-4-488-00004-5",
+        "Maeda Beginners Tsumego - ISBN 4-488-00004-5  [Atorrante]",
+        "前田初級詰碁",
+        "SHOKYU"
       ],
       "level_hint": "beginner",
       "id": 96
     },
     {
-      "slug": "maeda-intermediate-tsumego-isbn-4-488-00005-3",
-      "name": "Maeda Intermediate Tsumego - ISBN 4-488-00005-3",
-      "description": "210 intermediate tsumego by Maeda Nobuaki, bridging basic and advanced life-and-death.",
+      "slug": "maeda-nobuaki-intermediate-tsumego",
+      "name": "Maeda Nobuaki: Intermediate Tsumego",
+      "description": "210 intermediate tsumego by Maeda Nobuaki, bridging basic and advanced life-and-death. CHUKYU (中級) volume.",
       "curator": "Maeda Nobuaki",
       "source": "ogs",
       "type": "author",
       "ordering": "source",
       "tier": "premier",
       "aliases": [
-        "Maeda Intermediate Tsumego - ISBN 4-488-00005-3 [Atorrante]"
+        "maeda-intermediate-tsumego-isbn-4-488-00005-3",
+        "Maeda Intermediate Tsumego - ISBN 4-488-00005-3 [Atorrante]",
+        "前田中級詰碁",
+        "CHUKYU"
       ],
       "level_hint": "intermediate",
       "id": 97
@@ -2715,9 +2772,9 @@
       "id": 125
     },
     {
-      "slug": "fujisawa-fuseki",
-      "name": "Fujisawa: Fuseki Exercises",
-      "description": "Opening exercises from Fujisawa Shuuko.",
+      "slug": "fujisawa-shuuko-fuseki-exercises",
+      "name": "Fujisawa Shuuko: Fuseki Exercises",
+      "description": "Opening exercises from Fujisawa Shuuko (Fuseki-Ubungen, Lehwald 1977). German adaptation of fuseki material from Igo-Club supplement series.",
       "curator": "Fujisawa Shuuko",
       "source": "ogs",
       "type": "author",
@@ -2725,7 +2782,9 @@
       "tier": "curated",
       "aliases": [
         "Fujisawa Fuseki Exercises",
-        "K. Lehwald & H. Fujisawa: Fuseki Ubungen (1973) [Atorrante]"
+        "K. Lehwald & H. Fujisawa: Fuseki Ubungen (1973) [Atorrante]",
+        "fujisawa-fuseki",
+        "fujisawa-fuseki-exercises"
       ],
       "id": 126
     },
@@ -3378,6 +3437,133 @@
         "Yilun Yang's Fundamental Principles of Go problems"
       ],
       "id": 159
+    },
+    {
+      "slug": "essential-go-techniques",
+      "name": "Essential Go Techniques (围棋1000题)",
+      "description": "Comprehensive technique-organized tsumego covering 25 categories across life & death and tesuji. Two chapters: Chapter 1 (life, eyes, semeai, seki, vital point, ko, theory, shapes) and Chapter 2 (ladder, cut, net, hane, wedge, diagonal, bridge, jump, pincer, stand, throw-in, squeeze, shortage of liberties, under the stones).",
+      "curator": "Community",
+      "source": "kisvadim",
+      "type": "technique",
+      "ordering": "source",
+      "tier": "premier",
+      "aliases": [
+        "围棋1000题",
+        "CGP",
+        "Chinese Go Problems",
+        "WEIQI 1000 PROBLEMS",
+        "Essential Go Techniques"
+      ],
+      "id": 160
+    },
+    {
+      "id": 164,
+      "slug": "hashimoto-utaro-skillful-life-and-death",
+      "name": "Hashimoto Utaro: Skillful Life and Death",
+      "description": "Hashimoto Utaro's collection of 179 skillful life-and-death problems with explicit puzzle intent labels.",
+      "curator": "Hashimoto Utaro",
+      "source": "kisvadim",
+      "type": "author",
+      "ordering": "source",
+      "tier": "editorial",
+      "aliases": [
+        "skillful life and death",
+        "巧みな死活"
+      ],
+      "puzzle_count": 179
+    },
+    {
+      "slug": "maeda-nobuaki-advanced-tsumego",
+      "name": "Maeda Nobuaki: Advanced Tsumego",
+      "description": "150 advanced tsumego by Maeda Nobuaki for dan-level players. JOKYU (上級) volume, completing the 3-volume graded series.",
+      "curator": "Maeda Nobuaki",
+      "source": "kisvadim",
+      "type": "author",
+      "ordering": "source",
+      "tier": "editorial",
+      "aliases": [
+        "前田上級詰碁",
+        "JOKYU"
+      ],
+      "level_hint": "advanced",
+      "id": 165
+    },
+    {
+      "slug": "maeda-nobuaki-delightful-tsumego",
+      "name": "Maeda Nobuaki: Delightful Tsumego",
+      "description": "160 delightful tsumego curated from Maeda Nobuaki's God of Tsumego collection, selected for elegance and instructional value.",
+      "curator": "Maeda Nobuaki",
+      "source": "kisvadim",
+      "type": "author",
+      "ordering": "source",
+      "tier": "editorial",
+      "aliases": [
+        "delightful tsumego"
+      ],
+      "id": 166
+    },
+    {
+      "slug": "maeda-nobuaki-tsumego-for-the-millions",
+      "name": "Maeda Nobuaki: Tsumego for the Millions",
+      "description": "144 tsumego from Maeda Nobuaki's 'Tsumego for the Millions' (百万人の詰碁), a widely accessible problem collection.",
+      "curator": "Maeda Nobuaki",
+      "source": "kisvadim",
+      "type": "author",
+      "ordering": "source",
+      "tier": "editorial",
+      "aliases": [
+        "百万人の詰碁",
+        "tsumego for the millions"
+      ],
+      "id": 167
+    },
+    {
+      "slug": "maeda-nobuaki-newly-selected-100-continued",
+      "name": "Maeda Nobuaki: Newly Selected 100 (Continued)",
+      "description": "100 continuation problems from Maeda Nobuaki's Newly Selected series for 1-8k players.",
+      "curator": "Maeda Nobuaki",
+      "source": "kisvadim",
+      "type": "author",
+      "ordering": "source",
+      "tier": "editorial",
+      "aliases": [
+        "newly selected continued"
+      ],
+      "level_hint": "intermediate",
+      "id": 168
+    },
+    {
+      "slug": "ishida-yoshio-3dan-challenge",
+      "name": "Ishida Yoshio 3-Dan Tsumego Challenge",
+      "description": "3-Dan level tsumego challenge collection by Ishida Yoshio (石田芳夫), organized in three progressive stages.",
+      "curator": "Ishida Yoshio",
+      "source": "mixed",
+      "type": "author",
+      "ordering": "source",
+      "tier": "editorial",
+      "aliases": [
+        "ishida yoshio",
+        "ishida yoshio 3dan",
+        "3dan tsumego challenge"
+      ],
+      "level_hint": "intermediate",
+      "id": 169
+    },
+    {
+      "slug": "ishida-davies-attack-and-defense",
+      "name": "Attack and Defense (Ishida & Davies)",
+      "description": "Positions from the Elementary Go Series book 'Attack and Defense' by Ishida Akira and James Davies, focusing on middlegame strategy.",
+      "curator": "Ishida Akira, James Davies",
+      "source": "mixed",
+      "type": "book",
+      "ordering": "source",
+      "tier": "editorial",
+      "aliases": [
+        "attack and defense",
+        "attack and defence",
+        "ishida davies"
+      ],
+      "id": 170
     }
   ]
 }
