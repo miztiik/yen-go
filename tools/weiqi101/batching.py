@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tools.core.batching import (
+    get_batch_for_file,
     get_batch_for_file_fast as core_get_batch_fast,
 )
 
