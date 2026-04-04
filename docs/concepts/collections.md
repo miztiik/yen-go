@@ -80,7 +80,7 @@ The heuristic classifier uses structural features (solution depth, variation cou
 | ---------------------- | ---------------------------------------------------------------- | ---------------------------------------- |
 | Graded essentials (9)  | `novice-essentials` through `expert-essentials`                  | Matches the level in the slug            |
 | Cho Chikun (3)         | `cho-chikun-life-death-elementary`, `-intermediate`, `-advanced` | `elementary`, `intermediate`, `advanced` |
-| Maeda (2)              | `maeda-beginners-tsumego-*`, `maeda-intermediate-tsumego-*`      | `beginner`, `intermediate`               |
+| Maeda (4)              | `maeda-nobuaki-beginner-tsumego`, `-intermediate-tsumego`, `-advanced-tsumego`, `-newly-selected-100` | `beginner`, `intermediate`, `advanced`, `intermediate` |
 | Graded Go Problems (1) | `graded-go-problems-beginners-1`                                 | `beginner`                               |
 
 **Technique collections** (e.g., `capture-problems`, `ko-problems`) do **not** have `level_hint` because they span all difficulty levels by design.
@@ -207,13 +207,14 @@ Classical works and modern author-curated books/series. Each titled Go professio
 | ---------------------------- | ----------- | -------------------------------------------------------------------------------- |
 | Cho Chikun (趙治勲)          | 3           | `cho-chikun-life-death-elementary`, `-intermediate`, `-advanced`                 |
 | Hashimoto Utaro (橋本宇太郎) | 5           | `hashimoto-1-year-tsumego`, `hashimoto-famous-creations-300`, etc.               |
-| Maeda Nobuaki (前田陳爾)     | 3           | `maeda-god-of-tsumego`, `maeda-newly-selected-100`, `maeda-tsumego-masterpieces` |
+| Maeda Nobuaki (前田陳爾)     | 9           | `maeda-nobuaki-god-of-tsumego`, `maeda-nobuaki-beginner-tsumego`, `maeda-nobuaki-advanced-tsumego`, etc. |
 | Go Seigen (吴清源)           | 2           | `go-seigen-tsumego-dojo`, `go-seigen-evil-moves`                                 |
 | Segoe Kensaku & Go Seigen    | 1           | `segoe-tesuji-dictionary`                                                        |
 | Fujisawa Shuuko (藤沢秀行)   | 3           | `fujisawa-tsumego-masterpiece`, `fujisawa-tsumego-graded`, `fujisawa-classroom`  |
 | James Davies                 | 3           | `james-davies-tesuji`, `james-davies-life-death`, `james-davies-endgame`         |
 | Lee Changho (李昌鎬)         | 1           | `lee-changho-tesuji`                                                             |
-| Ishida Akira                 | 1           | `ishida-tsumego-masterpieces`                                                    |
+| Ishida Akira                 | 2           | `ishida-tsumego-masterpieces`, `ishida-davies-attack-and-defense`                |
+| Ishida Yoshio (石田芳夫)     | 1           | `ishida-yoshio-3dan-challenge`                                                   |
 | Wang Zhipeng                 | 1           | `wang-zhipeng-life-death`                                                        |
 | Yang Yilun                   | 1           | `yang-yilun-life-death`                                                          |
 
@@ -283,7 +284,7 @@ Collection entries include a `sequence_number` (1-indexed position within the co
 ## Design Decisions
 
 - **No source-branded collections** (v2.0) — Source brands removed. Source identity is tracked in `YS[]` and adapter metadata, not collections.
-- **v3.0 consolidation** — 738 source collections merged into 159 canonical collections. All original names preserved as aliases (1,270 total). See `tools/consolidate_collections.py` for the full mapping.
+- **v3.0 consolidation** — 738 source collections merged into 168 canonical collections. All original names preserved as aliases (1,270+ total). See `tools/consolidate_collections.py` for the full mapping.
 - **Aliases are runtime-active** — not just documentation. Used during ingest to auto-assign `YL[]` and in frontend for search/filter.
 - **One collection per major work** — multi-volume works (e.g., Hashimoto "Moments of the Wind" vols 1–3) share one entry. Volume info is in source metadata, not collection structure.
 - **`reference` type for non-technique, non-author groupings** — school curricula, publication series, and domain-meaningful groupings that don't fit `technique` or `author`.
