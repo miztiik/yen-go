@@ -1,0 +1,428 @@
+{
+  "version": "1.0.0",
+  "source": "kisvadim-goproblems",
+  "description": "State management for kisvadim-goproblems enrichment pipeline. Tracks per-directory status, collection slug mapping, chapter mapping, and volume offsets.",
+  "directories": {
+    "CHO CHIKUN Encyclopedia Life And Death - Advanced": {
+      "file_count": 792,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "CHO CHIKUN Encyclopedia Life And Death - Elementary": {
+      "file_count": 900,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "CHO CHIKUN Encyclopedia Life And Death - Intermediate": {
+      "file_count": 861,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "CHO CHIKUN Encyclopedia Life And Death - Others": {
+      "file_count": 97,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "ESSENTIAL-GO-TECHNIQUES": {
+      "file_count": 1035,
+      "structure": "chapters",
+      "status": "done",
+      "slug": "essential-go-techniques",
+      "chapters": {
+        "1.1-making-life": "making-life",
+        "1.2-destroying-eyes": "destroying-eyes",
+        "1.3-killing-eyes": "killing-eyes",
+        "1.4-semeai": "semeai",
+        "1.5-seki": "seki",
+        "1.6-vital-point": "vital-point",
+        "1.7-go-theory": "go-theory",
+        "1.8-common-corner-position": "common-corner-position",
+        "1.9-making-ko": "making-ko",
+        "1.10-interesting-unusual-problem": "interesting-unusual-problem",
+        "2.1-ladder": "ladder",
+        "2.2-cut": "cut",
+        "2.3-net": "net",
+        "2.4-hane": "hane",
+        "2.5-wedge": "wedge",
+        "2.6-diagonal": "diagonal",
+        "2.7-bridge-under": "bridge-under",
+        "2.8-jump": "jump",
+        "2.9-pincer-clamp": "pincer-clamp",
+        "2.10-descent-and-stand": "descent-and-stand",
+        "2.11-vital-point-2": "vital-point-2",
+        "2.12-throw-in": "throw-in",
+        "2.13-two-stone-edge-squeeze": "two-stone-edge-squeeze",
+        "2.14-double-shortage-of-liberties": "double-shortage-of-liberties",
+        "2.15-under-the-stones": "under-the-stones"
+      }
+    },
+    "FUJISAWA SHUUKO - A Collection of Original Tsumego Masterpiece": {
+      "file_count": 163,
+      "structure": "chapters",
+      "status": "pending",
+      "slug": "fujisawa-shuuko-tsumego-masterpiece",
+      "chapters": {
+        "1. Elementary": "elementary",
+        "2. Intermediate": "intermediate",
+        "3. Advanced": "advanced",
+        "4. High Dan": "high-dan"
+      }
+    },
+    "GO SEIGEN - SEGOE TESUJI DICTIONARY": {
+      "file_count": 505,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "GO SEIGEN Evil Moves Tsumego": {
+      "file_count": 0,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "GO SEIGEN Reading and Training Actual Game Situations": {
+      "file_count": 122,
+      "structure": "chapters",
+      "status": "pending",
+      "slug": null
+    },
+    "GO SEIGEN Striving Constantly For Self-Improvement": {
+      "file_count": 200,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "GO SEIGEN TSUMEGO DOJO VOL 1": {
+      "file_count": 99,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "GO SEIGEN TSUMEGO DOJO VOL 2": {
+      "file_count": 99,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "GO SEIGEN Tsumego Collection - The Long-Lived Stone Is Not Old": {
+      "file_count": 200,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "GO SEIGEN Tsumego Collection 1 - Shokyuu": {
+      "file_count": 230,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "GO SEIGEN Tsumego Collection 2 - Jokyuu": {
+      "file_count": 100,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "Hashimoto Utaro - 1 Year Tsumego": {
+      "file_count": 365,
+      "structure": "flat",
+      "status": "done",
+      "slug": "hashimoto-utaro-1-year-tsumego"
+    },
+    "Hashimoto Utaro - Fifty Three To Go": {
+      "file_count": 118,
+      "structure": "flat",
+      "status": "done",
+      "slug": "hashimoto-utaro-53-stations"
+    },
+    "Hashimoto Utaro - Nakasendo, Enjoy Tsumego and Get Stronger": {
+      "file_count": 180,
+      "structure": "flat",
+      "status": "done",
+      "slug": "hashimoto-utaro-enjoy-tsumego"
+    },
+    "Hashimoto Utaro 179 Skillful Life and Death": {
+      "file_count": 179,
+      "structure": "flat",
+      "status": "done",
+      "slug": "hashimoto-utaro-skillful-life-and-death"
+    },
+    "Hashimoto Utaro Famous Creations Three Hundred Selections": {
+      "file_count": 300,
+      "structure": "flat",
+      "status": "done",
+      "slug": "hashimoto-utaro-famous-creations-300"
+    },
+    "Hashimoto Utaro Masterpiece Collection–Moves to Attack and Protect": {
+      "file_count": 189,
+      "structure": "chapters",
+      "status": "done",
+      "slug": "hashimoto-utaro-attack-and-protect",
+      "chapters": {
+        "elementary": "elementary",
+        "intermediate": "intermediate",
+        "advanced": "advanced"
+      }
+    },
+    "Hashimoto Utaro The Moments of the Wind VOL.1": {
+      "file_count": 271,
+      "structure": "flat",
+      "status": "done",
+      "slug": "hashimoto-utaro-moments-of-wind",
+      "volume_offset": 0
+    },
+    "Hashimoto Utaro The Moments of the Wind VOL.2": {
+      "file_count": 271,
+      "structure": "flat",
+      "status": "done",
+      "slug": "hashimoto-utaro-moments-of-wind",
+      "volume_offset": 271
+    },
+    "Hashimoto Utaro The Moments of the Wind VOL.3": {
+      "file_count": 271,
+      "structure": "flat",
+      "status": "done",
+      "slug": "hashimoto-utaro-moments-of-wind",
+      "volume_offset": 542
+    },
+    "Hashimoto Utaro Tsumego for the Millions vol.2": {
+      "file_count": 142,
+      "structure": "flat",
+      "status": "done",
+      "slug": "hashimoto-utaro-tsumego-for-millions"
+    },
+    "ISHIDA AKIRA Tsumego Masterpiece Collection – Fundamental Tesuji and Repeated Practice": {
+      "file_count": 120,
+      "structure": "chapters",
+      "status": "done",
+      "slug": "ishida-tsumego-masterpieces"
+    },
+    "ISHIDA YOSHIO - 3Dan Tsumego Challenge": {
+      "file_count": 100,
+      "structure": "chapters",
+      "status": "done",
+      "slug": "ishida-yoshio-3dan-challenge"
+    },
+    "Ishigure Ikuro 123 BASIC TSUMEGO": {
+      "file_count": 123,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "Ishigure Ikuro 6Dan Tsumego Challenge": {
+      "file_count": 105,
+      "structure": "chapters",
+      "status": "pending",
+      "slug": null
+    },
+    "Ishigure Ikuro Go – Sure Kill Tsumegos for Shodan, 2D and 3D": {
+      "file_count": 119,
+      "structure": "chapters",
+      "status": "pending",
+      "slug": null
+    },
+    "Ishigure Ikuro’s Tsumego Masterpiece Collection": {
+      "file_count": 150,
+      "structure": "chapters",
+      "status": "pending",
+      "slug": null
+    },
+    "KADA KATSUJI Tsumego Brilliances Vol 1-4": {
+      "file_count": 216,
+      "structure": "chapters",
+      "status": "pending",
+      "slug": null
+    },
+    "KADA KATSUJI Tsumego Class": {
+      "file_count": 48,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "KADA KATSUJI Tsumego Masterpieces Vol 1-8": {
+      "file_count": 436,
+      "structure": "chapters",
+      "status": "pending",
+      "slug": null
+    },
+    "KAKU KYUSHIN 200 TSUMEGO PROBLEM": {
+      "file_count": 200,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "KAKU KYUSHIN Increase Your Fighting Strength Ten-fold with Kyushin’s Tsumego 戦いの力が10倍になる求真詰碁": {
+      "file_count": 151,
+      "structure": "chapters",
+      "status": "pending",
+      "slug": null
+    },
+    "KOBAYASHI SATORU 105 BASIC TESUJI FOR 1~3 DAN": {
+      "file_count": 105,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "Kano Yoshinori - 239 Graded Go Problems": {
+      "file_count": 239,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "LEE CHANGHO TESUJI": {
+      "file_count": 311,
+      "structure": "chapters",
+      "status": "pending",
+      "slug": null
+    },
+    "MAEDA NOBUAKI Delightful Tsumego (selected 160 from God of Tsumego)": {
+      "file_count": 160,
+      "structure": "flat",
+      "status": "done",
+      "slug": "maeda-nobuaki-delightful-tsumego"
+    },
+    "MAEDA NOBUAKI Newly Selected Tsumego 100 Problems (Continued) for 1-8k": {
+      "file_count": 100,
+      "structure": "flat",
+      "status": "done",
+      "slug": "maeda-nobuaki-newly-selected-100-continued"
+    },
+    "MAEDA NOBUAKI Newly Selected Tsumego 100 Problems for 1-8k": {
+      "file_count": 100,
+      "structure": "flat",
+      "status": "done",
+      "slug": "maeda-nobuaki-newly-selected-100"
+    },
+    "MAEDA NOBUAKI The God of Tsumego VOL1": {
+      "file_count": 100,
+      "structure": "flat",
+      "status": "done",
+      "slug": "maeda-nobuaki-god-of-tsumego",
+      "volume_offset": 0
+    },
+    "MAEDA NOBUAKI The God of Tsumego VOL2": {
+      "file_count": 110,
+      "structure": "flat",
+      "status": "done",
+      "slug": "maeda-nobuaki-god-of-tsumego",
+      "volume_offset": 100
+    },
+    "MAEDA TSUMEGO - Tsumego for the Millions 100 VOL 1": {
+      "file_count": 144,
+      "structure": "flat",
+      "status": "done",
+      "slug": "maeda-nobuaki-tsumego-for-the-millions"
+    },
+    "MAEDA TSUMEGO Collection - CHUKYU": {
+      "file_count": 210,
+      "structure": "flat",
+      "status": "done",
+      "slug": "maeda-nobuaki-intermediate-tsumego"
+    },
+    "MAEDA TSUMEGO Collection - JOKYU": {
+      "file_count": 150,
+      "structure": "flat",
+      "status": "done",
+      "slug": "maeda-nobuaki-advanced-tsumego"
+    },
+    "MAEDA TSUMEGO Collection - SHOKYU": {
+      "file_count": 225,
+      "structure": "flat",
+      "status": "done",
+      "slug": "maeda-nobuaki-beginner-tsumego"
+    },
+    "MAEDA TSUMEGO Tsumego Masterpieces": {
+      "file_count": 100,
+      "structure": "flat",
+      "status": "done",
+      "slug": "maeda-nobuaki-tsumego-masterpieces"
+    },
+    "MAKING SHAPE TESUJI": {
+      "file_count": 31,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "SAKATA EIO TESUJI": {
+      "file_count": 110,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "SATO SUNAO - FLEXIBLE TSUMEGO": {
+      "file_count": 134,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "SATO SUNAO - REFRESHING TSUMEGO": {
+      "file_count": 134,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "TESUJI GREAT DICTIONARY": {
+      "file_count": 2636,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "TSUMEGO CLASSIC - GENRAN": {
+      "file_count": 61,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "TSUMEGO CLASSIC - GOKYO SEIMYO": {
+      "file_count": 516,
+      "structure": "chapters",
+      "status": "pending",
+      "slug": null
+    },
+    "TSUMEGO CLASSIC - GOKYO SHUMYO": {
+      "file_count": 447,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "TSUMEGO CLASSIC - GUANZI PU": {
+      "file_count": 1477,
+      "structure": "chapters",
+      "status": "pending",
+      "slug": null
+    },
+    "TSUMEGO CLASSIC - Xuan Xuan Qi Jing": {
+      "file_count": 347,
+      "structure": "flat",
+      "status": "pending",
+      "slug": null
+    },
+    "YAMADA KIMIO Interesting Tsumego Dojo": {
+      "file_count": 87,
+      "structure": "chapters",
+      "status": "pending",
+      "slug": null
+    },
+    "YAMADA KIMIO TSUMEGO BOOK1 - BASIC TSUMEGO": {
+      "file_count": 101,
+      "structure": "chapters",
+      "status": "done",
+      "slug": "yamada-kimio-basic-tsumego"
+    },
+    "YAMADA KIMIO TSUMEGO BOOK2 - HIGH SPEED ATTACK TSUMEGO": {
+      "file_count": 111,
+      "structure": "chapters",
+      "status": "done",
+      "slug": "yamada-kimio-high-speed-attack-tsumego"
+    },
+    "YAMADA KIMIO TSUMEGO BOOK3 - ROAD TO 3 DAN": {
+      "file_count": 108,
+      "structure": "chapters",
+      "status": "done",
+      "slug": "yamada-kimio-road-to-3-dan"
+    }
+  }
+}
