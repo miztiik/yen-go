@@ -43,7 +43,8 @@
         "author": "initial",
         "changes": "Initial Chinese-English Go terminology dictionary."
       }
-    ]
+    ],
+    "entry_count": 1566
   },
   "_aliases": {
     "棋經": "棋经",
@@ -1571,7 +1572,29 @@
     "证": "prove",
     "转": "turn",
     "达": "achieve",
-    "际": "boundary"
+    "际": "boundary",
+    "乏": "lack",
+    "令": "force",
+    "任": "task",
+    "共": "in total",
+    "典": "typical",
+    "参": "refer to",
+    "备": "prepare",
+    "完": "complete",
+    "底": "ultimately",
+    "快速": "quickly",
+    "慎": "careful",
+    "抑": "or",
+    "捞": "grab",
+    "替": "on behalf of",
+    "毕竟": "after all",
+    "浮": "emerge",
+    "漏": "overlook",
+    "站": "standing from",
+    "素": "factor",
+    "纠缠": "get entangled",
+    "趁": "exploit",
+    "踏": "step onto"
   },
   "brackets_and_punctuation": {
     "（": "(",

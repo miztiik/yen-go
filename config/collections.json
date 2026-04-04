@@ -6,6 +6,12 @@
   "last_updated": "2026-04-04",
   "changelog": [
     {
+      "version": "5.2",
+      "date": "2026-04-04",
+      "author": "claude",
+      "changes": "Kada Katsuji enrichment: added 3 new collections (tsumego-brilliances ID 171, tsumego-class ID 172, tsumego-masterpieces ID 173). 700 puzzles total."
+    },
+    {
       "version": "5.1",
       "date": "2026-04-04",
       "author": "claude",
@@ -1008,17 +1014,19 @@
       "id": 42
     },
     {
-      "slug": "kobayashi-basic-tesuji",
-      "name": "Kobayashi Satoru Tesuji",
-      "description": "Basic tesuji collection by Kobayashi Satoru, focusing on practical fighting techniques.",
+      "slug": "kobayashi-satoru-semeai-tesuji",
+      "name": "Kobayashi Satoru: Semeai Tesuji",
+      "description": "105 semeai (capturing race) tesuji problems by Kobayashi Satoru 9p, from the Go Pocket Series #17. Four chapters: fundamental, dan-level, high-dan, and strength-test.",
       "curator": "Kobayashi Satoru",
       "source": "mixed",
       "type": "author",
-      "ordering": "source",
-      "tier": "editorial",
+      "ordering": "sequential",
+      "tier": "reference",
       "aliases": [
+        "kobayashi-basic-tesuji",
         "kobayashi",
-        "kobayashi satoru"
+        "kobayashi satoru",
+        "semeai tesuji"
       ],
       "id": 43
     },
@@ -3564,6 +3572,58 @@
         "ishida davies"
       ],
       "id": 170
+    },
+    {
+      "id": 171,
+      "slug": "kada-katsuji-tsumego-brilliances",
+      "name": "Kada Katsuji: Tsumego Brilliances",
+      "description": "Shumyo Tsumego (衆妙詰碁) — 4-volume collection of exquisite life-and-death compositions by Kada Katsuji 9p. Published 1993-1994 by Seibundo Shinkosha.",
+      "curator": "Kada Katsuji",
+      "source": "kisvadim-goproblems",
+      "type": "authored",
+      "ordering": "sequential",
+      "tier": "reference",
+      "aliases": [
+        "kada brilliances",
+        "shumyo tsumego",
+        "加田克司衆妙詰碁"
+      ],
+      "puzzle_count": 216
+    },
+    {
+      "id": 172,
+      "slug": "kada-katsuji-tsumego-class",
+      "name": "Kada Katsuji: Tsumego Class",
+      "description": "Kada Tsumego Kyoshitsu (加田詰碁教室) — Go Super Books vol. 15. Instructional tsumego collection with teaching commentary. Published 1971 by Nihon Ki-in.",
+      "curator": "Kada Katsuji",
+      "source": "kisvadim-goproblems",
+      "type": "authored",
+      "ordering": "sequential",
+      "tier": "reference",
+      "aliases": [
+        "kada class",
+        "kada classroom",
+        "tsumego kyoshitsu",
+        "加田詰碁教室"
+      ],
+      "puzzle_count": 48
+    },
+    {
+      "id": 173,
+      "slug": "kada-katsuji-tsumego-masterpieces",
+      "name": "Kada Katsuji: Tsumego Masterpieces",
+      "description": "Kessaku Tsumego (傑作詰碁) — Definitive 8-volume tsumego collection by Kada Katsuji 9p, the \"God of Tsumego\". Published 1988-1991 by Seibundo Shinkosha.",
+      "curator": "Kada Katsuji",
+      "source": "kisvadim-goproblems",
+      "type": "authored",
+      "ordering": "sequential",
+      "tier": "reference",
+      "aliases": [
+        "kada masterpieces",
+        "kessaku tsumego",
+        "加田克司傑作詰碁"
+      ],
+      "puzzle_count": 436
     }
   ]
 }
