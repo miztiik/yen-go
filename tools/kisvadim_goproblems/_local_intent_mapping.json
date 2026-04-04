@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "source": "kisvadim-goproblems",
+  "scope": "hashimoto-utaro",
+  "description": "Maps Hashimoto Utaro N[] values and book-level context to puzzle intent descriptions. N[] values from dir '179 Skillful Life and Death' provide direct intent. Other directories infer intent from book genre.",
+  "n_value_intents": {
+    "黑先活": "Black to play and live",
+    "黑先杀白": "Black to play and kill",
+    "黑先劫": "Black to play, ko",
+    "黑先劫杀": "Black to play, ko kill",
+    "黑先胜": "Black to play and win"
+  },
+  "directory_intents": {
+    "Hashimoto Utaro - 1 Year Tsumego": "Black to play",
+    "Hashimoto Utaro - Fifty Three To Go": "Black to play",
+    "Hashimoto Utaro - Nakasendo, Enjoy Tsumego and Get Stronger": "Black to play",
+    "Hashimoto Utaro 179 Skillful Life and Death": null,
+    "Hashimoto Utaro Famous Creations Three Hundred Selections": "Black to play",
+    "Hashimoto Utaro Masterpiece Collection\u2013Moves to Attack and Protect": "Black to play",
+    "Hashimoto Utaro The Moments of the Wind VOL.1": "Black to play",
+    "Hashimoto Utaro The Moments of the Wind VOL.2": "Black to play",
+    "Hashimoto Utaro The Moments of the Wind VOL.3": "Black to play",
+    "Hashimoto Utaro Tsumego for the Millions vol.2": "Black to play"
+  },
+  "notes": {
+    "179_skillful": "Intent derived per-file from N[] values (n_value_intents map). directory_intents is null because each file has its own intent.",
+    "other_dirs": "Generic 'Black to play' — the pipeline's intent resolver can refine further from solution tree analysis."
+  }
+}
