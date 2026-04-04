@@ -318,7 +318,7 @@ priority_score,puzzle_count,ogs_id,status,slug_generated,slug_unidecode,cleaned_
 0.522,10,4771,new_entry,week-1-beginner,week-1-beginner,week 1 (Beginner),week 1 (Beginner),week 1 (Beginner),premier,
 0.5217,11,6230,new_entry,big-points-for-both-sides,shi-guan-shuang-fang-fa-zhan-de-da-chang-big-points-for-both-sid,事關雙方發展的大場 Big points for both sides,事關雙方發展的大場 Big points for both sides,Shi Guan Shuang Fang Fa Zhan De Da Chang  Big points for both sides,premier,
 0.5216,50,5084,new_entry,day-6,day-6,day 6,day  6,day  6,premier,
-0.5216,117,10862,already_matched,attack-and-defense-elementary-go-series-akira-ishida-and-james-d,attack-and-defense-elementary-go-series-akira-ishida-and-james-d,Attack and Defense (Elementary Go Series) Akira Ishida and James Davies,Attack and Defense (Elementary Go Series) Akira Ishida and James Davies,Attack and Defense (Elementary Go Series) Akira Ishida and James Davies,premier,ishida-tsumego-masterpieces
+0.5216,117,10862,already_matched,attack-and-defense-elementary-go-series-akira-ishida-and-james-d,attack-and-defense-elementary-go-series-akira-ishida-and-james-d,Attack and Defense (Elementary Go Series) Akira Ishida and James Davies,Attack and Defense (Elementary Go Series) Akira Ishida and James Davies,Attack and Defense (Elementary Go Series) Akira Ishida and James Davies,premier,ishida-davies-attack-and-defense
 0.5216,18,9199,new_entry,falling-in-love-with-baduk-dahye-lee-jihee-baek,falling-in-love-with-baduk-dahye-lee-jihee-baek,Falling in love with Baduk (Dahye Lee & Jihee Baek),Falling in love with Baduk (Dahye Lee & Jihee Baek) [Atorrante],Falling in love with Baduk (Dahye Lee & Jihee Baek) [Atorrante],premier,
 0.5216,19,1021,slug_collision,19,treniruisia-kak-profi-19,Тренируйся как профи.19,Тренируйся как профи.19,Treniruisia kak profi.19,premier,
 0.5215,74,3098,new_entry,utaro-hashimoto-6-1980-isbn4-381-00571-6,utaro-hashimoto-6-1980-isbn4-381-00571-6,Utaro Hashimoto (6) 1980 - ISBN4-381-00571-6,Utaro Hashimoto (6) 1980 - ISBN4-381-00571-6  [Atorrante],Utaro Hashimoto (6) 1980 - ISBN4-381-00571-6  [Atorrante],premier,
@@ -928,7 +928,7 @@ priority_score,puzzle_count,ogs_id,status,slug_generated,slug_unidecode,cleaned_
 0.4451,18,4313,new_entry,pwa-4,pwa-lian-xi-ti-chu-ji-4,PWA 练习题 - 初级#4,PWA 练习题 - 初级#4,PWA Lian Xi Ti  - Chu Ji #4,curated,
 0.4449,10,6256,slug_collision,ogs-unknown,klumwan-aathity,กลุ่มวันอาทิตย์,กลุ่มวันอาทิตย์,klumwan`aathity,curated,
 0.4448,10,2443,new_entry,eat-time,eat-time,EAT TIME!,EAT TIME!,EAT TIME!,curated,
-0.4444,20,4778,already_matched,davies-ishida-attack-and-defense,davies-ishida-attack-and-defense,Davies & Ishida - Attack and Defense,Davies & Ishida - Attack and Defense [Atorrante],Davies & Ishida - Attack and Defense [Atorrante],curated,ishida-tsumego-masterpieces
+0.4444,20,4778,already_matched,davies-ishida-attack-and-defense,davies-ishida-attack-and-defense,Davies & Ishida - Attack and Defense,Davies & Ishida - Attack and Defense [Atorrante],Davies & Ishida - Attack and Defense [Atorrante],curated,ishida-davies-attack-and-defense
 0.4442,12,7408,new_entry,good-game,good-game,good game,good game,good game,curated,
 0.444,15,10235,slug_collision,life-and-death,life-and-death,life and death,life and death,life and death,curated,
 0.4438,17,112,new_entry,kubomatsu-pamphlet,kubomatsu-pamphlet,Kubomatsu Pamphlet,Kubomatsu's Pamphlet,Kubomatsu's Pamphlet,curated,
