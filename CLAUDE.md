@@ -238,9 +238,5 @@ These contain runtime/crawled data that is NOT in git. Any destructive git opera
 - `external-sources/*/logs/` - Crawl logs
 - `.pm-runtime/` - Pipeline runtime state
 
- 
- # #   A g e n t   S t a n d a r d   G u i d e l i n e s 
- 
- P l e a s e   s e e   \ . c l a u d e / r u l e s / \   f o r   d e t a i l e d   a g e n t   d e b u g g i n g   a n d   m o d i f i c a t i o n   p r o t o c o l s   ( e . g . ,   d e b u g   w o r k f l o w s ,   c o r r e c t i o n   l e v e l s   t a x o n o m y ,   a n d   a r c h i t e c t u r a l   c o m p l i a n c e ) . 
- 
- 
+Never add comments like - "Co-Authored-By: Claude"
+Never add author tags in commit messages. All commits must be attributed to the human author.
