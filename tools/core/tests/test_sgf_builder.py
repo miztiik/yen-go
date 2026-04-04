@@ -77,7 +77,9 @@ class TestBuildFromScratch:
 
     def test_invalid_board_size(self):
         with pytest.raises(SGFBuildError, match="Invalid board size"):
-            SGFBuilder(board_size=7)
+            SGFBuilder(board_size=4)
+        with pytest.raises(SGFBuildError, match="Invalid board size"):
+            SGFBuilder(board_size=20)
 
     def test_root_comment(self):
         builder = SGFBuilder(board_size=19)

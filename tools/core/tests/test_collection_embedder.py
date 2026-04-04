@@ -12,6 +12,7 @@ import pytest
 from tools.core.collection_embedder import (
     BACKUP_SUFFIX,
     CHECKPOINT_FILENAME,
+    DirectoryChapterStrategy,
     EmbedResult,
     EmbedSummary,
     FilenamePatternStrategy,
@@ -698,3 +699,86 @@ class TestStrategyRegistry:
         assert "phrase_match" in STRATEGIES
         assert "manifest_lookup" in STRATEGIES
         assert "filename_pattern" in STRATEGIES
+        assert "directory_chapter" in STRATEGIES
+
+
+# ---------------------------------------------------------------------------
+# Unit tests: DirectoryChapterStrategy (Strategy D)
+# ---------------------------------------------------------------------------
+
+
+class TestDirectoryChapterStrategy:
+    def test_resolve_known_directory(self):
+        chapter_map = {"1.5-seki": "seki", "2.4-hane": "hane"}
+        strategy = DirectoryChapterStrategy(chapter_map, "essential-go-techniques")
+        d = Path("/fake/1.5-seki")
+        strategy.prime_directory(d, ["00288_seki.sgf", "00289_seki.sgf", "00290_seki.sgf"])
+
+        result = strategy.resolve(d / "00289_seki.sgf", "1.5-seki", "00289_seki.sgf")
+        assert result is not None
+        assert result.slug == "essential-go-techniques"
+        assert result.chapter == "seki"
+        assert result.position == 2  # 2nd when sorted
+
+    def test_resolve_unknown_directory(self):
+        chapter_map = {"1.5-seki": "seki"}
+        strategy = DirectoryChapterStrategy(chapter_map, "essential-go-techniques")
+        d = Path("/fake/unknown-dir")
+        strategy.prime_directory(d, ["a.sgf"])
+
+        result = strategy.resolve(d / "a.sgf", "unknown-dir", "a.sgf")
+        assert result is None
+
+    def test_position_order(self):
+        chapter_map = {"2.1-ladder": "ladder"}
+        strategy = DirectoryChapterStrategy(chapter_map, "my-coll")
+        d = Path("/fake/2.1-ladder")
+        strategy.prime_directory(d, ["c.sgf", "a.sgf", "b.sgf"])
+
+        r1 = strategy.resolve(d / "a.sgf", "2.1-ladder", "a.sgf")
+        r2 = strategy.resolve(d / "b.sgf", "2.1-ladder", "b.sgf")
+        r3 = strategy.resolve(d / "c.sgf", "2.1-ladder", "c.sgf")
+        assert r1 and r1.position == 1
+        assert r2 and r2.position == 2
+        assert r3 and r3.position == 3
+
+    def test_format_yl_with_string_chapter(self):
+        r = EmbedResult(slug="essential-go-techniques", chapter="seki", position=3)
+        assert _format_yl(r) == "essential-go-techniques:seki/3"
+
+    def test_format_yl_with_int_chapter_still_works(self):
+        r = EmbedResult(slug="my-coll", chapter=0, position=42)
+        assert _format_yl(r) == "my-coll:0/42"
+
+    def test_integration_embed_with_directory_chapter(self, tmp_path: Path):
+        """Full embed_collections run with DirectoryChapterStrategy."""
+        chapter_map = {"ch-a": "alpha", "ch-b": "beta"}
+
+        d1 = tmp_path / "ch-a"
+        d1.mkdir()
+        (d1 / "p1.sgf").write_text(MINIMAL_SGF, encoding="utf-8")
+        (d1 / "p2.sgf").write_text(MINIMAL_SGF, encoding="utf-8")
+
+        d2 = tmp_path / "ch-b"
+        d2.mkdir()
+        (d2 / "p1.sgf").write_text(MINIMAL_SGF, encoding="utf-8")
+
+        d3 = tmp_path / "unmatched"
+        d3.mkdir()
+        (d3 / "p1.sgf").write_text(MINIMAL_SGF, encoding="utf-8")
+
+        strategy = DirectoryChapterStrategy(chapter_map, "test-coll")
+        matcher = CollectionMatcher()
+        logger = _mock_logger()
+
+        summary = embed_collections(tmp_path, strategy, matcher, logger)
+
+        assert summary.embedded == 3
+        assert summary.skipped == 1  # unmatched dir
+
+        # Verify YL values
+        tree1 = parse_sgf((d1 / "p1.sgf").read_text(encoding="utf-8"))
+        assert tree1.yengo_props.collections[0] == "test-coll:alpha/1"
+
+        tree2 = parse_sgf((d2 / "p1.sgf").read_text(encoding="utf-8"))
+        assert tree2.yengo_props.collections[0] == "test-coll:beta/1"

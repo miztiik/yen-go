@@ -10,6 +10,7 @@ Covers:
 - YenGo custom property parsing
 - Root comment extraction
 - Board size and initial stones
+- read_sgf_file encoding fallback (UTF-8 → latin-1)
 """
 
 import pytest
@@ -18,6 +19,7 @@ from tools.core.sgf_parser import (
     SGFParseError,
     escape_sgf_value,
     parse_sgf,
+    read_sgf_file,
     unescape_sgf_value,
 )
 from tools.core.sgf_types import Color, Point
@@ -388,3 +390,70 @@ class TestErrorHandling:
         # Missing closing paren — parser reads what it can
         tree = parse_sgf("(;SZ[19]PL[B](;B[cd])")
         assert tree.board_size == 19
+
+
+# ---------------------------------------------------------------------------
+# Test: read_sgf_file encoding fallback
+# ---------------------------------------------------------------------------
+
+
+class TestReadSgfFile:
+    """Encoding fallback: UTF-8 → latin-1."""
+
+    def test_utf8_file(self, tmp_path):
+        """Pure UTF-8 file is read as utf-8."""
+        sgf = "(;SZ[19]PL[B]AB[cd]AW[ef](;B[gh]))"
+        p = tmp_path / "test.sgf"
+        p.write_text(sgf, encoding="utf-8")
+        text, enc = read_sgf_file(p)
+        assert enc == "utf-8"
+        assert text == sgf
+
+    def test_utf8_with_cjk(self, tmp_path):
+        """UTF-8 file with CJK comments is read as utf-8."""
+        sgf = "(;SZ[19]PL[B]C[\u6b63\u89e3]AB[cd]AW[ef](;B[gh]))"
+        p = tmp_path / "test.sgf"
+        p.write_text(sgf, encoding="utf-8")
+        text, enc = read_sgf_file(p)
+        assert enc == "utf-8"
+        assert "\u6b63\u89e3" in text
+
+    def test_euc_kr_falls_back_to_latin1(self, tmp_path):
+        """EUC-KR encoded file falls back to latin-1, preserving SGF structure."""
+        # Korean text "\uc815\ud574" (correct answer) in EUC-KR = bytes b'\xc1\xa4\xc7\xd8'
+        sgf_text = "(;SZ[19]PL[B]C[\uc815\ud574]AB[cd]AW[ef](;B[gh]))"
+        p = tmp_path / "test.sgf"
+        p.write_bytes(sgf_text.encode("euc-kr"))
+        text, enc = read_sgf_file(p)
+        assert enc == "latin-1"
+        # SGF structure is preserved — can still parse positions
+        assert "AB[cd]" in text
+        assert "AW[ef]" in text
+        assert ";B[gh]" in text
+
+    def test_latin1_result_is_parseable(self, tmp_path):
+        """SGF decoded via latin-1 fallback still parses correctly."""
+        # Build a real EUC-KR SGF similar to kisvadim-goproblems files
+        sgf_bytes = (
+            b"(;GM[1]AB[br][bq][cp]AW[aq][bp][cq]"
+            b"C[1-1]AP[StoneBase:SGFParser.2.8]SZ[19]"
+            b"EV[\xc0\xcc\xc3\xa2\xc8\xa3 1-60]HA[0]MULTIGOGM[1]"
+            b";B[ds];W[dr];B[fr])"
+        )
+        p = tmp_path / "test.sgf"
+        p.write_bytes(sgf_bytes)
+        text, enc = read_sgf_file(p)
+        assert enc == "latin-1"
+        tree = parse_sgf(text)
+        assert tree.board_size == 19
+        assert len(tree.black_stones) == 3
+        assert len(tree.white_stones) == 3
+        assert tree.has_solution is True
+
+    def test_pure_ascii_reads_as_utf8(self, tmp_path):
+        """Pure ASCII SGF is decoded as utf-8 (not latin-1)."""
+        sgf = "(;SZ[19]AB[cd]AW[ef])"
+        p = tmp_path / "test.sgf"
+        p.write_bytes(sgf.encode("ascii"))
+        text, enc = read_sgf_file(p)
+        assert enc == "utf-8"  # ASCII is valid UTF-8

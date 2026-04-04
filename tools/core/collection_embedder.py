@@ -55,7 +55,7 @@ class EmbedResult:
     """Resolution result from a strategy."""
 
     slug: str
-    chapter: int  # 0 = no chapter concept (synthetic default)
+    chapter: int | str  # 0 = no chapter concept; string for named chapters (e.g. "seki")
     position: int  # 1-based position within chapter
 
 
@@ -259,6 +259,58 @@ class FilenamePatternStrategy:
 
 
 STRATEGIES["filename_pattern"] = FilenamePatternStrategy  # type: ignore[assignment]
+
+
+# ---------------------------------------------------------------------------
+# Strategy D: DirectoryChapterStrategy
+# ---------------------------------------------------------------------------
+
+
+class DirectoryChapterStrategy:
+    """Strategy D: Map directory names to chapter slugs via static mapping.
+
+    Constructor takes a dict mapping directory names to chapter slugs and a
+    fixed collection slug.  Position is derived from sorted file order within
+    each directory (1-based).
+
+    Designed for sources where chapters correspond to subdirectories with
+    a fixed collection slug (e.g. Essential Go Techniques, Yamada Kimio).
+    """
+
+    def __init__(
+        self,
+        chapter_map: dict[str, str],
+        collection_slug: str,
+    ) -> None:
+        self._chapter_map = chapter_map
+        self._collection_slug = collection_slug
+        self._position_cache: dict[str, dict[str, int]] = {}
+
+    def prime_directory(self, dir_path: Path, filenames: list[str]) -> None:
+        """Pre-calculate position numbers for all SGF files in a directory."""
+        sorted_names = sorted(filenames)
+        self._position_cache[str(dir_path)] = {
+            name: idx + 1 for idx, name in enumerate(sorted_names)
+        }
+
+    def resolve(
+        self, sgf_path: Path, dir_name: str, filename: str
+    ) -> EmbedResult | None:
+        chapter_slug = self._chapter_map.get(dir_name)
+        if chapter_slug is None:
+            return None
+
+        positions = self._position_cache.get(str(sgf_path.parent), {})
+        position = positions.get(filename, 0)
+
+        return EmbedResult(
+            slug=self._collection_slug,
+            chapter=chapter_slug,
+            position=position,
+        )
+
+
+STRATEGIES["directory_chapter"] = DirectoryChapterStrategy  # type: ignore[assignment]
 
 
 # ---------------------------------------------------------------------------

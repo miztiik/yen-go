@@ -67,6 +67,7 @@ KNOWN_AUTHORS: dict[str, str] = {
     "lee changho": "Lee Changho",
     "segoe": "Segoe Kensaku",
     "ishida": "Ishida Akira",
+    "ishida yoshio": "Ishida Yoshio",
     "ishigure": "Ishigure Ikuro",
     "yamada": "Yamada Kimio",
     "kobayashi": "Kobayashi Satoru",

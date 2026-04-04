@@ -19,6 +19,7 @@ Usage:
 
 Public API:
     parse_sgf(content) -> SgfTree       — Main entry point
+    read_sgf_file(path) -> (str, str)   — Read SGF file with encoding fallback
     escape_sgf_value(value) -> str      — Escape text for SGF property values
     SgfNode                             — Tree node dataclass
     SgfTree                             — Top-level container dataclass
@@ -30,6 +31,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 from tools.core.sgf_correctness import infer_correctness
@@ -548,6 +550,41 @@ class SGFParser:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
+
+# Encoding chain for reading SGF files from heterogeneous sources.
+# UTF-8 first (modern standard), then latin-1 as universal fallback.
+# latin-1 maps bytes 0x00-0xFF to codepoints 1:1, so it never fails
+# and preserves all ASCII SGF structure (coordinates, properties, moves).
+_SGF_ENCODING_CHAIN: tuple[str, ...] = ("utf-8", "latin-1")
+
+
+def read_sgf_file(path: Path) -> tuple[str, str]:
+    """Read an SGF file with encoding fallback.
+
+    SGF files from external sources use various encodings (UTF-8, EUC-KR,
+    Shift-JIS, GB2312). Since all SGF structural elements — property names,
+    stone coordinates (a-s), move sequences — are pure ASCII, a latin-1
+    fallback safely decodes any file while preserving the parseable structure.
+    Non-ASCII metadata (comments, player names) may render as mojibake but
+    does not affect position hashing or tree comparison.
+
+    Encoding chain: UTF-8 → latin-1.
+
+    Args:
+        path: Path to the SGF file.
+
+    Returns:
+        (text, encoding_used) — decoded content and the encoding that succeeded.
+    """
+    raw = path.read_bytes()
+    for enc in _SGF_ENCODING_CHAIN[:-1]:
+        try:
+            return raw.decode(enc), enc
+        except (UnicodeDecodeError, ValueError):
+            continue
+    # latin-1 always succeeds (maps bytes 0x00-0xFF 1:1)
+    return raw.decode(_SGF_ENCODING_CHAIN[-1]), _SGF_ENCODING_CHAIN[-1]
 
 
 def parse_sgf(content: str) -> SgfTree:
