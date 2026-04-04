@@ -14,7 +14,7 @@
 
 The **LocalAdapter** imports SGF puzzle files from local directories. It's designed for:
 
-- Importing curated puzzle collections (e.g., ambak-tsumego, sanderland)
+- Importing curated puzzle collections (e.g., tsumego, life-and-death problems)
 - Processing large archives (10,000+ files) with checkpoint/resume
 - Selective folder filtering for incremental imports
 
@@ -26,11 +26,11 @@ Add to `backend/puzzle_manager/config/sources.json`:
 
 ```json
 {
-  "id": "ambak-tsumego",
-  "name": "Ambak Tsumego Collection",
+  "id": "tsumego",
+  "name": "Tsumego Collection",
   "adapter": "local",
   "config": {
-    "path": "external-sources/ambak-tsumego/problems",
+    "path": "external-sources/tsumego/problems",
     "include_folders": ["elementary", "intermediate"],
     "exclude_folders": [],
     "resume": false,
@@ -120,16 +120,16 @@ Validates SGF files before yielding:
 
 ```bash
 # Run full pipeline for a local source
-python -m backend.puzzle_manager run --source ambak-tsumego
+python -m backend.puzzle_manager run --source tsumego
 
 # Run ingest stage only (dry run)
-python -m backend.puzzle_manager run --source ambak-tsumego --stage ingest
+python -m backend.puzzle_manager run --source tsumego --stage ingest
 
 # Resume interrupted import
-python -m backend.puzzle_manager run --source ambak-tsumego --resume
+python -m backend.puzzle_manager run --source tsumego --resume
 
 # Process specific batch size
-python -m backend.puzzle_manager run --source ambak-tsumego --batch-size 50
+python -m backend.puzzle_manager run --source tsumego --batch-size 50
 ```
 
 ---
@@ -139,7 +139,7 @@ python -m backend.puzzle_manager run --source ambak-tsumego --batch-size 50
 ### Subfolder Structure (Recommended)
 
 ```
-external-sources/ambak-tsumego/problems/
+external-sources/tsumego/problems/
 ├── elementary/
 │   ├── puzzle1.sgf
 │   └── puzzle2.sgf
@@ -167,18 +167,18 @@ Use different `id` values for separate checkpoints:
 ```json
 [
   {
-    "id": "ambak-elementary",
+    "id": "elementary",
     "adapter": "local",
     "config": {
-      "path": "external-sources/ambak-tsumego/problems",
+      "path": "external-sources/tsumego/problems",
       "include_folders": ["elementary"]
     }
   },
   {
-    "id": "ambak-advanced",
+    "id": "advanced",
     "adapter": "local",
     "config": {
-      "path": "external-sources/ambak-tsumego/problems",
+      "path": "external-sources/tsumego/problems",
       "include_folders": ["advanced"]
     }
   }

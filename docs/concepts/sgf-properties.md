@@ -7,7 +7,7 @@
 > - [Concepts: Tags](./tags.md) — Tag taxonomy
 > - [Concepts: Levels](./levels.md) — 9-level difficulty system
 
-**Last Updated**: 2026-03-17
+**Last Updated**: 2026-04-03
 
 **Single Source of Truth**: [`config/schemas/sgf-properties.schema.json`](../../config/schemas/sgf-properties.schema.json)
 
@@ -289,6 +289,24 @@ Property handling is **config-driven** via [`config/sgf-property-policies.json`]
 | **DT, CA, RE, AP, KM, ...** | `blocked`           | N/A              | **Dropped at parse time**                                                       | N/A               |
 
 > **See also**: [`config/sgf-property-policies.json`](../../config/sgf-property-policies.json) — the single source of truth for property policies.
+
+### Pre-Pipeline SGF Enrichment: N[] (Node Name)
+
+The standard SGF `N[]` property labels nodes in the game tree (e.g., `N[正解]` = correct solution, `N[失敗]` = failure). Many third-party puzzle sources use `N[]` to mark branch types in tsumego files.
+
+**Problem**: `N[]` is not in the pipeline's metadata whitelist and is **dropped at parse time**. This loses valuable branch-label information that aids puzzle comprehension.
+
+**Solution**: Before pipeline ingestion, merge `N[]` values into `C[]` comments as a pre-pipeline enrichment step:
+
+| Node State            | Action                                    | Example                                      |
+| --------------------- | ----------------------------------------- | -------------------------------------------- |
+| `N[text]` + `C[comment]` | Merge: `C[text. comment]`, remove `N[]` | `N[correct];C[White dies]` → `C[correct. White dies]` |
+| `N[text]` only        | Convert: `C[text]`, remove `N[]`          | `N[variation]` → `C[variation]`              |
+| No `N[]`              | No change                                 | —                                            |
+
+**Tool**: `python -m tools.kisvadim_goproblems merge-node-names --source-dir <dir>`
+
+This is a general-purpose operation applicable to any source collection that uses `N[]` for branch labeling. The merged text is then preserved through the pipeline via the standard `C[]` property handling (root comments preserved by default, move comments standardized).
 
 **Key Principles**:
 
