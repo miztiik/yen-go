@@ -4,10 +4,11 @@
     "slug": "maeda-nobuaki-tsumego-masterpieces",
     "files": 100,
     "yl_coverage": "100/100",
-    "remaining_cjk": 100,
-    "remaining_cjk_note": "Japanese literary prose preserved intentionally in C[] comments. Only the structured header line (puzzle objective) was translated to English.",
+    "remaining_cjk": 0,
+    "remaining_cjk_note": "All Japanese text fully translated to English. Headers translated via objective map, prose translated via Claude.",
     "ap_remaining": 0,
     "header_translation": "done",
+    "prose_translation": "done",
     "status": "done"
   }
 ]

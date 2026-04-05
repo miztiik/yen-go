@@ -75,56 +75,81 @@
     "GO SEIGEN - SEGOE TESUJI DICTIONARY": {
       "file_count": 505,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "segoe-kensaku-tesuji-dictionary",
+      "collection_id": 58,
+      "notes": "505 dual-puzzle files split into 1002 individual puzzles in segoe-kensaku-tesuji-dictionary_split/. Split files are the enrichment target."
     },
     "GO SEIGEN Evil Moves Tsumego": {
-      "file_count": 0,
+      "file_count": 30,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "go-seigen-evil-moves",
+      "collection_id": 23
     },
     "GO SEIGEN Reading and Training Actual Game Situations": {
       "file_count": 122,
       "structure": "chapters",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "go-seigen-reading-training",
+      "collection_id": 176,
+      "chapters": {
+        "part 1 - kyu": "kyu",
+        "part 2 - dan": "dan",
+        "part 3 - high dan": "high-dan"
+      }
     },
     "GO SEIGEN Striving Constantly For Self-Improvement": {
       "file_count": 200,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "go-seigen-jikyou-fusoku",
+      "collection_id": 174
     },
     "GO SEIGEN TSUMEGO DOJO VOL 1": {
       "file_count": 99,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "go-seigen-tsumego-dojo",
+      "collection_id": 24,
+      "volume_offset": 0,
+      "notes": "Also merged into GO SEIGEN TSUMEGO DOJO/vol-1/"
     },
     "GO SEIGEN TSUMEGO DOJO VOL 2": {
       "file_count": 99,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "go-seigen-tsumego-dojo",
+      "collection_id": 24,
+      "volume_offset": 99,
+      "notes": "Also merged into GO SEIGEN TSUMEGO DOJO/vol-2/"
     },
     "GO SEIGEN Tsumego Collection - The Long-Lived Stone Is Not Old": {
       "file_count": 200,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "go-seigen-jushi-furou",
+      "collection_id": 175
     },
     "GO SEIGEN Tsumego Collection 1 - Shokyuu": {
-      "file_count": 230,
+      "file_count": 240,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "go-seigen-tsumego-collection",
+      "collection_id": 177,
+      "chapter": "shokyuu",
+      "volume_offset": 0,
+      "notes": "Merged with Jokyuu as chapters of go-seigen-tsumego-collection. CJK comments (leoly annotations) fully re-translated to proper English. N[] merged into C[]. Watermarks removed."
     },
     "GO SEIGEN Tsumego Collection 2 - Jokyuu": {
       "file_count": 100,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "go-seigen-tsumego-collection",
+      "collection_id": 177,
+      "chapter": "jokyuu",
+      "volume_offset": 240,
+      "notes": "Merged with Shokyuu as chapters of go-seigen-tsumego-collection"
     },
     "Hashimoto Utaro - 1 Year Tsumego": {
       "file_count": 365,
@@ -233,20 +258,39 @@
     "KADA KATSUJI Tsumego Brilliances Vol 1-4": {
       "file_count": 216,
       "structure": "chapters",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "kada-katsuji-tsumego-brilliances",
+      "collection_id": 171,
+      "chapters": {
+        "VOL.1": "vol-1",
+        "VOL.2": "vol-2",
+        "VOL.3": "vol-3",
+        "VOL.4": "vol-4"
+      }
     },
     "KADA KATSUJI Tsumego Class": {
       "file_count": 48,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "kada-katsuji-tsumego-class",
+      "collection_id": 172
     },
     "KADA KATSUJI Tsumego Masterpieces Vol 1-8": {
       "file_count": 436,
       "structure": "chapters",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "kada-katsuji-tsumego-masterpieces",
+      "collection_id": 173,
+      "chapters": {
+        "VOL.1": "vol-1",
+        "VOL.2": "vol-2",
+        "VOL.3": "vol-3",
+        "VOL.4": "vol-4",
+        "VOL.5": "vol-5",
+        "VOL.6": "vol-6",
+        "VOL.7": "vol-7",
+        "VOL.8": "vol-8"
+      }
     },
     "KAKU KYUSHIN 200 TSUMEGO PROBLEM": {
       "file_count": 200,
@@ -262,9 +306,15 @@
     },
     "KOBAYASHI SATORU 105 BASIC TESUJI FOR 1~3 DAN": {
       "file_count": 105,
-      "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "structure": "chapters",
+      "status": "done",
+      "slug": "kobayashi-satoru-semeai-tesuji",
+      "chapters": {
+        "1-35": "fundamental",
+        "36-70": "dan-level",
+        "71-90": "high-dan",
+        "91-105": "strength-test"
+      }
     },
     "Kano Yoshinori - 239 Graded Go Problems": {
       "file_count": 239,
@@ -343,8 +393,10 @@
     "MAKING SHAPE TESUJI": {
       "file_count": 31,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "james-davies-tesuji",
+      "chapter": "making-shape",
+      "notes": "Chapter 13 of James Davies 'Tesuji' (Elementary Go Series Vol. 3). Only chapter present in kisvadim collection. YL format: james-davies-tesuji:making-shape/N"
     },
     "SAKATA EIO TESUJI": {
       "file_count": 110,

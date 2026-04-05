@@ -645,9 +645,7 @@
       "ordering": "source",
       "tier": "editorial",
       "aliases": [
-        "Go Seigen Jikyou Fusoku - ISBN 4-416-79711-7",
         "Go Seigen Tsumego",
-        "Go Seigen's Jikyou Fusoku - ISBN 4-416-79711-7 [Atorrante]",
         "dojo",
         "tsumego dojo",
         "吴清源",
@@ -1446,7 +1444,7 @@
       "id": 57
     },
     {
-      "slug": "segoe-tesuji-dictionary",
+      "slug": "segoe-kensaku-tesuji-dictionary",
       "name": "Segoe Tesuji Dictionary",
       "description": "Comprehensive tesuji reference co-authored by Segoe Kensaku and Go Seigen. A foundational tactical dictionary.",
       "curator": "Segoe Kensaku & Go Seigen",
@@ -1457,6 +1455,7 @@
       "aliases": [
         "segoe",
         "segoe dictionary",
+        "segoe-tesuji-dictionary",
         "tesuji dictionary",
         "手筋辞典",
         "瀬越手筋辞典"
@@ -3624,6 +3623,77 @@
         "加田克司傑作詰碁"
       ],
       "puzzle_count": 436
+    },
+    {
+      "slug": "go-seigen-jikyou-fusoku",
+      "name": "Go Seigen: Jikyou Fusoku — Striving for Self-Improvement",
+      "description": "Go Seigen's tsumego collection published by Seibundo Shinkosha in 1997. Title uses the classical Chinese idiom 自強不息 (ceaselessly striving for self-improvement). Part of a matched pair with Jushi Furou. ISBN 4-416-79711-7.",
+      "curator": "Go Seigen",
+      "source": "kisvadim",
+      "type": "author",
+      "ordering": "source",
+      "tier": "editorial",
+      "aliases": [
+        "Go Seigen Jikyou Fusoku - ISBN 4-416-79711-7",
+        "Go Seigen's Jikyou Fusoku - ISBN 4-416-79711-7 [Atorrante]",
+        "jikyou fusoku",
+        "striving self-improvement",
+        "自強不息"
+      ],
+      "id": 174
+    },
+    {
+      "slug": "go-seigen-jushi-furou",
+      "name": "Go Seigen: Jushi Furou — The Long-Lived Stone Is Not Old",
+      "description": "Go Seigen's tsumego collection published by Seibundo Shinkosha in 1995. Title uses the poetic phrase 寿石不老 (the long-lived stone does not age). Part of a matched pair with Jikyou Fusoku.",
+      "curator": "Go Seigen",
+      "source": "kisvadim",
+      "type": "author",
+      "ordering": "source",
+      "tier": "editorial",
+      "aliases": [
+        "immortal stones",
+        "jushi furou",
+        "long-lived stone",
+        "寿石不老"
+      ],
+      "id": 175
+    },
+    {
+      "slug": "go-seigen-reading-training",
+      "name": "Go Seigen: Reading and Training — Actual Game Situations",
+      "description": "Go Seigen's graded reading training collection organized by difficulty level: kyu (28 problems), dan (47 problems), and high-dan (47 problems).",
+      "curator": "Go Seigen",
+      "source": "kisvadim",
+      "type": "author",
+      "ordering": "source",
+      "tier": "editorial",
+      "aliases": [
+        "actual game situations",
+        "reading and training",
+        "reading training"
+      ],
+      "id": 176
+    },
+    {
+      "slug": "go-seigen-tsumego-collection",
+      "name": "Go Seigen: Tsumego Collection",
+      "description": "Go Seigen's graded tsumego collection in two volumes: Shokyuu (初級, elementary, 240 problems) and Jokyuu (上級, advanced, 100 problems).",
+      "curator": "Go Seigen",
+      "source": "kisvadim",
+      "type": "author",
+      "ordering": "source",
+      "tier": "editorial",
+      "aliases": [
+        "go seigen advanced",
+        "go seigen elementary",
+        "jokyuu",
+        "shokyuu",
+        "初級",
+        "上級",
+        "吴清源诘棋集"
+      ],
+      "id": 177
     }
   ]
 }
