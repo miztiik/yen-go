@@ -63,7 +63,7 @@
     "FUJISAWA SHUUKO - A Collection of Original Tsumego Masterpiece": {
       "file_count": 163,
       "structure": "chapters",
-      "status": "pending",
+      "status": "done",
       "slug": "fujisawa-shuuko-tsumego-masterpiece",
       "chapters": {
         "1. Elementary": "elementary",
@@ -319,8 +319,28 @@
     "Kano Yoshinori - 239 Graded Go Problems": {
       "file_count": 239,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "kano-yoshinori-graded-go-problems-beginners-1",
+      "collection_id": 85,
+      "chapters": {
+        "level-1": {
+          "range": "0001-0060",
+          "count": 60
+        },
+        "level-2": {
+          "range": "0061-0120",
+          "count": 60
+        },
+        "level-3": {
+          "range": "0121-0182",
+          "count": 62
+        },
+        "level-4": {
+          "range": "0183-0239",
+          "count": 57
+        }
+      },
+      "notes": "Kano Yoshinori 9p. Graded Go Problems for Beginners Vol 1. 4 levels, no CJK, no N[], clean English content. Slug renamed from graded-go-problems-beginners-1. Published March 1985."
     },
     "LEE CHANGHO TESUJI": {
       "file_count": 311,
@@ -407,20 +427,24 @@
     "SATO SUNAO - FLEXIBLE TSUMEGO": {
       "file_count": 134,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "sato-sunao-flexible-tsumego",
+      "collection_id": 179
     },
     "SATO SUNAO - REFRESHING TSUMEGO": {
       "file_count": 134,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "sato-sunao-refreshing-tsumego",
+      "collection_id": 178
     },
     "TESUJI GREAT DICTIONARY": {
       "file_count": 2636,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "nihon-kiin-tesuji-daijiten",
+      "collection_id": 183,
+      "notes": "Institutional compilation by Nihon Ki-in (1992, ISBN 4818203556). 1117 pages. No CJK characters; 175 files had Chinese Pinyin romanization in C[] comments, translated to English. No chapters (flat). LB[] point labels preserved."
     },
     "TSUMEGO CLASSIC - GENRAN": {
       "file_count": 61,
@@ -455,8 +479,16 @@
     "YAMADA KIMIO Interesting Tsumego Dojo": {
       "file_count": 87,
       "structure": "chapters",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "yamada-kimio-interesting-tsumego-dojo",
+      "collection_id": 184,
+      "chapters": {
+        "CHAPTER 1": "1",
+        "CHAPTER 2": "2",
+        "CHAPTER 3": "3"
+      },
+      "cjk_fragments_added": 0,
+      "notes": "Light CJK (watermark + formulaic labels only, all dictionary-covered). 3 chapters: 17/50/20. No N[]. No new dictionary entries."
     },
     "YAMADA KIMIO TSUMEGO BOOK1 - BASIC TSUMEGO": {
       "file_count": 101,
@@ -476,5 +508,54 @@
       "status": "done",
       "slug": "yamada-kimio-road-to-3-dan"
     }
+  },
+  "Ishigure Ikuro 6Dan Tsumego Challenge": {
+    "status": "done",
+    "slug": "ishigure-ikuro-6dan-challenge",
+    "collection_id": 180,
+    "files": 105,
+    "chapters": {
+      "CHAPTER 1": "chapter-1",
+      "CHAPTER 2": "chapter-2",
+      "CHAPTER 3": "chapter-3"
+    },
+    "cjk_fragments_added": 0,
+    "notes": "Light CJK (watermark + labels only). 3 chapters: 45/45/15."
+  },
+  "Ishigure Ikuro's Tsumego Masterpiece Collection": {
+    "status": "done",
+    "slug": "ishigure-ikuro-tsumego-masterpiece",
+    "collection_id": 181,
+    "files": 150,
+    "chapters": {
+      "PART 1 - HEAVEN": "heaven",
+      "PART 2 - EARTH": "earth",
+      "PART 3 - MAN": "man"
+    },
+    "cjk_fragments_added": 0,
+    "notes": "Light CJK (watermark + labels). 3 parts: 50/50/50. Heaven/Earth/Man structure."
+  },
+  "Ishigure Ikuro Go – Sure Kill Tsumegos for Shodan, 2D and 3D": {
+    "status": "done",
+    "slug": "ishigure-ikuro-sure-kill-tsumego",
+    "collection_id": 182,
+    "files": 119,
+    "chapters": {
+      "Sure Kill Tsumego (40 problems)": "sure-kill",
+      "Challenging Shodan Tsumego (40 problems)": "shodan",
+      "Challenging High Dan Tsumego (39 problems)": "high-dan"
+    },
+    "cjk_fragments_added": 20,
+    "notes": "Heavy CJK with teaching commentary. 20 new dictionary entries. 3 chapters: 40/40/39."
+  },
+  "Ishigure Ikuro 123 BASIC TSUMEGO": {
+    "status": "done",
+    "slug": "ishigure-ikuro-basic-tsumego",
+    "collection_id": 39,
+    "files": 123,
+    "chapters": null,
+    "cjk_fragments_added": 18,
+    "notes": "Heavy CJK with rich commentary. 18 new dictionary entries. Flat (no chapters). Slug renamed from ishigure-basic-tsumego. 123 published SGFs updated.",
+    "volume_offset": 0
   }
 }

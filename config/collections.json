@@ -3,8 +3,14 @@
   "_reference": "docs/concepts/collections.md",
   "schema_version": "5.0",
   "description": "Curated puzzle collections organized by theme, difficulty, and author. Single source of truth for collection metadata and alias matching.",
-  "last_updated": "2026-04-04",
+  "last_updated": "2026-04-05",
   "changelog": [
+    {
+      "version": "5.3",
+      "date": "2026-04-05",
+      "author": "claude",
+      "changes": "Sato Sunao enrichment: added 2 new collections (refreshing-tsumego ID 178, flexible-tsumego ID 179). 268 puzzles total."
+    },
     {
       "version": "5.2",
       "date": "2026-04-04",
@@ -916,9 +922,9 @@
       "id": 38
     },
     {
-      "slug": "ishigure-basic-tsumego",
-      "name": "Ishigure Ikuro Basic Tsumego",
-      "description": "Basic tsumego collection by Ishigure Ikuro, perfect for building a strong foundation in life and death.",
+      "slug": "ishigure-ikuro-basic-tsumego",
+      "name": "Ishigure Ikuro: 123 Basic Tsumego",
+      "description": "123 basic tsumego problems by Ishigure Ikuro 6-dan, covering fundamental life-and-death patterns with detailed commentary.",
       "curator": "Ishigure Ikuro",
       "source": "mixed",
       "type": "author",
@@ -926,7 +932,8 @@
       "tier": "editorial",
       "aliases": [
         "ishigure",
-        "ishigure ikuro"
+        "ishigure ikuro",
+        "ishigure-basic-tsumego"
       ],
       "id": 39
     },
@@ -1787,6 +1794,20 @@
       "id": 163
     },
     {
+      "slug": "yamada-kimio-interesting-tsumego-dojo",
+      "name": "Yamada Kimio: Interesting Tsumego Dojo",
+      "description": "87 tsumego problems across 3 chapters from Yamada Kimio's Interesting Tsumego Dojo (山田規三生のおもしろ詰碁道場).",
+      "curator": "Yamada Kimio",
+      "source": "kisvadim",
+      "type": "authored",
+      "ordering": "sequential",
+      "tier": "reference",
+      "aliases": [
+        "YAMADA KIMIO Interesting Tsumego Dojo"
+      ],
+      "id": 184
+    },
+    {
       "slug": "9x9-problems",
       "name": "9x9 Board Problems",
       "description": "Problems specific to 9x9 board play including openings and corner fights.",
@@ -2023,15 +2044,16 @@
       "id": 84
     },
     {
-      "slug": "graded-go-problems-beginners-1",
+      "slug": "kano-yoshinori-graded-go-problems-beginners-1",
       "name": "Graded Go Problems for Beginners Vol 1",
-      "description": "Volume 1 of Kano Yoshinori's Graded Go Problems for Beginners.",
+      "description": "Volume 1 of Kano Yoshinori's Graded Go Problems for Beginners. 239 problems covering capturing, connecting, life & death, ko, and endgame for 30k-25k players. Published March 1985.",
       "curator": "Kano Yoshinori",
       "source": "ogs",
       "type": "author",
       "ordering": "source",
       "tier": "premier",
       "aliases": [
+        "graded-go-problems-beginners-1",
         "GGPB1",
         "Graded Go Problems for Beginners - Volume 1",
         "Graded Problems for Beginners 1"
@@ -3694,6 +3716,88 @@
         "吴清源诘棋集"
       ],
       "id": 177
+    },
+    {
+      "slug": "sato-sunao-refreshing-tsumego",
+      "name": "Sato Sunao: Refreshing Tsumego",
+      "description": "134 original tsumego compositions by Sato Sunao 9p (Kansai Ki-in), from さわやか詰碁 (Seibundo Shinkosha, 1999). Graded D through A rank (low-dan to professional level).",
+      "curator": "Sato Sunao",
+      "source": "kisvadim",
+      "type": "author",
+      "ordering": "source",
+      "tier": "reference",
+      "aliases": [
+        "sawayaka tsumego",
+        "さわやか詰碁"
+      ],
+      "id": 178
+    },
+    {
+      "slug": "sato-sunao-flexible-tsumego",
+      "name": "Sato Sunao: Flexible Tsumego",
+      "description": "134 original tsumego compositions by Sato Sunao 9p (Kansai Ki-in), from しなやか詰碁 (Seibundo Shinkosha, 2001). Graded D through A rank (low-dan to professional level).",
+      "curator": "Sato Sunao",
+      "source": "kisvadim",
+      "type": "author",
+      "ordering": "source",
+      "tier": "reference",
+      "aliases": [
+        "shinayaka tsumego",
+        "しなやか詰碁"
+      ],
+      "id": 179
+    },
+    {
+      "slug": "ishigure-ikuro-6dan-challenge",
+      "name": "Ishigure Ikuro: 6-Dan Tsumego Challenge",
+      "description": "105 challenging tsumego problems at 6-dan level by Ishigure Ikuro, organized in 3 chapters of increasing difficulty.",
+      "curator": "Ishigure Ikuro",
+      "source": "kisvadim-goproblems",
+      "type": "authored",
+      "ordering": "sequential",
+      "tier": "reference",
+      "aliases": [],
+      "id": 180
+    },
+    {
+      "slug": "ishigure-ikuro-tsumego-masterpiece",
+      "name": "Ishigure Ikuro: Tsumego Masterpiece Collection",
+      "description": "150 masterpiece tsumego problems by Ishigure Ikuro, organized in three parts: Heaven (50), Earth (50), and Man (50).",
+      "curator": "Ishigure Ikuro",
+      "source": "kisvadim-goproblems",
+      "type": "authored",
+      "ordering": "sequential",
+      "tier": "reference",
+      "aliases": [],
+      "id": 181
+    },
+    {
+      "slug": "ishigure-ikuro-sure-kill-tsumego",
+      "name": "Ishigure Ikuro: Sure Kill Tsumego for Shodan to 3-Dan",
+      "description": "119 tsumego problems by Ishigure Ikuro targeting shodan to 3-dan players, with sections for sure-kill moves, shodan challenges, and high-dan challenges.",
+      "curator": "Ishigure Ikuro",
+      "source": "kisvadim-goproblems",
+      "type": "authored",
+      "ordering": "sequential",
+      "tier": "reference",
+      "aliases": [],
+      "id": 182
+    },
+    {
+      "slug": "nihon-kiin-tesuji-daijiten",
+      "name": "Nihon Ki-in: Tesuji Daijiten (Grand Dictionary of Tesuji)",
+      "description": "Comprehensive compilation of tesuji from Japanese and Chinese Go classical literature plus games by top professionals from Edo to Heisei era. 1,117 pages, 2636 problems. Published by Nihon Ki-in, 1992. ISBN 4818203556.",
+      "curator": "Nihon Ki-in",
+      "source": "kisvadim-goproblems",
+      "type": "authored",
+      "ordering": "sequential",
+      "tier": "reference",
+      "aliases": [
+        "tesuji daijiten",
+        "tesuji great dictionary",
+        "手筋大事典"
+      ],
+      "id": 183
     }
   ]
 }
