@@ -41,18 +41,21 @@ jobs:
           cd frontend
           npm ci
 
-      - name: Copy puzzles to public folder
-        run: |
-          mkdir -p frontend/public/puzzles
-          cp -r puzzles/data/* frontend/public/puzzles/ || true
-          cp puzzles/manifest.json frontend/public/puzzles/ || true
-
       - name: Build frontend
         run: |
           cd frontend
           npm run build
         env:
           NODE_ENV: production
+
+      - name: Copy puzzle collections to build output
+        run: |
+          cp -r yengo-puzzle-collections frontend/dist/yengo-puzzle-collections
+          cp -r config frontend/dist/config
+          # Remove backend-only files not needed by the frontend
+          rm -f frontend/dist/yengo-puzzle-collections/yengo-content.db
+          rm -rf frontend/dist/yengo-puzzle-collections/.puzzle-inventory-state
+          rm -f frontend/dist/yengo-puzzle-collections/.batch-state.json
 
       - name: Run tests
         run: |

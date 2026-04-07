@@ -82,7 +82,7 @@ jobs:
     name: Deploy to GitHub Pages
     needs: generate
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/001-core-platform'
+    if: github.ref == 'refs/heads/main'
     
     environment:
       name: github-pages
@@ -92,11 +92,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: 001-core-platform
+          ref: main
           fetch-depth: 0
 
       - name: Pull latest changes
-        run: git pull origin 001-core-platform
+        run: git pull origin main
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
