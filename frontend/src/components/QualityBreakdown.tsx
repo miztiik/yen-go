@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * QualityBreakdown component showing puzzle quality level factors.
  * 

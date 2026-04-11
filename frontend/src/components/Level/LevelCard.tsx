@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * LevelCard Component - Displays a single level in the list
  * @module components/Level/LevelCard

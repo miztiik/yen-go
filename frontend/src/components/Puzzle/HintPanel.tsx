@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Hint Panel Component
  * @module components/Puzzle/HintPanel

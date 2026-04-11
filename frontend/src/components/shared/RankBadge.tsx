@@ -107,7 +107,7 @@ export const RankBadge: FunctionComponent<RankBadgeProps> = ({
   size = 'medium',
   className = '',
 }) => {
-  const colors = level ? LEVEL_COLORS[level] : DEFAULT_COLORS;
+  const colors = (level ? LEVEL_COLORS[level] : DEFAULT_COLORS) ?? DEFAULT_COLORS;
   const sizeConfig = SIZE_CONFIG[size];
 
   // If neither rank nor level nor tag, don't render

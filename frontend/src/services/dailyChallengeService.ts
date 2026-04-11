@@ -188,19 +188,21 @@ function buildDailyIndexFromDb(
     standard: {
       puzzles: standardPuzzles,
       total: standardPuzzles.length,
-      technique_of_day: schedule.technique_of_day || undefined,
+      ...(schedule.technique_of_day ? { technique_of_day: schedule.technique_of_day } : {}),
     },
-    timed: timedSets.length > 0
+    ...(timedSets.length > 0
       ? {
-          sets: timedSets,
-          set_count: timedSets.length,
-          puzzles_per_set: timedSets[0]?.puzzles.length ?? 0,
-          suggested_durations: [180, 300, 600, 900],
-          scoring: {},
+          timed: {
+            sets: timedSets,
+            set_count: timedSets.length,
+            puzzles_per_set: timedSets[0]?.puzzles.length ?? 0,
+            suggested_durations: [180, 300, 600, 900],
+            scoring: {},
+          },
         }
-      : undefined,
-    by_tag: Object.keys(byTag).length > 0 ? byTag : undefined,
-    technique_of_day: schedule.technique_of_day || undefined,
+      : {}),
+    ...(Object.keys(byTag).length > 0 ? { by_tag: byTag } : {}),
+    ...(schedule.technique_of_day ? { technique_of_day: schedule.technique_of_day } : {}),
   };
 }
 

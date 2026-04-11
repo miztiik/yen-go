@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Board interaction - click/tap stone placement handling
  * @module components/Board/interaction

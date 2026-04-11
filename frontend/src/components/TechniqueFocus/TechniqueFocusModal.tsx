@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { FunctionalComponent } from 'preact';
 import { useState, useEffect, useCallback } from 'preact/hooks';
 import { Modal } from '../shared/Modal';

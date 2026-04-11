@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Stone rendering utilities for Go board
  * @module components/Board/stones

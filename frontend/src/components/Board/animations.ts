@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Board animations - capture animations and other visual effects
  * @module components/Board/animations

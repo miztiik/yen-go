@@ -26,7 +26,7 @@ export interface UseStreakReturn {
   /** Error message if any */
   readonly error: string | null;
   /** Record a play and update streak */
-  readonly recordPlayActivity: () => Promise<StreakUpdateResult | null>;
+  readonly recordPlayActivity: () => StreakUpdateResult | null;
   /** Refresh streak data */
   readonly refresh: () => void;
   /** Recently reached milestones (cleared on next refresh) */

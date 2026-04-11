@@ -246,15 +246,18 @@ export const TechniqueBrowsePage: FunctionalComponent<TechniqueBrowsePageProps> 
   const depthPresetOptions = useMemo(() => {
     if (levelMasterEntries.length === 0 && tagMasterEntries.length === 0) return [];
     const depthRange = depthPresetToRange(depthPreset);
+    const levelFilter = filterState.levelIds.length > 0 && filterState.levelIds[0] !== undefined
+      ? { levelId: filterState.levelIds[0] } : {};
     const counts = getFilterCounts({
-      levelIds: filterState.levelIds.length > 0 ? filterState.levelIds : undefined,
+      ...levelFilter,
       ...depthRange,
     });
     return buildDepthPresetOptions(counts.depthPresets ?? {});
   }, [depthPreset, filterState.levelIds, levelMasterEntries.length, tagMasterEntries.length]);
 
   const handleDepthPresetChange = useCallback((id: string) => {
-    setFilters({ dp: id === depthPreset ? undefined : id });
+    const newDp = id === depthPreset ? undefined : id;
+    if (newDp !== undefined) setFilters({ dp: newDp }); else setFilters({});
   }, [depthPreset, setFilters]);
 
   // Calculate summary stats

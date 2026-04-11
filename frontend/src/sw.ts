@@ -366,7 +366,7 @@ self.addEventListener('message', (event: ExtendableMessageEvent) => {
 self.addEventListener('sync', ((event: SyncEvent) => {
   if (event.tag === 'sync-progress') {
     event.waitUntil(
-      (() => {
+      (async () => {
         console.log('[SW] Syncing progress data');
         // Future: sync progress to server when online
       })()

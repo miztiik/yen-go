@@ -63,9 +63,9 @@ export function calculateStatsBySkillLevel(
   for (const completion of completions) {
     const level = getSkillLevel(completion.puzzleId);
     if (level !== undefined) {
-      puzzlesByLevel[level]++;
-      totalTimeByLevel[level] += completion.timeSpentMs;
-      countByLevel[level]++;
+      puzzlesByLevel[level] = (puzzlesByLevel[level] ?? 0) + 1;
+      totalTimeByLevel[level] = (totalTimeByLevel[level] ?? 0) + completion.timeSpentMs;
+      countByLevel[level] = (countByLevel[level] ?? 0) + 1;
     }
   }
 
@@ -73,7 +73,7 @@ export function calculateStatsBySkillLevel(
   const avgTimeBySkillLevel: Record<LevelSlug, number> = Object.fromEntries(
     LEVEL_SLUGS.map((slug) => [
       slug,
-      countByLevel[slug] > 0 ? totalTimeByLevel[slug] / countByLevel[slug] : 0,
+      countByLevel[slug] ?? 0 > 0 ? (totalTimeByLevel[slug] ?? 0) / (countByLevel[slug] ?? 1) : 0,
     ])
   ) as Record<LevelSlug, number>;
 

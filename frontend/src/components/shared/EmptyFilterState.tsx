@@ -9,6 +9,7 @@
 
 import type { FunctionalComponent } from 'preact';
 import { GoTipDisplay } from '../Loading/GoTipDisplay';
+import type { GoTip } from '../Loading/GoTipDisplay';
 import { getBootConfigs } from '../../boot';
 
 // ============================================================================
@@ -49,8 +50,8 @@ export const EmptyFilterState: FunctionalComponent<EmptyFilterStateProps> = ({
   contentTypeInfo,
 }) => {
   // Get Go tips from boot config for display during empty states
-  let tips: Array<{ text: string; category: string; levels: string[] }> = [];
-  try { tips = getBootConfigs().tips; } catch { /* boot not ready */ }
+  let tips: GoTip[] = [];
+  try { tips = getBootConfigs().tips as GoTip[]; } catch { /* boot not ready */ }
 
   const displayMessage = contentTypeInfo
     ? `No ${contentTypeInfo.activeTypeName} puzzles in this collection.`
@@ -70,7 +71,7 @@ export const EmptyFilterState: FunctionalComponent<EmptyFilterStateProps> = ({
       {/* Go tip — educational content while waiting */}
       {tips.length > 0 && (
         <div className="mb-4 self-stretch max-w-lg mx-auto">
-          <GoTipDisplay tips={tips} level={level} />
+          <GoTipDisplay tips={tips} {...(level != null && { level })} />
         </div>
       )}
 

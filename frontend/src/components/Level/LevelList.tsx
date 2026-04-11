@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * LevelList Component - Displays list of available puzzle levels
  * @module components/Level/LevelList

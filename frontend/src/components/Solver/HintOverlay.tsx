@@ -104,7 +104,7 @@ export function computeHintDisplay(
   const idx = tier - 1;
 
   if (idx < count) {
-    return { text: hints[idx], isGenerated: false };
+    return { text: hints[idx]!, isGenerated: false };
   }
 
   // Beyond available hints — should not be called, but safe fallback
