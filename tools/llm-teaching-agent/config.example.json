@@ -1,0 +1,18 @@
+{
+  "provider": {
+    "base_url": "https://api.openai.com/v1",
+    "api_key_env": "OPENAI_API_KEY",
+    "model": "gpt-4o",
+    "temperature": 0.3,
+    "max_tokens": 2048
+  },
+  "persona": "cho_chikun",
+  "voice_constraints": {
+    "max_words_wrong_comment": 15,
+    "no_leading_articles": true,
+    "use_em_dash_separator": true,
+    "no_narrate_student_error": true,
+    "warmth_only_for_almost_correct": true
+  },
+  "output_format": "structured_json"
+}
