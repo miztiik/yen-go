@@ -21,13 +21,12 @@ try:
     from analyzers.config_lookup import resolve_level_info as _resolve_level_info
     from analyzers.hint_generator import generate_hints
     from analyzers.teaching_comments import generate_teaching_comments
-    from analyzers.technique_classifier import classify_techniques, get_all_detectors, run_detectors
+    from analyzers.technique_classifier import get_all_detectors, run_detectors
 except ImportError:
     from ..analyzers.config_lookup import resolve_level_info as _resolve_level_info
     from ..analyzers.hint_generator import generate_hints
     from ..analyzers.teaching_comments import generate_teaching_comments
     from ..analyzers.technique_classifier import (
-        classify_techniques,
         get_all_detectors,
         run_detectors,
     )
@@ -137,7 +136,7 @@ def build_partial_result(
     No solution tree injection (RC-8). ac_level=0 for partial (RC-12).
 
     Uses typed ``run_detectors()`` when position and scan_response are available,
-    falls back to legacy ``classify_techniques()`` for null-analysis cases.
+    returns empty tags for null-analysis cases.
     """
     validation = MoveValidation(
         status=ValidationStatus.FLAGGED,
@@ -170,8 +169,8 @@ def build_partial_result(
         )
         result.technique_tags = [r.tag_slug for r in detection_results]
     else:
-        # Fallback for null-analysis cases (tier-1 error recovery)
-        result.technique_tags = classify_techniques(analysis_dict, board_size=board_size)
+        # Null-analysis fallback (tier-1 error recovery): no data for classification
+        result.technique_tags = []
 
     # Hints (only if scan data available)
     if scan_response:

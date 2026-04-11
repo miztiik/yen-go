@@ -675,10 +675,8 @@ class TestRunPositionOnlyPath:
     def test_engine_error_returns_early_result(self):
         """Engine failure → returns (state, AiAnalysisResult) for tier-1.
 
-        Note: _build_partial_result has a pre-existing issue where int tag IDs
-        are passed to classify_techniques which expects string slugs. This
-        causes an AttributeError. Since this extraction must preserve existing
-        behavior (MH-6), we verify the exception propagates as-is.
+        The fallback path sets technique_tags=[] for null-analysis cases
+        (no data available for classification).
         """
         root, position, metadata = _parse_fixture("position_only_life_death.sgf")
         manager = _make_mock_single_engine_manager()
@@ -686,14 +684,12 @@ class TestRunPositionOnlyPath:
         config = load_enrichment_config()
         state = EnrichmentRunState()
 
-        # Pre-existing bug: _build_partial_result passes int tags to
-        # classify_techniques which calls .lower() on them → AttributeError.
-        # This is the same behavior as the inline code before extraction.
-        with pytest.raises(AttributeError, match="lower"):
-            asyncio.run(_run_position_only_path(
-                state, root, position, manager, config, metadata,
-                source_file="test.sgf", trace_id="t0001", run_id="r0001",
-            ))
+        state, early_result = asyncio.run(_run_position_only_path(
+            state, root, position, manager, config, metadata,
+            source_file="test.sgf", trace_id="t0001", run_id="r0001",
+        ))
+        assert early_result is not None
+        assert early_result.technique_tags == []
 
     def test_success_returns_none_early_result(self):
         """Successful AI-Solve → returns (state, None) with flow vars set."""
