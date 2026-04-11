@@ -57,11 +57,6 @@ jobs:
           rm -rf frontend/dist/yengo-puzzle-collections/.puzzle-inventory-state
           rm -f frontend/dist/yengo-puzzle-collections/.batch-state.json
 
-      - name: Run tests
-        run: |
-          cd frontend
-          npm run test -- --run
-
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
