@@ -1,2 +1,6 @@
 # Test artifact: created when MagicMock leaks into filesystem path resolution
 MagicMock/
+
+# Stale enrichment output artifacts
+result.json
+*.json.bak
