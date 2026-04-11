@@ -106,7 +106,7 @@ def build_teaching_signal_payload(
             pass
 
     payload: dict = {
-        "version": 1,
+        "version": 2,
         "correct_move": {
             "move_gtp": correct_move_gtp,
             "move_sgf": correct_move_sgf,
@@ -120,7 +120,9 @@ def build_teaching_signal_payload(
             "position_closeness": round(position_closeness, 4),
             "policy_entropy": round(policy_entropy, 4),
             "correct_move_rank": correct_move_rank,
+            "board_size": board_size,
         },
+        "context": {},
         "wrong_moves": [],
     }
 

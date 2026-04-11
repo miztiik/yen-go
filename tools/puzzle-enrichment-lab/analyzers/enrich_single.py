@@ -245,6 +245,17 @@ async def enrich_single_puzzle(
     if result is not None:
         result.phase_timings = ctx.timings
 
+    # --- Populate teaching_signals context (after all stages) ---
+    if result is not None and result.teaching_signals:
+        result.teaching_signals["context"] = {
+            "technique_tags": list(result.technique_tags),
+            "difficulty_level": result.difficulty.suggested_level if result.difficulty else "unknown",
+            "solution_depth": result.difficulty.solution_depth if result.difficulty else 0,
+            "board_size": ctx.position.board_size if ctx.position else 19,
+            "goal": result.goal,
+            "goal_confidence": result.goal_confidence.value if hasattr(result.goal_confidence, "value") else str(result.goal_confidence),
+        }
+
     puzzle_id = metadata.puzzle_id if metadata else ""
 
     # P4: Centralized enrichment_complete summary (was in teaching_stage.py)

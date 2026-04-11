@@ -162,10 +162,11 @@ class TestTeachingSignalPayload:
             policy_entropy=0.65,
             correct_move_rank=1,
         )
-        # Option B: version + three sections
-        assert payload["version"] == 1
+        # Option B: version + four sections
+        assert payload["version"] == 2
         assert "correct_move" in payload
         assert "position" in payload
+        assert "context" in payload
         assert "wrong_moves" in payload
         # Correct move section
         cm = payload["correct_move"]
@@ -180,6 +181,18 @@ class TestTeachingSignalPayload:
         assert "position_closeness" in pos
         assert "policy_entropy" in pos
         assert "correct_move_rank" in pos
+        assert "board_size" in pos
+
+    def test_context_section_empty_by_default(self):
+        """Context section is initialized as empty dict (populated post-pipeline)."""
+        resp = self._make_response()
+        payload = build_teaching_signal_payload(
+            response=resp,
+            correct_move_gtp="D4",
+            policy_entropy=0.65,
+            correct_move_rank=1,
+        )
+        assert payload["context"] == {}
 
     def test_correct_move_signals(self):
         resp = self._make_response()
@@ -439,13 +452,14 @@ class TestAiAnalysisResultTeachingSignals:
         from models.ai_analysis_result import AiAnalysisResult
         result = AiAnalysisResult()
         result.teaching_signals = {
-            "version": 1,
+            "version": 2,
             "correct_move": {"move_gtp": "D4", "log_policy_score": 0.8},
             "position": {"root_winrate": 0.55},
+            "context": {},
             "wrong_moves": [],
         }
         data = json.loads(result.model_dump_json())
-        assert data["teaching_signals"]["version"] == 1
+        assert data["teaching_signals"]["version"] == 2
         assert data["teaching_signals"]["correct_move"]["move_gtp"] == "D4"
 
     def test_teaching_signals_none_in_json(self):
