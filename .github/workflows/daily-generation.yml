@@ -18,10 +18,12 @@ permissions:
   contents: write
   pages: write
   id-token: write
+  issues: write
 
 env:
   PYTHON_VERSION: '3.11'
   NODE_VERSION: '20'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   generate:
@@ -116,7 +118,7 @@ jobs:
           npm run build
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
