@@ -239,7 +239,7 @@ export function SolverView({
     goban.draw_left_labels = show && (!bounds || bounds.left === 0);
     goban.draw_bottom_labels = show && (!bounds || bounds.bottom === boardSize - 1);
     goban.draw_right_labels = show && (!bounds || bounds.right === boardSize - 1);
-    goban.setSquareSizeBasedOnDisplayWidth(Number(goban.display_width));
+    goban.setSquareSizeBasedOnDisplayWidth(Number((goban as unknown as { display_width: number }).display_width));
     goban.redraw(true);
   }, [labelPosition, isReady, autoViewportBounds, boardSize]);
 

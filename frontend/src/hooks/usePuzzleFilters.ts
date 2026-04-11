@@ -556,7 +556,11 @@ export function usePuzzleFilters(
 
   const setDepthPreset = useCallback(
     (id: string | null): void => {
-      setFilters({ dp: id && id !== '' ? id : undefined });
+      if (id && id !== '') {
+        setFilters({ dp: id });
+      } else {
+        setFilters({});
+      }
     },
     [setFilters],
   );

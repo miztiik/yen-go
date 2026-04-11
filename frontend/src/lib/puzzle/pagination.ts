@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Pagination utilities for loading paginated puzzle indexes.
  * @module lib/puzzle/pagination

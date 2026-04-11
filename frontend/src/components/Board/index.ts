@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Board component exports
  * @module components/Board

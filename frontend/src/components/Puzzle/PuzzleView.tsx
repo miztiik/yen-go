@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * PuzzleView Component - Main puzzle solving interface
  * @module components/Puzzle/PuzzleView

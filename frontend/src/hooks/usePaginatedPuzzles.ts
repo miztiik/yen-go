@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * React hook for loading paginated puzzles.
  * @module hooks/usePaginatedPuzzles

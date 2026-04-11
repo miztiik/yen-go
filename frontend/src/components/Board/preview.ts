@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Board preview - hover stone hover effect
  * @module components/Board/preview

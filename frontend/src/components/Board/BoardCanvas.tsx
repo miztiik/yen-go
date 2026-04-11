@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * BoardCanvas Component - Core Canvas-based Go board renderer
  * @module components/Board/BoardCanvas

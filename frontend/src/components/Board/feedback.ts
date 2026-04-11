@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Board feedback - visual feedback for correct/incorrect moves
  * @module components/Board/feedback

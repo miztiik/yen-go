@@ -544,13 +544,13 @@ export function PuzzleSetPlayer({
               key={entryMeta?.id ?? currentIndex}
               sgf={currentSgf}
               {...(entryMeta?.level && { level: entryMeta.level })}
-              puzzleId={entryMeta?.id}
+              {...(entryMeta?.id != null && { puzzleId: entryMeta.id })}
               onComplete={handleComplete}
               {...(failOnWrong && { onFail: handleFail })}
               onNext={handleNext}
               onPrev={currentIndex > 0 ? handlePrev : undefined}
               onSkip={handleSkip}
-              autoAdvanceCountdown={isCountingDown ? { remainingMs, totalMs: autoAdvanceTotalMs, onCancel: cancelCountdown } : undefined}
+              {...(isCountingDown && { autoAdvanceCountdown: { remainingMs, totalMs: autoAdvanceTotalMs, onCancel: cancelCountdown } })}
               minimal={minimal}
               puzzleNav={totalPuzzles > 1 ? (
                 <ProblemNav

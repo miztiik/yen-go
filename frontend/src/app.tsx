@@ -248,7 +248,7 @@ export const App: FunctionComponent = (): JSX.Element => {
         return (
           <TrainingViewPage
             level={route.slug}
-            startIndex={route.offset}
+            {...(route.offset !== undefined && { startIndex: route.offset })}
             onNavigateHome={handleBackToHome}
             onNavigateTraining={() => {
               const newRoute: Route = { type: 'training-browse' };

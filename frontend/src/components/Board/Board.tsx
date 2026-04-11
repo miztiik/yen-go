@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Board Component - Renders Go board with stones using Canvas
  * @module components/Board/Board

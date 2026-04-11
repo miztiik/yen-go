@@ -174,15 +174,17 @@ export const TrainingBrowsePage: FunctionalComponent<TrainingBrowsePageProps> = 
   const depthPresetOptions = useMemo(() => {
     if (!dbReady) return [];
     const depthRange = depthPresetToRange(depthPreset);
+    const tagFilter = filterState.tagId !== null ? { tagIds: [filterState.tagId] } : {};
     const counts = getFilterCounts({
-      tagIds: filterState.tagId !== null ? [filterState.tagId] : undefined,
+      ...tagFilter,
       ...depthRange,
     });
     return buildDepthPresetOptions(counts.depthPresets ?? {});
   }, [dbReady, depthPreset, filterState.tagId]);
 
   const handleDepthPresetChange = useCallback((id: string) => {
-    setFilters({ dp: id === depthPreset ? undefined : id });
+    const newDp = id === depthPreset ? undefined : id;
+    if (newDp !== undefined) setFilters({ dp: newDp }); else setFilters({});
   }, [depthPreset, setFilters]);
 
   // Filter levels by category
@@ -192,8 +194,9 @@ export const TrainingBrowsePage: FunctionalComponent<TrainingBrowsePageProps> = 
     // WP8 §8.3: When a tag or depth preset is selected, filter out levels with 0 matching puzzles
     if (dbReady && (filterState.tagId !== null || depthPreset)) {
       const depthRange = depthPresetToRange(depthPreset);
+      const tagFilter2 = filterState.tagId !== null ? { tagIds: [filterState.tagId] } : {};
       const filtered = getFilterCounts({
-        tagIds: filterState.tagId !== null ? [filterState.tagId] : undefined,
+        ...tagFilter2,
         ...depthRange,
       });
       levels = levels.filter(level => {

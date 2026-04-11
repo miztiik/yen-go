@@ -142,16 +142,19 @@ export const RandomPage: FunctionalComponent<RandomPageProps> = ({
   // Depth preset options from cross-filtered counts
   const depthPresetOptions = useMemo(() => {
     const depthRange = depthPresetToRange(depthPreset);
+    const levelFilter = filterState.levelId !== null ? { levelId: filterState.levelId } : {};
+    const tagFilter = filterState.tagId !== null ? { tagIds: [filterState.tagId] } : {};
     const counts = getFilterCounts({
-      levelIds: filterState.levelId !== null ? [filterState.levelId] : undefined,
-      tagIds: filterState.tagId !== null ? [filterState.tagId] : undefined,
+      ...levelFilter,
+      ...tagFilter,
       ...depthRange,
     });
     return buildDepthPresetOptions(counts.depthPresets ?? {});
   }, [depthPreset, filterState.levelId, filterState.tagId]);
 
   const handleDepthPresetChange = useCallback((id: string) => {
-    setFilters({ dp: id === depthPreset ? undefined : id });
+    const newDp = id === depthPreset ? undefined : id;
+    if (newDp !== undefined) setFilters({ dp: newDp }); else setFilters({});
   }, [depthPreset, setFilters]);
 
   // Derive selected level slug from filterState for display

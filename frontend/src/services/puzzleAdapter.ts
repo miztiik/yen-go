@@ -135,7 +135,7 @@ export function adaptToPagesPuzzle(internal: InternalPuzzle): TypesPuzzle {
     sol: sol as (readonly SgfCoord[])[],
     level: internal.level,
     tags: (internal.tags ?? []) as readonly PuzzleTag[],
-    ...(internal.rank ? { rank: internal.rank } : {}),
+    ...('rank' in internal && typeof internal.rank === 'string' && internal.rank ? { rank: internal.rank } : {}),
     ...(internal.hints?.hints?.[0] ? { hint: internal.hints.hints[0] } : {}),
   };
 }

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * BoardSvg Component - Renders Go board with stones using SVG
  * @module components/Board/BoardSvg

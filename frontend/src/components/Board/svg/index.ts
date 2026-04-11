@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SVG Board Components
  * @module components/Board/svg

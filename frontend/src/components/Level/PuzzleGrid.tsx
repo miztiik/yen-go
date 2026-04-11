@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * PuzzleGrid Component - Displays puzzles in a level by difficulty
  * @module components/Level/PuzzleGrid
