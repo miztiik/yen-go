@@ -1,23 +1,46 @@
 {
   "schema_version": "2.0",
   "collection": {
-    "total_puzzles": 0,
+    "total_puzzles": 1000,
     "by_puzzle_level": {
-      "novice": 0,
-      "beginner": 0,
-      "elementary": 0,
-      "intermediate": 0,
-      "upper-intermediate": 0,
+      "novice": 663,
+      "beginner": 203,
+      "elementary": 117,
+      "intermediate": 16,
+      "upper-intermediate": 1,
       "advanced": 0,
       "low-dan": 0,
       "high-dan": 0,
       "expert": 0
     },
-    "by_tag": {},
+    "by_tag": {
+      "net": 421,
+      "seki": 46,
+      "liberty-shortage": 114,
+      "nakade": 131,
+      "snapback": 51,
+      "tesuji": 70,
+      "eye-shape": 77,
+      "life-and-death": 72,
+      "ladder": 60,
+      "vital-point": 100,
+      "throw-in": 78,
+      "connection": 86,
+      "connect-and-die": 27,
+      "dead-shapes": 51,
+      "ko": 45,
+      "escape": 48,
+      "clamp": 2,
+      "sacrifice": 12,
+      "capture-race": 14,
+      "double-atari": 2,
+      "under-the-stones": 3,
+      "cutting": 1
+    },
     "by_puzzle_quality": {
       "1": 0,
-      "2": 0,
-      "3": 0,
+      "2": 56,
+      "3": 944,
       "4": 0,
       "5": 0
     }
@@ -33,7 +56,7 @@
       "skipped": 0
     },
     "publish": {
-      "new": 0,
+      "new": 1000,
       "failed": 0
     }
   },
@@ -46,6 +69,6 @@
     "total_rollbacks": 0,
     "last_rollback_date": null
   },
-  "last_updated": "2026-04-03T11:37:39.804046Z",
-  "last_run_id": "clean-20260403113739"
+  "last_updated": "2026-04-12T20:27:46.576403Z",
+  "last_run_id": "20260412-501fa1a2"
 }
