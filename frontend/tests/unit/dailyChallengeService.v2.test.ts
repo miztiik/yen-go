@@ -523,7 +523,7 @@ describe('Edge cases', () => {
     expect(puzzles[0]).toEqual({
       id: 'puzzle-1',
       path: 'puzzle-1',
-      level: 'intermediate', // default
+      level: 'elementary', // default (DEFAULT_LEVEL = LEVEL_SLUGS[2] = 'elementary')
     });
   });
 

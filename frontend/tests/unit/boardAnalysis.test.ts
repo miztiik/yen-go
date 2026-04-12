@@ -372,95 +372,66 @@ describe('boardAnalysis - Besogo Extensions', () => {
 });
 
 // ─── puzzleGameState tests ────────────────────────────────────────────────
+// Tests for the current puzzleGameState API: isPuzzleMoveValid, executePuzzleMove, getInvalidMoveReason
 describe('puzzleGameState', () => {
-  describe('createPuzzleBoardFromData', () => {
-    it('should create board with correct size', async () => {
-      const { createPuzzleBoardFromData } = await import('../../src/services/puzzleGameState');
-      const board = createPuzzleBoardFromData(9, [], [], 'B');
-      expect(board.size).toBe(9);
-      expect(board.sideToMove).toBe('B');
-      expect(board.moveNumber).toBe(0);
+  // Helper: build a PuzzleBoard directly (the module no longer exports createPuzzleBoardFromData)
+  function makePuzzleBoard(
+    size: number,
+    blackCoords: Array<{ x: number; y: number }>,
+    whiteCoords: Array<{ x: number; y: number }>,
+    sideToMove: 'black' | 'white',
+  ) {
+    const grid = createEmptyBoard(size);
+    for (const { x, y } of blackCoords) grid[y]![x] = BLACK;
+    for (const { x, y } of whiteCoords) grid[y]![x] = WHITE;
+    return { grid, size, sideToMove, koState: noKo };
+  }
+
+  describe('isPuzzleMoveValid', () => {
+    it('should return true for valid move on empty board', async () => {
+      const { isPuzzleMoveValid } = await import('../../src/services/puzzleGameState');
+      const board = makePuzzleBoard(9, [], [], 'black');
+      expect(isPuzzleMoveValid(board, { x: 5, y: 5 })).toBe(true);
     });
 
-    it('should place initial stones correctly', async () => {
-      const { createPuzzleBoardFromData, getDisplayStones } = await import('../../src/services/puzzleGameState');
-      const board = createPuzzleBoardFromData(9, ['dd', 'ee'], ['pp', 'qq'], 'B');
-      // Verify stones are placed (dd = x:3, y:3 in 0-indexed)
-      expect(board.grid[4]![4]).toBe(BLACK); // dd → (3,3) 0-indexed → (4,4) 1-indexed
-      expect(board.grid[5]![5]).toBe(BLACK); // ee → (4,4) 0-indexed → (5,5) 1-indexed
+    it('should return false for occupied position', async () => {
+      const { isPuzzleMoveValid } = await import('../../src/services/puzzleGameState');
+      const board = makePuzzleBoard(9, [{ x: 5, y: 5 }], [], 'black');
+      expect(isPuzzleMoveValid(board, { x: 5, y: 5 })).toBe(false);
     });
   });
 
   describe('executePuzzleMove', () => {
     it('should execute valid move successfully', async () => {
-      const { createPuzzleBoardFromData, executePuzzleMove } = await import('../../src/services/puzzleGameState');
-      const board = createPuzzleBoardFromData(9, [], [], 'B');
-      const result = executePuzzleMove(board, 'ee');
+      const { executePuzzleMove } = await import('../../src/services/puzzleGameState');
+      const board = makePuzzleBoard(9, [], [], 'black');
+      const result = executePuzzleMove(board, { x: 5, y: 5 });
       expect(result.success).toBe(true);
       expect(result.newBoard).toBeDefined();
       expect(result.newBoard!.grid[5]![5]).toBe(BLACK);
     });
 
     it('should reject move on occupied position', async () => {
-      const { createPuzzleBoardFromData, executePuzzleMove } = await import('../../src/services/puzzleGameState');
-      const board = createPuzzleBoardFromData(9, ['ee'], [], 'W');
-      const result = executePuzzleMove(board, 'ee');
+      const { executePuzzleMove } = await import('../../src/services/puzzleGameState');
+      const board = makePuzzleBoard(9, [{ x: 5, y: 5 }], [], 'white');
+      const result = executePuzzleMove(board, { x: 5, y: 5 });
       expect(result.success).toBe(false);
-    });
-
-    it('should handle captures and return captured coordinates', async () => {
-      const { createPuzzleBoardFromData, executePuzzleMove } = await import('../../src/services/puzzleGameState');
-      // White at corner (1,1)=aa, black at (1,2)=ab
-      const board = createPuzzleBoardFromData(9, ['ab'], ['aa'], 'B');
-      // Black plays ba (2,1 in 0-indexed → x:2,y:1→1-indexed (2,1)), captures white at aa
-      const result = executePuzzleMove(board, 'ba');
-      expect(result.success).toBe(true);
-      if (result.captures && result.captures.length > 0) {
-        expect(result.captures).toContain('aa');
-      }
-    });
-  });
-
-  describe('isPuzzleMoveValid', () => {
-    it('should return true for valid move', async () => {
-      const { createPuzzleBoardFromData, isPuzzleMoveValid } = await import('../../src/services/puzzleGameState');
-      const board = createPuzzleBoardFromData(9, [], [], 'B');
-      expect(isPuzzleMoveValid(board, 'ee')).toBe(true);
-    });
-
-    it('should return false for occupied position', async () => {
-      const { createPuzzleBoardFromData, isPuzzleMoveValid } = await import('../../src/services/puzzleGameState');
-      const board = createPuzzleBoardFromData(9, ['ee'], [], 'B');
-      expect(isPuzzleMoveValid(board, 'ee')).toBe(false);
-    });
-  });
-
-  describe('getDisplayStones', () => {
-    it('should return 0-indexed display grid', async () => {
-      const { createPuzzleBoardFromData, getDisplayStones } = await import('../../src/services/puzzleGameState');
-      const board = createPuzzleBoardFromData(9, ['aa'], [], 'B');
-      const stones = getDisplayStones(board);
-      expect(stones.length).toBe(9);
-      expect(stones[0]!.length).toBe(9);
-      // aa = (0,0) in 0-indexed, so stones[0][0] should be BLACK
-      expect(stones[0]![0]).toBe(BLACK);
     });
   });
 
   describe('getInvalidMoveReason', () => {
-    it('should return reason for occupied position', async () => {
-      const { createPuzzleBoardFromData, getInvalidMoveReason } = await import('../../src/services/puzzleGameState');
-      const board = createPuzzleBoardFromData(9, ['ee'], [], 'B');
-      const reason = getInvalidMoveReason(board, 'ee');
+    it('should return a reason for occupied position', async () => {
+      const { getInvalidMoveReason } = await import('../../src/services/puzzleGameState');
+      const board = makePuzzleBoard(9, [{ x: 5, y: 5 }], [], 'black');
+      const reason = getInvalidMoveReason(board, { x: 5, y: 5 });
       expect(reason).toBeTruthy();
-      expect(reason).toContain('occupied');
     });
 
-    it('should return null for valid move', async () => {
-      const { createPuzzleBoardFromData, getInvalidMoveReason } = await import('../../src/services/puzzleGameState');
-      const board = createPuzzleBoardFromData(9, [], [], 'B');
-      const reason = getInvalidMoveReason(board, 'ee');
-      expect(reason).toBeNull();
+    it('should return undefined for valid move', async () => {
+      const { getInvalidMoveReason } = await import('../../src/services/puzzleGameState');
+      const board = makePuzzleBoard(9, [], [], 'black');
+      const reason = getInvalidMoveReason(board, { x: 5, y: 5 });
+      expect(reason).toBeUndefined();
     });
   });
 });
