@@ -41,7 +41,7 @@ jobs:
         run: npm run format:check
 
       - name: Test
-        run: npm test -- --run
+        run: timeout 300 npx vitest run --reporter=verbose 2>&1 || { echo "::error::Tests failed or timed out"; exit 1; }
 
   build:
     name: Build Verification
