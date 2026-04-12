@@ -41,36 +41,40 @@ jobs:
         run: npm run format:check
 
       - name: "Test: unit (shard 1/3)"
-        shell: bash {0}
-        run: |
-          timeout --signal=KILL 90 node_modules/.bin/vitest run tests/unit/[A-Ea-e]* tests/unit/components/ --reporter=verbose
-          RESULT=$?
-          if [ "$RESULT" -eq 124 ] || [ "$RESULT" -eq 137 ]; then exit 0; fi
-          exit $RESULT
+        continue-on-error: true
+        run: timeout --signal=KILL 90 node_modules/.bin/vitest run tests/unit/[A-Ea-e]* tests/unit/components/ --reporter=verbose 2>&1 | tee /tmp/test-shard1.log
 
       - name: "Test: unit (shard 2/3)"
-        shell: bash {0}
-        run: |
-          timeout --signal=KILL 90 node_modules/.bin/vitest run tests/unit/[F-Qf-q]* --reporter=verbose
-          RESULT=$?
-          if [ "$RESULT" -eq 124 ] || [ "$RESULT" -eq 137 ]; then exit 0; fi
-          exit $RESULT
+        continue-on-error: true
+        run: timeout --signal=KILL 90 node_modules/.bin/vitest run tests/unit/[F-Qf-q]* --reporter=verbose 2>&1 | tee /tmp/test-shard2.log
 
       - name: "Test: unit (shard 3/3)"
-        shell: bash {0}
-        run: |
-          timeout --signal=KILL 90 node_modules/.bin/vitest run tests/unit/[R-Zr-z]* tests/unit/hooks/ tests/unit/levels/ tests/unit/progress/ tests/unit/tree/ tests/unit/types/ --reporter=verbose
-          RESULT=$?
-          if [ "$RESULT" -eq 124 ] || [ "$RESULT" -eq 137 ]; then exit 0; fi
-          exit $RESULT
+        continue-on-error: true
+        run: timeout --signal=KILL 90 node_modules/.bin/vitest run tests/unit/[R-Zr-z]* tests/unit/hooks/ tests/unit/levels/ tests/unit/progress/ tests/unit/tree/ tests/unit/types/ --reporter=verbose 2>&1 | tee /tmp/test-shard3.log
 
       - name: "Test: integration + regression"
-        shell: bash {0}
+        continue-on-error: true
+        run: timeout --signal=KILL 90 node_modules/.bin/vitest run tests/integration/ tests/regression/ tests/debug-import.test.ts tests/debug-route.spec.ts tests/accessibility/ --reporter=verbose 2>&1 | tee /tmp/test-shard4.log
+
+      - name: "Verify no test failures"
         run: |
-          timeout --signal=KILL 90 node_modules/.bin/vitest run tests/integration/ tests/regression/ tests/debug-import.test.ts tests/debug-route.spec.ts tests/accessibility/ --reporter=verbose
-          RESULT=$?
-          if [ "$RESULT" -eq 124 ] || [ "$RESULT" -eq 137 ]; then exit 0; fi
-          exit $RESULT
+          failed=0
+          for f in /tmp/test-shard*.log; do
+            name=$(basename "$f" .log)
+            if grep -q "FAIL" "$f"; then
+              echo "FAIL: $name has test failures"
+              grep "FAIL" "$f"
+              failed=1
+            elif grep -q "Tests.*passed" "$f"; then
+              echo "OK: $name - all tests passed"
+            else
+              echo "WARN: $name - no test summary found (process killed before completion)"
+              # If vitest was killed before printing summary, tests likely didn't finish
+              # This is a problem — fail the build
+              failed=1
+            fi
+          done
+          exit $failed
 
   build:
     name: Build Verification
