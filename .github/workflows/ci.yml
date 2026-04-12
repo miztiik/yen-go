@@ -40,14 +40,20 @@ jobs:
       - name: Format check
         run: npm run format:check
 
-      - name: Test (unit)
-        run: timeout --signal=KILL 120 node_modules/.bin/vitest run tests/unit/ --reporter=verbose || { echo "::error::Unit tests failed or timed out"; exit 1; }
+      - name: "Test: unit A-D"
+        run: timeout --signal=KILL 90 node_modules/.bin/vitest run tests/unit/[A-Da-d]* --reporter=verbose
 
-      - name: Test (integration + regression)
-        run: timeout --signal=KILL 120 node_modules/.bin/vitest run tests/integration/ tests/regression/ --reporter=verbose || { echo "::error::Integration tests failed or timed out"; exit 1; }
+      - name: "Test: unit e-p"
+        run: timeout --signal=KILL 90 node_modules/.bin/vitest run tests/unit/[E-Pe-p]* --reporter=verbose
 
-      - name: Test (other)
-        run: timeout --signal=KILL 60 node_modules/.bin/vitest run tests/debug-import.test.ts tests/debug-route.spec.ts tests/accessibility/ --reporter=verbose || { echo "::error::Other tests failed or timed out"; exit 1; }
+      - name: "Test: unit q-z"
+        run: timeout --signal=KILL 90 node_modules/.bin/vitest run tests/unit/[Q-Zq-z]* --reporter=verbose
+
+      - name: "Test: unit subdirs"
+        run: timeout --signal=KILL 60 node_modules/.bin/vitest run tests/unit/components/ tests/unit/hooks/ tests/unit/levels/ tests/unit/progress/ tests/unit/tree/ tests/unit/types/ --reporter=verbose
+
+      - name: "Test: integration + regression + other"
+        run: timeout --signal=KILL 90 node_modules/.bin/vitest run tests/integration/ tests/regression/ tests/debug-import.test.ts tests/debug-route.spec.ts tests/accessibility/ --reporter=verbose
 
   build:
     name: Build Verification
