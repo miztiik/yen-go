@@ -40,8 +40,14 @@ jobs:
       - name: Format check
         run: npm run format:check
 
-      - name: Test
-        run: timeout 300 npx vitest run --reporter=verbose 2>&1 || { echo "::error::Tests failed or timed out"; exit 1; }
+      - name: Test (unit)
+        run: timeout 120 npx vitest run tests/unit/ --reporter=verbose 2>&1 || { echo "::error::Unit tests failed or timed out"; exit 1; }
+
+      - name: Test (integration + regression)
+        run: timeout 120 npx vitest run tests/integration/ tests/regression/ --reporter=verbose 2>&1 || { echo "::error::Integration tests failed or timed out"; exit 1; }
+
+      - name: Test (other)
+        run: timeout 60 npx vitest run tests/debug-import.test.ts tests/debug-route.spec.ts tests/accessibility/ --reporter=verbose 2>&1 || { echo "::error::Other tests failed or timed out"; exit 1; }
 
   build:
     name: Build Verification
