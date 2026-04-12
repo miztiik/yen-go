@@ -153,9 +153,7 @@ async function fetchWithTimeout(
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
   // Combine signals if external signal provided
-  const combinedSignal = signal
-    ? anySignal([signal, controller.signal])
-    : controller.signal;
+  const combinedSignal = signal ? anySignal([signal, controller.signal]) : controller.signal;
 
   try {
     const response = await fetch(url, { signal: combinedSignal });
@@ -375,7 +373,11 @@ export class PuzzleLoader {
     }
 
     // Region validation
-    if (!puzzle.region || typeof puzzle.region.w !== 'number' || typeof puzzle.region.h !== 'number') {
+    if (
+      !puzzle.region ||
+      typeof puzzle.region.w !== 'number' ||
+      typeof puzzle.region.h !== 'number'
+    ) {
       errors.push('Invalid region');
     } else {
       if (puzzle.region.w < 1 || puzzle.region.w > 19) {

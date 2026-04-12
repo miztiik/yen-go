@@ -56,7 +56,7 @@ export function parseDateString(dateStr: string): Date | null {
   const year = parts[0];
   const month = parts[1];
   const day = parts[2];
-  
+
   if (year === undefined || month === undefined || day === undefined) {
     return null;
   }
@@ -64,11 +64,7 @@ export function parseDateString(dateStr: string): Date | null {
   const date = new Date(year, month - 1, day);
 
   // Validate the date is valid (e.g., not 2024-02-30)
-  if (
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
-  ) {
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
     return null;
   }
 
@@ -189,9 +185,8 @@ export function calculateStreakOnCompletion(
   // Case 4: Missed one or more days - break streak
   const lastPlayedDateObj = parseDateString(lastPlayedDate);
   const todayObj = parseDateString(today);
-  const daysMissed = lastPlayedDateObj && todayObj
-    ? getDaysDifference(lastPlayedDateObj, todayObj) - 1
-    : 0;
+  const daysMissed =
+    lastPlayedDateObj && todayObj ? getDaysDifference(lastPlayedDateObj, todayObj) - 1 : 0;
 
   const newStreakData: StreakData = {
     currentStreak: 1,
@@ -240,10 +235,7 @@ export function getStreakStatusMessage(result: StreakCalculationResult): string 
  * @param previousStreak - Previous streak count (before completion)
  * @returns Milestone number if reached, null otherwise
  */
-export function getReachedMilestone(
-  currentStreak: number,
-  previousStreak: number
-): number | null {
+export function getReachedMilestone(currentStreak: number, previousStreak: number): number | null {
   const milestones = [7, 30, 100, 365];
 
   for (const milestone of milestones) {

@@ -182,7 +182,10 @@ function readProperty(node: SgfNode, key: string): string | undefined {
  * Parse comma-separated string → sorted deduplicated array.
  */
 function parseCommaSeparated(value: string): string[] {
-  const items = value.split(',').map(s => s.trim()).filter(Boolean);
+  const items = value
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
   return [...new Set(items)].sort();
 }
 
@@ -211,7 +214,10 @@ function parseCollectionsWithChapters(rawYL: string): {
   slugs: readonly string[];
   memberships: readonly CollectionMembership[];
 } {
-  const items = rawYL.split(',').map(s => s.trim()).filter(Boolean);
+  const items = rawYL
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
   const slugs: string[] = [];
   const memberships: CollectionMembership[] = [];
   const seen = new Set<string>();
@@ -257,7 +263,11 @@ function parseCollectionsWithChapters(rawYL: string): {
  * Parse pipe-delimited string → array (max 3 items).
  */
 function parsePipeDelimited(value: string, max = 3): string[] {
-  return value.split('|').map(s => s.trim()).filter(Boolean).slice(0, max);
+  return value
+    .split('|')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .slice(0, max);
 }
 
 /**
@@ -296,9 +306,7 @@ function extractFirstCorrectMoveFromTree(rootNode: SgfNode): string | null {
  * are read here for sidebar display.
  */
 
-export function extractMetadataFromTree(
-  rootNode: SgfNode,
-): {
+export function extractMetadataFromTree(rootNode: SgfNode): {
   level: string;
   tags: readonly string[];
   hints: readonly string[];
@@ -324,16 +332,16 @@ export function extractMetadataFromTree(
   const level = rawLevel ?? FALLBACK_LEVEL;
   const tags = rawTags ? parseCommaSeparated(rawTags) : [];
   const hints = rawHints ? parsePipeDelimited(rawHints) : [];
-  const { slugs: collections, memberships: collectionMemberships } =
-    rawCollections ? parseCollectionsWithChapters(rawCollections) : { slugs: [] as string[], memberships: [] as CollectionMembership[] };
+  const { slugs: collections, memberships: collectionMemberships } = rawCollections
+    ? parseCollectionsWithChapters(rawCollections)
+    : { slugs: [] as string[], memberships: [] as CollectionMembership[] };
 
   // Ko context validation
-  const koContext = (rawKo === 'none' || rawKo === 'direct' || rawKo === 'approach')
-    ? rawKo : 'none';
+  const koContext = rawKo === 'none' || rawKo === 'direct' || rawKo === 'approach' ? rawKo : 'none';
 
   // Move order validation
-  const moveOrder = (rawMoveOrder === 'strict' || rawMoveOrder === 'flexible')
-    ? rawMoveOrder : 'flexible';
+  const moveOrder =
+    rawMoveOrder === 'strict' || rawMoveOrder === 'flexible' ? rawMoveOrder : 'flexible';
 
   const firstCorrectMove = extractFirstCorrectMoveFromTree(rootNode);
 

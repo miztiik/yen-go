@@ -94,9 +94,7 @@ export function useHints(
   options: UseHintsOptions | boolean = true
 ): UseHintsResult {
   // Normalize options
-  const opts: UseHintsOptions = typeof options === 'boolean'
-    ? { enabled: options }
-    : options;
+  const opts: UseHintsOptions = typeof options === 'boolean' ? { enabled: options } : options;
   const enabled = opts.enabled !== false;
   const gobanRef = opts.gobanRef;
 
@@ -120,10 +118,7 @@ export function useHints(
   }, [puzzleOrHints, enabled]);
 
   // Compute derived state
-  const revealedHints = useMemo(
-    () => hints.slice(0, revealedCount),
-    [hints, revealedCount]
-  );
+  const revealedHints = useMemo(() => hints.slice(0, revealedCount), [hints, revealedCount]);
 
   const hasMoreHints = revealedCount < hints.length;
   const totalHints = hints.length;
@@ -133,44 +128,47 @@ export function useHints(
   /**
    * Place a hint marker on the board if hint contains coordinate.
    */
-  const placeHintMarker = useCallback((hintText: string): void => {
-    const goban = gobanRef?.current;
-    if (goban === null || goban === undefined) return;
+  const placeHintMarker = useCallback(
+    (hintText: string): void => {
+      const goban = gobanRef?.current;
+      if (goban === null || goban === undefined) return;
 
-    // Parse coordinate from hint text (e.g., "Focus on D4" or "cg")
-    // Look for patterns like "D4", "Q16", or "ab" (SGF coords)
-    const coordMatch = hintText.match(/\b([A-HJ-T])(\d{1,2})\b/i); // Skip 'I'
-    const sgfMatch = hintText.match(/\b([a-s]{2})\b/);
+      // Parse coordinate from hint text (e.g., "Focus on D4" or "cg")
+      // Look for patterns like "D4", "Q16", or "ab" (SGF coords)
+      const coordMatch = hintText.match(/\b([A-HJ-T])(\d{1,2})\b/i); // Skip 'I'
+      const sgfMatch = hintText.match(/\b([a-s]{2})\b/);
 
-    let col: number | null = null;
-    let row: number | null = null;
+      let col: number | null = null;
+      let row: number | null = null;
 
-    if (coordMatch !== null && coordMatch[1] !== undefined && coordMatch[2] !== undefined) {
-      // Convert display coord to numeric (D4 → [3, 3])
-      const letter = coordMatch[1].toUpperCase();
-      // Skip 'I' in Go coordinates (A-H, J-T)
-      let colNum = letter.charCodeAt(0) - 65;
-      if (letter > 'I') colNum--; // Adjust for skipped 'I'
-      col = colNum;
-      row = parseInt(coordMatch[2], 10) - 1;
-    } else if (sgfMatch !== null && sgfMatch[1] !== undefined) {
-      // Convert SGF coord to numeric (aa → [0, 0])
-      const sgfCoord = sgfMatch[1];
-      col = sgfCoord.charCodeAt(0) - 97;
-      row = sgfCoord.charCodeAt(1) - 97;
-    }
-
-    if (col !== null && row !== null && col >= 0 && row >= 0) {
-      // Use goban's setMarks API if available
-      // Mark format: { 'dd': 'circle' } or similar
-      if (typeof goban.setMarks === 'function') {
-        const move = String.fromCharCode(97 + col) + String.fromCharCode(97 + row);
-        goban.setMarks({
-          [move]: 'circle', // Use circle mark type for hint
-        });
+      if (coordMatch !== null && coordMatch[1] !== undefined && coordMatch[2] !== undefined) {
+        // Convert display coord to numeric (D4 → [3, 3])
+        const letter = coordMatch[1].toUpperCase();
+        // Skip 'I' in Go coordinates (A-H, J-T)
+        let colNum = letter.charCodeAt(0) - 65;
+        if (letter > 'I') colNum--; // Adjust for skipped 'I'
+        col = colNum;
+        row = parseInt(coordMatch[2], 10) - 1;
+      } else if (sgfMatch !== null && sgfMatch[1] !== undefined) {
+        // Convert SGF coord to numeric (aa → [0, 0])
+        const sgfCoord = sgfMatch[1];
+        col = sgfCoord.charCodeAt(0) - 97;
+        row = sgfCoord.charCodeAt(1) - 97;
       }
-    }
-  }, [gobanRef]);
+
+      if (col !== null && row !== null && col >= 0 && row >= 0) {
+        // Use goban's setMarks API if available
+        // Mark format: { 'dd': 'circle' } or similar
+        if (typeof goban.setMarks === 'function') {
+          const move = String.fromCharCode(97 + col) + String.fromCharCode(97 + row);
+          goban.setMarks({
+            [move]: 'circle', // Use circle mark type for hint
+          });
+        }
+      }
+    },
+    [gobanRef]
+  );
 
   /**
    * Clear all hint markers from the board.

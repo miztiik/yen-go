@@ -9,12 +9,7 @@
  */
 
 import type { ContextDimension, CanonicalFilters } from './canonicalUrl';
-import {
-  parseCanonicalFilters,
-  serializeContextUrl,
-  parseOffset,
-  parseId,
-} from './canonicalUrl';
+import { parseCanonicalFilters, serializeContextUrl, parseOffset, parseId } from './canonicalUrl';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -35,7 +30,11 @@ export type Route =
       readonly id?: string;
     }
   | { readonly type: 'modes-daily' }
-  | { readonly type: 'modes-daily-date'; readonly date: string; readonly mode?: 'standard' | 'timed' }
+  | {
+      readonly type: 'modes-daily-date';
+      readonly date: string;
+      readonly mode?: 'standard' | 'timed';
+    }
   | { readonly type: 'modes-random' }
   | { readonly type: 'modes-rush' }
   | { readonly type: 'collections-browse' }
@@ -76,9 +75,8 @@ const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
  */
 export function parseRoute(pathname: string, search: string): Route {
   // Strip the base-path prefix so route patterns remain base-agnostic.
-  const stripped = BASE && pathname.startsWith(BASE)
-    ? pathname.slice(BASE.length) || '/'
-    : pathname;
+  const stripped =
+    BASE && pathname.startsWith(BASE) ? pathname.slice(BASE.length) || '/' : pathname;
 
   // Normalise trailing slash (but not the root `/`).
   const path = stripped.length > 1 ? stripped.replace(/\/+$/, '') : stripped;
@@ -117,7 +115,7 @@ export function parseRoute(pathname: string, search: string): Route {
   const dailyDateMatch = /^\/modes\/daily\/(\d{4}-\d{2}-\d{2})$/.exec(path);
   if (dailyDateMatch && DATE_RE.test(dailyDateMatch[1]!)) {
     const params = new URLSearchParams(search);
-    const mode = params.get('mode') === 'timed' ? 'timed' as const : undefined;
+    const mode = params.get('mode') === 'timed' ? ('timed' as const) : undefined;
     return { type: 'modes-daily-date', date: dailyDateMatch[1]!, ...(mode ? { mode } : {}) };
   }
 
@@ -166,8 +164,8 @@ export function parseRoute(pathname: string, search: string): Route {
       dimension: 'collection',
       slug: decodeURIComponent(collectionShorthand[1]!),
       filters: parseCanonicalFilters(search),
-      ...((o => o !== undefined ? { offset: o } : {})(parseOffset(search))),
-      ...((i => i !== undefined ? { id: i } : {})(parseId(search))),
+      ...((o) => (o !== undefined ? { offset: o } : {}))(parseOffset(search)),
+      ...((i) => (i !== undefined ? { id: i } : {}))(parseId(search)),
     };
   }
 
@@ -178,8 +176,8 @@ export function parseRoute(pathname: string, search: string): Route {
       dimension: 'training',
       slug: decodeURIComponent(trainingShorthand[1]!),
       filters: parseCanonicalFilters(search),
-      ...((o => o !== undefined ? { offset: o } : {})(parseOffset(search))),
-      ...((i => i !== undefined ? { id: i } : {})(parseId(search))),
+      ...((o) => (o !== undefined ? { offset: o } : {}))(parseOffset(search)),
+      ...((i) => (i !== undefined ? { id: i } : {}))(parseId(search)),
     };
   }
 
@@ -190,8 +188,8 @@ export function parseRoute(pathname: string, search: string): Route {
       dimension: 'technique',
       slug: decodeURIComponent(techniqueShorthand[1]!),
       filters: parseCanonicalFilters(search),
-      ...((o => o !== undefined ? { offset: o } : {})(parseOffset(search))),
-      ...((i => i !== undefined ? { id: i } : {})(parseId(search))),
+      ...((o) => (o !== undefined ? { offset: o } : {}))(parseOffset(search)),
+      ...((i) => (i !== undefined ? { id: i } : {}))(parseId(search)),
     };
   }
 
@@ -259,7 +257,9 @@ export function serializeRoute(route: Route): string {
       break;
 
     case 'smart-practice': {
-      const techniques = route.techniques?.length ? `?techniques=${route.techniques.join(',')}` : '';
+      const techniques = route.techniques?.length
+        ? `?techniques=${route.techniques.join(',')}`
+        : '';
       path = `/smart-practice${techniques}`;
       break;
     }
@@ -296,9 +296,7 @@ export function replaceRoute(route: Route): void {
 /**
  * Type guard: narrows a {@link Route} to a context route.
  */
-export function isContextRoute(
-  route: Route,
-): route is Extract<Route, { type: 'context' }> {
+export function isContextRoute(route: Route): route is Extract<Route, { type: 'context' }> {
   return route.type === 'context';
 }
 

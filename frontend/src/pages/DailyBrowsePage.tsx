@@ -15,7 +15,12 @@ import { useState, useEffect, useMemo, useCallback } from 'preact/hooks';
 import { PageLayout } from '@/components/Layout/PageLayout';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { CalendarIcon, LightningIcon } from '@/components/shared/icons';
-import { getTodaysChallenge, getAvailableChallenges, getChallenge, getPuzzleCount } from '@/services/dailyChallengeService';
+import {
+  getTodaysChallenge,
+  getAvailableChallenges,
+  getChallenge,
+  getPuzzleCount,
+} from '@/services/dailyChallengeService';
 import { getDailyProgress } from '@/services/progress';
 import { init as initDb } from '@/services/sqliteService';
 import { DayStrip, buildDayInfos } from '@/components/DailyChallenge/DayStrip';
@@ -89,12 +94,16 @@ export const DailyBrowsePage: FunctionalComponent<DailyBrowsePageProps> = ({
           setTodayStandardCount(sc);
           setTodayTimedCount(tc);
         }
-      } catch { /* counts stay at 0 */ }
+      } catch {
+        /* counts stay at 0 */
+      }
 
       // Load date strip data (non-critical)
       try {
         const available = getAvailableChallenges(7);
-        const availSet = new Set(available.success && available.data ? available.data : [todayDate]);
+        const availSet = new Set(
+          available.success && available.data ? available.data : [todayDate]
+        );
         setAvailableDates(availSet);
 
         // Check completed dates from localStorage
@@ -106,7 +115,9 @@ export const DailyBrowsePage: FunctionalComponent<DailyBrowsePageProps> = ({
           }
         }
         setCompletedDates(completed);
-      } catch { /* date strip stays at defaults */ }
+      } catch {
+        /* date strip stays at defaults */
+      }
 
       setIsLoading(false);
     };
@@ -149,12 +160,17 @@ export const DailyBrowsePage: FunctionalComponent<DailyBrowsePageProps> = ({
 
   const formattedDate = useMemo(() => {
     const d = new Date(selectedDate + 'T00:00:00');
-    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    return d.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    });
   }, [selectedDate]);
 
   const days = useMemo(
     () => buildDayInfos(7, availableDates, completedDates),
-    [availableDates, completedDates],
+    [availableDates, completedDates]
   );
 
   const stats = useMemo(() => {
@@ -178,17 +194,10 @@ export const DailyBrowsePage: FunctionalComponent<DailyBrowsePageProps> = ({
         />
 
         {/* Accent divider */}
-        <div
-          className="h-[3px]"
-          style={{ backgroundColor: ACCENT.border }}
-        />
+        <div className="h-[3px]" style={{ backgroundColor: ACCENT.border }} />
 
         {/* Day Strip — 7-day date selector */}
-        <DayStrip
-          days={days}
-          selectedDate={selectedDate}
-          onSelectDate={setSelectedDate}
-        />
+        <DayStrip days={days} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
 
         {/* Content */}
         <div className="mx-auto w-full max-w-5xl flex-1 p-4">
@@ -212,17 +221,13 @@ export const DailyBrowsePage: FunctionalComponent<DailyBrowsePageProps> = ({
                 >
                   <CalendarIcon size={28} />
                 </div>
-                <h2 className="m-0 text-lg font-bold text-[var(--color-text-primary)]">
-                  Standard
-                </h2>
+                <h2 className="m-0 text-lg font-bold text-[var(--color-text-primary)]">Standard</h2>
                 <p className="m-0 text-sm text-[var(--color-text-muted)]">
                   {standardCount > 0
                     ? `${standardCount} puzzle${standardCount !== 1 ? 's' : ''}`
                     : 'No puzzles available'}
                 </p>
-                <p className="m-0 text-xs text-[var(--color-text-muted)]">
-                  Solve at your own pace
-                </p>
+                <p className="m-0 text-xs text-[var(--color-text-muted)]">Solve at your own pace</p>
                 <span
                   className="mt-1 rounded-lg px-4 py-1.5 text-sm font-bold uppercase tracking-wider transition-colors duration-200 group-hover:brightness-110"
                   style={{ backgroundColor: ACCENT.bg, color: ACCENT.text }}
@@ -245,20 +250,19 @@ export const DailyBrowsePage: FunctionalComponent<DailyBrowsePageProps> = ({
                 >
                   <LightningIcon size={28} color="var(--color-warning, #7C5800)" />
                 </div>
-                <h2 className="m-0 text-lg font-bold text-[var(--color-text-primary)]">
-                  Timed
-                </h2>
+                <h2 className="m-0 text-lg font-bold text-[var(--color-text-primary)]">Timed</h2>
                 <p className="m-0 text-sm text-[var(--color-text-muted)]">
                   {timedCount > 0
                     ? `${timedCount} puzzle${timedCount !== 1 ? 's' : ''}`
                     : 'Blitz mode'}
                 </p>
-                <p className="m-0 text-xs text-[var(--color-text-muted)]">
-                  Race against the clock
-                </p>
+                <p className="m-0 text-xs text-[var(--color-text-muted)]">Race against the clock</p>
                 <span
                   className="mt-1 rounded-lg px-4 py-1.5 text-sm font-bold uppercase tracking-wider transition-colors duration-200 group-hover:brightness-110"
-                  style={{ backgroundColor: 'var(--color-warning-bg, #FFEFD0)', color: 'var(--color-warning, #7C5800)' }}
+                  style={{
+                    backgroundColor: 'var(--color-warning-bg, #FFEFD0)',
+                    color: 'var(--color-warning, #7C5800)',
+                  }}
                 >
                   Play
                 </span>

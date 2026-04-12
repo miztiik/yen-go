@@ -23,9 +23,7 @@ import { loadProgressRaw, saveProgress } from './storageOperations';
 /**
  * Migrate progress from older schema versions
  */
-export function migrateProgress(
-  oldProgress: UserProgress
-): ProgressResult<UserProgress> {
+export function migrateProgress(oldProgress: UserProgress): ProgressResult<UserProgress> {
   try {
     let progress = { ...oldProgress } as Record<string, unknown>;
 

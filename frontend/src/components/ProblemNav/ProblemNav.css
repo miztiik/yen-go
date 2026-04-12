@@ -31,7 +31,9 @@
   background: transparent;
   color: var(--color-text-muted, #6c757d);
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
   flex-shrink: 0;
   padding: 0;
 }
@@ -131,14 +133,22 @@
 /* Progress bar — steel blue fill on soft neutral track */
 .progress-bar-track {
   height: 5px;
-  background: color-mix(in srgb, var(--color-accent, #3B6D96) 12%, var(--color-bg-tertiary, #e9ecef));
+  background: color-mix(
+    in srgb,
+    var(--color-accent, #3b6d96) 12%,
+    var(--color-bg-tertiary, #e9ecef)
+  );
   border-radius: 999px;
   overflow: hidden;
 }
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-accent, #3B6D96), color-mix(in srgb, var(--color-accent, #3B6D96) 80%, var(--color-warning, #E8A317)));
+  background: linear-gradient(
+    90deg,
+    var(--color-accent, #3b6d96),
+    color-mix(in srgb, var(--color-accent, #3b6d96) 80%, var(--color-warning, #e8a317))
+  );
   border-radius: 999px;
   transition: width 0.3s ease;
   min-width: 0;
@@ -173,16 +183,19 @@
   white-space: nowrap;
   user-select: none;
   border: 1px solid transparent;
-  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease;
 }
 
 /* Streak tier: elevated (5-9) */
-.streak-badge[data-tier="elevated"] {
+.streak-badge[data-tier='elevated'] {
   background: color-mix(in srgb, var(--color-accent) 14%, transparent);
 }
 
 /* Streak tier: peak (10+) */
-.streak-badge[data-tier="peak"] {
+.streak-badge[data-tier='peak'] {
   background: color-mix(in srgb, var(--color-accent) 20%, transparent);
   color: var(--color-accent-hover);
   border-color: color-mix(in srgb, var(--color-accent) 25%, transparent);
@@ -194,8 +207,12 @@
 }
 
 @keyframes streak-enter {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Responsive */
@@ -244,7 +261,8 @@
 
 /* Animation */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1.1);
   }
   50% {

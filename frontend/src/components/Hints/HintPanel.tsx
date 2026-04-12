@@ -65,10 +65,7 @@ export const HintPanel: FunctionComponent<HintPanelProps> = ({
   const solutionButtonDisabled = disabled || solutionRevealed;
 
   return (
-    <div
-      className={`hint-panel flex flex-col gap-3 ${className ?? ''}`}
-      data-testid="hint-panel"
-    >
+    <div className={`hint-panel flex flex-col gap-3 ${className ?? ''}`} data-testid="hint-panel">
       {/* Button Row */}
       <div className="flex flex-wrap gap-2">
         {/* Hint Button */}
@@ -97,7 +94,13 @@ export const HintPanel: FunctionComponent<HintPanelProps> = ({
           aria-label={solutionRevealed ? 'Solution revealed' : 'Show solution'}
           data-testid="solution-button"
         >
-          {solutionRevealed ? '✓ Solution Shown' : <><SolutionIcon size={14} /> Show Solution</>}
+          {solutionRevealed ? (
+            '✓ Solution Shown'
+          ) : (
+            <>
+              <SolutionIcon size={14} /> Show Solution
+            </>
+          )}
         </button>
       </div>
 
@@ -110,7 +113,9 @@ export const HintPanel: FunctionComponent<HintPanelProps> = ({
               className="m-0 rounded-md border-l-3 border-[--color-hint-border] bg-[--color-bg-tertiary] px-3.5 py-2.5 text-sm leading-relaxed text-[--color-text-secondary]"
               data-testid={`hint-${index + 1}`}
             >
-              <span className="mb-1 block text-xs font-semibold text-[--color-hint-border]">Hint {index + 1}</span>
+              <span className="mb-1 block text-xs font-semibold text-[--color-hint-border]">
+                Hint {index + 1}
+              </span>
               {hint}
             </div>
           ))}
@@ -119,7 +124,9 @@ export const HintPanel: FunctionComponent<HintPanelProps> = ({
 
       {/* No hints available message */}
       {totalHints === 0 && !solutionRevealed && (
-        <p className="text-xs italic text-[--color-text-muted]">No hints available for this puzzle.</p>
+        <p className="text-xs italic text-[--color-text-muted]">
+          No hints available for this puzzle.
+        </p>
       )}
     </div>
   );

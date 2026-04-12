@@ -244,10 +244,7 @@ export function exportProgress(storage: ProgressStorage): string | null {
  * @param json - JSON string to import
  * @returns Success result
  */
-export function importProgress(
-  storage: ProgressStorage,
-  json: string
-): StorageResult<void> {
+export function importProgress(storage: ProgressStorage, json: string): StorageResult<void> {
   try {
     const data = JSON.parse(json) as UserProgress;
 

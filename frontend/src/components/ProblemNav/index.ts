@@ -7,16 +7,8 @@
  * Covers: T047
  */
 
-export {
-  ProblemNav,
-  type ProblemNavProps,
-  type PuzzleStatus,
-  STATUS_SYMBOLS,
-} from './ProblemNav';
+export { ProblemNav, type ProblemNavProps, type PuzzleStatus, STATUS_SYMBOLS } from './ProblemNav';
 
-export {
-  StatusIndicator,
-  type StatusIndicatorProps,
-} from './StatusIndicator';
+export { StatusIndicator, type StatusIndicatorProps } from './StatusIndicator';
 
 export { default } from './ProblemNav';

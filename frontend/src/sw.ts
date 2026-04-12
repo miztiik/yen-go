@@ -66,7 +66,7 @@ self.addEventListener('install', (event: ExtendableEvent) => {
     (async () => {
       const cache = await caches.open(STATIC_CACHE);
       console.log('[SW] Pre-caching static assets');
-      
+
       // Pre-cache static assets
       await Promise.all(
         STATIC_ASSETS.map(async (url) => {
@@ -77,7 +77,7 @@ self.addEventListener('install', (event: ExtendableEvent) => {
           }
         })
       );
-      
+
       // Skip waiting to activate immediately
       await self.skipWaiting();
     })()
@@ -91,25 +91,21 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
   event.waitUntil(
     (async () => {
       console.log('[SW] Activating service worker');
-      
+
       // Clean up old caches
       const cacheNames = await caches.keys();
       await Promise.all(
         cacheNames
           .filter((name) => {
             // Delete caches that don't match current version
-            return (
-              name !== STATIC_CACHE &&
-              name !== PUZZLE_CACHE &&
-              name !== CACHE_NAME
-            );
+            return name !== STATIC_CACHE && name !== PUZZLE_CACHE && name !== CACHE_NAME;
           })
           .map((name) => {
             console.log(`[SW] Deleting old cache: ${name}`);
             return caches.delete(name);
           })
       );
-      
+
       // Take control of all clients immediately
       await self.clients.claim();
     })()
@@ -122,12 +118,12 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
 self.addEventListener('fetch', (event: FetchEvent) => {
   const { request } = event;
   const url = new URL(request.url);
-  
+
   // Only handle same-origin requests
   if (url.origin !== location.origin) {
     return;
   }
-  
+
   // Determine caching strategy based on request URL
   if (
     CACHE_PATTERNS.puzzles.test(url.pathname) ||
@@ -154,18 +150,15 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 /**
  * Stale-while-revalidate caching strategy.
  * Returns cached response immediately, then updates cache in background.
- * 
+ *
  * @param request - Fetch request
  * @param cacheName - Cache to use
  * @returns Response
  */
-async function staleWhileRevalidate(
-  request: Request,
-  cacheName: string
-): Promise<Response> {
+async function staleWhileRevalidate(request: Request, cacheName: string): Promise<Response> {
   const cache = await caches.open(cacheName);
   const cachedResponse = await cache.match(request);
-  
+
   // Start network fetch in background
   const networkResponsePromise = fetch(request)
     .then(async (response) => {
@@ -180,19 +173,19 @@ async function staleWhileRevalidate(
       console.warn(`[SW] Network request failed: ${request.url}`, error);
       return null;
     });
-  
+
   // Return cached response immediately if available
   if (cachedResponse) {
     console.log(`[SW] Returning cached (stale): ${request.url}`);
     return cachedResponse;
   }
-  
+
   // Wait for network if no cached response
   const networkResponse = await networkResponsePromise;
   if (networkResponse) {
     return networkResponse;
   }
-  
+
   // Return error response if both fail
   return new Response('Network error', {
     status: 503,
@@ -203,23 +196,20 @@ async function staleWhileRevalidate(
 /**
  * Cache-first caching strategy.
  * Returns cached response if available, otherwise fetches from network.
- * 
+ *
  * @param request - Fetch request
  * @param cacheName - Cache to use
  * @returns Response
  */
-async function cacheFirst(
-  request: Request,
-  cacheName: string
-): Promise<Response> {
+async function cacheFirst(request: Request, cacheName: string): Promise<Response> {
   const cache = await caches.open(cacheName);
   const cachedResponse = await cache.match(request);
-  
+
   if (cachedResponse) {
     console.log(`[SW] Cache hit: ${request.url}`);
     return cachedResponse;
   }
-  
+
   try {
     const networkResponse = await fetch(request);
     if (networkResponse.ok) {
@@ -239,17 +229,14 @@ async function cacheFirst(
 /**
  * Network-first caching strategy.
  * Tries network first, falls back to cache on failure.
- * 
+ *
  * @param request - Fetch request
  * @param cacheName - Cache to use
  * @returns Response
  */
-async function networkFirst(
-  request: Request,
-  cacheName: string
-): Promise<Response> {
+async function networkFirst(request: Request, cacheName: string): Promise<Response> {
   const cache = await caches.open(cacheName);
-  
+
   try {
     const networkResponse = await fetch(request);
     if (networkResponse.ok) {
@@ -271,13 +258,11 @@ async function networkFirst(
 
 /**
  * Network-first with offline fallback for navigation requests.
- * 
+ *
  * @param request - Navigation request
  * @returns Response
  */
-async function networkFirstWithOfflineFallback(
-  request: Request
-): Promise<Response> {
+async function networkFirstWithOfflineFallback(request: Request): Promise<Response> {
   try {
     const networkResponse = await fetch(request);
     const cache = await caches.open(CACHE_NAME);
@@ -290,14 +275,14 @@ async function networkFirstWithOfflineFallback(
     if (cachedResponse) {
       return cachedResponse;
     }
-    
+
     // Return offline page
     const staticCache = await caches.open(STATIC_CACHE);
     const offlinePage = await staticCache.match(`${SW_BASE}/offline.html`);
     if (offlinePage) {
       return offlinePage;
     }
-    
+
     // Last resort fallback
     return new Response(
       '<html><body><h1>Offline</h1><p>Please check your internet connection.</p></body></html>',
@@ -314,12 +299,12 @@ async function networkFirstWithOfflineFallback(
  */
 self.addEventListener('message', (event: ExtendableMessageEvent) => {
   const { type, payload } = (event.data || {}) as { type?: string; payload?: { urls?: string[] } };
-  
+
   switch (type) {
     case 'SKIP_WAITING':
       void self.skipWaiting();
       break;
-      
+
     case 'CACHE_PUZZLES':
       // Pre-cache specific puzzle files
       if (payload?.urls && Array.isArray(payload.urls)) {
@@ -344,7 +329,7 @@ self.addEventListener('message', (event: ExtendableMessageEvent) => {
         );
       }
       break;
-      
+
     case 'CLEAR_CACHE':
       event.waitUntil(
         (async () => {
@@ -354,7 +339,7 @@ self.addEventListener('message', (event: ExtendableMessageEvent) => {
         })()
       );
       break;
-      
+
     default:
       console.log(`[SW] Unknown message type: ${type}`);
   }

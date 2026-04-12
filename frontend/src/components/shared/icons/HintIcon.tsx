@@ -19,11 +19,13 @@ interface IconProps {
  */
 export function HintIcon({ size = 16, className, available, count }: IconProps): JSX.Element {
   const color = available === true ? '#f59e0b' : available === false ? '#9ca3af' : 'currentColor';
-  const opacity = count === undefined ? 1 : count >= 3 ? 1 : count === 2 ? 0.85 : count === 1 ? 0.65 : 0.4;
+  const opacity =
+    count === undefined ? 1 : count >= 3 ? 1 : count === 2 ? 0.85 : count === 1 ? 0.65 : 0.4;
 
   return (
     <svg
-      width={size} height={size}
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke={color}
@@ -42,7 +44,8 @@ export function HintIcon({ size = 16, className, available, count }: IconProps):
       {/* Count inside bulb dome */}
       {count !== undefined && count > 0 && (
         <text
-          x="12" y="9"
+          x="12"
+          y="9"
           textAnchor="middle"
           dominantBaseline="central"
           fill={color}

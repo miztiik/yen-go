@@ -82,7 +82,7 @@ export const TrainingViewPage: FunctionalComponent<TrainingViewPageProps> = ({
   // Convenience accessors for filter state
   const filterState = {
     tagIds: [...filterTagIds],
-    tagOptionGroups: filterOptions.tagOptionGroups.map(g => ({
+    tagOptionGroups: filterOptions.tagOptionGroups.map((g) => ({
       label: g.label,
       options: [...g.options],
     })),
@@ -98,9 +98,9 @@ export const TrainingViewPage: FunctionalComponent<TrainingViewPageProps> = ({
 
   // Tag dropdown groups (reuse database distributions directly)
   const tagDropdownGroups = useMemo(() => {
-    return filterState.tagOptionGroups.map(g => ({
+    return filterState.tagOptionGroups.map((g) => ({
       label: g.label,
-      options: g.options.map(o => {
+      options: g.options.map((o) => {
         const opt: { id: string; label: string; count?: number } = { id: o.id, label: o.label };
         if (o.count !== undefined) opt.count = o.count;
         return opt;
@@ -113,7 +113,7 @@ export const TrainingViewPage: FunctionalComponent<TrainingViewPageProps> = ({
   // Create loader for this training level (re-creates when tag/ct filters change)
   const loader = useMemo(
     () => new TrainingPuzzleLoader(level, filterTagIds, contentType),
-    [level, filterTagIds, contentType],
+    [level, filterTagIds, contentType]
   );
 
   // Track total puzzles once loader is ready
@@ -138,22 +138,25 @@ export const TrainingViewPage: FunctionalComponent<TrainingViewPageProps> = ({
 
   // Track puzzle completion for accuracy
   const handlePuzzleComplete = useCallback((_puzzleId: string, isCorrect: boolean) => {
-    setCompletedCount(c => c + 1);
+    setCompletedCount((c) => c + 1);
     if (isCorrect) {
-      setCorrectCount(c => c + 1);
+      setCorrectCount((c) => c + 1);
     }
   }, []);
 
   // URL tracking for deep-linking/sharing (matches CollectionViewPage)
-  const handlePuzzleChange = useCallback((puzzleId: string | null, index?: number) => {
-    if (index === undefined) return;
-    urlSetOffset(index);
-    urlSetId(puzzleId ?? undefined);
-  }, [urlSetOffset, urlSetId]);
+  const handlePuzzleChange = useCallback(
+    (puzzleId: string | null, index?: number) => {
+      if (index === undefined) return;
+      urlSetOffset(index);
+      urlSetId(puzzleId ?? undefined);
+    },
+    [urlSetOffset, urlSetId]
+  );
 
   // Navigate to next level
   const handleNextLevel = useCallback(() => {
-    const currentLevelIndex = SKILL_LEVELS.findIndex(l => l.slug === level);
+    const currentLevelIndex = SKILL_LEVELS.findIndex((l) => l.slug === level);
     if (currentLevelIndex >= 0 && currentLevelIndex < SKILL_LEVELS.length - 1) {
       onNavigateTraining();
     } else {
@@ -162,112 +165,117 @@ export const TrainingViewPage: FunctionalComponent<TrainingViewPageProps> = ({
   }, [level, onNavigateTraining, onNavigateHome]);
 
   // Build filter strip content — matches CollectionViewPage layout
-  const hasTags = filterOptions.tagOptionGroups.flatMap(g => g.options).length > 0;
-  const filterStripContent = filtersLoaded && hasTags
-    ? (
-        <div className="flex flex-wrap items-center gap-2" data-testid="training-filter-strip">
-          {/* Content type global filter */}
-          <ContentTypeFilter
-            counts={filterOptions.contentTypeOptions.reduce<Record<number, number>>((acc, o) => {
-              if (o.count !== undefined) acc[Number(o.id)] = o.count;
-              return acc;
-            }, {})}
-          />
+  const hasTags = filterOptions.tagOptionGroups.flatMap((g) => g.options).length > 0;
+  const filterStripContent =
+    filtersLoaded && hasTags ? (
+      <div className="flex flex-wrap items-center gap-2" data-testid="training-filter-strip">
+        {/* Content type global filter */}
+        <ContentTypeFilter
+          counts={filterOptions.contentTypeOptions.reduce<Record<number, number>>((acc, o) => {
+            if (o.count !== undefined) acc[Number(o.id)] = o.count;
+            return acc;
+          }, {})}
+        />
 
-          {/* Visual separator between content-type and tag filters */}
-          <div className="hidden sm:block w-px h-6 self-center bg-[var(--color-border)] mx-1" />
+        {/* Visual separator between content-type and tag filters */}
+        <div className="hidden sm:block w-px h-6 self-center bg-[var(--color-border)] mx-1" />
 
-          {/* Tag FilterDropdown */}
-          <FilterDropdown
-            label="Tag"
-            placeholder="All Tags"
-            groups={tagDropdownGroups}
-            selected={filterState.tagId !== null ? String(filterState.tagId) : null}
-            onChange={handleTagChange}
-            testId="training-tag-filter"
-          />
+        {/* Tag FilterDropdown */}
+        <FilterDropdown
+          label="Tag"
+          placeholder="All Tags"
+          groups={tagDropdownGroups}
+          selected={filterState.tagId !== null ? String(filterState.tagId) : null}
+          onChange={handleTagChange}
+          testId="training-tag-filter"
+        />
 
-          {/* Active filter chips + clear button */}
-          <div className="ml-auto flex items-center gap-1.5">
-            {filterState.selectedTagSlug && (
-              <ActiveFilterChip
-                label={filterState.selectedTagLabel ?? filterState.selectedTagSlug}
-                onDismiss={() => filterState.setTag(null)}
-                testId="training-tag-chip"
-              />
-            )}
-            {filterState.activeFilterCount >= 2 && (
-              <ClearAllFiltersButton
-                onClear={filterState.clearAll}
-                testId="training-clear-all"
-              />
-            )}
-          </div>
-
-          {/* Next level unlocked indicator */}
-          {percentComplete >= 70 && percentComplete < 100 && (
-            <div className="text-xs font-medium text-[var(--color-success)]">
-              Next level unlocked!
-            </div>
+        {/* Active filter chips + clear button */}
+        <div className="ml-auto flex items-center gap-1.5">
+          {filterState.selectedTagSlug && (
+            <ActiveFilterChip
+              label={filterState.selectedTagLabel ?? filterState.selectedTagSlug}
+              onDismiss={() => filterState.setTag(null)}
+              testId="training-tag-chip"
+            />
+          )}
+          {filterState.activeFilterCount >= 2 && (
+            <ClearAllFiltersButton onClear={filterState.clearAll} testId="training-clear-all" />
           )}
         </div>
-      )
-    : percentComplete >= 70 && percentComplete < 100
-      ? (
+
+        {/* Next level unlocked indicator */}
+        {percentComplete >= 70 && percentComplete < 100 && (
           <div className="text-xs font-medium text-[var(--color-success)]">
             Next level unlocked!
           </div>
-        )
-      : undefined;
+        )}
+      </div>
+    ) : percentComplete >= 70 && percentComplete < 100 ? (
+      <div className="text-xs font-medium text-[var(--color-success)]">Next level unlocked!</div>
+    ) : undefined;
 
   // Training header — matches CollectionViewPage's PuzzleSetHeader pattern
   // with stats badges in rightContent and filter strip below.
-  const renderHeader = useCallback((info: HeaderInfo): JSX.Element => {
-    const statsContent = (
-      <div className="flex items-center gap-3">
-        <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-bg-secondary)] px-2.5 py-1 text-xs font-semibold text-[var(--color-text-secondary)] whitespace-nowrap">
-          {completedCount}/{info.totalPuzzles}
-          <span className="text-[var(--color-text-muted)] font-normal">solved</span>
-        </span>
-        <span className={`inline-flex items-center gap-1 rounded-full bg-[var(--color-bg-secondary)] px-2.5 py-1 text-xs font-semibold whitespace-nowrap ${getAccuracyColorClass(accuracy)}`}>
-          {accuracy}%
-          <span className="text-[var(--color-text-muted)] font-normal">accuracy</span>
-        </span>
-      </div>
-    );
+  const renderHeader = useCallback(
+    (info: HeaderInfo): JSX.Element => {
+      const statsContent = (
+        <div className="flex items-center gap-3">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-bg-secondary)] px-2.5 py-1 text-xs font-semibold text-[var(--color-text-secondary)] whitespace-nowrap">
+            {completedCount}/{info.totalPuzzles}
+            <span className="text-[var(--color-text-muted)] font-normal">solved</span>
+          </span>
+          <span
+            className={`inline-flex items-center gap-1 rounded-full bg-[var(--color-bg-secondary)] px-2.5 py-1 text-xs font-semibold whitespace-nowrap ${getAccuracyColorClass(accuracy)}`}
+          >
+            {accuracy}%<span className="text-[var(--color-text-muted)] font-normal">accuracy</span>
+          </span>
+        </div>
+      );
 
-    return (
-      <PuzzleSetHeader
-        title={`Training: ${levelInfo?.name ?? level}`}
-        {...(levelInfo ? { subtitle: `${levelInfo.rankRange.min} – ${levelInfo.rankRange.max}` } : {})}
-        currentIndex={info.currentIndex}
-        totalPuzzles={info.totalPuzzles}
-        progress={percentComplete}
-        {...(info.onBack ? { onBack: info.onBack } : {})}
-        backLabel="Back to training"
-        rightContent={statsContent}
-        {...(filterStripContent ? { filterStrip: filterStripContent } : {})}
-        testId="training-header"
-      />
-    );
-  }, [levelInfo, level, completedCount, accuracy, percentComplete, filterStripContent]);
+      return (
+        <PuzzleSetHeader
+          title={`Training: ${levelInfo?.name ?? level}`}
+          {...(levelInfo
+            ? { subtitle: `${levelInfo.rankRange.min} – ${levelInfo.rankRange.max}` }
+            : {})}
+          currentIndex={info.currentIndex}
+          totalPuzzles={info.totalPuzzles}
+          progress={percentComplete}
+          {...(info.onBack ? { onBack: info.onBack } : {})}
+          backLabel="Back to training"
+          rightContent={statsContent}
+          {...(filterStripContent ? { filterStrip: filterStripContent } : {})}
+          testId="training-header"
+        />
+      );
+    },
+    [levelInfo, level, completedCount, accuracy, percentComplete, filterStripContent]
+  );
 
   // Empty filter state — when tag/content-type filter produces zero results
   const hasAnyFilter = filterState.hasActiveFilters || contentType > 0;
 
-  const contentTypeInfo = contentType > 0
-    ? (() => {
-        const typeNames: Record<number, string> = { 1: 'Curated', 2: 'Practice', 3: 'Training Lab' };
-        const availableTypes = filterOptions.contentTypeOptions
-          .filter(opt => opt.id !== '0' && opt.id !== String(contentType) && (opt.count ?? 0) > 0)
-          .map(opt => ({ name: opt.label, count: opt.count ?? 0 }));
-        return {
-          activeTypeName: typeNames[contentType] ?? 'selected',
-          availableTypes,
-          onShowAllTypes: () => setContentType(0),
-        };
-      })()
-    : undefined;
+  const contentTypeInfo =
+    contentType > 0
+      ? (() => {
+          const typeNames: Record<number, string> = {
+            1: 'Curated',
+            2: 'Practice',
+            3: 'Training Lab',
+          };
+          const availableTypes = filterOptions.contentTypeOptions
+            .filter(
+              (opt) => opt.id !== '0' && opt.id !== String(contentType) && (opt.count ?? 0) > 0
+            )
+            .map((opt) => ({ name: opt.label, count: opt.count ?? 0 }));
+          return {
+            activeTypeName: typeNames[contentType] ?? 'selected',
+            availableTypes,
+            onShowAllTypes: () => setContentType(0),
+          };
+        })()
+      : undefined;
 
   const handleClearAllFilters = () => {
     filterState.clearAll();
@@ -277,7 +285,13 @@ export const TrainingViewPage: FunctionalComponent<TrainingViewPageProps> = ({
   const renderEmptyWithFilters = hasAnyFilter
     ? () => (
         <>
-          {renderHeader({ name: `Training: ${levelInfo?.name ?? level}`, currentIndex: 0, totalPuzzles: 0, completedCount: 0, onBack: onNavigateTraining })}
+          {renderHeader({
+            name: `Training: ${levelInfo?.name ?? level}`,
+            currentIndex: 0,
+            totalPuzzles: 0,
+            completedCount: 0,
+            onBack: onNavigateTraining,
+          })}
           <EmptyFilterState
             onClearFilters={handleClearAllFilters}
             testId="training-empty-filter"
@@ -288,75 +302,64 @@ export const TrainingViewPage: FunctionalComponent<TrainingViewPageProps> = ({
     : undefined;
 
   // Level-complete summary screen
-  const renderSummary = useCallback((info: SummaryInfo): JSX.Element => {
-    return (
-      <div className="mx-auto flex w-full max-w-[800px] flex-1 flex-col items-center justify-center px-4 py-8">
-        <div className="flex w-full max-w-[400px] flex-col items-center gap-6 rounded-lg bg-[var(--color-bg-primary)] p-8 text-center shadow-md">
-          <TrophyIcon size={64} className="text-[var(--color-success)]" />
+  const renderSummary = useCallback(
+    (info: SummaryInfo): JSX.Element => {
+      return (
+        <div className="mx-auto flex w-full max-w-[800px] flex-1 flex-col items-center justify-center px-4 py-8">
+          <div className="flex w-full max-w-[400px] flex-col items-center gap-6 rounded-lg bg-[var(--color-bg-primary)] p-8 text-center shadow-md">
+            <TrophyIcon size={64} className="text-[var(--color-success)]" />
 
-          <div>
-            <h2 className="m-0 text-xl font-bold text-[var(--color-success)]">
-              Level Complete!
-            </h2>
-            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-              You've completed {levelInfo?.name} training!
-            </p>
-          </div>
+            <div>
+              <h2 className="m-0 text-xl font-bold text-[var(--color-success)]">Level Complete!</h2>
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                You've completed {levelInfo?.name} training!
+              </p>
+            </div>
 
-          {/* Final stats */}
-          <div className="flex w-full gap-6 rounded-md bg-[var(--color-bg-secondary)] p-4">
-            <div className="flex-1 text-center">
-              <div className="text-xl font-bold text-[var(--color-text-primary)]">
-                {correctCount}/{info.completedCount}
+            {/* Final stats */}
+            <div className="flex w-full gap-6 rounded-md bg-[var(--color-bg-secondary)] p-4">
+              <div className="flex-1 text-center">
+                <div className="text-xl font-bold text-[var(--color-text-primary)]">
+                  {correctCount}/{info.completedCount}
+                </div>
+                <div className="text-sm text-[var(--color-text-muted)]">Correct</div>
               </div>
-              <div className="text-sm text-[var(--color-text-muted)]">Correct</div>
-            </div>
-            <div className="flex-1 text-center">
-              <div className={`text-xl font-bold ${getAccuracyColorClass(accuracy)}`}>
-                {accuracy}%
+              <div className="flex-1 text-center">
+                <div className={`text-xl font-bold ${getAccuracyColorClass(accuracy)}`}>
+                  {accuracy}%
+                </div>
+                <div className="text-sm text-[var(--color-text-muted)]">Accuracy</div>
               </div>
-              <div className="text-sm text-[var(--color-text-muted)]">Accuracy</div>
             </div>
-          </div>
 
-          {/* Next level unlocked message */}
-          {isNextLevelUnlocked && (
-            <div className="rounded-md bg-[color-mix(in_srgb,var(--color-success)_15%,transparent)] px-4 py-2 text-sm text-[var(--color-success)]">
-              Next level unlocked!
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex w-full gap-2">
-            <Button
-              variant="secondary"
-              onClick={onNavigateHome}
-              className="flex-1"
-            >
-              Go Home
-            </Button>
-            {isNextLevelUnlocked ? (
-              <Button
-                variant="primary"
-                onClick={handleNextLevel}
-                className="flex-1"
-              >
-                Next Level →
-              </Button>
-            ) : (
-              <Button
-                variant="primary"
-                onClick={info.onBack}
-                className="flex-1"
-              >
-                Practice More
-              </Button>
+            {/* Next level unlocked message */}
+            {isNextLevelUnlocked && (
+              <div className="rounded-md bg-[color-mix(in_srgb,var(--color-success)_15%,transparent)] px-4 py-2 text-sm text-[var(--color-success)]">
+                Next level unlocked!
+              </div>
             )}
+
+            {/* Actions */}
+            <div className="flex w-full gap-2">
+              <Button variant="secondary" onClick={onNavigateHome} className="flex-1">
+                Go Home
+              </Button>
+              {isNextLevelUnlocked ? (
+                <Button variant="primary" onClick={handleNextLevel} className="flex-1">
+                  Next Level →
+                </Button>
+              ) : (
+                <Button variant="primary" onClick={info.onBack} className="flex-1">
+                  Practice More
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    );
-  }, [levelInfo, correctCount, accuracy, isNextLevelUnlocked, onNavigateHome, handleNextLevel]);
+      );
+    },
+    [levelInfo, correctCount, accuracy, isNextLevelUnlocked, onNavigateHome, handleNextLevel]
+  );
 
   return (
     <PuzzleSetPlayer

@@ -55,7 +55,9 @@ export const ProgressPage: FunctionalComponent<ProgressPageProps> = ({
     }
 
     void load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handleBack = useCallback(() => onBack(), [onBack]);
@@ -129,10 +131,7 @@ export const ProgressPage: FunctionalComponent<ProgressPageProps> = ({
 
           <AchievementsGrid achievements={achievements} />
 
-          <SmartPracticeCTA
-            weakestTechniques={weakest}
-            onStart={onStartSmartPractice}
-          />
+          <SmartPracticeCTA weakestTechniques={weakest} onStart={onStartSmartPractice} />
         </div>
       </PageLayout.Content>
     </PageLayout>

@@ -7,10 +7,10 @@ import type { CollectionType } from '@/models/collection';
  * Toggleable backend config — not user-facing.
  */
 export const SHUFFLE_POLICY: Record<CollectionType, boolean> = {
-  graded: false,    // Learning Paths: preserve difficulty ordering
-  author: false,    // Books: preserve author's sequence
-  technique: true,  // Practice: randomize per session
-  reference: true,  // Practice: randomize per session
+  graded: false, // Learning Paths: preserve difficulty ordering
+  author: false, // Books: preserve author's sequence
+  technique: true, // Practice: randomize per session
+  reference: true, // Practice: randomize per session
   system: false,
 };
 

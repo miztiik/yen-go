@@ -85,7 +85,9 @@ export function useMasterIndexes(): MasterIndexes {
     };
 
     void load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return { levelMasterEntries, tagMasterEntries, isLoading };

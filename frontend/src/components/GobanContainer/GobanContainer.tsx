@@ -140,9 +140,7 @@ export function GobanContainer({
       data-testid="goban-container"
       title={title}
     >
-      <PersistentElement
-        elt={gobanDiv}
-      />
+      <PersistentElement elt={gobanDiv} />
     </div>
   );
 }

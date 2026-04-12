@@ -32,7 +32,7 @@ export interface TechniqueBrowsePageProps {
 /** Category filter options for FilterBar (PURSIG Finding 10: config-driven). */
 const CATEGORY_OPTIONS: readonly FilterOption[] = [
   { id: 'all', label: 'All' },
-  ...getOrderedTagCategories().map(c => ({ id: c.key, label: c.label })),
+  ...getOrderedTagCategories().map((c) => ({ id: c.key, label: c.label })),
 ];
 
 /** Sort options for FilterBar. */
@@ -47,17 +47,17 @@ const SORT_OPTIONS: readonly FilterOption[] = [
  */
 const MOBILE_LEVEL_CATEGORIES: readonly FilterOption[] = [
   { id: 'all', label: 'All' },
-  { id: 'ddk', label: 'DDK' },  // 30k-11k: novice, beginner, elementary, intermediate
-  { id: 'sdk', label: 'SDK' },  // 10k-1k: upper-intermediate, advanced
-  { id: 'dan', label: 'Dan' },  // 1d-9d: low-dan, high-dan, expert
+  { id: 'ddk', label: 'DDK' }, // 30k-11k: novice, beginner, elementary, intermediate
+  { id: 'sdk', label: 'SDK' }, // 10k-1k: upper-intermediate, advanced
+  { id: 'dan', label: 'Dan' }, // 1d-9d: low-dan, high-dan, expert
 ];
 
 /** Map category ID to level numeric IDs. */
 const CATEGORY_TO_LEVEL_IDS: Record<string, readonly number[]> = {
-  all: [],  // Empty = no filter
-  ddk: [110, 120, 130, 140],  // novice, beginner, elementary, intermediate
-  sdk: [150, 160],  // upper-intermediate, advanced
-  dan: [210, 220, 230],  // low-dan, high-dan, expert
+  all: [], // Empty = no filter
+  ddk: [110, 120, 130, 140], // novice, beginner, elementary, intermediate
+  sdk: [150, 160], // upper-intermediate, advanced
+  dan: [210, 220, 230], // low-dan, high-dan, expert
 };
 
 /**
@@ -82,7 +82,12 @@ export const TechniqueBrowsePage: FunctionalComponent<TechniqueBrowsePageProps> 
   const isDesktop = useIsDesktop();
 
   // P3: URL-synced filter state
-  const { filters, setFilters, hasActiveFilters: urlHasActiveFilters, clearFilters } = useCanonicalUrl();
+  const {
+    filters,
+    setFilters,
+    hasActiveFilters: urlHasActiveFilters,
+    clearFilters,
+  } = useCanonicalUrl();
   const depthPreset = filters.dp ?? null;
 
   // Load level/tag master indexes from database
@@ -99,16 +104,23 @@ export const TechniqueBrowsePage: FunctionalComponent<TechniqueBrowsePageProps> 
     setLevelIds: (ids: number[]) => setFilters({ l: ids }),
     setTagIds: (_ids: number[]) => {},
     setLevelFromOption: (id: string | null) => {
-      if (id === null || id === '' || id === 'all') { setFilters({ l: [] }); return; }
-      const n = Number(id); if (!Number.isNaN(n)) setFilters({ l: [n] });
+      if (id === null || id === '' || id === 'all') {
+        setFilters({ l: [] });
+        return;
+      }
+      const n = Number(id);
+      if (!Number.isNaN(n)) setFilters({ l: [n] });
     },
     levelOptions: [
       { id: 'all', label: 'All' } as FilterOption,
-      ...allLevels.map(l => ({
-        id: String(l.id),
-        label: l.name,
-        tooltip: `${l.name} (${l.rankRange.min}\u2013${l.rankRange.max})`,
-      } as FilterOption)),
+      ...allLevels.map(
+        (l) =>
+          ({
+            id: String(l.id),
+            label: l.name,
+            tooltip: `${l.name} (${l.rankRange.min}\u2013${l.rankRange.max})`,
+          }) as FilterOption
+      ),
     ],
     levelId: filterLevelIds.length === 1 ? filterLevelIds[0]! : null,
     hasActiveFilters: urlHasActiveFilters,
@@ -163,12 +175,17 @@ export const TechniqueBrowsePage: FunctionalComponent<TechniqueBrowsePageProps> 
     };
 
     void loadTechniques();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleSelectTechnique = useCallback((techniqueId: string) => {
-    onSelectTechnique(techniqueId);
-  }, [onSelectTechnique]);
+  const handleSelectTechnique = useCallback(
+    (techniqueId: string) => {
+      onSelectTechnique(techniqueId);
+    },
+    [onSelectTechnique]
+  );
 
   // Build slug→tagEntry lookup for O(1) access
   const tagSlugMap = useMemo(() => {
@@ -191,7 +208,7 @@ export const TechniqueBrowsePage: FunctionalComponent<TechniqueBrowsePageProps> 
   // WP8 §8.6: Filter technique list by selected level (reactive counts)
   const filteredTechniques = useMemo(() => {
     // Enrich techniques with puzzle counts from master indexes
-    const enriched = techniques.map(tech => ({
+    const enriched = techniques.map((tech) => ({
       ...tech,
       puzzleCount: puzzleCounts[tech.id] ?? 0,
     }));
@@ -200,11 +217,11 @@ export const TechniqueBrowsePage: FunctionalComponent<TechniqueBrowsePageProps> 
 
     // When a level is selected, update technique puzzle counts to show
     // only puzzles at that level (from level master index tag distributions)
-    const levelEntry = levelMasterEntries.find(l => l.id === filterState.levelId);
+    const levelEntry = levelMasterEntries.find((l) => l.id === filterState.levelId);
     if (!levelEntry) return enriched;
 
     return enriched
-      .map(tech => {
+      .map((tech) => {
         // Find the tag's numeric ID from tag master entries using slug lookup
         const tagEntry = tagSlugMap.get(tech.id);
         if (!tagEntry) return { ...tech, puzzleCount: 0 };
@@ -212,7 +229,7 @@ export const TechniqueBrowsePage: FunctionalComponent<TechniqueBrowsePageProps> 
         const countAtLevel = levelEntry.tags[String(tagEntry.id)] ?? 0;
         return { ...tech, puzzleCount: countAtLevel };
       })
-      .filter(tech => tech.puzzleCount > 0);
+      .filter((tech) => tech.puzzleCount > 0);
   }, [techniques, filterState.levelId, levelMasterEntries, puzzleCounts, tagSlugMap]);
 
   // WP8: Level filter bar options — pass through as FilterOption[]
@@ -222,10 +239,13 @@ export const TechniqueBrowsePage: FunctionalComponent<TechniqueBrowsePageProps> 
   const handleLevelFilterChange = filterState.setLevelFromOption;
 
   // H6: Mobile category-based level filter handler
-  const handleMobileCategoryChange = useCallback((categoryId: string) => {
-    const levelIds = CATEGORY_TO_LEVEL_IDS[categoryId] ?? [];
-    filterState.setLevelIds([...levelIds]);
-  }, [filterState]);
+  const handleMobileCategoryChange = useCallback(
+    (categoryId: string) => {
+      const levelIds = CATEGORY_TO_LEVEL_IDS[categoryId] ?? [];
+      filterState.setLevelIds([...levelIds]);
+    },
+    [filterState]
+  );
 
   // H6: Derive currently selected mobile category from levelIds
   const selectedMobileCategory = useMemo(() => {
@@ -234,7 +254,7 @@ export const TechniqueBrowsePage: FunctionalComponent<TechniqueBrowsePageProps> 
     // Check if all selected IDs belong to a single category
     for (const [cat, catIds] of Object.entries(CATEGORY_TO_LEVEL_IDS)) {
       if (cat === 'all') continue;
-      if (ids.length === catIds.length && ids.every(id => catIds.includes(id))) {
+      if (ids.length === catIds.length && ids.every((id) => catIds.includes(id))) {
         return cat;
       }
     }
@@ -246,8 +266,10 @@ export const TechniqueBrowsePage: FunctionalComponent<TechniqueBrowsePageProps> 
   const depthPresetOptions = useMemo(() => {
     if (levelMasterEntries.length === 0 && tagMasterEntries.length === 0) return [];
     const depthRange = depthPresetToRange(depthPreset);
-    const levelFilter = filterState.levelIds.length > 0 && filterState.levelIds[0] !== undefined
-      ? { levelId: filterState.levelIds[0] } : {};
+    const levelFilter =
+      filterState.levelIds.length > 0 && filterState.levelIds[0] !== undefined
+        ? { levelId: filterState.levelIds[0] }
+        : {};
     const counts = getFilterCounts({
       ...levelFilter,
       ...depthRange,
@@ -255,10 +277,14 @@ export const TechniqueBrowsePage: FunctionalComponent<TechniqueBrowsePageProps> 
     return buildDepthPresetOptions(counts.depthPresets ?? {});
   }, [depthPreset, filterState.levelIds, levelMasterEntries.length, tagMasterEntries.length]);
 
-  const handleDepthPresetChange = useCallback((id: string) => {
-    const newDp = id === depthPreset ? undefined : id;
-    if (newDp !== undefined) setFilters({ dp: newDp }); else setFilters({});
-  }, [depthPreset, setFilters]);
+  const handleDepthPresetChange = useCallback(
+    (id: string) => {
+      const newDp = id === depthPreset ? undefined : id;
+      if (newDp !== undefined) setFilters({ dp: newDp });
+      else setFilters({});
+    },
+    [depthPreset, setFilters]
+  );
 
   // Calculate summary stats
   const summaryStats = useMemo(() => {
@@ -279,10 +305,7 @@ export const TechniqueBrowsePage: FunctionalComponent<TechniqueBrowsePageProps> 
     <PageLayout variant="single-column" mode="technique">
       <PageLayout.Content>
         {/* Header (Layer 1) — HomeTile DNA: icon circle, bold type, stat badges */}
-        <div
-          className="px-4 pb-4 pt-4"
-          style={{ backgroundColor: ACCENT.light }}
-        >
+        <div className="px-4 pb-4 pt-4" style={{ backgroundColor: ACCENT.light }}>
           <div className="mx-auto max-w-5xl">
             {/* Back button */}
             <button
@@ -308,10 +331,16 @@ export const TechniqueBrowsePage: FunctionalComponent<TechniqueBrowsePageProps> 
                 <TechniqueIcon size="lg" />
               </div>
               <div>
-                <h1 className="m-0 text-[var(--color-text-primary)]" style={{ fontSize: '1.75rem', fontWeight: 800, lineHeight: 1.2 }}>
+                <h1
+                  className="m-0 text-[var(--color-text-primary)]"
+                  style={{ fontSize: '1.75rem', fontWeight: 800, lineHeight: 1.2 }}
+                >
                   Technique Focus
                 </h1>
-                <p className="m-0 mt-1 text-sm text-[var(--color-text-muted)]" style={{ fontWeight: 500 }}>
+                <p
+                  className="m-0 mt-1 text-sm text-[var(--color-text-muted)]"
+                  style={{ fontWeight: 500 }}
+                >
                   Master specific Go techniques through targeted practice
                 </p>
               </div>
@@ -436,23 +465,28 @@ export const TechniqueBrowsePage: FunctionalComponent<TechniqueBrowsePageProps> 
             />
           )}
 
-          {!isLoading && !error && filteredTechniques.length === 0 && filterState.hasActiveFilters && (
-            <EmptyFilterState
-              message="No techniques match your level filter"
-              onClearFilters={filterState.clearAll}
-              testId="technique-empty-filter"
-            />
-          )}
+          {!isLoading &&
+            !error &&
+            filteredTechniques.length === 0 &&
+            filterState.hasActiveFilters && (
+              <EmptyFilterState
+                message="No techniques match your level filter"
+                onClearFilters={filterState.clearAll}
+                testId="technique-empty-filter"
+              />
+            )}
 
-          {!isLoading && !error && (filteredTechniques.length > 0 || !filterState.hasActiveFilters) && (
-            <TechniqueList
-              techniques={filteredTechniques}
-              stats={stats}
-              categoryFilter={categoryFilter as 'all' | 'tesuji' | 'technique' | 'objective'}
-              sortBy={sortBy as TechniqueSortOption}
-              onSelectTechnique={handleSelectTechnique}
-            />
-          )}
+          {!isLoading &&
+            !error &&
+            (filteredTechniques.length > 0 || !filterState.hasActiveFilters) && (
+              <TechniqueList
+                techniques={filteredTechniques}
+                stats={stats}
+                categoryFilter={categoryFilter as 'all' | 'tesuji' | 'technique' | 'objective'}
+                sortBy={sortBy as TechniqueSortOption}
+                onSelectTechnique={handleSelectTechnique}
+              />
+            )}
         </div>
       </PageLayout.Content>
     </PageLayout>
@@ -462,14 +496,11 @@ export const TechniqueBrowsePage: FunctionalComponent<TechniqueBrowsePageProps> 
 /**
  * Save technique stats to localStorage
  */
-export function saveTechniqueStats(
-  techniqueId: string,
-  correct: boolean,
-): void {
+export function saveTechniqueStats(techniqueId: string, correct: boolean): void {
   try {
     const stored = localStorage.getItem(TECHNIQUE_PROGRESS_KEY);
     const progress: TechniqueProgress = stored
-      ? JSON.parse(stored) as TechniqueProgress
+      ? (JSON.parse(stored) as TechniqueProgress)
       : { byTechnique: {}, updatedAt: new Date().toISOString() };
 
     const existing = progress.byTechnique[techniqueId];

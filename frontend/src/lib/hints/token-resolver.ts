@@ -38,7 +38,7 @@ const TOKEN_RE = /\{!([a-s]{2})\}/g;
 export function resolveHintTokens(
   text: string,
   boardSize: number,
-  transforms: TransformSettings,
+  transforms: TransformSettings
 ): string {
   return text.replace(TOKEN_RE, (_match: string, coord: string) => {
     // Apply transforms to the SGF coordinate

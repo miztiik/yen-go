@@ -132,9 +132,7 @@ export const GobanRenderer: FunctionComponent<GobanRendererProps> = ({
   if (!isReady && showLoading) {
     return (
       <div className={className} style={styles.container}>
-        <div style={styles.loading}>
-          Loading puzzle...
-        </div>
+        <div style={styles.loading}>Loading puzzle...</div>
       </div>
     );
   }
@@ -144,18 +142,10 @@ export const GobanRenderer: FunctionComponent<GobanRendererProps> = ({
   // -------------------------------------------------------------------------
   const getStatusOverlay = (): JSX.Element | null => {
     if (status === 'correct') {
-      return (
-        <div style={{ ...styles.statusOverlay, ...styles.correct }}>
-          ✓ Correct!
-        </div>
-      );
+      return <div style={{ ...styles.statusOverlay, ...styles.correct }}>✓ Correct!</div>;
     }
     if (status === 'wrong') {
-      return (
-        <div style={{ ...styles.statusOverlay, ...styles.wrong }}>
-          ✗ Wrong
-        </div>
-      );
+      return <div style={{ ...styles.statusOverlay, ...styles.wrong }}>✗ Wrong</div>;
     }
     return null;
   };

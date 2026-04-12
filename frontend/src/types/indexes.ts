@@ -249,7 +249,7 @@ export interface DailySourceSpotlight {
 /**
  * Daily challenge index for a specific date.
  * Stored in daily_schedule + daily_puzzles tables in yengo-search.db.
- * 
+ *
  * Supports v1 (legacy), v2.0 (spec 035), and v2.1 (spec 112) formats:
  * - v1: Uses timed.queue (flat list)
  * - v2.0: Uses timed.sets (array of sets), by_tag (object)
@@ -265,17 +265,17 @@ export interface DailyIndex {
   /** When this index was generated (ISO timestamp) - supports both cases */
   generatedAt?: string;
   generated_at?: string;
-  
+
   // ---- v1 and v2 common ----
   /** Standard daily challenge */
   standard?: DailyStandard | DailyStandardV2;
-  
+
   // ---- v1 format ----
   /** Timed challenge queue (v1 - flat list) */
   timed?: DailyTimed | DailyTimedV2;
   /** Tag challenge (v1) */
   tag?: DailyTag;
-  
+
   // ---- v2.0+ format ----
   /** By-tag challenges (v2.0+ - object keyed by tag name) */
   by_tag?: DailyByTag;
@@ -283,11 +283,11 @@ export interface DailyIndex {
   weekly_ref?: string;
   /** Config used for generation (v2.0+) */
   config_used?: Record<string, unknown>;
-  
+
   // ---- v2.1 fields (spec 112) ----
   /** Featured technique of the day at root level (v2.1) */
   technique_of_day?: string;
-  
+
   // ---- Legacy fields ----
   /** Gauntlet challenge - optional */
   gauntlet?: DailyGauntlet;
@@ -315,5 +315,3 @@ export function isDailyIndex(value: unknown): value is DailyIndex {
     typeof obj.timed === 'object'
   );
 }
-
-

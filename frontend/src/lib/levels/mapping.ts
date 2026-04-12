@@ -33,9 +33,9 @@ function expandRankRange(min: string, max: string): string[] {
 
 /** Rank string → level slug. Derived from config/puzzle-levels.json rankRange — single source of truth. */
 const RANK_TO_SLUG: ReadonlyMap<string, LevelSlug> = new Map(
-  LEVELS.flatMap(l =>
-    expandRankRange(l.rankRange.min, l.rankRange.max).map(rank => [rank, l.slug] as const),
-  ),
+  LEVELS.flatMap((l) =>
+    expandRankRange(l.rankRange.min, l.rankRange.max).map((rank) => [rank, l.slug] as const)
+  )
 );
 
 /**
@@ -129,14 +129,14 @@ export function resolveRankRange(rankStr: string): string {
     // Return rank with higher level (stronger player)
     if (level2 > level1) return rank2;
     if (level1 > level2) return rank1;
-    
+
     // Same level - compare numerically within the rank type
     // For dan: higher number is stronger (3d > 1d)
     // For kyu: lower number is stronger (5k > 10k)
     const num1 = parseInt(rank1, 10);
     const num2 = parseInt(rank2, 10);
     const isDan = rank1.endsWith('d');
-    
+
     if (isDan) {
       // Dan ranks: higher number is stronger
       return num2 > num1 ? rank2 : rank1;

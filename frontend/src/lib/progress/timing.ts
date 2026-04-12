@@ -295,7 +295,7 @@ export function parseTimeString(timeStr: string): number {
 
   const minutesPart = parts[0] ?? '0';
   const secondsAndMillis = parts[1] ?? '0';
-  
+
   const minutes = parseInt(minutesPart, 10) || 0;
   const secondsPart = secondsAndMillis.split('.');
   const seconds = parseInt(secondsPart[0] ?? '0', 10) || 0;

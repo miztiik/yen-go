@@ -184,10 +184,10 @@ export function markNotified(
 ): AchievementProgress {
   return {
     ...progress,
-    unlocks: progress.unlocks.map(u =>
+    unlocks: progress.unlocks.map((u) =>
       u.achievementId === achievementId ? { ...u, notified: true } : u
     ),
-    pendingNotifications: progress.pendingNotifications.filter(id => id !== achievementId),
+    pendingNotifications: progress.pendingNotifications.filter((id) => id !== achievementId),
   };
 }
 
@@ -197,7 +197,7 @@ export function markNotified(
 export function markAllNotified(progress: AchievementProgress): AchievementProgress {
   return {
     ...progress,
-    unlocks: progress.unlocks.map(u => ({ ...u, notified: true })),
+    unlocks: progress.unlocks.map((u) => ({ ...u, notified: true })),
     pendingNotifications: [],
   };
 }
@@ -205,10 +205,7 @@ export function markAllNotified(progress: AchievementProgress): AchievementProgr
 /**
  * Check if achievement is unlocked.
  */
-export function isUnlocked(
-  progress: AchievementProgress,
-  achievementId: string
-): boolean {
+export function isUnlocked(progress: AchievementProgress, achievementId: string): boolean {
   return progress.unlockedIds.includes(achievementId);
 }
 
@@ -219,16 +216,13 @@ export function getUnlockRecord(
   progress: AchievementProgress,
   achievementId: string
 ): AchievementUnlock | undefined {
-  return progress.unlocks.find(u => u.achievementId === achievementId);
+  return progress.unlocks.find((u) => u.achievementId === achievementId);
 }
 
 /**
  * Get progress value for achievement.
  */
-export function getProgressValue(
-  progress: AchievementProgress,
-  achievementId: string
-): number {
+export function getProgressValue(progress: AchievementProgress, achievementId: string): number {
   return progress.progressValues[achievementId] ?? 0;
 }
 

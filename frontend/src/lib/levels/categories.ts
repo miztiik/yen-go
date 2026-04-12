@@ -45,10 +45,11 @@ export function getCategoryLevels(category: CategoryFilter): readonly LevelSlug[
   if (cached) return cached;
 
   let result: readonly LevelSlug[];
-  if (category === 'all') result = LEVELS.map(l => l.slug);
-  else if (category === 'beginner') result = LEVELS.filter(l => l.id < 140).map(l => l.slug);
-  else if (category === 'intermediate') result = LEVELS.filter(l => l.id >= 140 && l.id < 200).map(l => l.slug);
-  else result = LEVELS.filter(l => l.id >= 200).map(l => l.slug);
+  if (category === 'all') result = LEVELS.map((l) => l.slug);
+  else if (category === 'beginner') result = LEVELS.filter((l) => l.id < 140).map((l) => l.slug);
+  else if (category === 'intermediate')
+    result = LEVELS.filter((l) => l.id >= 140 && l.id < 200).map((l) => l.slug);
+  else result = LEVELS.filter((l) => l.id >= 200).map((l) => l.slug);
 
   categoryLevelsCache.set(category, result);
   return result;
@@ -59,7 +60,7 @@ export function getCategoryLevels(category: CategoryFilter): readonly LevelSlug[
  * Returns 'beginner' for unknown slugs (safe default).
  */
 export function getLevelCategory(slug: string): CategoryFilter {
-  const level = LEVELS.find(l => l.slug === slug);
+  const level = LEVELS.find((l) => l.slug === slug);
   if (!level) return 'beginner';
   if (level.id < 140) return 'beginner';
   if (level.id < 200) return 'intermediate';

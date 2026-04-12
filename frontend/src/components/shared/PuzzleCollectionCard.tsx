@@ -81,7 +81,7 @@ export const PuzzleCollectionCard: FunctionalComponent<PuzzleCollectionCardProps
         onClick?.();
       }
     },
-    [onClick],
+    [onClick]
   );
 
   const hasProgress = progress && progress.total > 0;
@@ -97,9 +97,10 @@ export const PuzzleCollectionCard: FunctionalComponent<PuzzleCollectionCardProps
         border-b-[6px] border-l-0 border-r-0 border-t-0 border-b-[var(--color-accent-border,var(--color-accent))]
         transition-all duration-300 ease-out
         flex flex-col h-full
-        ${disabled
-          ? 'opacity-45 grayscale-[30%] cursor-not-allowed'
-          : 'hover:shadow-xl hover:ring-2 hover:ring-[var(--color-accent)]/30 active:scale-[0.98] cursor-pointer'
+        ${
+          disabled
+            ? 'opacity-45 grayscale-[30%] cursor-not-allowed'
+            : 'hover:shadow-xl hover:ring-2 hover:ring-[var(--color-accent)]/30 active:scale-[0.98] cursor-pointer'
         }
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]
         select-none
@@ -117,9 +118,7 @@ export const PuzzleCollectionCard: FunctionalComponent<PuzzleCollectionCardProps
             {title}
           </h3>
           {subtitle && (
-            <p className="m-0 mt-0.5 truncate text-sm text-[var(--color-text-muted)]">
-              {subtitle}
-            </p>
+            <p className="m-0 mt-0.5 truncate text-sm text-[var(--color-text-muted)]">{subtitle}</p>
           )}
         </div>
 
@@ -129,9 +128,10 @@ export const PuzzleCollectionCard: FunctionalComponent<PuzzleCollectionCardProps
             className={`
               inline-flex shrink-0 items-center rounded-full
               px-2.5 py-0.5 text-xs font-medium
-              ${mastery === 'new' || mastery === 'started'
-                ? 'border border-[var(--color-accent)] bg-transparent text-[var(--color-accent)] opacity-60'
-                : `bg-[var(--color-accent)] text-[var(--color-bg-panel)] ${MASTERY_OPACITY[mastery]}`
+              ${
+                mastery === 'new' || mastery === 'started'
+                  ? 'border border-[var(--color-accent)] bg-transparent text-[var(--color-accent)] opacity-60'
+                  : `bg-[var(--color-accent)] text-[var(--color-bg-panel)] ${MASTERY_OPACITY[mastery]}`
               }
             `}
           >
@@ -166,11 +166,7 @@ export const PuzzleCollectionCard: FunctionalComponent<PuzzleCollectionCardProps
       {disabled ? (
         <p className="m-0 mt-3 text-xs italic text-[var(--color-text-muted)]">Coming Soon</p>
       ) : hasProgress ? (
-        <ProgressBar
-          solved={progress.completed}
-          total={progress.total}
-          className="mt-3"
-        />
+        <ProgressBar solved={progress.completed} total={progress.total} className="mt-3" />
       ) : progress && progress.total === 0 ? (
         <p className="m-0 mt-3 text-xs italic text-[var(--color-text-muted)]">Ready to begin</p>
       ) : null}

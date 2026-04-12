@@ -47,9 +47,10 @@ export function getFocusStyles(variant: 'light' | 'dark' = 'light'): {
   outlineOffset: string;
 } {
   return {
-    outline: variant === 'light' 
-      ? '2px solid #2563eb'  // Blue-600, good contrast on white
-      : '2px solid #60a5fa', // Blue-400, good contrast on dark
+    outline:
+      variant === 'light'
+        ? '2px solid #2563eb' // Blue-600, good contrast on white
+        : '2px solid #60a5fa', // Blue-400, good contrast on dark
     outlineOffset: '2px',
   };
 }
@@ -101,19 +102,19 @@ export const srOnlyStyles: Record<string, string | number> = {
 export const accessibleColorPairs = {
   // Light backgrounds
   onWhite: {
-    primary: '#1f2937',    // gray-800, 12.6:1 contrast
-    secondary: '#4b5563',  // gray-600, 6.0:1 contrast
-    success: '#047857',    // emerald-700, 4.6:1 contrast
-    error: '#b91c1c',      // red-700, 5.5:1 contrast
-    warning: '#92400e',    // amber-800, 5.4:1 contrast
+    primary: '#1f2937', // gray-800, 12.6:1 contrast
+    secondary: '#4b5563', // gray-600, 6.0:1 contrast
+    success: '#047857', // emerald-700, 4.6:1 contrast
+    error: '#b91c1c', // red-700, 5.5:1 contrast
+    warning: '#92400e', // amber-800, 5.4:1 contrast
   },
   // Dark backgrounds
   onDark: {
-    primary: '#f9fafb',    // gray-50, high contrast
-    secondary: '#d1d5db',  // gray-300, good contrast
-    success: '#34d399',    // emerald-400
-    error: '#f87171',      // red-400
-    warning: '#fbbf24',    // amber-400
+    primary: '#f9fafb', // gray-50, high contrast
+    secondary: '#d1d5db', // gray-300, good contrast
+    success: '#34d399', // emerald-400
+    error: '#f87171', // red-400
+    warning: '#fbbf24', // amber-400
   },
 } as const;
 
@@ -126,10 +127,10 @@ export function getAccessibleTextColor(backgroundColor: string): string {
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
   const b = parseInt(hex.substring(4, 6), 16);
-  
+
   // Calculate relative luminance
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  
+
   return luminance > 0.5 ? '#1f2937' : '#f9fafb';
 }
 
@@ -145,14 +146,14 @@ export function announceToScreenReader(
   announcer.setAttribute('aria-live', priority);
   announcer.setAttribute('aria-atomic', 'true');
   Object.assign(announcer.style, srOnlyStyles);
-  
+
   document.body.appendChild(announcer);
-  
+
   // Small delay ensures screen reader picks up the change
   setTimeout(() => {
     announcer.textContent = message;
   }, 100);
-  
+
   // Clean up after announcement
   setTimeout(() => {
     document.body.removeChild(announcer);
@@ -166,13 +167,13 @@ export function createFocusTrap(container: HTMLElement): () => void {
   const focusableElements = container.querySelectorAll<HTMLElement>(
     'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
   );
-  
+
   const firstFocusable = focusableElements[0];
   const lastFocusable = focusableElements[focusableElements.length - 1];
-  
+
   const handleKeyDown = (e: KeyboardEvent): void => {
     if (e.key !== 'Tab') return;
-    
+
     if (e.shiftKey) {
       if (document.activeElement === firstFocusable) {
         lastFocusable?.focus();
@@ -185,10 +186,10 @@ export function createFocusTrap(container: HTMLElement): () => void {
       }
     }
   };
-  
+
   container.addEventListener('keydown', handleKeyDown);
   firstFocusable?.focus();
-  
+
   return () => {
     container.removeEventListener('keydown', handleKeyDown);
   };

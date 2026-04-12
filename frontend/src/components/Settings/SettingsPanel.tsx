@@ -70,37 +70,49 @@ export function SettingsPanel({
   // Load tags from tags.json on mount
   useEffect(() => {
     void getTagsConfig()
-      .then(config => {
+      .then((config) => {
         setTags(Object.values(config.tags));
         setTagsLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Failed to load tags:', err);
         setTagsLoading(false);
       });
   }, []);
 
-  const handleThemeChange = useCallback((theme: AppSettings['theme']) => {
-    onSettingsChange({ ...settings, theme });
-  }, [settings, onSettingsChange]);
+  const handleThemeChange = useCallback(
+    (theme: AppSettings['theme']) => {
+      onSettingsChange({ ...settings, theme });
+    },
+    [settings, onSettingsChange]
+  );
 
-  const handleGameModeChange = useCallback((gameMode: GameMode) => {
-    onSettingsChange({ ...settings, gameMode });
-  }, [settings, onSettingsChange]);
+  const handleGameModeChange = useCallback(
+    (gameMode: GameMode) => {
+      onSettingsChange({ ...settings, gameMode });
+    },
+    [settings, onSettingsChange]
+  );
 
-  const handleDifficultyChange = useCallback((preset: typeof DIFFICULTY_PRESETS[number] | null) => {
-    onSettingsChange({
-      ...settings,
-      difficultyFilter: preset ? { minRank: preset.min, maxRank: preset.max } : null,
-    });
-  }, [settings, onSettingsChange]);
+  const handleDifficultyChange = useCallback(
+    (preset: (typeof DIFFICULTY_PRESETS)[number] | null) => {
+      onSettingsChange({
+        ...settings,
+        difficultyFilter: preset ? { minRank: preset.min, maxRank: preset.max } : null,
+      });
+    },
+    [settings, onSettingsChange]
+  );
 
-  const handleTagToggle = useCallback((tag: string) => {
-    const newTags = settings.tagFilter.includes(tag)
-      ? settings.tagFilter.filter(t => t !== tag)
-      : [...settings.tagFilter, tag];
-    onSettingsChange({ ...settings, tagFilter: newTags });
-  }, [settings, onSettingsChange]);
+  const handleTagToggle = useCallback(
+    (tag: string) => {
+      const newTags = settings.tagFilter.includes(tag)
+        ? settings.tagFilter.filter((t) => t !== tag)
+        : [...settings.tagFilter, tag];
+      onSettingsChange({ ...settings, tagFilter: newTags });
+    },
+    [settings, onSettingsChange]
+  );
 
   const handleSoundToggle = useCallback(() => {
     onSettingsChange({ ...settings, soundEnabled: !settings.soundEnabled });
@@ -116,7 +128,7 @@ export function SettingsPanel({
     <>
       {/* Backdrop */}
       <div style={styles.backdrop} onClick={onClose} />
-      
+
       {/* Panel */}
       <div style={styles.panel}>
         <div style={styles.header}>
@@ -131,7 +143,7 @@ export function SettingsPanel({
           <section style={styles.section}>
             <h3 style={styles.sectionTitle}>Theme</h3>
             <div style={styles.optionRow}>
-              {(['light', 'dark', 'system'] as const).map(theme => (
+              {(['light', 'dark', 'system'] as const).map((theme) => (
                 <button
                   key={theme}
                   style={{
@@ -197,16 +209,20 @@ export function SettingsPanel({
             <section style={styles.section}>
               <h3 style={styles.sectionTitle}>Difficulty</h3>
               <div style={styles.optionColumn}>
-                {DIFFICULTY_PRESETS.map(preset => (
+                {DIFFICULTY_PRESETS.map((preset) => (
                   <button
                     key={preset.label}
                     style={{
                       ...styles.filterButton,
-                      ...(settings.difficultyFilter?.minRank === preset.min ? styles.filterButtonActive : {}),
+                      ...(settings.difficultyFilter?.minRank === preset.min
+                        ? styles.filterButtonActive
+                        : {}),
                     }}
-                    onClick={() => handleDifficultyChange(
-                      settings.difficultyFilter?.minRank === preset.min ? null : preset
-                    )}
+                    onClick={() =>
+                      handleDifficultyChange(
+                        settings.difficultyFilter?.minRank === preset.min ? null : preset
+                      )
+                    }
                   >
                     {preset.label}
                   </button>
@@ -223,7 +239,7 @@ export function SettingsPanel({
                 <div style={styles.loading}>Loading tags...</div>
               ) : (
                 <div style={styles.tagGrid}>
-                  {tags.map(tag => (
+                  {tags.map((tag) => (
                     <button
                       key={tag.id}
                       style={{
@@ -254,10 +270,12 @@ export function SettingsPanel({
                 onClick={handleSoundToggle}
                 aria-label={settings.soundEnabled ? 'Disable sound' : 'Enable sound'}
               >
-                <span style={{
-                  ...styles.toggleKnob,
-                  ...(settings.soundEnabled ? styles.toggleKnobOn : {}),
-                }} />
+                <span
+                  style={{
+                    ...styles.toggleKnob,
+                    ...(settings.soundEnabled ? styles.toggleKnobOn : {}),
+                  }}
+                />
               </button>
             </div>
             <div style={styles.toggleRow}>
@@ -270,10 +288,12 @@ export function SettingsPanel({
                 onClick={handleHintsToggle}
                 aria-label={settings.hintsEnabled ? 'Disable hints' : 'Enable hints'}
               >
-                <span style={{
-                  ...styles.toggleKnob,
-                  ...(settings.hintsEnabled ? styles.toggleKnobOn : {}),
-                }} />
+                <span
+                  style={{
+                    ...styles.toggleKnob,
+                    ...(settings.hintsEnabled ? styles.toggleKnobOn : {}),
+                  }}
+                />
               </button>
             </div>
           </section>

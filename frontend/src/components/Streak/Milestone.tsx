@@ -85,7 +85,8 @@ const styles: Record<string, JSX.CSSProperties> = {
     transition: 'all 0.3s ease',
   },
   containerUnlocked: {
-    background: 'linear-gradient(135deg, var(--color-mode-daily-light) 0%, var(--color-mode-daily-bg) 100%)',
+    background:
+      'linear-gradient(135deg, var(--color-mode-daily-light) 0%, var(--color-mode-daily-bg) 100%)',
     border: '2px solid var(--color-streak-fire)',
     boxShadow: '0 4px 12px rgba(251, 191, 36, 0.2)',
   },
@@ -187,9 +188,7 @@ export function Milestone({
         {getMilestoneIcon(days)}
       </span>
       <span style={daysStyle}>{days}</span>
-      <span style={labelStyle}>
-        {unlocked ? milestoneName : 'Days'}
-      </span>
+      <span style={labelStyle}>{unlocked ? milestoneName : 'Days'}</span>
     </div>
   );
 }
@@ -242,12 +241,7 @@ export function MilestoneList({
       }}
     >
       {MILESTONE_DAYS.map((days) => (
-        <Milestone
-          key={days}
-          days={days}
-          unlocked={maxStreak >= days}
-          size={size}
-        />
+        <Milestone key={days} days={days} unlocked={maxStreak >= days} size={size} />
       ))}
     </div>
   );
@@ -277,7 +271,8 @@ const celebrationStyles: Record<string, JSX.CSSProperties> = {
     animation: 'fadeIn 0.3s ease',
   },
   modal: {
-    background: 'linear-gradient(180deg, var(--color-mode-daily-light) 0%, var(--color-mode-daily-bg) 100%)',
+    background:
+      'linear-gradient(180deg, var(--color-mode-daily-light) 0%, var(--color-mode-daily-bg) 100%)',
     borderRadius: '24px',
     padding: '2rem 3rem',
     textAlign: 'center',
@@ -367,25 +362,13 @@ export function MilestoneCelebration({
       aria-modal="true"
       aria-label={`Milestone celebration: ${milestone} day streak`}
     >
-      <div
-        style={celebrationStyles.modal}
-        onClick={(e) => e.stopPropagation()}
-        role="document"
-      >
+      <div style={celebrationStyles.modal} onClick={(e) => e.stopPropagation()} role="document">
         <div style={celebrationStyles.icon} aria-hidden="true">
           {icon}
         </div>
-        <h2 style={celebrationStyles.title}>
-          {milestone} Day Streak!
-        </h2>
-        <p style={celebrationStyles.subtitle}>
-          You&apos;ve reached {name}!
-        </p>
-        <button
-          style={celebrationStyles.button}
-          onClick={handleDismiss}
-          type="button"
-        >
+        <h2 style={celebrationStyles.title}>{milestone} Day Streak!</h2>
+        <p style={celebrationStyles.subtitle}>You&apos;ve reached {name}!</p>
+        <button style={celebrationStyles.button} onClick={handleDismiss} type="button">
           Awesome!
         </button>
       </div>

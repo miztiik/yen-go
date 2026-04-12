@@ -122,7 +122,9 @@ export function useContentType(): UseContentTypeReturn {
   useEffect(() => {
     const listener = (): void => forceUpdate((c) => c + 1);
     listeners.add(listener);
-    return () => { listeners.delete(listener); };
+    return () => {
+      listeners.delete(listener);
+    };
   }, []);
 
   const contentType = ensureLoaded();

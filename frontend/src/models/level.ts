@@ -51,17 +51,18 @@ export type DailyChallengeGroup = Exclude<CategoryFilter, 'all'>;
  * Dynamically derived from LEVELS via shared getLevelCategory().
  * Single source of truth - no hardcoded level slugs or ordinal thresholds.
  */
-export const PUZZLE_LEVEL_TO_DAILY_GROUP: Record<LevelSlug, DailyChallengeGroup> = 
-  Object.fromEntries(
-    LEVELS.map((level) => [level.slug, getLevelCategory(level.slug)])
-  ) as Record<LevelSlug, DailyChallengeGroup>;
+export const PUZZLE_LEVEL_TO_DAILY_GROUP: Record<LevelSlug, DailyChallengeGroup> =
+  Object.fromEntries(LEVELS.map((level) => [level.slug, getLevelCategory(level.slug)])) as Record<
+    LevelSlug,
+    DailyChallengeGroup
+  >;
 
 /**
  * All daily challenge groups in order from easiest to hardest.
  */
 export const DAILY_CHALLENGE_GROUPS: readonly DailyChallengeGroup[] = [
   'beginner',
-  'intermediate', 
+  'intermediate',
   'advanced',
 ] as const;
 
@@ -71,15 +72,15 @@ export function getLevelPuzzleCount(puzzles: LevelPuzzles): number {
 }
 
 /** Helper to get puzzles by daily challenge group */
-export function getPuzzlesByGroup(puzzles: LevelPuzzles, group: DailyChallengeGroup): readonly string[] {
+export function getPuzzlesByGroup(
+  puzzles: LevelPuzzles,
+  group: DailyChallengeGroup
+): readonly string[] {
   return puzzles[group];
 }
 
 /** Helper to check if a level is unlocked */
-export function isLevelUnlocked(
-  level: Level,
-  completedLevels: readonly string[]
-): boolean {
+export function isLevelUnlocked(level: Level, completedLevels: readonly string[]): boolean {
   if (level.unlockRequirement === null) {
     return true; // First level is always unlocked
   }

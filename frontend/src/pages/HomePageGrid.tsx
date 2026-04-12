@@ -90,7 +90,10 @@ export function HomePageGrid({
   const [state, setState] = useState<HomeState>({
     streakData: DEFAULT_STREAK,
     dailyProgress: { completed: 0, total: 3 },
-    trainingProgress: { level: LEVELS.find(l => l.slug === DEFAULT_LEVEL)?.name ?? DEFAULT_LEVEL, percent: 0 },
+    trainingProgress: {
+      level: LEVELS.find((l) => l.slug === DEFAULT_LEVEL)?.name ?? DEFAULT_LEVEL,
+      percent: 0,
+    },
     rushHighScore: 0,
     collectionCount: null,
     rankLabel: null,
@@ -112,13 +115,17 @@ export function HomePageGrid({
         // Derive training level from progress
         const userLevel = estimateUserLevel();
         const trainingData = getTrainingProgress();
-        const levelDisplayName = userLevel.charAt(0).toUpperCase() + userLevel.slice(1).replace(/-/g, ' ');
+        const levelDisplayName =
+          userLevel.charAt(0).toUpperCase() + userLevel.slice(1).replace(/-/g, ' ');
 
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           streakData: progress.streakData,
           rushHighScore,
-          trainingProgress: { level: levelDisplayName, percent: trainingData?.byLevel[userLevel]?.completed ?? 0 },
+          trainingProgress: {
+            level: levelDisplayName,
+            percent: trainingData?.byLevel[userLevel]?.completed ?? 0,
+          },
           rankLabel: levelDisplayName,
         }));
       }
@@ -126,7 +133,7 @@ export function HomePageGrid({
       // Load collection count
       const indexResult = await loadCollectionIndex();
       if (indexResult.success && indexResult.data) {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           collectionCount: indexResult.data!.collections.length,
         }));
@@ -136,7 +143,7 @@ export function HomePageGrid({
       const dailyResult = getTodaysChallenge();
       if (dailyResult.success && dailyResult.data) {
         const puzzles = dailyResult.data.standard?.puzzles ?? [];
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           dailyProgress: { completed: 0, total: puzzles.length },
         }));
@@ -184,7 +191,9 @@ export function HomePageGrid({
           <h1 className="text-2xl font-bold text-[var(--color-text-primary)] md:text-3xl">
             Ready for Go, <span className="text-[var(--color-accent)]">Sensei?</span>
           </h1>
-          <p className="mt-2 text-sm text-[var(--color-text-secondary)]">Pick a mode to sharpen your skills today.</p>
+          <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+            Pick a mode to sharpen your skills today.
+          </p>
         </div>
 
         {/* Tile Grid */}
@@ -195,8 +204,14 @@ export function HomePageGrid({
             title="Daily Challenge"
             description="Solve today's puzzles to keep your streak burning!"
             icon={getTileIcon('daily', { size: 'lg' })}
-            statLabel={streakData.currentStreak > 0 ? `Streak: ${streakData.currentStreak} Days` : undefined}
-            progress={dailyProgress.total > 0 ? Math.round((dailyProgress.completed / dailyProgress.total) * 100) : undefined}
+            statLabel={
+              streakData.currentStreak > 0 ? `Streak: ${streakData.currentStreak} Days` : undefined
+            }
+            progress={
+              dailyProgress.total > 0
+                ? Math.round((dailyProgress.completed / dailyProgress.total) * 100)
+                : undefined
+            }
             progressLabelLeft={`${dailyProgress.completed}/${dailyProgress.total} Solved`}
             progressLabelRight="Keep it up!"
             isFeatured={streakData.currentStreak === 0}

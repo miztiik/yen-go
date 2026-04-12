@@ -138,7 +138,7 @@ export function useTransforms(
   const rotateCCW = useCallback(() => {
     updateSettings((prev) => ({
       ...prev,
-      rotation: (((prev.rotation - 90) + 360) % 360) as 0 | 90 | 180 | 270,
+      rotation: ((prev.rotation - 90 + 360) % 360) as 0 | 90 | 180 | 270,
     }));
   }, [updateSettings]);
 

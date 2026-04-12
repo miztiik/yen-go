@@ -104,10 +104,7 @@ export function formatCollisionCaption(collisions: readonly MoveCollision[]): st
  * @param frame - Current frame (0 = none, 1 = first move, etc.)
  * @returns Slice of numbered moves visible at this frame
  */
-export function getMovesAtFrame(
-  result: NumberedSequenceResult,
-  frame: number
-): NumberedMove[] {
+export function getMovesAtFrame(result: NumberedSequenceResult, frame: number): NumberedMove[] {
   if (frame <= 0) {
     return [];
   }

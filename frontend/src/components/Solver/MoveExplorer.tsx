@@ -35,10 +35,7 @@ export interface MoveExplorerProps {
 // Component
 // ============================================================================
 
-export function MoveExplorer({
-  moveResult,
-  isSolved = false,
-}: MoveExplorerProps): VNode | null {
+export function MoveExplorer({ moveResult, isSolved = false }: MoveExplorerProps): VNode | null {
   if (!moveResult || isSolved) return null;
 
   if (moveResult.type === 'correct') {
@@ -50,9 +47,7 @@ export function MoveExplorer({
         aria-live="polite"
       >
         ✓ Correct!
-        {moveResult.comment && (
-          <p className="mt-1 text-xs font-normal">{moveResult.comment}</p>
-        )}
+        {moveResult.comment && <p className="mt-1 text-xs font-normal">{moveResult.comment}</p>}
       </div>
     );
   }
@@ -67,13 +62,9 @@ export function MoveExplorer({
       >
         <span className="font-medium">Not the solution</span>
         {moveResult.hasRefutation && (
-          <p className="mt-1 text-xs">
-            The opponent's refutation will play automatically.
-          </p>
+          <p className="mt-1 text-xs">The opponent's refutation will play automatically.</p>
         )}
-        {moveResult.comment && (
-          <p className="mt-1 text-xs">{moveResult.comment}</p>
-        )}
+        {moveResult.comment && <p className="mt-1 text-xs">{moveResult.comment}</p>}
       </div>
     );
   }
@@ -81,10 +72,7 @@ export function MoveExplorer({
   // Exploring — subtle indicator
   if (moveResult.type === 'exploring') {
     return (
-      <div
-        className="px-3 py-1 text-xs text-[--color-text-muted]"
-        data-component="move-explorer"
-      >
+      <div className="px-3 py-1 text-xs text-[--color-text-muted]" data-component="move-explorer">
         Exploring — you're off the main line
       </div>
     );

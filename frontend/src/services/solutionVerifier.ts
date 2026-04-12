@@ -133,7 +133,7 @@ export function advanceSolutionState(
 
   // Find the next node to continue from
   let nextNode = matchedNode;
-  
+
   // If there's a response and branches, move to first branch after response
   if (matchedNode.response && matchedNode.branches && matchedNode.branches.length > 0) {
     nextNode = matchedNode.branches[0]!;
@@ -151,10 +151,7 @@ export function advanceSolutionState(
 /**
  * Find explanation for a move in the puzzle
  */
-export function findExplanation(
-  puzzle: Puzzle,
-  move: Coordinate
-): Explanation | undefined {
+export function findExplanation(puzzle: Puzzle, move: Coordinate): Explanation | undefined {
   return puzzle.explanations.find((e) => coordsEqual(e.move, move));
 }
 
@@ -177,10 +174,7 @@ export function getValidMoves(state: SolutionState): Coordinate[] {
 /**
  * Get hint for current position (returns next correct move)
  */
-export function getHint(
-  state: SolutionState,
-  _hintLevel: number
-): Coordinate | null {
+export function getHint(state: SolutionState, _hintLevel: number): Coordinate | null {
   return state.currentNode.move;
 }
 
@@ -197,10 +191,7 @@ export interface SolutionMarkerData {
  * - 'correct': Alternative correct moves (branches)
  * - 'wrong': Common wrong moves from refutations
  */
-export function getSolutionMarkers(
-  state: SolutionState,
-  _boardSize: number
-): SolutionMarkerData[] {
+export function getSolutionMarkers(state: SolutionState, _boardSize: number): SolutionMarkerData[] {
   const markers: SolutionMarkerData[] = [];
   const { currentNode } = state;
   const markedCoords = new Set<string>();
@@ -218,9 +209,9 @@ export function getSolutionMarkers(
     if (!markedCoords.has(key)) {
       // Check if this branch is a winning line
       const isCorrect = branch.isWinning !== false;
-      markers.push({ 
-        coord: branch.move, 
-        type: isCorrect ? 'correct' : 'wrong' 
+      markers.push({
+        coord: branch.move,
+        type: isCorrect ? 'correct' : 'wrong',
       });
       markedCoords.add(key);
     }
@@ -290,9 +281,9 @@ export function validateMove(
 
   // Find explanation if available
   const explanation = findExplanation(puzzle, move);
-  const explanationText = explanation?.text ?? (verification.feedback === 'optimal'
-    ? 'Correct!'
-    : 'Correct, but there may be a better move');
+  const explanationText =
+    explanation?.text ??
+    (verification.feedback === 'optimal' ? 'Correct!' : 'Correct, but there may be a better move');
 
   // Build result with conditional nextNode
   if (verification.matchedNode) {

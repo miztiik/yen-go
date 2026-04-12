@@ -15,10 +15,12 @@ import { puzzleRowToEntry } from './puzzleLoaders';
 import { extractPuzzleIdFromPath } from '../lib/puzzle/utils';
 
 /** Load tag page entries for tag-only Rush filtering. */
-export async function loadRushTagEntries(tagId: number): Promise<readonly { path: string; level: string }[]> {
+export async function loadRushTagEntries(
+  tagId: number
+): Promise<readonly { path: string; level: string }[]> {
   try {
     await initDb();
-    return getPuzzlesByTag(tagId).map(row => {
+    return getPuzzlesByTag(tagId).map((row) => {
       const entry = puzzleRowToEntry(row);
       return { path: entry.path, level: entry.level };
     });
@@ -28,12 +30,15 @@ export async function loadRushTagEntries(tagId: number): Promise<readonly { path
 }
 
 /** Load level view entries from SQLite database. */
-export async function loadLevelIndex(levelSlug: string): Promise<{ success: boolean; data?: { entries: readonly { path: string; tags: readonly string[]; level: string }[] } }> {
+export async function loadLevelIndex(levelSlug: string): Promise<{
+  success: boolean;
+  data?: { entries: readonly { path: string; tags: readonly string[]; level: string }[] };
+}> {
   try {
     const levelId = levelSlugToId(levelSlug);
     if (levelId === undefined) return { success: false };
     await initDb();
-    const entries = getPuzzlesByLevel(levelId).map(row => {
+    const entries = getPuzzlesByLevel(levelId).map((row) => {
       const entry = puzzleRowToEntry(row);
       return { path: entry.path, tags: entry.tags, level: entry.level };
     });
@@ -56,7 +61,7 @@ export async function getNextRushPuzzle(
   rushLevelId: number | null,
   rushTagId: number | null,
   usedPuzzleIds: Set<string>,
-  setUsedPuzzleIds: (updater: (prev: Set<string>) => Set<string>) => void,
+  setUsedPuzzleIds: (updater: (prev: Set<string>) => Set<string>) => void
 ): Promise<RushPuzzle | null> {
   try {
     let levelSlug: string;
@@ -65,9 +70,10 @@ export async function getNextRushPuzzle(
     if (rushLevelId !== null) {
       levelSlug = levelIdToSlug(rushLevelId);
       await initDb();
-      const rows = rushTagId !== null
-        ? getPuzzlesFiltered({ levelId: rushLevelId, tagIds: [rushTagId] })
-        : getPuzzlesByLevel(rushLevelId);
+      const rows =
+        rushTagId !== null
+          ? getPuzzlesFiltered({ levelId: rushLevelId, tagIds: [rushTagId] })
+          : getPuzzlesByLevel(rushLevelId);
       if (rows.length === 0) {
         console.error(`[PuzzleRush] Failed to load level index for ${levelSlug}`);
         return null;
@@ -100,12 +106,12 @@ export async function getNextRushPuzzle(
     }
 
     // Filter out already used puzzles
-    const available = entries.filter(e => {
+    const available = entries.filter((e) => {
       const puzzleId = extractPuzzleIdFromPath(e.path);
       return !usedPuzzleIds.has(puzzleId);
     });
 
-    let entry: typeof entries[number];
+    let entry: (typeof entries)[number];
     if (available.length === 0) {
       console.log(`[PuzzleRush] All ${entries.length} puzzles used, resetting pool`);
       setUsedPuzzleIds(() => new Set());
@@ -117,15 +123,17 @@ export async function getNextRushPuzzle(
     }
 
     const puzzleId = extractPuzzleIdFromPath(entry.path);
-    setUsedPuzzleIds(prev => new Set(prev).add(puzzleId));
+    setUsedPuzzleIds((prev) => new Set(prev).add(puzzleId));
 
-    const puzzleLevel = ('level' in entry && typeof entry.level === 'string') ? entry.level : levelSlug;
+    const puzzleLevel =
+      'level' in entry && typeof entry.level === 'string' ? entry.level : levelSlug;
 
     return {
       id: puzzleId,
       path: entry.path,
       level: puzzleLevel,
-      tags: 'tags' in entry && Array.isArray(entry.tags) ? [...(entry.tags as readonly string[])] : [],
+      tags:
+        'tags' in entry && Array.isArray(entry.tags) ? [...(entry.tags as readonly string[])] : [],
     };
   } catch (error) {
     console.error('[PuzzleRush] Error fetching puzzle:', error);

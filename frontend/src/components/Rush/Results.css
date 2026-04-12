@@ -45,7 +45,11 @@
   font-size: 72px;
   font-weight: bold;
   line-height: 1;
-  background: linear-gradient(135deg, var(--color-primary, #1976d2), var(--color-secondary, #7b1fa2));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary, #1976d2),
+    var(--color-secondary, #7b1fa2)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -189,7 +193,8 @@
 
 /* Animations */
 @keyframes sparkle {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }

@@ -39,19 +39,19 @@ export interface LevelMeta {
 export const LEVELS: readonly LevelMeta[] = levelsJson.levels as readonly LevelMeta[];
 
 /** All valid level slugs in difficulty order. */
-export const LEVEL_SLUGS: readonly LevelSlug[] = LEVELS.map(l => l.slug);
+export const LEVEL_SLUGS: readonly LevelSlug[] = LEVELS.map((l) => l.slug);
 
 /** Total number of levels. */
 export const LEVEL_COUNT = LEVELS.length;
 
 /** Sparse level ID → slug map. O(1) lookup. */
 export const LEVEL_ID_MAP: ReadonlyMap<number, LevelSlug> = new Map(
-  LEVELS.map(l => [l.id, l.slug]),
+  LEVELS.map((l) => [l.id, l.slug])
 );
 
 /** Slug → sparse level ID map. O(1) lookup. */
 export const LEVEL_SLUG_MAP: ReadonlyMap<LevelSlug, number> = new Map(
-  LEVELS.map(l => [l.slug, l.id]),
+  LEVELS.map((l) => [l.slug, l.id])
 );
 
 // ─── Functions ─────────────────────────────────────────────────────
@@ -73,13 +73,13 @@ export function getLevelSlug(id: number): LevelSlug | undefined {
 
 /** Get level metadata by slug. */
 export function getLevelMeta(slug: string): LevelMeta | undefined {
-  return LEVELS.find(l => l.slug === slug);
+  return LEVELS.find((l) => l.slug === slug);
 }
 
 /** Get level metadata by numeric ID. */
 export function getLevelById(id: number): LevelMeta | undefined {
   const slug = LEVEL_ID_MAP.get(id);
-  return slug ? LEVELS.find(l => l.slug === slug) : undefined;
+  return slug ? LEVELS.find((l) => l.slug === slug) : undefined;
 }
 
 /** Get display name with rank range (e.g. "Intermediate (15k-11k)"). */

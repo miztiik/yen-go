@@ -5,7 +5,7 @@
  * Covers: US4 (Daily Streaks), FR-026 (Display current streak prominently)
  *
  * Per spec.md US4-Scenario 4:
- * "Given I have a streak, When I view my profile/dashboard, 
+ * "Given I have a streak, When I view my profile/dashboard,
  *  Then I see my current streak prominently displayed"
  *
  * Constitution Compliance:
@@ -221,12 +221,8 @@ export function StreakDisplay({
         <StreakIcon size={getIconSize(size)} />
       </span>
       <div style={styles.content}>
-        <span style={countStyle}>
-          {currentStreak}
-        </span>
-        <span style={labelStyle}>
-          {getStreakLabel(currentStreak, longestStreak)}
-        </span>
+        <span style={countStyle}>{currentStreak}</span>
+        <span style={labelStyle}>{getStreakLabel(currentStreak, longestStreak)}</span>
         {atRisk && hoursRemaining !== null && (
           <span style={styles.warning}>
             {hoursRemaining <= 1 ? 'Ending soon!' : `${hoursRemaining}h left`}
@@ -271,11 +267,7 @@ export function StreakBadge({ streak, className }: StreakBadgeProps): JSX.Elemen
   }
 
   return (
-    <span
-      class={className}
-      style={badgeStyles.badge}
-      aria-label={`${streak} day streak`}
-    >
+    <span class={className} style={badgeStyles.badge} aria-label={`${streak} day streak`}>
       <span style={badgeStyles.icon} aria-hidden="true">
         <StreakIcon size={12} />
       </span>

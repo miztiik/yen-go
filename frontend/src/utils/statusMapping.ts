@@ -18,10 +18,7 @@ export type ProblemNavStatus = 'solved' | 'failed' | 'unsolved';
 /**
  * Map completion state to ProblemNav status.
  */
-export function toProblemNavStatus(
-  completed: boolean,
-  failed: boolean,
-): ProblemNavStatus {
+export function toProblemNavStatus(completed: boolean, failed: boolean): ProblemNavStatus {
   if (failed) return 'failed';
   if (completed) return 'solved';
   return 'unsolved';
@@ -41,7 +38,7 @@ export function toCarouselStatus(
   index: number,
   currentIndex: number,
   completedIndexes: ReadonlySet<number>,
-  failedIndexes: ReadonlySet<number>,
+  failedIndexes: ReadonlySet<number>
 ): CarouselStatus {
   if (index === currentIndex) return 'current';
   if (failedIndexes.has(index)) return 'incorrect';

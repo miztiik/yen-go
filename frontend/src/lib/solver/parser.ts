@@ -91,10 +91,7 @@ export function parseSolution(
  * @param playerSide - Side the player is playing
  * @returns Array of solution moves
  */
-export function parseLine(
-  sequence: readonly string[],
-  playerSide: Side
-): SolutionMove[] {
+export function parseLine(sequence: readonly string[], playerSide: Side): SolutionMove[] {
   const moves: SolutionMove[] = [];
   let currentSide = playerSide;
 
@@ -123,10 +120,7 @@ export function parseLine(
  * @param coord - Move to check
  * @returns true if this is a correct first move
  */
-export function isCorrectFirstMove(
-  solution: ParsedSolution,
-  coord: SgfCoord
-): boolean {
+export function isCorrectFirstMove(solution: ParsedSolution, coord: SgfCoord): boolean {
   return solution.correctFirstMoves.includes(coord);
 }
 
@@ -170,10 +164,7 @@ export function getResponses(
  * @param history - Move history
  * @returns true if line starts with history
  */
-export function matchesHistory(
-  line: SolutionLine,
-  history: readonly SgfCoord[]
-): boolean {
+export function matchesHistory(line: SolutionLine, history: readonly SgfCoord[]): boolean {
   if (history.length > line.moves.length) {
     return false;
   }
@@ -247,9 +238,7 @@ export function getRemainingMoves(
   }
 
   // Return remaining moves from shortest matching line
-  const shortest = matching.reduce((a, b) =>
-    a.depth < b.depth ? a : b
-  );
+  const shortest = matching.reduce((a, b) => (a.depth < b.depth ? a : b));
 
   return shortest.moves.slice(history.length);
 }
@@ -260,9 +249,10 @@ export function getRemainingMoves(
  * @param solutions - Raw solution data
  * @returns Validation result with errors
  */
-export function validateSolutionStructure(
-  solutions: unknown
-): { valid: boolean; errors: string[] } {
+export function validateSolutionStructure(solutions: unknown): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
   if (!Array.isArray(solutions)) {

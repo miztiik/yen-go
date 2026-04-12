@@ -44,10 +44,7 @@ interface SlotProps {
 /** Board slot — Goban container. */
 function Board({ children, className = '' }: SlotProps): VNode {
   return (
-    <div
-      className={`relative min-h-0 ${className}`}
-      data-slot="board"
-    >
+    <div className={`relative min-h-0 ${className}`} data-slot="board">
       {children}
     </div>
   );
@@ -57,10 +54,7 @@ Board.displayName = 'PageLayout.Board';
 /** Sidebar slot — puzzle info, hints, solution tree. */
 function Sidebar({ children, className = '' }: SlotProps): VNode {
   return (
-    <div
-      className={`min-h-0 overflow-y-auto ${className}`}
-      data-slot="sidebar"
-    >
+    <div className={`min-h-0 overflow-y-auto ${className}`} data-slot="sidebar">
       {children}
     </div>
   );
@@ -70,10 +64,7 @@ Sidebar.displayName = 'PageLayout.Sidebar';
 /** Controls slot — rendered inside Board area. */
 function Controls({ children, className = '' }: SlotProps): VNode {
   return (
-    <div
-      className={`flex items-center gap-2 py-2 ${className}`}
-      data-slot="controls"
-    >
+    <div className={`flex items-center gap-2 py-2 ${className}`} data-slot="controls">
       {children}
     </div>
   );
@@ -83,10 +74,7 @@ Controls.displayName = 'PageLayout.Controls';
 /** Navigation slot — within sidebar. */
 function Navigation({ children, className = '' }: SlotProps): VNode {
   return (
-    <div
-      className={`flex items-center justify-between py-2 ${className}`}
-      data-slot="navigation"
-    >
+    <div className={`flex items-center justify-between py-2 ${className}`} data-slot="navigation">
       {children}
     </div>
   );
@@ -96,10 +84,7 @@ Navigation.displayName = 'PageLayout.Navigation';
 /** Content slot — full-width for single-column variant. */
 function Content({ children, className = '' }: SlotProps): VNode {
   return (
-    <div
-      className={`w-full ${className}`}
-      data-slot="content"
-    >
+    <div className={`w-full ${className}`} data-slot="content">
       {children}
     </div>
   );
@@ -124,11 +109,7 @@ Content.displayName = 'PageLayout.Content';
  * Fluid proportional widths — NO fixed max-width.
  * Responsive stacking below 768px mobile breakpoint.
  */
-function PageLayoutBase({
-  variant = 'puzzle',
-  children,
-  mode,
-}: PageLayoutProps): VNode {
+function PageLayoutBase({ variant = 'puzzle', children, mode }: PageLayoutProps): VNode {
   const isPuzzle = variant === 'puzzle';
 
   return (

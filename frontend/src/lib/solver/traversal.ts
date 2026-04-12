@@ -156,7 +156,7 @@ export function checkMove(
 
   // Pick best response (first one for simplicity)
   const response = responses[0];
-  
+
   // If no response, puzzle is complete
   if (!response) {
     return {
@@ -171,7 +171,7 @@ export function checkMove(
       },
     };
   }
-  
+
   const historyWithResponse: SgfCoord[] = [...newHistory, response];
 
   return {
@@ -296,9 +296,8 @@ export function getProgress(state: TraversalState): {
   return {
     movesPlayed: playerMoves,
     totalMoves: totalPlayerMoves,
-    percentComplete: totalPlayerMoves > 0
-      ? Math.round((playerMoves / totalPlayerMoves) * 100)
-      : 100,
+    percentComplete:
+      totalPlayerMoves > 0 ? Math.round((playerMoves / totalPlayerMoves) * 100) : 100,
   };
 }
 

@@ -19,14 +19,7 @@ import type {
   MarkerAttributes,
   VisualTreeNode,
 } from '../../types/tree';
-import {
-  STONE_RADIUS,
-  LABEL_FONT_SIZE,
-  COLORS,
-  PATH,
-  GRID_SIZE,
-  GRID_OFFSET,
-} from './constants';
+import { STONE_RADIUS, LABEL_FONT_SIZE, COLORS, PATH, GRID_SIZE, GRID_OFFSET } from './constants';
 
 // ============================================================================
 // Stone Rendering
@@ -135,10 +128,7 @@ export function createPathAttributes(isOnCurrentPath: boolean): {
  * @param svgY - Center Y coordinate
  * @returns MarkerAttributes for rendering
  */
-export function createCurrentMarkerAttributes(
-  svgX: number,
-  svgY: number
-): MarkerAttributes {
+export function createCurrentMarkerAttributes(svgX: number, svgY: number): MarkerAttributes {
   const size = STONE_RADIUS * 2.5;
   return {
     x: svgX - size / 2,
@@ -160,10 +150,7 @@ export function createCurrentMarkerAttributes(
  * @param svgY - Center Y coordinate
  * @returns MarkerAttributes for rendering
  */
-export function createHoverMarkerAttributes(
-  svgX: number,
-  svgY: number
-): MarkerAttributes {
+export function createHoverMarkerAttributes(svgX: number, svgY: number): MarkerAttributes {
   const size = STONE_RADIUS * 2.2;
   return {
     x: svgX - size / 2,
@@ -215,10 +202,7 @@ export function createCorrectnessIndicatorAttributes(
  * @param gridY - Y position in grid units (row/variation)
  * @returns SVG coordinates
  */
-export function gridToSvg(
-  gridX: number,
-  gridY: number
-): { svgX: number; svgY: number } {
+export function gridToSvg(gridX: number, gridY: number): { svgX: number; svgY: number } {
   return {
     svgX: gridX * GRID_SIZE + GRID_OFFSET,
     svgY: gridY * GRID_SIZE + GRID_OFFSET,
@@ -233,10 +217,7 @@ export function gridToSvg(
  * @param svgY - Y coordinate in SVG space
  * @returns Grid position (may be fractional)
  */
-export function svgToGrid(
-  svgX: number,
-  svgY: number
-): { gridX: number; gridY: number } {
+export function svgToGrid(svgX: number, svgY: number): { gridX: number; gridY: number } {
   return {
     gridX: (svgX - GRID_OFFSET) / GRID_SIZE,
     gridY: (svgY - GRID_OFFSET) / GRID_SIZE,
@@ -314,11 +295,7 @@ export function calculateViewBox(
  * @param node - Node to test
  * @returns True if click is within stone radius
  */
-export function isClickOnNode(
-  clickSvgX: number,
-  clickSvgY: number,
-  node: VisualTreeNode
-): boolean {
+export function isClickOnNode(clickSvgX: number, clickSvgY: number, node: VisualTreeNode): boolean {
   const dx = clickSvgX - node.layout.svgX;
   const dy = clickSvgY - node.layout.svgY;
   const distance = Math.sqrt(dx * dx + dy * dy);

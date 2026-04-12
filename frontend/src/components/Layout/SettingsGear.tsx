@@ -133,11 +133,7 @@ export function SettingsGear() {
       {isOpen && (
         <>
           {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-            aria-hidden="true"
-          />
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} aria-hidden="true" />
           <div
             ref={dropdownRef}
             className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-panel)] shadow-xl"
@@ -151,8 +147,16 @@ export function SettingsGear() {
             </div>
 
             <div className="p-3">
-              <ToggleSwitch label="Dark Mode" checked={settings.theme === 'dark'} onClick={toggleTheme} />
-              <ToggleSwitch label="Sound Effects" checked={settings.soundEnabled} onClick={toggleSound} />
+              <ToggleSwitch
+                label="Dark Mode"
+                checked={settings.theme === 'dark'}
+                onClick={toggleTheme}
+              />
+              <ToggleSwitch
+                label="Sound Effects"
+                checked={settings.soundEnabled}
+                onClick={toggleSound}
+              />
               <ToggleSwitch
                 label="Auto-Advance"
                 checked={settings.autoAdvance}
@@ -164,7 +168,11 @@ export function SettingsGear() {
               {settings.autoAdvance && (
                 <div className="flex items-center justify-between py-2 pl-2">
                   <span className="text-xs text-[var(--color-text-muted)]">Delay</span>
-                  <div className="flex items-center gap-1.5" role="group" aria-label="Auto-advance delay">
+                  <div
+                    className="flex items-center gap-1.5"
+                    role="group"
+                    aria-label="Auto-advance delay"
+                  >
                     <button
                       type="button"
                       onClick={decrementDelay}
@@ -174,7 +182,10 @@ export function SettingsGear() {
                     >
                       −
                     </button>
-                    <span className="min-w-[2rem] text-center text-sm font-semibold text-[var(--color-text-primary)]" aria-live="polite">
+                    <span
+                      className="min-w-[2rem] text-center text-sm font-semibold text-[var(--color-text-primary)]"
+                      aria-live="polite"
+                    >
                       {settings.autoAdvanceDelay}s
                     </span>
                     <button

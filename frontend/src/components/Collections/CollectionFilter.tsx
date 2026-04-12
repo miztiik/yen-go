@@ -148,9 +148,7 @@ export function CollectionFilter({
 
   const selectedLevel = filter.minLevel ?? 'all';
   const hasActiveFilters =
-    filter.minLevel !== undefined ||
-    filter.tags !== undefined ||
-    filter.searchTerm !== undefined;
+    filter.minLevel !== undefined || filter.tags !== undefined || filter.searchTerm !== undefined;
 
   return (
     <div style={containerStyle}>
@@ -199,11 +197,7 @@ export function CollectionFilter({
         )}
 
         {hasActiveFilters && (
-          <button
-            type="button"
-            style={clearButtonStyle}
-            onClick={handleClearAll}
-          >
+          <button type="button" style={clearButtonStyle} onClick={handleClearAll}>
             Clear all
           </button>
         )}

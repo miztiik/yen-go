@@ -75,7 +75,12 @@ export function PuzzleNavCarousel({
     // Update screen reader announcement
     const puzzle = puzzles[currentIndex];
     if (puzzle) {
-      const statusText = puzzle.status === 'correct' ? 'completed' : puzzle.status === 'wrong' ? 'incorrect' : 'unsolved';
+      const statusText =
+        puzzle.status === 'correct'
+          ? 'completed'
+          : puzzle.status === 'wrong'
+            ? 'incorrect'
+            : 'unsolved';
       setAnnouncement(`Puzzle ${currentIndex + 1} of ${puzzles.length}, ${statusText}`);
     }
   }, [currentIndex, puzzles]);
@@ -190,12 +195,7 @@ export function PuzzleNavCarousel({
   return (
     <div className={`puzzle-nav-carousel ${compact ? 'compact' : ''}`}>
       {/* Screen reader announcements (T3.7) */}
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
         {announcement}
       </div>
 

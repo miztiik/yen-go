@@ -51,17 +51,22 @@ export const EmptyFilterState: FunctionalComponent<EmptyFilterStateProps> = ({
 }) => {
   // Get Go tips from boot config for display during empty states
   let tips: GoTip[] = [];
-  try { tips = getBootConfigs().tips as GoTip[]; } catch { /* boot not ready */ }
+  try {
+    tips = getBootConfigs().tips as GoTip[];
+  } catch {
+    /* boot not ready */
+  }
 
   const displayMessage = contentTypeInfo
     ? `No ${contentTypeInfo.activeTypeName} puzzles in this collection.`
     : message;
 
-  const subtitle = contentTypeInfo && contentTypeInfo.availableTypes.length > 0
-    ? contentTypeInfo.availableTypes
-        .map(t => `${t.count} ${t.name} puzzles available`)
-        .join(' · ')
-    : 'Try adjusting your filters or clear them to see all puzzles.';
+  const subtitle =
+    contentTypeInfo && contentTypeInfo.availableTypes.length > 0
+      ? contentTypeInfo.availableTypes
+          .map((t) => `${t.count} ${t.name} puzzles available`)
+          .join(' · ')
+      : 'Try adjusting your filters or clear them to see all puzzles.';
 
   return (
     <div
@@ -76,12 +81,8 @@ export const EmptyFilterState: FunctionalComponent<EmptyFilterStateProps> = ({
       )}
 
       <div>
-        <p className="text-base font-medium text-[var(--color-text-primary)]">
-          {displayMessage}
-        </p>
-        <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-          {subtitle}
-        </p>
+        <p className="text-base font-medium text-[var(--color-text-primary)]">{displayMessage}</p>
+        <p className="mt-1 text-sm text-[var(--color-text-muted)]">{subtitle}</p>
       </div>
       <div className="flex items-center gap-2">
         {contentTypeInfo && (

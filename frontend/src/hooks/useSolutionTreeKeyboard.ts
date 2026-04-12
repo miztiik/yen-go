@@ -54,9 +54,7 @@ function flattenTree(
   node: TreeNodeData,
   parentId: string | null = null
 ): Array<{ node: TreeNodeData; parentId: string | null }> {
-  const result: Array<{ node: TreeNodeData; parentId: string | null }> = [
-    { node, parentId },
-  ];
+  const result: Array<{ node: TreeNodeData; parentId: string | null }> = [{ node, parentId }];
 
   for (const child of node.children) {
     result.push(...flattenTree(child, node.id));
@@ -70,12 +68,12 @@ function flattenTree(
  */
 function findNode(tree: TreeNodeData, id: string): TreeNodeData | null {
   if (tree.id === id) return tree;
-  
+
   for (const child of tree.children) {
     const found = findNode(child, id);
     if (found) return found;
   }
-  
+
   return null;
 }
 
@@ -226,7 +224,7 @@ export function useSolutionTreeKeyboard({
     const focusedElement = containerRef.current.querySelector(
       `[data-testid="tree-node-${focusedNodeId}"]`
     );
-    
+
     if (focusedElement instanceof HTMLElement) {
       focusedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       focusedElement.focus();

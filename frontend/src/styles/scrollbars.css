@@ -36,5 +36,7 @@
 
 /* Use overlay if supported */
 @supports (overflow: overlay) {
-  .smart-scroll { overflow: overlay; }
+  .smart-scroll {
+    overflow: overlay;
+  }
 }

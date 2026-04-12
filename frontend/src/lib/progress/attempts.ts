@@ -38,10 +38,7 @@ export function createAttemptTracker(puzzleId: string): AttemptState {
  * @param move - The incorrect move (optional, for display)
  * @returns Updated attempt state
  */
-export function recordIncorrectAttempt(
-  state: AttemptState,
-  move?: string
-): AttemptState {
+export function recordIncorrectAttempt(state: AttemptState, move?: string): AttemptState {
   const now = performance.now();
 
   return {
@@ -162,7 +159,7 @@ export class AttemptTracker {
 
 /**
  * Calculate star rating based on attempts and hints.
- * 
+ *
  * - 3 stars: Perfect solve (0 incorrect, 0 hints)
  * - 2 stars: Good solve (1-2 incorrect OR 1 hint)
  * - 1 star: Completed with difficulty (3+ incorrect OR 2+ hints)
@@ -171,10 +168,7 @@ export class AttemptTracker {
  * @param hintsUsed - Number of hints used
  * @returns Star rating (1-3)
  */
-export function calculateStarRating(
-  attempts: number,
-  hintsUsed: number
-): 1 | 2 | 3 {
+export function calculateStarRating(attempts: number, hintsUsed: number): 1 | 2 | 3 {
   // Perfect solve
   if (attempts === 0 && hintsUsed === 0) {
     return 3;

@@ -22,4 +22,3 @@ export type { VariantStyleToggleProps, VariantStyle } from './VariantStyleToggle
 
 export { KeyboardShortcutsLegend } from './KeyboardShortcutsLegend';
 export type { KeyboardShortcutsLegendProps } from './KeyboardShortcutsLegend';
-

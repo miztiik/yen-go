@@ -206,7 +206,11 @@ export function BreadcrumbTrail({
   }, [gobanRef, buildBreadcrumbs]);
 
   if (breadcrumbs.length === 0) {
-    return <div className={className} style={styles.container}>Start</div>;
+    return (
+      <div className={className} style={styles.container}>
+        Start
+      </div>
+    );
   }
 
   return (

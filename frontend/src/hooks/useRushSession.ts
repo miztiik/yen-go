@@ -223,15 +223,18 @@ export function useRushSession(config: RushSessionConfig): UseRushSessionResult 
     }));
   }, []);
 
-  const actions: RushSessionActions = useMemo(() => ({
-    start,
-    recordCorrect,
-    recordWrong,
-    pause,
-    resume,
-    reset,
-    skip,
-  }), [start, recordCorrect, recordWrong, pause, resume, reset, skip]);
+  const actions: RushSessionActions = useMemo(
+    () => ({
+      start,
+      recordCorrect,
+      recordWrong,
+      pause,
+      resume,
+      reset,
+      skip,
+    }),
+    [start, recordCorrect, recordWrong, pause, resume, reset, skip]
+  );
 
   return {
     state,

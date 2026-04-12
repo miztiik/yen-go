@@ -13,17 +13,8 @@
 
 import { useState, useEffect, useCallback } from 'preact/hooks';
 import type { JSX } from 'preact';
-import {
-  loadProgress,
-  getStatistics,
-  getStreakData,
-} from '../../services/progressTracker';
-import type {
-  UserProgress,
-  UserStatistics,
-  StreakData,
-  GroupStats,
-} from '../../models/progress';
+import { loadProgress, getStatistics, getStreakData } from '../../services/progressTracker';
+import type { UserProgress, UserStatistics, StreakData, GroupStats } from '../../models/progress';
 import type { DailyChallengeGroup } from '../../models/level';
 import { FireIcon } from '../shared/icons/FireIcon';
 import { WarningIcon } from '../shared/icons/WarningIcon';
@@ -115,7 +106,9 @@ function StreakDisplay({ streakData }: { streakData: StreakData }): JSX.Element 
 
   return (
     <div className="streak-display" role="region" aria-label="Streak information">
-      <h3><FireIcon size={16} /> Daily Streak</h3>
+      <h3>
+        <FireIcon size={16} /> Daily Streak
+      </h3>
       <div className="streak-stats">
         <div className="streak-current">
           <span className="streak-number">{currentStreak}</span>
@@ -126,9 +119,7 @@ function StreakDisplay({ streakData }: { streakData: StreakData }): JSX.Element 
           <span className="streak-label">Best</span>
         </div>
       </div>
-      {lastPlayedDate && (
-        <p className="streak-last-played">Last played: {lastPlayedDate}</p>
-      )}
+      {lastPlayedDate && <p className="streak-last-played">Last played: {lastPlayedDate}</p>}
     </div>
   );
 }
@@ -189,7 +180,9 @@ export function Dashboard({ className, onLevelSelect }: DashboardProps): JSX.Ele
   if (error || !progress || !statistics) {
     return (
       <div className={`dashboard dashboard-error ${className ?? ''}`} role="alert">
-        <p><WarningIcon size={14} /> {error || 'Could not load progress data'}</p>
+        <p>
+          <WarningIcon size={14} /> {error || 'Could not load progress data'}
+        </p>
         <button onClick={refreshProgress} className="btn-retry">
           Retry
         </button>
@@ -208,26 +201,10 @@ export function Dashboard({ className, onLevelSelect }: DashboardProps): JSX.Ele
 
       {/* Overview Stats */}
       <section className="dashboard-overview" aria-label="Overview statistics">
-        <StatCard
-          label="Puzzles Solved"
-          value={statistics.totalSolved}
-          icon="✅"
-        />
-        <StatCard
-          label="Total Time"
-          value={formatTime(statistics.totalTimeMs)}
-          icon="⏱️"
-        />
-        <StatCard
-          label="Perfect Solves"
-          value={statistics.perfectSolves}
-          icon="⭐"
-        />
-        <StatCard
-          label="Levels Unlocked"
-          value={unlockedCount}
-          icon="🔓"
-        />
+        <StatCard label="Puzzles Solved" value={statistics.totalSolved} icon="✅" />
+        <StatCard label="Total Time" value={formatTime(statistics.totalTimeMs)} icon="⏱️" />
+        <StatCard label="Perfect Solves" value={statistics.perfectSolves} icon="⭐" />
+        <StatCard label="Levels Unlocked" value={unlockedCount} icon="🔓" />
       </section>
 
       {/* Streak Display */}
@@ -276,7 +253,10 @@ export function Dashboard({ className, onLevelSelect }: DashboardProps): JSX.Ele
       {/* Empty state */}
       {completedCount === 0 && (
         <section className="dashboard-empty" aria-label="Getting started">
-          <EmptyState message="You haven't completed any puzzles yet. Start solving to track your progress!" quoteMode="daily" />
+          <EmptyState
+            message="You haven't completed any puzzles yet. Start solving to track your progress!"
+            quoteMode="daily"
+          />
         </section>
       )}
     </div>

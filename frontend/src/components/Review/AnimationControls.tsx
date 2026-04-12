@@ -108,9 +108,7 @@ export function AnimationControls({
   const { isPlaying, currentFrame, totalFrames, delayMs } = state;
 
   // Find current speed preset
-  const currentSpeedIndex = ANIMATION_SPEED_PRESETS.findIndex(
-    (preset) => preset.value === delayMs
-  );
+  const currentSpeedIndex = ANIMATION_SPEED_PRESETS.findIndex((preset) => preset.value === delayMs);
   // Keep for future speed display/aria label
   void currentSpeedIndex;
 

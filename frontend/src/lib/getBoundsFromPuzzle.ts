@@ -14,10 +14,7 @@ import type { GobanBounds } from '../types/goban';
 /**
  * Collect all (x, y) positions from the move tree recursively.
  */
-function collectTreePositions(
-  node: MoveTreeJson,
-  positions: Array<[number, number]>,
-): void {
+function collectTreePositions(node: MoveTreeJson, positions: Array<[number, number]>): void {
   // Only add valid board positions (not pass moves which are -1,-1)
   if (node.x >= 0 && node.y >= 0) {
     positions.push([node.x, node.y]);
@@ -57,10 +54,7 @@ function decodePositions(encoded: string | undefined): Array<[number, number]> {
  * @param padding - Intersections of padding around stones (default 2)
  * @returns Computed bounds, or null if zoom is not beneficial
  */
-export function getBoundsFromPuzzle(
-  puzzle: PuzzleObject,
-  padding: number = 2,
-): GobanBounds | null {
+export function getBoundsFromPuzzle(puzzle: PuzzleObject, padding: number = 2): GobanBounds | null {
   const boardSize = puzzle.width;
   const positions: Array<[number, number]> = [];
 

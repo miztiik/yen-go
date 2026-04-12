@@ -12,15 +12,8 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'preact/hooks';
-import {
-  PaginationState,
-  initialPaginationState,
-  ViewEntry,
-  ViewType,
-} from '../types/indexes';
-import {
-  createPaginationLoader,
-} from '../lib/puzzle/pagination';
+import { PaginationState, initialPaginationState, ViewEntry, ViewType } from '../types/indexes';
+import { createPaginationLoader } from '../lib/puzzle/pagination';
 
 // ============================================================================
 // Hook Configuration
@@ -80,9 +73,7 @@ export function usePaginatedView<T extends ViewEntry = ViewEntry>(
 ): UsePaginatedPuzzlesResult<T> {
   const { type, name, baseUrl = '/puzzles', autoLoad = true } = options;
 
-  const [state, setState] = useState<PaginationState<T>>(
-    initialPaginationState<T>()
-  );
+  const [state, setState] = useState<PaginationState<T>>(initialPaginationState<T>());
 
   // Create loader with state callback
   const loader = useMemo(() => {

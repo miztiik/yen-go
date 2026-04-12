@@ -76,7 +76,7 @@ export function getAllLevels(): readonly LevelMeta[] {
  * Get level metadata by slug.
  */
 export function getLevelMeta(slug: string): LevelMeta | undefined {
-  return LEVELS.find(l => l.slug === slug);
+  return LEVELS.find((l) => l.slug === slug);
 }
 
 // ─── Tag Lookups (synchronous) ─────────────────────────────────────
@@ -118,7 +118,7 @@ export function getTagMeta(slug: string): TagMeta | undefined {
  * @planned WP7 (FilterDropdown groups tags by category)
  */
 export function getTagsByCategory(category: TagCategory): TagMeta[] {
-  return Object.values(TAGS).filter(t => t.category === category);
+  return Object.values(TAGS).filter((t) => t.category === category);
 }
 
 // ─── Tag Category Metadata ─────────────────────────────────────────
@@ -236,7 +236,7 @@ export function getAllQualities(): readonly QualityMeta[] {
  * Get quality metadata by slug.
  */
 export function getQualityMeta(slug: string): QualityMeta | undefined {
-  return QUALITIES.find(q => q.slug === slug);
+  return QUALITIES.find((q) => q.slug === slug);
 }
 
 // ─── Raw Map Access (for interop) ──────────────────────────────────

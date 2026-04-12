@@ -11,7 +11,11 @@
 
 import type { SgfCoord, Puzzle } from '../../types';
 import type { PuzzleBoard } from '../../services/puzzleGameState';
-import { isPuzzleMoveValid, executePuzzleMove, getInvalidMoveReason } from '../../services/puzzleGameState';
+import {
+  isPuzzleMoveValid,
+  executePuzzleMove,
+  getInvalidMoveReason,
+} from '../../services/puzzleGameState';
 import { checkMove, type TraversalState } from './traversal';
 import { positionToSgf } from '../sgf/coordinates';
 import { sgfToCoord, coordToSgf } from '../../types/coordinate';
@@ -58,11 +62,7 @@ export interface ValidatorConfig {
  * @param config - Validator configuration
  * @returns Validation result
  */
-export function validateMove(
-  x: number,
-  y: number,
-  config: ValidatorConfig
-): ValidationResult {
+export function validateMove(x: number, y: number, config: ValidatorConfig): ValidationResult {
   const { boardState, traversalState } = config;
 
   // Convert to SGF coordinate (0-indexed x,y → SGF)
@@ -113,10 +113,7 @@ export function validateMove(
  * @param config - Validator configuration
  * @returns Validation result
  */
-export function validateMoveCoord(
-  coord: SgfCoord,
-  config: ValidatorConfig
-): ValidationResult {
+export function validateMoveCoord(coord: SgfCoord, config: ValidatorConfig): ValidationResult {
   const { boardState, traversalState } = config;
 
   // Check Go rules first
@@ -203,10 +200,7 @@ export function executeMove(
  * Check if the puzzle is in a failed state
  * (too many wrong attempts without progress)
  */
-export function isPuzzleFailed(
-  traversalState: TraversalState,
-  maxAttempts: number = 5
-): boolean {
+export function isPuzzleFailed(traversalState: TraversalState, maxAttempts: number = 5): boolean {
   return traversalState.wrongAttempts >= maxAttempts;
 }
 
@@ -237,7 +231,7 @@ export function validateStateConsistency(
   // Player side should match history parity
   const isPlayerTurn = traversalState.history.length % 2 === 0;
   const puzzleSide = puzzle.side === 'B' ? 'black' : 'white';
-  const expectedSide = isPlayerTurn ? puzzleSide : (puzzleSide === 'black' ? 'white' : 'black');
+  const expectedSide = isPlayerTurn ? puzzleSide : puzzleSide === 'black' ? 'white' : 'black';
   if (boardState.sideToMove !== expectedSide) {
     return false;
   }

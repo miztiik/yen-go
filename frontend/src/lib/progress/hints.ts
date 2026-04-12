@@ -99,7 +99,7 @@ export function getTotalHintsUsed(): number {
   if (!progress) return 0;
 
   return Object.values(progress.completedPuzzles).reduce<number>(
-    (total, completion) => total + ((completion).hintsUsed || 0),
+    (total, completion) => total + (completion.hintsUsed || 0),
     0
   );
 }
@@ -111,17 +111,14 @@ export function getPuzzlesWithoutHints(): number {
   const progress = loadProgressSync();
   if (!progress) return 0;
 
-  return Object.values(progress.completedPuzzles).filter(
-    (completion) => (completion).hintsUsed === 0
-  ).length;
+  return Object.values(progress.completedPuzzles).filter((completion) => completion.hintsUsed === 0)
+    .length;
 }
 
 /**
  * Get hint statistics for a specific puzzle.
  */
-export function getPuzzleHintStats(
-  puzzleId: string
-): { hintsUsed: number } | null {
+export function getPuzzleHintStats(puzzleId: string): { hintsUsed: number } | null {
   const progress = loadProgressSync();
   if (!progress) return null;
 
@@ -137,10 +134,7 @@ export function getPuzzleHintStats(
  * Update hint count for a completed puzzle.
  * Called when puzzle is completed with hints used.
  */
-export function updatePuzzleHints(
-  puzzleId: string,
-  hintsUsed: number
-): void {
+export function updatePuzzleHints(puzzleId: string, hintsUsed: number): void {
   const progress = loadProgressSync();
   if (!progress) return;
 

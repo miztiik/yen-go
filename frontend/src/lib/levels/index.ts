@@ -21,13 +21,7 @@ export { LEVEL_SCHEMA_VERSION } from './types';
 
 // Config types (source of truth from config/puzzle-levels.json via Vite JSON import)
 export type { LevelSlug, LevelMeta } from './config';
-export {
-  LEVELS,
-  LEVEL_SLUGS,
-  LEVEL_COUNT,
-  isValidLevel,
-  getLevelId,
-} from './config';
+export { LEVELS, LEVEL_SLUGS, LEVEL_COUNT, isValidLevel, getLevelId } from './config';
 
 // Constants and utilities
 export {

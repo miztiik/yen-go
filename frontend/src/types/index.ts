@@ -57,11 +57,7 @@ export type {
   InternalPuzzle,
   PuzzleSet,
 } from './puzzle-internal';
-export {
-  isPuzzleStatus,
-  isValidPosition,
-  createSolutionNode,
-} from './puzzle-internal';
+export { isPuzzleStatus, isValidPosition, createSolutionNode } from './puzzle-internal';
 
 // Index types — entry types + daily types (SQLite-centric architecture)
 export type {
@@ -77,9 +73,7 @@ export type {
   DailyIndex,
   DailyPuzzleEntry,
 } from './indexes';
-export {
-  isDailyIndex,
-} from './indexes';
+export { isDailyIndex } from './indexes';
 
 // Storage types (localStorage)
 export type {

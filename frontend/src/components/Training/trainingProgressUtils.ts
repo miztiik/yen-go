@@ -12,11 +12,14 @@ import { FIRST_LEVEL } from '../../lib/levels/level-defaults';
 const TRAINING_PROGRESS_KEY = 'yen-go-training-progress';
 
 export interface TrainingProgress {
-  byLevel: Record<string, {
-    completed: number;
-    total: number;
-    accuracy: number;
-  }>;
+  byLevel: Record<
+    string,
+    {
+      completed: number;
+      total: number;
+      accuracy: number;
+    }
+  >;
   unlockedLevels: string[];
   updatedAt: string;
 }
@@ -29,7 +32,7 @@ export function saveTrainingProgress(
   levelSlug: SkillLevel,
   completed: number,
   total: number,
-  accuracy: number,
+  accuracy: number
 ): void {
   try {
     const stored = localStorage.getItem(TRAINING_PROGRESS_KEY);
@@ -42,7 +45,7 @@ export function saveTrainingProgress(
     progress.updatedAt = new Date().toISOString();
 
     // Check if next level should be unlocked
-    const currentLevelIndex = SKILL_LEVELS.findIndex(l => l.slug === levelSlug);
+    const currentLevelIndex = SKILL_LEVELS.findIndex((l) => l.slug === levelSlug);
     if (currentLevelIndex >= 0 && currentLevelIndex < SKILL_LEVELS.length - 1) {
       const percentComplete = (completed / total) * 100;
       if (percentComplete >= 70) {

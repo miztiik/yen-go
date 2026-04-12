@@ -10,7 +10,7 @@
   font-family: inherit;
   font-weight: 500;
   transition: all var(--transition-fast);
-  min-height: 44px;  /* Touch target */
+  min-height: 44px; /* Touch target */
   min-width: 44px;
 }
 
@@ -24,8 +24,12 @@
   border-radius: var(--radius-full);
   color: var(--color-text-primary);
 }
-.btn-icon:hover { background: var(--color-bg-hover); }
-.btn-icon:active { transform: scale(0.95); }
+.btn-icon:hover {
+  background: var(--color-bg-hover);
+}
+.btn-icon:active {
+  transform: scale(0.95);
+}
 .btn-icon:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;

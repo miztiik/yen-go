@@ -32,13 +32,13 @@
   min-width: 44px;
   min-height: 44px;
   padding: 12px 16px;
-  
+
   /* Touch feedback */
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
-  
+
   /* Prevent double-tap zoom */
   touch-action: manipulation;
-  
+
   /* Fast tap response */
   cursor: pointer;
 }
@@ -63,14 +63,14 @@
 .board-touch-container {
   /* Prevent scroll during play */
   touch-action: none;
-  
+
   /* Disable text selection */
   -webkit-user-select: none;
   user-select: none;
-  
+
   /* Disable callout */
   -webkit-touch-callout: none;
-  
+
   /* Disable tap highlight */
   -webkit-tap-highlight-color: transparent;
 }
@@ -129,7 +129,7 @@
   padding: 12px 36px 12px 16px;
   font-size: 16px;
   touch-action: manipulation;
-  
+
   /* Custom arrow spacing */
   background-position: right 12px center;
 }
@@ -241,12 +241,12 @@
   align-items: center;
 }
 
-.slider-touch input[type="range"] {
+.slider-touch input[type='range'] {
   height: 8px;
   border-radius: 4px;
 }
 
-.slider-touch input[type="range"]::-webkit-slider-thumb {
+.slider-touch input[type='range']::-webkit-slider-thumb {
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -268,7 +268,9 @@
   background-color: rgba(0, 0, 0, 0.1);
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  transition: width 0.3s, height 0.3s;
+  transition:
+    width 0.3s,
+    height 0.3s;
 }
 
 .touch-ripple:active::after {

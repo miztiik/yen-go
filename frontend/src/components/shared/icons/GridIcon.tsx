@@ -9,11 +9,7 @@ interface IconProps {
 /**
  * 2x2 grid icon for view toggle (grid mode).
  */
-export function GridIcon({
-  size = 24,
-  color = 'currentColor',
-  className,
-}: IconProps): JSX.Element {
+export function GridIcon({ size = 24, color = 'currentColor', className }: IconProps): JSX.Element {
   return (
     <svg
       width={size}

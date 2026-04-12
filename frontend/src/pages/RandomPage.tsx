@@ -25,7 +25,14 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { DiceIcon } from '@/components/shared/icons';
 import { type CategoryFilter, CATEGORY_OPTIONS, getCategoryLevels } from '@/lib/levels/categories';
 import { getAccentPalette } from '@/lib/accent-palette';
-import { levelSlugToId, levelIdToSlug, getTagsByCategory, getOrderedTagCategories, tagIdToSlug, getTagMeta } from '@/services/configService';
+import {
+  levelSlugToId,
+  levelIdToSlug,
+  getTagsByCategory,
+  getOrderedTagCategories,
+  tagIdToSlug,
+  getTagMeta,
+} from '@/services/configService';
 import { useCanonicalUrl } from '@/hooks/useCanonicalUrl';
 import { buildDepthPresetOptions, depthPresetToRange } from '@/hooks/usePuzzleFilters';
 import { getFilterCounts } from '@/services/puzzleQueryService';
@@ -71,20 +78,26 @@ export const RandomPage: FunctionalComponent<RandomPageProps> = ({
     setLevel: (id: number | null) => setFilters({ l: id === null ? [] : [id] }),
     setTag: (id: number | null) => setFilters({ t: id === null ? [] : [id] }),
     setTagFromOption: (id: string | null) => {
-      if (id === null || id === '') { setFilters({ t: [] }); return; }
-      const n = Number(id); if (!Number.isNaN(n)) setFilters({ t: [n] });
+      if (id === null || id === '') {
+        setFilters({ t: [] });
+        return;
+      }
+      const n = Number(id);
+      if (!Number.isNaN(n)) setFilters({ t: [n] });
     },
-    tagOptionGroups: getOrderedTagCategories().map(cat => ({
+    tagOptionGroups: getOrderedTagCategories().map((cat) => ({
       label: cat.label,
-      options: getTagsByCategory(cat.key).map(t => ({
-        id: String(t.id), label: t.name,
+      options: getTagsByCategory(cat.key).map((t) => ({
+        id: String(t.id),
+        label: t.name,
       })),
     })),
     tagId: filterTagIds.length === 1 ? filterTagIds[0]! : null,
     levelId: filterLevelIds.length === 1 ? filterLevelIds[0]! : null,
     selectedLevelSlug: filterLevelIds.length === 1 ? levelIdToSlug(filterLevelIds[0]!) : null,
     selectedTagSlug: filterTagIds.length === 1 ? tagIdToSlug(filterTagIds[0]!) : null,
-    selectedTagLabel: filterTagIds.length === 1 ? (getTagMeta(tagIdToSlug(filterTagIds[0]!))?.name ?? null) : null,
+    selectedTagLabel:
+      filterTagIds.length === 1 ? (getTagMeta(tagIdToSlug(filterTagIds[0]!))?.name ?? null) : null,
     hasActiveFilters: urlHasActive,
     clearAll: clearFilters,
   };
@@ -121,20 +134,26 @@ export const RandomPage: FunctionalComponent<RandomPageProps> = ({
   }, [sessionStats]);
 
   // Handle category filter change — clears level when category changes
-  const handleCategoryChange = useCallback((id: string) => {
-    setCategoryFilter(id as CategoryFilter);
-    filterState.setLevel(null); // Reset level when category changes
-  }, [filterState.setLevel]);
+  const handleCategoryChange = useCallback(
+    (id: string) => {
+      setCategoryFilter(id as CategoryFilter);
+      filterState.setLevel(null); // Reset level when category changes
+    },
+    [filterState.setLevel]
+  );
 
   // F13: Level filter uses filterState (unified system). Build options from availableLevels.
-  const handleLevelChange = useCallback((id: string) => {
-    if (id === 'any') {
-      filterState.setLevel(null);
-    } else {
-      const levelId = levelSlugToId(id);
-      filterState.setLevel(levelId ?? null);
-    }
-  }, [filterState.setLevel]);
+  const handleLevelChange = useCallback(
+    (id: string) => {
+      if (id === 'any') {
+        filterState.setLevel(null);
+      } else {
+        const levelId = levelSlugToId(id);
+        filterState.setLevel(levelId ?? null);
+      }
+    },
+    [filterState.setLevel]
+  );
 
   // WP8: Handle tag filter change (PURSIG Finding 13: internalized conversion)
   const handleTagChange = filterState.setTagFromOption;
@@ -152,14 +171,18 @@ export const RandomPage: FunctionalComponent<RandomPageProps> = ({
     return buildDepthPresetOptions(counts.depthPresets ?? {});
   }, [depthPreset, filterState.levelId, filterState.tagId]);
 
-  const handleDepthPresetChange = useCallback((id: string) => {
-    const newDp = id === depthPreset ? undefined : id;
-    if (newDp !== undefined) setFilters({ dp: newDp }); else setFilters({});
-  }, [depthPreset, setFilters]);
+  const handleDepthPresetChange = useCallback(
+    (id: string) => {
+      const newDp = id === depthPreset ? undefined : id;
+      if (newDp !== undefined) setFilters({ dp: newDp });
+      else setFilters({});
+    },
+    [depthPreset, setFilters]
+  );
 
   // Derive selected level slug from filterState for display
   const selectedLevelSlug: string = filterState.selectedLevelSlug
-    ? (filterState.selectedLevelSlug)
+    ? filterState.selectedLevelSlug
     : 'any';
 
   // Handle random puzzle button click — reads from unified filterState
@@ -181,7 +204,13 @@ export const RandomPage: FunctionalComponent<RandomPageProps> = ({
 
     // C1: Pass selected tag slug to callback so app.tsx can filter by tag
     onSelectRandomPuzzle(targetLevel, filterState.selectedTagSlug ?? undefined);
-  }, [filterState.levelId, filterState.selectedLevelSlug, filterState.selectedTagSlug, availableLevels, onSelectRandomPuzzle]);
+  }, [
+    filterState.levelId,
+    filterState.selectedLevelSlug,
+    filterState.selectedTagSlug,
+    availableLevels,
+    onSelectRandomPuzzle,
+  ]);
 
   // Filtered level options based on category
   const filteredLevelOptions = useMemo(() => {
@@ -203,7 +232,7 @@ export const RandomPage: FunctionalComponent<RandomPageProps> = ({
           title="Random"
           subtitle="Practice at your pace with randomly selected puzzles"
           icon={<DiceIcon size={36} />}
-          stats={statItems.map(s => ({ label: s.label, value: s.value }))}
+          stats={statItems.map((s) => ({ label: s.label, value: s.value }))}
           onBack={onNavigateHome}
           accent={ACCENT}
           testId="random-header"
@@ -271,10 +300,7 @@ export const RandomPage: FunctionalComponent<RandomPageProps> = ({
         </div>
 
         {/* Content (Layer 2) */}
-        <div
-          className="mx-auto w-full max-w-5xl flex-1 p-4"
-          data-testid="random-page"
-        >
+        <div className="mx-auto w-full max-w-5xl flex-1 p-4" data-testid="random-page">
           {/* Random Puzzle Action */}
           <section
             className="flex flex-col items-center gap-4 rounded-xl bg-[var(--color-bg-elevated)] p-8"
@@ -312,16 +338,16 @@ export const RandomPage: FunctionalComponent<RandomPageProps> = ({
                 <button
                   type="button"
                   key={level}
-                  onClick={() => onSelectRandomPuzzle(level, filterState.selectedTagSlug ?? undefined)}
+                  onClick={() =>
+                    onSelectRandomPuzzle(level, filterState.selectedTagSlug ?? undefined)
+                  }
                   className="flex flex-col gap-1 rounded-lg bg-[var(--color-bg-panel)] p-4 text-left transition-colors hover:bg-[var(--color-bg-secondary)]"
                   data-testid={`level-card-${level}`}
                 >
                   <span className="font-medium text-[var(--color-text-primary)]">
                     {getSkillLevelName(level)}
                   </span>
-                  <span className="text-xs text-[var(--color-text-muted)]">
-                    {level}
-                  </span>
+                  <span className="text-xs text-[var(--color-text-muted)]">{level}</span>
                 </button>
               ))}
             </div>
@@ -329,8 +355,8 @@ export const RandomPage: FunctionalComponent<RandomPageProps> = ({
 
           {/* Help Text */}
           <p className="mt-6 text-center text-xs text-[var(--color-text-muted)]">
-            Random puzzles are drawn from all available collections. Your session
-            stats are saved locally and reset when you close the app.
+            Random puzzles are drawn from all available collections. Your session stats are saved
+            locally and reset when you close the app.
           </p>
         </div>
       </PageLayout.Content>

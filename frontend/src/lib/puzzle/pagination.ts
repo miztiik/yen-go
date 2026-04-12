@@ -10,12 +10,7 @@
  * - V. No Browser AI: Pure data fetching, no calculations
  */
 
-import type {
-  ViewType,
-  ViewEntry,
-  PageDocument,
-  DirectoryIndex,
-} from '../../types/indexes';
+import type { ViewType, ViewEntry, PageDocument, DirectoryIndex } from '../../types/indexes';
 import {
   PaginationState,
   initialPaginationState,
@@ -25,7 +20,12 @@ import {
   isPageDocument,
 } from '../../types/indexes';
 import { safeFetchJson, FetchJsonError } from '@/utils/safeFetchJson';
-import { decodeEntries, decodeLevelEntry, decodeTagEntry, decodeCollectionEntry } from '@/services/entryDecoder';
+import {
+  decodeEntries,
+  decodeLevelEntry,
+  decodeTagEntry,
+  decodeCollectionEntry,
+} from '@/services/entryDecoder';
 
 // ============================================================================
 // Error Classes (T052)
@@ -70,11 +70,14 @@ export interface ViewInfo {
 /**
  * URL path helpers for each view type.
  */
-const VIEW_TYPE_PATHS: Record<ViewType, {
-  single: (name: string | number) => string;
-  index: (name: string | number) => string;
-  page: (name: string | number, page: number) => string;
-}> = {
+const VIEW_TYPE_PATHS: Record<
+  ViewType,
+  {
+    single: (name: string | number) => string;
+    index: (name: string | number) => string;
+    page: (name: string | number, page: number) => string;
+  }
+> = {
   level: {
     single: (name: string | number) => VIEW_PATHS.byLevel(name),
     index: (name: string | number) => VIEW_PATHS.paginatedLevelIndex(name),
@@ -159,11 +162,7 @@ export async function loadPage<T extends ViewEntry>(
   page: number
 ): Promise<PageDocument<T>> {
   if (page < 1) {
-    throw new PaginationError(
-      `Invalid page number: ${page}`,
-      'INVALID_PAGE',
-      { type, name, page }
-    );
+    throw new PaginationError(`Invalid page number: ${page}`, 'INVALID_PAGE', { type, name, page });
   }
 
   const paths = VIEW_TYPE_PATHS[type];
@@ -174,11 +173,11 @@ export async function loadPage<T extends ViewEntry>(
     data = await safeFetchJson<unknown>(url);
   } catch (error) {
     if (error instanceof FetchJsonError && error.status === 404) {
-      throw new PaginationError(
-        `${type} page not found: ${name} page ${page}`,
-        'NOT_FOUND',
-        { type, name, page }
-      );
+      throw new PaginationError(`${type} page not found: ${name} page ${page}`, 'NOT_FOUND', {
+        type,
+        name,
+        page,
+      });
     }
     throw new PaginationError(
       `Failed to fetch ${type} page: ${error instanceof FetchJsonError ? error.status : 'unknown'}`,
@@ -205,11 +204,7 @@ export async function loadPage<T extends ViewEntry>(
     } as PageDocument<T>;
   }
 
-  throw new PaginationError(
-    `Invalid ${type} page format`,
-    'INVALID_RESPONSE',
-    { url }
-  );
+  throw new PaginationError(`Invalid ${type} page format`, 'INVALID_RESPONSE', { url });
 }
 
 /**
@@ -247,11 +242,10 @@ export async function loadDirectoryIndex(
     data = await safeFetchJson<unknown>(url);
   } catch (error) {
     if (error instanceof FetchJsonError && error.status === 404) {
-      throw new PaginationError(
-        `Paginated ${type} index not found: ${name}`,
-        'NOT_FOUND',
-        { type, name }
-      );
+      throw new PaginationError(`Paginated ${type} index not found: ${name}`, 'NOT_FOUND', {
+        type,
+        name,
+      });
     }
     throw new PaginationError(
       `Failed to fetch paginated ${type} index: ${error instanceof FetchJsonError ? error.status : 'unknown'}`,
@@ -267,7 +261,11 @@ export async function loadDirectoryIndex(
 
   // Accept legacy formats and normalize
   const obj = data as Record<string, unknown>;
-  if (typeof obj['total_count'] === 'number' && typeof obj['page_size'] === 'number' && typeof obj['pages'] === 'number') {
+  if (
+    typeof obj['total_count'] === 'number' &&
+    typeof obj['page_size'] === 'number' &&
+    typeof obj['pages'] === 'number'
+  ) {
     return {
       type,
       name,
@@ -278,7 +276,11 @@ export async function loadDirectoryIndex(
   }
 
   // Legacy collection master index format
-  if (typeof obj['totalPuzzles'] === 'number' && typeof obj['totalPages'] === 'number' && typeof obj['pageSize'] === 'number') {
+  if (
+    typeof obj['totalPuzzles'] === 'number' &&
+    typeof obj['totalPages'] === 'number' &&
+    typeof obj['pageSize'] === 'number'
+  ) {
     return {
       type,
       name,
@@ -288,11 +290,7 @@ export async function loadDirectoryIndex(
     };
   }
 
-  throw new PaginationError(
-    `Invalid paginated ${type} index format`,
-    'INVALID_RESPONSE',
-    { url }
-  );
+  throw new PaginationError(`Invalid paginated ${type} index format`, 'INVALID_RESPONSE', { url });
 }
 
 // ============================================================================

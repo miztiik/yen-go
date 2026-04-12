@@ -48,9 +48,21 @@ const styles = {
 
   statusBadge: (status: ProgressStatus): JSX.CSSProperties => {
     const colors = {
-      completed: { bg: 'var(--color-success-bg-solid)', text: 'var(--color-success)', border: 'var(--color-success-border)' },
-      'in-progress': { bg: 'var(--color-mode-collections-bg)', text: 'var(--color-warning)', border: 'var(--color-warning-border)' },
-      'not-started': { bg: 'var(--color-neutral-100)', text: 'var(--color-neutral-500)', border: 'var(--color-neutral-400)' },
+      completed: {
+        bg: 'var(--color-success-bg-solid)',
+        text: 'var(--color-success)',
+        border: 'var(--color-success-border)',
+      },
+      'in-progress': {
+        bg: 'var(--color-mode-collections-bg)',
+        text: 'var(--color-warning)',
+        border: 'var(--color-warning-border)',
+      },
+      'not-started': {
+        bg: 'var(--color-neutral-100)',
+        text: 'var(--color-neutral-500)',
+        border: 'var(--color-neutral-400)',
+      },
     };
     const c = colors[status];
     return {
@@ -99,7 +111,8 @@ const styles = {
   progressFill: (percent: number, status: ProgressStatus): JSX.CSSProperties => ({
     height: '100%',
     width: `${percent}%`,
-    backgroundColor: status === 'completed' ? 'var(--color-success-border)' : 'var(--color-info-border)',
+    backgroundColor:
+      status === 'completed' ? 'var(--color-success-border)' : 'var(--color-info-border)',
     borderRadius: '3px',
     transition: 'width 0.3s ease',
   }),
@@ -157,12 +170,12 @@ function getStatusLabel(status: ProgressStatus): string {
 
 function formatLastActivity(dateString: string | undefined): string {
   if (!dateString) return '';
-  
+
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  
+
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Yesterday';
   if (diffDays < 7) return `${diffDays} days ago`;
@@ -201,9 +214,7 @@ export function CollectionProgressSummary({
       }}
     >
       {/* Status Badge */}
-      <span style={styles.statusBadge(status)}>
-        {getStatusLabel(status)}
-      </span>
+      <span style={styles.statusBadge(status)}>{getStatusLabel(status)}</span>
 
       {/* Content */}
       <div style={styles.content}>
@@ -223,9 +234,7 @@ export function CollectionProgressSummary({
 
         {/* Meta info */}
         <div style={styles.meta}>
-          {lastActivity && (
-            <span>Last: {formatLastActivity(lastActivity)}</span>
-          )}
+          {lastActivity && <span>Last: {formatLastActivity(lastActivity)}</span>}
         </div>
       </div>
 

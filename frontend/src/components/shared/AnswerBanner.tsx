@@ -51,7 +51,7 @@ export function AnswerBanner({
     : 'text-[--color-warning-text] font-semibold';
 
   const iconPath = isSuccess
-    ? 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'         // checkmark circle
+    ? 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' // checkmark circle
     : 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.999L13.732 4.001c-.77-1.333-2.694-1.333-3.464 0L3.34 16.001C2.57 17.334 3.532 19 5.072 19z'; // warning triangle
 
   return (

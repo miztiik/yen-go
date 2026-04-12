@@ -19,7 +19,9 @@ export const AchievementsGrid: FunctionalComponent<AchievementsGridProps> = ({ a
       <h2 className="mb-3 text-lg font-bold text-[var(--color-text-primary)]">Achievements</h2>
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
         {achievements.map(({ achievement, isNew }) => {
-          const unlocked = achievement.unlockedAt != null || (achievement.progress != null && achievement.progress >= achievement.target);
+          const unlocked =
+            achievement.unlockedAt != null ||
+            (achievement.progress != null && achievement.progress >= achievement.target);
           return (
             <div
               key={achievement.id}

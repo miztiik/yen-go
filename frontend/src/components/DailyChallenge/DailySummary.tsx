@@ -75,15 +75,25 @@ function formatDate(date: string): string {
  * Get completion SVG icon based on accuracy
  */
 function CompletionIcon({ accuracy }: { accuracy: number }): JSX.Element {
-  if (accuracy >= 90) return <TrophyIcon size={48} className="text-[var(--color-mode-daily-text,#d97706)]" style={{ fill: 'currentColor', stroke: 'none' }} />;
-  if (accuracy >= 70) return <StarIcon size={48} filled className="text-[var(--color-mode-daily-text,#d97706)]" />;
+  if (accuracy >= 90)
+    return (
+      <TrophyIcon
+        size={48}
+        className="text-[var(--color-mode-daily-text,#d97706)]"
+        style={{ fill: 'currentColor', stroke: 'none' }}
+      />
+    );
+  if (accuracy >= 70)
+    return <StarIcon size={48} filled className="text-[var(--color-mode-daily-text,#d97706)]" />;
   return <TrendUpIcon size={48} className="text-[var(--color-mode-daily-text,#d97706)]" />;
 }
 
 /**
  * Calculate overall accuracy from level data
  */
-function calculateOverallAccuracy(accuracyByLevel: Record<string, { correct: number; total: number }>): number {
+function calculateOverallAccuracy(
+  accuracyByLevel: Record<string, { correct: number; total: number }>
+): number {
   let totalCorrect = 0;
   let totalAttempts = 0;
 
@@ -122,7 +132,6 @@ export function DailySummary({
     <div class={`daily-summary max-w-[420px] w-full mx-auto text-center ${className}`}>
       {/* Warm card with amber accent border */}
       <div className="rounded-2xl border border-[var(--color-mode-daily-border,#fbbf24)] bg-[var(--color-bg-panel)] p-8 shadow-lg">
-
         {/* Icon + Title */}
         <div className="mb-8">
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--color-mode-daily-light,#fffbeb)]">
@@ -140,7 +149,9 @@ export function DailySummary({
         <div className="mb-8 grid grid-cols-2 gap-3">
           {/* Accuracy */}
           <div className="rounded-xl bg-[var(--color-mode-daily-light,#fffbeb)] px-4 py-5">
-            <span className={`block text-3xl font-extrabold tabular-nums ${getAccuracyColorClass(accuracy)}`}>
+            <span
+              className={`block text-3xl font-extrabold tabular-nums ${getAccuracyColorClass(accuracy)}`}
+            >
               {accuracy}%
             </span>
             <span className="mt-1 block text-[0.65rem] font-semibold uppercase tracking-widest text-[var(--color-neutral-500)]">
@@ -192,13 +203,19 @@ export function DailySummary({
             <div className="space-y-2">
               {levelAccuracyEntries.map(([level, data]) => {
                 const levelInfo = getSkillLevelInfo(level);
-                const levelAccuracy = data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0;
+                const levelAccuracy =
+                  data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0;
                 return (
-                  <div key={level} className="flex items-center justify-between rounded-lg bg-[var(--color-neutral-50)] px-4 py-2.5">
+                  <div
+                    key={level}
+                    className="flex items-center justify-between rounded-lg bg-[var(--color-neutral-50)] px-4 py-2.5"
+                  >
                     <span className="text-sm font-medium text-[var(--color-neutral-700)]">
                       {levelInfo?.name ?? level}
                     </span>
-                    <span className={`text-sm font-bold tabular-nums ${getAccuracyColorClass(levelAccuracy)}`}>
+                    <span
+                      className={`text-sm font-bold tabular-nums ${getAccuracyColorClass(levelAccuracy)}`}
+                    >
                       {data.correct}/{data.total} ({levelAccuracy}%)
                     </span>
                   </div>

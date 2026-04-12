@@ -72,10 +72,7 @@ export function sanitizePuzzleId(id: string): string {
  * @param boardSize - Board size (9, 13, 19)
  * @returns Sanitized coordinate or null if invalid
  */
-export function sanitizeCoordinate(
-  coord: unknown,
-  boardSize: number
-): number | null {
+export function sanitizeCoordinate(coord: unknown, boardSize: number): number | null {
   if (typeof coord !== 'number' || !Number.isInteger(coord)) {
     return null;
   }

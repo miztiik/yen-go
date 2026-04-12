@@ -58,15 +58,11 @@ export function AchievementCard({
       tabIndex={onClick ? 0 : undefined}
       style={{ '--tier-color': tierColor } as JSX.CSSProperties}
     >
-      <div className="achievement-card__icon">
-        {isHidden ? '❓' : achievement.icon}
-      </div>
+      <div className="achievement-card__icon">{isHidden ? '❓' : achievement.icon}</div>
 
       <div className="achievement-card__content">
         <div className="achievement-card__header">
-          <h3 className="achievement-card__name">
-            {isHidden ? '???' : achievement.name}
-          </h3>
+          <h3 className="achievement-card__name">{isHidden ? '???' : achievement.name}</h3>
           <span className={`achievement-card__tier achievement-card__tier--${achievement.tier}`}>
             {getTierName(achievement.tier)}
           </span>
@@ -126,9 +122,7 @@ export function AchievementBadge({
       title={`${achievement.name}: ${achievement.description}`}
       style={{ '--tier-color': tierColor } as JSX.CSSProperties}
     >
-      <span className="achievement-badge__icon">
-        {achievement.icon}
-      </span>
+      <span className="achievement-badge__icon">{achievement.icon}</span>
       {!unlocked && <span className="achievement-badge__lock">🔒</span>}
     </div>
   );

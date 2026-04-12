@@ -64,9 +64,7 @@ export const ContentTypeFilter: FunctionalComponent<ContentTypeFilterProps> = ({
     return BASE_OPTIONS.map((opt) => {
       const id = Number(opt.id);
       // "All" (id=0) gets total count across all types
-      const count = id === 0
-        ? Object.values(counts).reduce((sum, c) => sum + c, 0)
-        : counts[id];
+      const count = id === 0 ? Object.values(counts).reduce((sum, c) => sum + c, 0) : counts[id];
       return count !== undefined ? { ...opt, count } : opt;
     });
   }, [counts]);

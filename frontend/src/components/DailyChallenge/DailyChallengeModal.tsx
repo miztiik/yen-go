@@ -14,7 +14,11 @@ import { Modal } from '../shared/Modal';
 import { DailyCountdown } from './DailyCountdown';
 import { DailySummary } from './DailySummary';
 import { GoQuote } from '../shared/GoQuote';
-import { getTodaysChallenge, detectDailyVersion, getTimedSetsInfo } from '@/services/dailyChallengeService';
+import {
+  getTodaysChallenge,
+  detectDailyVersion,
+  getTimedSetsInfo,
+} from '@/services/dailyChallengeService';
 import { getDailyProgress } from '@/services/progressTracker';
 import type { DailyChallengeMode, DailyProgress } from '@/models/dailyChallenge';
 import type { DailyIndex } from '@/types/indexes';
@@ -94,12 +98,12 @@ export function DailyChallengeModal({
     if (!isOpen) return;
 
     const loadData = (): void => {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       const result = getTodaysChallenge();
-      
+
       if (!result.success || !result.data) {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isLoading: false,
           error: result.message ?? 'Daily challenge not available',
@@ -116,9 +120,10 @@ export function DailyChallengeModal({
 
       // Load progress
       const progressResult = getDailyProgress(result.data.date);
-      const progress: DailyProgress | null = progressResult.success && progressResult.data ? progressResult.data : null;
+      const progress: DailyProgress | null =
+        progressResult.success && progressResult.data ? progressResult.data : null;
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: false,
         challenge: result.data ?? null,
@@ -131,19 +136,25 @@ export function DailyChallengeModal({
     loadData();
   }, [isOpen]);
 
-  const handleModeSelect = useCallback((mode: DailyChallengeMode): void => {
-    if (state.challenge) {
-      // For standard mode or v1.0 timed, no set number needed
-      onStartChallenge(mode, state.challenge.date);
-    }
-  }, [state.challenge, onStartChallenge]);
+  const handleModeSelect = useCallback(
+    (mode: DailyChallengeMode): void => {
+      if (state.challenge) {
+        // For standard mode or v1.0 timed, no set number needed
+        onStartChallenge(mode, state.challenge.date);
+      }
+    },
+    [state.challenge, onStartChallenge]
+  );
 
   /** Handle timed set selection for v2.0 format */
-  const handleTimedSetSelect = useCallback((setNumber: number): void => {
-    if (state.challenge) {
-      onStartChallenge('timed', state.challenge.date, setNumber);
-    }
-  }, [state.challenge, onStartChallenge]);
+  const handleTimedSetSelect = useCallback(
+    (setNumber: number): void => {
+      if (state.challenge) {
+        onStartChallenge('timed', state.challenge.date, setNumber);
+      }
+    },
+    [state.challenge, onStartChallenge]
+  );
 
   const handleContinue = useCallback((): void => {
     if (state.challenge) {
@@ -152,7 +163,7 @@ export function DailyChallengeModal({
   }, [state.challenge, onStartChallenge]);
 
   const toggleSummary = useCallback((): void => {
-    setState(prev => ({ ...prev, showSummary: !prev.showSummary }));
+    setState((prev) => ({ ...prev, showSummary: !prev.showSummary }));
   }, []);
 
   const { isLoading, error, challenge, progress, showSummary, version, timedSets } = state;
@@ -169,23 +180,20 @@ export function DailyChallengeModal({
   const hasTimedSets = version === '2.0' && timedSets.length > 0;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Daily Challenge"
-      className={className}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Daily Challenge" className={className}>
       <div className="p-6 max-h-[80vh] overflow-y-auto">
         {isLoading && (
-          <div className="flex justify-center items-center min-h-[200px] text-[--color-neutral-400]">Loading...</div>
+          <div className="flex justify-center items-center min-h-[200px] text-[--color-neutral-400]">
+            Loading...
+          </div>
         )}
 
         {!isLoading && error && (
           <div className="text-center px-4 py-8">
             <p className="text-xl font-semibold text-[--color-neutral-900] mb-2">Coming Soon</p>
             <p className="text-sm text-[--color-neutral-500] mb-4">
-              Our puzzle masters are hard at work crafting today's challenge. 
-              Check back shortly — good things take time.
+              Our puzzle masters are hard at work crafting today's challenge. Check back shortly —
+              good things take time.
             </p>
             <GoQuote mode="daily" size="sm" />
             <div className="mb-6 text-center">
@@ -198,23 +206,39 @@ export function DailyChallengeModal({
           <>
             {/* Header */}
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-[--color-neutral-900] m-0 mb-1">Today's Challenge</h2>
-              <p className="text-base text-[--color-neutral-500] m-0">{formatDisplayDate(challenge.date)}</p>
+              <h2 className="text-2xl font-bold text-[--color-neutral-900] m-0 mb-1">
+                Today's Challenge
+              </h2>
+              <p className="text-base text-[--color-neutral-500] m-0">
+                {formatDisplayDate(challenge.date)}
+              </p>
             </div>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3 mb-6">
               <div className="bg-[--color-neutral-50] rounded-lg p-4 text-center">
-                <span className="text-2xl font-bold text-[--color-neutral-900] block">{totalCount}</span>
-                <span className="text-xs text-[--color-neutral-500] uppercase tracking-wider">Puzzles</span>
+                <span className="text-2xl font-bold text-[--color-neutral-900] block">
+                  {totalCount}
+                </span>
+                <span className="text-xs text-[--color-neutral-500] uppercase tracking-wider">
+                  Puzzles
+                </span>
               </div>
               <div className="bg-[--color-neutral-50] rounded-lg p-4 text-center">
-                <span className="text-2xl font-bold text-[--color-neutral-900] block">{completedCount}</span>
-                <span className="text-xs text-[--color-neutral-500] uppercase tracking-wider">Completed</span>
+                <span className="text-2xl font-bold text-[--color-neutral-900] block">
+                  {completedCount}
+                </span>
+                <span className="text-xs text-[--color-neutral-500] uppercase tracking-wider">
+                  Completed
+                </span>
               </div>
               <div className="bg-[--color-neutral-50] rounded-lg p-4 text-center">
-                <span className="text-2xl font-bold text-[--color-neutral-900] block">{progressPercent}%</span>
-                <span className="text-xs text-[--color-neutral-500] uppercase tracking-wider">Progress</span>
+                <span className="text-2xl font-bold text-[--color-neutral-900] block">
+                  {progressPercent}%
+                </span>
+                <span className="text-xs text-[--color-neutral-500] uppercase tracking-wider">
+                  Progress
+                </span>
               </div>
             </div>
 
@@ -222,10 +246,15 @@ export function DailyChallengeModal({
             {completedCount > 0 && (
               <div className="mb-6">
                 <span className="text-sm text-[--color-neutral-600] mb-2 block">
-                  {isComplete ? 'Challenge Complete!' : `${completedCount} of ${totalCount} puzzles solved`}
+                  {isComplete
+                    ? 'Challenge Complete!'
+                    : `${completedCount} of ${totalCount} puzzles solved`}
                 </span>
                 <div className="h-2 bg-[--color-neutral-200] rounded overflow-hidden">
-                  <div className="h-full bg-[--color-success-solid] rounded transition-[width] duration-300 ease-in-out" style={{ width: `${progressPercent}%` }} />
+                  <div
+                    className="h-full bg-[--color-success-solid] rounded transition-[width] duration-300 ease-in-out"
+                    style={{ width: `${progressPercent}%` }}
+                  />
                 </div>
               </div>
             )}
@@ -233,7 +262,9 @@ export function DailyChallengeModal({
             {/* Mode Selection (not shown if complete) */}
             {!isComplete && !isInProgress && (
               <div className="mb-6">
-                <h3 className="text-sm font-semibold text-[--color-neutral-700] mb-3">Select Mode</h3>
+                <h3 className="text-sm font-semibold text-[--color-neutral-700] mb-3">
+                  Select Mode
+                </h3>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
@@ -241,10 +272,14 @@ export function DailyChallengeModal({
                     onClick={() => handleModeSelect('standard')}
                   >
                     <span className="text-[2rem] mb-2 block">📝</span>
-                    <span className="text-base font-semibold text-[--color-neutral-900] mb-1 block">Standard</span>
-                    <span className="text-xs text-[--color-neutral-500]">Take your time, no pressure</span>
+                    <span className="text-base font-semibold text-[--color-neutral-900] mb-1 block">
+                      Standard
+                    </span>
+                    <span className="text-xs text-[--color-neutral-500]">
+                      Take your time, no pressure
+                    </span>
                   </button>
-                  
+
                   {/* v1.0 format: single timed button */}
                   {!hasTimedSets && (
                     <button
@@ -253,8 +288,12 @@ export function DailyChallengeModal({
                       onClick={() => handleModeSelect('timed')}
                     >
                       <span className="text-[2rem] mb-2 block">⏱️</span>
-                      <span className="text-base font-semibold text-[--color-neutral-900] mb-1 block">Timed</span>
-                      <span className="text-xs text-[--color-neutral-500]">Race against the clock</span>
+                      <span className="text-base font-semibold text-[--color-neutral-900] mb-1 block">
+                        Timed
+                      </span>
+                      <span className="text-xs text-[--color-neutral-500]">
+                        Race against the clock
+                      </span>
                     </button>
                   )}
                 </div>
@@ -262,7 +301,9 @@ export function DailyChallengeModal({
                 {/* v2.0 format: multiple timed sets */}
                 {hasTimedSets && (
                   <div className="mt-4">
-                    <h3 className="text-sm font-semibold text-[--color-neutral-700] mb-3">⏱️ Timed Sets</h3>
+                    <h3 className="text-sm font-semibold text-[--color-neutral-700] mb-3">
+                      ⏱️ Timed Sets
+                    </h3>
                     <div className="flex gap-3 flex-wrap justify-center">
                       {timedSets.map((set) => (
                         <button
@@ -271,8 +312,12 @@ export function DailyChallengeModal({
                           className="px-5 py-3 bg-[--color-neutral-50] border-2 border-[--color-neutral-200] rounded-lg cursor-pointer text-center min-w-[100px] transition-all hover:border-[--color-warning-border] hover:bg-[--color-mode-daily-light]"
                           onClick={() => handleTimedSetSelect(set.setNumber)}
                         >
-                          <span className="text-xl font-bold text-[--color-neutral-900] block mb-1">Set {set.setNumber}</span>
-                          <span className="text-xs text-[--color-neutral-500]">{set.puzzleCount} puzzles</span>
+                          <span className="text-xl font-bold text-[--color-neutral-900] block mb-1">
+                            Set {set.setNumber}
+                          </span>
+                          <span className="text-xs text-[--color-neutral-500]">
+                            {set.puzzleCount} puzzles
+                          </span>
                         </button>
                       ))}
                     </div>

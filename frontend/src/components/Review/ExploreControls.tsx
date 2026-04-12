@@ -76,12 +76,10 @@ function ExploreStatusBadge({
   const statusText = isOnSolution
     ? 'On solution path'
     : depth > 0
-    ? `Exploring (${depth} moves)`
-    : 'Ready to explore';
+      ? `Exploring (${depth} moves)`
+      : 'Ready to explore';
 
-  const statusClass = isOnSolution
-    ? 'explore-status--on-path'
-    : 'explore-status--exploring';
+  const statusClass = isOnSolution ? 'explore-status--on-path' : 'explore-status--exploring';
 
   return (
     <span className={`explore-status ${statusClass}`} aria-live="polite">
@@ -101,11 +99,15 @@ function HintLegend({
   return (
     <div className="explore-legend" aria-label="Move hint legend">
       <span className="explore-legend__item explore-legend__item--valid">
-        <span className="explore-legend__marker" aria-hidden="true">●</span>
+        <span className="explore-legend__marker" aria-hidden="true">
+          ●
+        </span>
         <span className="explore-legend__text">Correct</span>
       </span>
       <span className="explore-legend__item explore-legend__item--invalid">
-        <span className="explore-legend__marker" aria-hidden="true">✕</span>
+        <span className="explore-legend__marker" aria-hidden="true">
+          ✕
+        </span>
         <span className="explore-legend__text">Wrong</span>
       </span>
     </div>
@@ -147,9 +149,7 @@ export function ExploreControls({
       >
         <ExploreIcon />
         {!compact && (
-          <span className="explore-controls__label">
-            {isActive ? 'Exit' : 'Explore'}
-          </span>
+          <span className="explore-controls__label">{isActive ? 'Exit' : 'Explore'}</span>
         )}
       </button>
 
@@ -226,9 +226,8 @@ export function ExplorePanel({
     <div className={`explore-panel ${className ?? ''}`} role="complementary">
       <HintLegend colorblindMode={colorblindMode ?? false} />
       <p className="explore-panel__instructions">
-        Click on a highlighted point to explore that move.
-        Green/blue points follow the correct solution.
-        Red/orange points lead to failure.
+        Click on a highlighted point to explore that move. Green/blue points follow the correct
+        solution. Red/orange points lead to failure.
       </p>
     </div>
   );

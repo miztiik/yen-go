@@ -55,7 +55,7 @@ export function parseYCProperty(sgf: string): CornerPosition | undefined {
  */
 export function transformCornerPosition(
   corner: CornerPosition | undefined,
-  transforms: { flipH?: boolean; flipV?: boolean; rotation?: 0 | 90 | 180 | 270 },
+  transforms: { flipH?: boolean; flipV?: boolean; rotation?: 0 | 90 | 180 | 270 }
 ): CornerPosition | undefined {
   if (!corner || corner === 'C' || corner === 'E') return corner;
 
@@ -74,14 +74,12 @@ export function transformCornerPosition(
 
   if (transforms.flipH) {
     // Swap left ↔ right: TL↔TR, BL↔BR
-    result = result === 'TL' ? 'TR' : result === 'TR' ? 'TL'
-           : result === 'BL' ? 'BR' : 'BL';
+    result = result === 'TL' ? 'TR' : result === 'TR' ? 'TL' : result === 'BL' ? 'BR' : 'BL';
   }
 
   if (transforms.flipV) {
     // Swap top ↔ bottom: TL↔BL, TR↔BR
-    result = result === 'TL' ? 'BL' : result === 'BL' ? 'TL'
-           : result === 'TR' ? 'BR' : 'TR';
+    result = result === 'TL' ? 'BL' : result === 'BL' ? 'TL' : result === 'TR' ? 'BR' : 'TR';
   }
 
   return result;
@@ -99,7 +97,7 @@ export function transformCornerPosition(
  */
 export function getCornerBounds(
   corner: CornerPosition | undefined,
-  boardSize: number = 19,
+  boardSize: number = 19
 ): ViewportBounds | undefined {
   if (!corner || corner === 'C' || corner === 'E') return undefined;
 

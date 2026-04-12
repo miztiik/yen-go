@@ -73,11 +73,52 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             aria-hidden="true"
             className="text-[var(--color-text-muted)]"
           >
-            <rect x="4" y="4" width="40" height="40" rx="4" stroke="currentColor" strokeWidth="2" fill="none" />
-            <line x1="4" y1="16" x2="44" y2="16" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-            <line x1="4" y1="28" x2="44" y2="28" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-            <line x1="16" y1="4" x2="16" y2="44" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-            <line x1="28" y1="4" x2="28" y2="44" stroke="currentColor" strokeWidth="1" opacity="0.3" />
+            <rect
+              x="4"
+              y="4"
+              width="40"
+              height="40"
+              rx="4"
+              stroke="currentColor"
+              strokeWidth="2"
+              fill="none"
+            />
+            <line
+              x1="4"
+              y1="16"
+              x2="44"
+              y2="16"
+              stroke="currentColor"
+              strokeWidth="1"
+              opacity="0.3"
+            />
+            <line
+              x1="4"
+              y1="28"
+              x2="44"
+              y2="28"
+              stroke="currentColor"
+              strokeWidth="1"
+              opacity="0.3"
+            />
+            <line
+              x1="16"
+              y1="4"
+              x2="16"
+              y2="44"
+              stroke="currentColor"
+              strokeWidth="1"
+              opacity="0.3"
+            />
+            <line
+              x1="28"
+              y1="4"
+              x2="28"
+              y2="44"
+              stroke="currentColor"
+              strokeWidth="1"
+              opacity="0.3"
+            />
           </svg>
 
           <p className="text-sm text-[var(--color-text-muted)]">

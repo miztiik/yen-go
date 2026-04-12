@@ -60,9 +60,7 @@ export interface UseStreakReturn {
  * ```
  */
 export function useStreak(): UseStreakReturn {
-  const [stats, setStats] = useState<StreakStats>(() =>
-    getStreakStats(getLocalDateString())
-  );
+  const [stats, setStats] = useState<StreakStats>(() => getStreakStats(getLocalDateString()));
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recentMilestones, setRecentMilestones] = useState<readonly StreakMilestone[]>([]);
@@ -97,10 +95,7 @@ export function useStreak(): UseStreakReturn {
 
       // Track milestones
       if (updateResult.milestonesReached.length > 0) {
-        setRecentMilestones((prev) => [
-          ...prev,
-          ...updateResult.milestonesReached,
-        ]);
+        setRecentMilestones((prev) => [...prev, ...updateResult.milestonesReached]);
       }
 
       return updateResult;

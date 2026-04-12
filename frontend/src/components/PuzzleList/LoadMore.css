@@ -52,7 +52,9 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s ease, opacity 0.2s ease;
+  transition:
+    background 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .load-more__button:hover:not(:disabled) {

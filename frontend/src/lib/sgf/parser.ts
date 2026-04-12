@@ -125,7 +125,7 @@ function expect(state: ParserState, expected: string): void {
 function parsePropertyId(state: ParserState): string {
   skipWhitespace(state);
   let id = '';
-  
+
   while (state.pos < state.length) {
     const char = state.input[state.pos];
     if (char === undefined) {
@@ -156,7 +156,7 @@ function parsePropertyId(state: ParserState): string {
 function parsePropertyValue(state: ParserState): string {
   skipWhitespace(state);
   expect(state, '[');
-  
+
   let value = '';
   let escaped = false;
 
@@ -200,7 +200,7 @@ function parsePropertyValue(state: ParserState): string {
  */
 function parsePropertyValues(state: ParserState): string[] {
   const values: string[] = [];
-  
+
   skipWhitespace(state);
   while (peek(state) === '[') {
     values.push(parsePropertyValue(state));
@@ -219,7 +219,7 @@ function parsePropertyValues(state: ParserState): string[] {
  */
 function parseNode(state: ParserState): SGFNode {
   expect(state, ';');
-  
+
   const properties: SGFProperties = {};
   const children: SGFNode[] = [];
 
@@ -228,7 +228,7 @@ function parseNode(state: ParserState): SGFNode {
   // Parse properties until we hit (, ), or ;
   while (state.pos < state.length) {
     const char = peek(state);
-    
+
     if (char === '(' || char === ')' || char === ';') {
       break;
     }
@@ -244,10 +244,17 @@ function parseNode(state: ParserState): SGFNode {
     }
 
     const values = parsePropertyValues(state);
-    
+
     // Store property (array for multi-value, string for single)
-    if (propId === 'AB' || propId === 'AW' || propId === 'LB' || 
-        propId === 'TR' || propId === 'SQ' || propId === 'CR' || propId === 'MA') {
+    if (
+      propId === 'AB' ||
+      propId === 'AW' ||
+      propId === 'LB' ||
+      propId === 'TR' ||
+      propId === 'SQ' ||
+      propId === 'CR' ||
+      propId === 'MA'
+    ) {
       // Stone setup and markup properties are always arrays
       properties[propId] = values;
     } else if (values.length === 1) {
@@ -269,7 +276,7 @@ function parseNode(state: ParserState): SGFNode {
  */
 function parseGameTree(state: ParserState): SGFNode | null {
   skipWhitespace(state);
-  
+
   if (peek(state) !== '(') {
     return null;
   }
@@ -292,7 +299,7 @@ function parseGameTree(state: ParserState): SGFNode | null {
 
   // Parse remaining content
   skipWhitespace(state);
-  
+
   while (state.pos < state.length && peek(state) !== ')') {
     const char = peek(state);
 
@@ -373,7 +380,7 @@ export function validateSGF(content: string): boolean {
   }
 
   const trimmed = content.trim();
-  
+
   // Must start with ( and end with )
   if (!trimmed.startsWith('(') || !trimmed.endsWith(')')) {
     return false;
@@ -443,13 +450,9 @@ export function parseSGF(content: string): ParsedSGF {
   }
 
   const trimmed = content.trim();
-  
+
   if (!trimmed.startsWith('(')) {
-    throw new SGFParseErrorImpl(
-      'SGF must start with (',
-      0,
-      1
-    );
+    throw new SGFParseErrorImpl('SGF must start with (', 0, 1);
   }
 
   const state: ParserState = {
@@ -459,7 +462,7 @@ export function parseSGF(content: string): ParsedSGF {
   };
 
   const root = parseGameTree(state);
-  
+
   if (!root) {
     throw new SGFParseErrorImpl('Failed to parse game tree');
   }
@@ -566,4 +569,3 @@ export function sgfCoordToXY(sgfCoord: string): { x: number; y: number } | null 
 
   return { x, y };
 }
-

@@ -2,7 +2,7 @@
  * Progress Bar Component
  * @module components/ProblemNav/ProgressBar
  *
- * Spec 118 - T3.2: ProgressBar Component  
+ * Spec 118 - T3.2: ProgressBar Component
  * Progress indicator below carousel
  */
 
@@ -29,12 +29,16 @@ export function ProgressBar({ completed, total, compact = false }: ProgressBarPr
   const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   return (
-    <div className={`progress-bar ${compact ? 'compact' : ''}`} role="progressbar" aria-valuenow={percentage} aria-valuemin={0} aria-valuemax={100} aria-label={`Progress: ${completed} of ${total} puzzles completed`}>
+    <div
+      className={`progress-bar ${compact ? 'compact' : ''}`}
+      role="progressbar"
+      aria-valuenow={percentage}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label={`Progress: ${completed} of ${total} puzzles completed`}
+    >
       <div className="progress-bar-track">
-        <div
-          className="progress-bar-fill"
-          style={{ width: `${percentage}%` }}
-        />
+        <div className="progress-bar-fill" style={{ width: `${percentage}%` }} />
       </div>
       {!compact && (
         <div className="progress-bar-label">

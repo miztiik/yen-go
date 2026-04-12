@@ -23,7 +23,11 @@ import { DailySummary } from '../components/DailyChallenge/DailySummary';
 import { ChallengeTimer, BLITZ_DURATION_MS } from '../components/DailyChallenge/ChallengeTimer';
 import { DailyPuzzleLoader } from '../services/puzzleLoaders';
 import type { DailyChallengeMode, DailyPerformanceData } from '../models/dailyChallenge';
-import { recordDailyPuzzleCompletion, getDailyProgress, updateDailyProgress } from '../services/progress';
+import {
+  recordDailyPuzzleCompletion,
+  getDailyProgress,
+  updateDailyProgress,
+} from '../services/progress';
 import { recordPlay } from '../services/streakManager';
 import { PageLayout } from '../components/Layout/PageLayout';
 
@@ -43,8 +47,6 @@ export interface DailyChallengePageProps {
   /** CSS class name */
   className?: string | undefined;
 }
-
-
 
 // ============================================================================
 // Helpers
@@ -106,7 +108,7 @@ export function DailyChallengePage({
     setTimeUp(false);
     puzzleStartRef.current = Date.now();
     recordedPuzzlesRef.current.clear();
-    setPlayKey(k => k + 1);
+    setPlayKey((k) => k + 1);
   }, [date]);
 
   // A5: Hydrate completed puzzle IDs from localStorage for returning users
@@ -120,26 +122,29 @@ export function DailyChallengePage({
 
   // Progress tracking: record daily puzzle completion + streak
   // Guard against double-counting when replaying already-completed puzzles
-  const handlePuzzleComplete = useCallback((puzzleId: string, isCorrect: boolean) => {
-    if (recordedPuzzlesRef.current.has(puzzleId)) return;
-    recordedPuzzlesRef.current.add(puzzleId);
-    // Find the correct level by scanning loader entries for matching puzzle ID
-    let level = FALLBACK_LEVEL;
-    const total = loader.getTotal();
-    for (let i = 0; i < total; i++) {
-      const e = loader.getEntry(i);
-      if (e?.id === puzzleId) {
-        level = e.level ?? FALLBACK_LEVEL;
-        break;
+  const handlePuzzleComplete = useCallback(
+    (puzzleId: string, isCorrect: boolean) => {
+      if (recordedPuzzlesRef.current.has(puzzleId)) return;
+      recordedPuzzlesRef.current.add(puzzleId);
+      // Find the correct level by scanning loader entries for matching puzzle ID
+      let level = FALLBACK_LEVEL;
+      const total = loader.getTotal();
+      for (let i = 0; i < total; i++) {
+        const e = loader.getEntry(i);
+        if (e?.id === puzzleId) {
+          level = e.level ?? FALLBACK_LEVEL;
+          break;
+        }
       }
-    }
-    const timeMs = Date.now() - puzzleStartRef.current;
-    recordDailyPuzzleCompletion(date, puzzleId, level, isCorrect, timeMs);
-    puzzleStartRef.current = Date.now();
-    if (isCorrect) {
-      recordPlay();
-    }
-  }, [date, loader]);
+      const timeMs = Date.now() - puzzleStartRef.current;
+      recordDailyPuzzleCompletion(date, puzzleId, level, isCorrect, timeMs);
+      puzzleStartRef.current = Date.now();
+      if (isCorrect) {
+        recordPlay();
+      }
+    },
+    [date, loader]
+  );
 
   // Header renderer — contextual info only (AppHeader provides branding) (T031)
   const renderHeader = (info: HeaderInfo): JSX.Element => (
@@ -189,19 +194,20 @@ export function DailyChallengePage({
   // Navigation renderer
   const renderNavigation = (info: NavigationInfo): JSX.Element => {
     // Construct puzzle list from loader
-    const puzzles = Array.from({ length: info.totalPuzzles }, (_, i) => loader.getEntry(i))
-      .filter((p): p is NonNullable<typeof p> => p !== null);
+    const puzzles = Array.from({ length: info.totalPuzzles }, (_, i) => loader.getEntry(i)).filter(
+      (p): p is NonNullable<typeof p> => p !== null
+    );
 
     const indicators: PuzzleIndicator[] = puzzles.map((puzzle, index) => ({
       index,
       id: puzzle.id,
       status: info.failedIndexes.has(index)
-        ? 'incorrect' as const
+        ? ('incorrect' as const)
         : info.completedIndexes.has(index)
-          ? 'correct' as const
+          ? ('correct' as const)
           : index === info.currentIndex
-            ? 'current' as const
-            : 'unsolved' as const
+            ? ('current' as const)
+            : ('unsolved' as const),
     }));
 
     return (
@@ -223,8 +229,7 @@ export function DailyChallengePage({
     const saved = result.success ? result.data?.performance : undefined;
     const perf: DailyPerformanceData = saved ?? { accuracyByLevel: {}, totalTimeMs: 0 };
     if (mode === 'timed' && perf.timedHighScore === undefined) {
-      const correct = Object.values(perf.accuracyByLevel)
-        .reduce((sum, d) => sum + d.correct, 0);
+      const correct = Object.values(perf.accuracyByLevel).reduce((sum, d) => sum + d.correct, 0);
       return { ...perf, timedHighScore: correct };
     }
     return perf;

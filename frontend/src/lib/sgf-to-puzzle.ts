@@ -67,16 +67,12 @@ function extractInitialState(rootNode: SgfNode): InitialState {
 
   const blackStones = rootNode.properties['AB'];
   if (blackStones && blackStones.length > 0) {
-    state.black = blackStones
-      .filter(v => v.length === 2)
-      .join('');
+    state.black = blackStones.filter((v) => v.length === 2).join('');
   }
 
   const whiteStones = rootNode.properties['AW'];
   if (whiteStones && whiteStones.length > 0) {
-    state.white = whiteStones
-      .filter(v => v.length === 2)
-      .join('');
+    state.white = whiteStones.filter((v) => v.length === 2).join('');
   }
 
   return state;
@@ -234,7 +230,7 @@ function markCorrectWrongFromComments(root: MoveTreeJson): void {
   function findCorrectLeavesAndMark(
     node: MoveTreeJson,
     parent: MoveTreeJson | null,
-    parentMap: Map<MoveTreeJson, MoveTreeJson | null>,
+    parentMap: Map<MoveTreeJson, MoveTreeJson | null>
   ): void {
     parentMap.set(node, parent);
 

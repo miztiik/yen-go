@@ -83,7 +83,7 @@ function generateExplanation(
 
   // Response moves (odd indices are opponent responses in typical puzzles)
   if (moveNumber % 2 === 1) {
-    return 'The opponent\'s best response.';
+    return "The opponent's best response.";
   }
 
   return undefined;
@@ -262,9 +262,6 @@ export class ReviewController {
 /**
  * Create a review controller for a puzzle.
  */
-export function createReviewController(
-  puzzle: PuzzleWithId,
-  solutionIndex = 0
-): ReviewController {
+export function createReviewController(puzzle: PuzzleWithId, solutionIndex = 0): ReviewController {
   return new ReviewController(puzzle, solutionIndex);
 }

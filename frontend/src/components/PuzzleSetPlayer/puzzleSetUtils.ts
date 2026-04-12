@@ -22,7 +22,7 @@ import type { PuzzleSetLoader } from '../../services/puzzleLoaders';
  */
 export function mapIdsToIndexes(
   loader: PuzzleSetLoader,
-  completedIds: readonly string[],
+  completedIds: readonly string[]
 ): Set<number> {
   const result = new Set<number>();
   if (completedIds.length === 0) return result;
@@ -55,7 +55,7 @@ export function mapIdsToIndexes(
 export function findNextUnsolved(
   currentIndex: number,
   total: number,
-  completedIndexes: ReadonlySet<number>,
+  completedIndexes: ReadonlySet<number>
 ): number | null {
   if (total === 0) return null;
 

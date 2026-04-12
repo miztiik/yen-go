@@ -57,7 +57,7 @@ export interface QueueConfig {
  */
 export function createQueueState(puzzleIds: readonly string[]): QueueState {
   return {
-    items: puzzleIds.map(puzzleId => ({
+    items: puzzleIds.map((puzzleId) => ({
       puzzleId,
       completed: false,
       skipped: false,
@@ -160,9 +160,7 @@ export class RushQueue {
     if (!currentItem) return;
 
     const updatedItems = this.state.items.map((item, index) =>
-      index === this.state.currentIndex
-        ? { ...item, attempts: item.attempts + 1 }
-        : item
+      index === this.state.currentIndex ? { ...item, attempts: item.attempts + 1 } : item
     );
 
     this.state = {
@@ -179,9 +177,7 @@ export class RushQueue {
     if (!currentItem || currentItem.completed) return;
 
     const updatedItems = this.state.items.map((item, index) =>
-      index === this.state.currentIndex
-        ? { ...item, completed: true, correct: true, timeMs }
-        : item
+      index === this.state.currentIndex ? { ...item, completed: true, correct: true, timeMs } : item
     );
 
     this.state = {
@@ -244,16 +240,13 @@ export class RushQueue {
     const { items, completedCount, correctCount, skippedCount } = this.state;
 
     const times = items
-      .filter(item => item.correct && item.timeMs !== null)
-      .map(item => item.timeMs!);
+      .filter((item) => item.correct && item.timeMs !== null)
+      .map((item) => item.timeMs!);
 
-    const averageTimeMs = times.length > 0
-      ? times.reduce((sum, t) => sum + t, 0) / times.length
-      : null;
+    const averageTimeMs =
+      times.length > 0 ? times.reduce((sum, t) => sum + t, 0) / times.length : null;
 
-    const accuracy = completedCount > 0
-      ? (correctCount / completedCount) * 100
-      : 0;
+    const accuracy = completedCount > 0 ? (correctCount / completedCount) * 100 : 0;
 
     return {
       total: items.length,
@@ -269,7 +262,7 @@ export class RushQueue {
    * Get all completed items for review.
    */
   getCompletedItems(): readonly QueueItem[] {
-    return this.state.items.filter(item => item.completed);
+    return this.state.items.filter((item) => item.completed);
   }
 
   /**
@@ -278,7 +271,7 @@ export class RushQueue {
   reset(): void {
     this.state = {
       ...this.state,
-      items: this.state.items.map(item => ({
+      items: this.state.items.map((item) => ({
         ...item,
         completed: false,
         skipped: false,
@@ -297,10 +290,7 @@ export class RushQueue {
 /**
  * Create a rush queue from puzzle IDs.
  */
-export function createRushQueue(
-  puzzleIds: readonly string[],
-  config?: QueueConfig
-): RushQueue {
+export function createRushQueue(puzzleIds: readonly string[], config?: QueueConfig): RushQueue {
   return new RushQueue(puzzleIds, config);
 }
 
@@ -311,6 +301,6 @@ export function createRushQueueFromPuzzles(
   puzzles: readonly PuzzleWithId[],
   config?: QueueConfig
 ): RushQueue {
-  const ids = puzzles.map(p => p.id);
+  const ids = puzzles.map((p) => p.id);
   return createRushQueue(ids, config);
 }

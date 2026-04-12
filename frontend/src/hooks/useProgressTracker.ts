@@ -61,7 +61,7 @@ export interface UseProgressTrackerResult {
  * Determine if the puzzle status represents a terminal state (solved or failed).
  */
 function isTerminalStatus(status: PuzzleStatus): boolean {
-  return status === 'complete' || (status === 'wrong');
+  return status === 'complete' || status === 'wrong';
 }
 
 /**
@@ -87,9 +87,7 @@ function getDifficultyGroup(level: LevelSlug): DailyChallengeGroup {
  * });
  * ```
  */
-export function useProgressTracker(
-  options: UseProgressTrackerOptions
-): UseProgressTrackerResult {
+export function useProgressTracker(options: UseProgressTrackerOptions): UseProgressTrackerResult {
   const { puzzleId, puzzleState, skillLevel, enabled = true } = options;
 
   // Track if we've already recorded this puzzle
@@ -114,54 +112,55 @@ export function useProgressTracker(
   // -------------------------------------------------------------------------
   // Track completion
   // -------------------------------------------------------------------------
-  const trackCompletion = useCallback((success: boolean): void => {
-    if (!enabled || hasTrackedRef.current) return;
+  const trackCompletion = useCallback(
+    (success: boolean): void => {
+      if (!enabled || hasTrackedRef.current) return;
 
-    const difficultyGroup = getDifficultyGroup(skillLevel);
-    
-    // Calculate time spent
-    const timeSpentMs = puzzleState.startedAt
-      ? Date.now() - puzzleState.startedAt
-      : 0;
+      const difficultyGroup = getDifficultyGroup(skillLevel);
 
-    // Prepare completion input
-    const completionInput: PuzzleCompletionInput = {
-      timeSpentMs,
-      attempts: puzzleState.wrongAttempts + (success ? 0 : 1),
-      hintsUsed: puzzleState.currentHintTier,
-      perfectSolve: success && puzzleState.wrongAttempts === 0 && !puzzleState.hintsUsed,
-      difficulty: difficultyGroup,
-    };
+      // Calculate time spent
+      const timeSpentMs = puzzleState.startedAt ? Date.now() - puzzleState.startedAt : 0;
 
-    // Record completion
-    try {
-      const result = recordPuzzleCompletion(puzzleId, completionInput);
-      if (result.success) {
-        hasTrackedRef.current = true;
+      // Prepare completion input
+      const completionInput: PuzzleCompletionInput = {
+        timeSpentMs,
+        attempts: puzzleState.wrongAttempts + (success ? 0 : 1),
+        hintsUsed: puzzleState.currentHintTier,
+        perfectSolve: success && puzzleState.wrongAttempts === 0 && !puzzleState.hintsUsed,
+        difficulty: difficultyGroup,
+      };
 
-        // Update streak if successful
-        if (success) {
-          const today = new Date().toISOString().split('T')[0] ?? '';
-          const currentStreakData = getStreakData();
-          const newStreak = currentStreakData.currentStreak + 1;
-          
-          const updatedStreakData: StreakData = {
-            currentStreak: newStreak,
-            longestStreak: Math.max(currentStreakData.longestStreak, newStreak),
-            lastPlayedDate: today,
-            streakStartDate: currentStreakData.streakStartDate ?? today,
-          };
-          
-          const streakResult = updateStreakData(updatedStreakData);
-          if (streakResult.success) {
-            streakRef.current = newStreak;
+      // Record completion
+      try {
+        const result = recordPuzzleCompletion(puzzleId, completionInput);
+        if (result.success) {
+          hasTrackedRef.current = true;
+
+          // Update streak if successful
+          if (success) {
+            const today = new Date().toISOString().split('T')[0] ?? '';
+            const currentStreakData = getStreakData();
+            const newStreak = currentStreakData.currentStreak + 1;
+
+            const updatedStreakData: StreakData = {
+              currentStreak: newStreak,
+              longestStreak: Math.max(currentStreakData.longestStreak, newStreak),
+              lastPlayedDate: today,
+              streakStartDate: currentStreakData.streakStartDate ?? today,
+            };
+
+            const streakResult = updateStreakData(updatedStreakData);
+            if (streakResult.success) {
+              streakRef.current = newStreak;
+            }
           }
         }
+      } catch (error) {
+        console.error('[useProgressTracker] Failed to record completion:', error);
       }
-    } catch (error) {
-      console.error('[useProgressTracker] Failed to record completion:', error);
-    }
-  }, [enabled, puzzleId, skillLevel, puzzleState]);
+    },
+    [enabled, puzzleId, skillLevel, puzzleState]
+  );
 
   // -------------------------------------------------------------------------
   // Auto-track on status change to terminal state

@@ -101,7 +101,11 @@
 /* Coordinate labels */
 .coord-labels text {
   fill: var(--board-coord-label);
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
   font-size: 28px;
   font-weight: 500;
   user-select: none;
@@ -110,7 +114,9 @@
 /* Markers */
 .svg-markers circle,
 .svg-markers rect {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 /* Hint marker pulsing animation */
@@ -230,7 +236,10 @@
   border-radius: 8px;
   background: white;
   color: #333;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;

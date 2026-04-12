@@ -188,10 +188,7 @@ export function recordRushResult(
 /**
  * Get high score for a specific duration.
  */
-export function getHighScore(
-  progress: RushProgress,
-  duration: RushDuration
-): number | null {
+export function getHighScore(progress: RushProgress, duration: RushDuration): number | null {
   return progress.highScores[duration] ?? null;
 }
 
@@ -226,9 +223,7 @@ export function getResultsByDuration(
   duration: RushDuration,
   limit: number = 10
 ): readonly StoredRushResult[] {
-  return progress.results
-    .filter(r => r.duration === duration)
-    .slice(0, limit);
+  return progress.results.filter((r) => r.duration === duration).slice(0, limit);
 }
 
 /**

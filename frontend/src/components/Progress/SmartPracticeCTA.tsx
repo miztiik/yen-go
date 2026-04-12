@@ -19,7 +19,7 @@ export const SmartPracticeCTA: FunctionalComponent<SmartPracticeCTAProps> = ({
   const top3 = weakestTechniques.slice(0, 3);
   if (top3.length === 0) return null;
 
-  const slugs = top3.map(t => t.tagSlug);
+  const slugs = top3.map((t) => t.tagSlug);
 
   return (
     <section
@@ -31,8 +31,7 @@ export const SmartPracticeCTA: FunctionalComponent<SmartPracticeCTAProps> = ({
         <h2 className="text-lg font-bold text-[var(--color-text-primary)]">Smart Practice</h2>
       </div>
       <p className="mb-3 text-sm text-[var(--color-text-muted)]">
-        Focus on your weakest areas:{' '}
-        {top3.map(t => t.tagName).join(', ')}
+        Focus on your weakest areas: {top3.map((t) => t.tagName).join(', ')}
       </p>
       <button
         type="button"

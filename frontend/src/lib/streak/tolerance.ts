@@ -101,7 +101,7 @@ export function isInEarlyMorningWindow(
  *
  * Behavior:
  * - If playing at 11pm, treat as "today" (no special handling needed)
- * - If playing at 1am and last played was "yesterday" (before midnight), 
+ * - If playing at 1am and last played was "yesterday" (before midnight),
  *   this is still counted as continuing the streak
  *
  * @param now - Current date/time

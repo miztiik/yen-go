@@ -11,15 +11,8 @@
  */
 
 import { useState, useCallback, useMemo } from 'preact/hooks';
-import type {
-  Coordinate,
-  ExploreHint,
-  ExploreState,
-} from '@models/SolutionPresentation';
-import {
-  getExploreHintsFromTree,
-  type SolutionTreeNode,
-} from '@lib/presentation/exploreHints';
+import type { Coordinate, ExploreHint, ExploreState } from '@models/SolutionPresentation';
+import { getExploreHintsFromTree, type SolutionTreeNode } from '@lib/presentation/exploreHints';
 
 /**
  * Hook result for explore mode.

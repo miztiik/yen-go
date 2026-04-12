@@ -65,9 +65,7 @@ export const ProgressBar: FunctionalComponent<ProgressBarProps> = ({
   const percent = Math.min(100, Math.round((solved / total) * 100));
 
   // Fill color: mode-specific or accent fallback
-  const fillColor = mode
-    ? `var(--color-mode-${mode}-border)`
-    : 'var(--color-accent)';
+  const fillColor = mode ? `var(--color-mode-${mode}-border)` : 'var(--color-accent)';
 
   return (
     <div className={`flex flex-col gap-1 ${className}`} data-testid={testId}>

@@ -4,10 +4,7 @@
  */
 
 import type { UserProgress } from '../../types/progress';
-import {
-  createDefaultProgress,
-  PROGRESS_SCHEMA_VERSION,
-} from '../../types/progress';
+import { createDefaultProgress, PROGRESS_SCHEMA_VERSION } from '../../types/progress';
 
 /**
  * localStorage key for progress data.
@@ -203,8 +200,7 @@ export class ProgressStorageService implements ProgressStorage {
       // Check for quota exceeded
       if (
         error instanceof DOMException &&
-        (error.name === 'QuotaExceededError' ||
-          error.name === 'NS_ERROR_DOM_QUOTA_REACHED')
+        (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')
       ) {
         return {
           success: false,

@@ -1,10 +1,10 @@
 /**
  * Audio Service
  * @module services/audioService
- * 
+ *
  * Handles sound effects for the app per FR-040, FR-052, FR-053.
  * Sound files are expected in /sounds/ directory.
- * 
+ *
  * Constitution Compliance:
  * - Simple audio playback only
  * - IX. Accessibility: Respects user mute preference
@@ -22,13 +22,13 @@ import { getSettingsSnapshot } from '../hooks/useSettings';
 /**
  * Available sound effects
  */
-export type SoundName = 
-  | 'stone'   // Stone placement
+export type SoundName =
+  | 'stone' // Stone placement
   | 'capture' // Stones captured
   | 'correct' // Correct move
-  | 'wrong'   // Wrong move (FR-040)
+  | 'wrong' // Wrong move (FR-040)
   | 'complete' // Puzzle complete
-  | 'click';   // UI click
+  | 'click'; // UI click
 
 /**
  * Sound configuration
@@ -92,14 +92,14 @@ function createAudioService(): AudioService {
    */
   function getOrCreateAudio(name: SoundName): HTMLAudioElement {
     let audio = audioCache.get(name);
-    
+
     if (!audio) {
       const config = SOUNDS[name];
       audio = new Audio(config.path);
       audio.preload = 'auto';
       audioCache.set(name, audio);
     }
-    
+
     return audio;
   }
 
@@ -123,13 +123,13 @@ function createAudioService(): AudioService {
     try {
       const audio = getOrCreateAudio(name);
       const config = SOUNDS[name];
-      
+
       // Set volume (sound-specific * master)
       audio.volume = config.volume * MASTER_VOLUME;
-      
+
       // Reset to start if already playing
       audio.currentTime = 0;
-      
+
       // Play (ignore promise rejection for autoplay policy)
       audio.play().catch(() => {
         // User hasn't interacted with page yet, sound won't play

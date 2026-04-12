@@ -15,9 +15,18 @@ const ACCENT = getAccentPalette('learning');
 
 function ExternalLinkIcon(): JSX.Element {
   return (
-    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-      className="inline-block shrink-0 opacity-50 group-hover/link:opacity-100">
+    <svg
+      width={14}
+      height={14}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="inline-block shrink-0 opacity-50 group-hover/link:opacity-100"
+    >
       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
       <polyline points="15 3 21 3 21 9" />
       <line x1="10" y1="14" x2="21" y2="3" />
@@ -25,7 +34,12 @@ function ExternalLinkIcon(): JSX.Element {
   );
 }
 
-function SectionAccordion({ section, index, isOpen, onToggle }: {
+function SectionAccordion({
+  section,
+  index,
+  isOpen,
+  onToggle,
+}: {
   section: LearningSection;
   index: number;
   isOpen: boolean;
@@ -48,13 +62,17 @@ function SectionAccordion({ section, index, isOpen, onToggle }: {
           <span className="text-base font-semibold text-[var(--color-text-primary)]">
             {section.title}
           </span>
-          <span className="text-xs text-[var(--color-text-muted)]">
-            ({section.lessons.length})
-          </span>
+          <span className="text-xs text-[var(--color-text-muted)]">({section.lessons.length})</span>
         </div>
         <svg
-          width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+          width={20}
+          height={20}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
           className={`shrink-0 text-[var(--color-text-muted)] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
           aria-hidden="true"
         >
@@ -66,7 +84,10 @@ function SectionAccordion({ section, index, isOpen, onToggle }: {
         <div className="border-t border-[var(--color-border-subtle,#e5e7eb)] px-5 py-3">
           <ol className="space-y-1">
             {section.lessons.map((lesson, i) => (
-              <li key={i} className="group/link flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-[var(--color-neutral-50)]">
+              <li
+                key={i}
+                className="group/link flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-[var(--color-neutral-50)]"
+              >
                 <span className="w-6 shrink-0 text-right text-xs font-medium text-[var(--color-text-muted)]">
                   {i + 1}.
                 </span>
@@ -81,9 +102,7 @@ function SectionAccordion({ section, index, isOpen, onToggle }: {
                     <ExternalLinkIcon />
                   </a>
                 ) : (
-                  <span className="flex-1 text-[var(--color-text-secondary)]">
-                    {lesson.title}
-                  </span>
+                  <span className="flex-1 text-[var(--color-text-secondary)]">{lesson.title}</span>
                 )}
               </li>
             ))}
@@ -95,7 +114,7 @@ function SectionAccordion({ section, index, isOpen, onToggle }: {
 }
 
 export function LearningTopicPage({ slug, onBack }: LearningTopicPageProps): JSX.Element {
-  const topic = LEARNING_TOPICS.find(t => t.slug === slug);
+  const topic = LEARNING_TOPICS.find((t) => t.slug === slug);
   const [openSections, setOpenSections] = useState<Set<number>>(() => new Set([0]));
 
   if (!topic) {
@@ -118,11 +137,12 @@ export function LearningTopicPage({ slug, onBack }: LearningTopicPageProps): JSX
 
   const totalLessons = topic.sections.reduce((sum, s) => sum + s.lessons.length, 0);
   const lessonsWithLinks = topic.sections.reduce(
-    (sum, s) => sum + s.lessons.filter(l => l.url).length, 0
+    (sum, s) => sum + s.lessons.filter((l) => l.url).length,
+    0
   );
 
   const toggleSection = (index: number): void => {
-    setOpenSections(prev => {
+    setOpenSections((prev) => {
       const next = new Set(prev);
       if (next.has(index)) {
         next.delete(index);
@@ -144,74 +164,72 @@ export function LearningTopicPage({ slug, onBack }: LearningTopicPageProps): JSX
   return (
     <PageLayout variant="single-column" mode="learning">
       <PageLayout.Content className="mx-auto w-full max-w-3xl px-4 py-6 md:px-8">
-          {/* Back button */}
-          <button
-            type="button"
-            onClick={onBack}
-            className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+        {/* Back button */}
+        <button
+          type="button"
+          onClick={onBack}
+          className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+        >
+          <ChevronLeftIcon size={16} />
+          Back to Learn Go
+        </button>
+
+        {/* Header */}
+        <div className="mb-6 flex items-start gap-4">
+          <div
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
+            style={{ backgroundColor: ACCENT.light }}
           >
-            <ChevronLeftIcon size={16} />
-            Back to Learn Go
-          </button>
+            <SeedlingIcon size={28} />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">{topic.title}</h1>
+            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{topic.description}</p>
+            <div className="mt-2 flex flex-wrap gap-2 text-xs font-semibold text-[var(--color-text-muted)]">
+              <span
+                className="rounded-md px-2 py-0.5"
+                style={{ backgroundColor: ACCENT.light, color: ACCENT.text }}
+              >
+                {topic.sections.length} {topic.sections.length === 1 ? 'section' : 'sections'}
+              </span>
+              <span>{totalLessons} lessons</span>
+              {lessonsWithLinks > 0 && <span>{lessonsWithLinks} interactive puzzles</span>}
+            </div>
+          </div>
+        </div>
 
-          {/* Header */}
-          <div className="mb-6 flex items-start gap-4">
-            <div
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
-              style={{ backgroundColor: ACCENT.light }}
+        {/* Expand/collapse controls */}
+        {topic.sections.length > 1 && (
+          <div className="mb-4 flex gap-2">
+            <button
+              type="button"
+              onClick={expandAll}
+              className="rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-neutral-100)] hover:text-[var(--color-text-primary)]"
             >
-              <SeedlingIcon size={28} />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">{topic.title}</h1>
-              <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{topic.description}</p>
-              <div className="mt-2 flex flex-wrap gap-2 text-xs font-semibold text-[var(--color-text-muted)]">
-                <span
-                  className="rounded-md px-2 py-0.5"
-                  style={{ backgroundColor: ACCENT.light, color: ACCENT.text }}
-                >
-                  {topic.sections.length} {topic.sections.length === 1 ? 'section' : 'sections'}
-                </span>
-                <span>{totalLessons} lessons</span>
-                {lessonsWithLinks > 0 && (
-                  <span>{lessonsWithLinks} interactive puzzles</span>
-                )}
-              </div>
-            </div>
+              Expand All
+            </button>
+            <button
+              type="button"
+              onClick={collapseAll}
+              className="rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-neutral-100)] hover:text-[var(--color-text-primary)]"
+            >
+              Collapse All
+            </button>
           </div>
+        )}
 
-          {/* Expand/collapse controls */}
-          {topic.sections.length > 1 && (
-            <div className="mb-4 flex gap-2">
-              <button
-                type="button"
-                onClick={expandAll}
-                className="rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-neutral-100)] hover:text-[var(--color-text-primary)]"
-              >
-                Expand All
-              </button>
-              <button
-                type="button"
-                onClick={collapseAll}
-                className="rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-neutral-100)] hover:text-[var(--color-text-primary)]"
-              >
-                Collapse All
-              </button>
-            </div>
-          )}
-
-          {/* Section accordions */}
-          <div className="space-y-3">
-            {topic.sections.map((section, i) => (
-              <SectionAccordion
-                key={i}
-                section={section}
-                index={i}
-                isOpen={openSections.has(i)}
-                onToggle={() => toggleSection(i)}
-              />
-            ))}
-          </div>
+        {/* Section accordions */}
+        <div className="space-y-3">
+          {topic.sections.map((section, i) => (
+            <SectionAccordion
+              key={i}
+              section={section}
+              index={i}
+              isOpen={openSections.has(i)}
+              onToggle={() => toggleSection(i)}
+            />
+          ))}
+        </div>
       </PageLayout.Content>
     </PageLayout>
   );

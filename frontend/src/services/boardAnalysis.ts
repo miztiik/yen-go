@@ -169,13 +169,7 @@ export function wouldSaveGroup(
   if (currentLiberties > 1) return false; // Not in danger
 
   // Simulate the move
-  const result = placeStone(
-    grid,
-    moveCoord,
-    color,
-    boardSize,
-    { position: null, capturedAt: 0 }
-  );
+  const result = placeStone(grid, moveCoord, color, boardSize, { position: null, capturedAt: 0 });
 
   if (!result.success || !result.newBoard) return false;
 
@@ -204,13 +198,7 @@ export function countLibertiesAfterMove(
 ): number {
   if (!ENABLE_BESOGO_EXTENSIONS) return -1;
 
-  const result = placeStone(
-    grid,
-    coord,
-    color,
-    boardSize,
-    { position: null, capturedAt: 0 }
-  );
+  const result = placeStone(grid, coord, color, boardSize, { position: null, capturedAt: 0 });
 
   if (!result.success || !result.newBoard) return -1;
   return countLiberties(result.newBoard, coord, boardSize);
@@ -236,7 +224,7 @@ export function countPotentialCaptures(
   if (!ENABLE_BESOGO_EXTENSIONS) return 0;
 
   const captured = findCapturedGroups(
-    grid.map(row => [...row]),
+    grid.map((row) => [...row]),
     coord,
     color,
     boardSize

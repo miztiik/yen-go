@@ -100,7 +100,9 @@ export function ChallengeList({
   if (isLoading) {
     return (
       <div className={`flex flex-col gap-3 overflow-y-auto p-2 ${className ?? ''}`}>
-        <div className="flex items-center justify-center p-8 text-sm text-[--color-text-muted]">Loading challenges...</div>
+        <div className="flex items-center justify-center p-8 text-sm text-[--color-text-muted]">
+          Loading challenges...
+        </div>
       </div>
     );
   }

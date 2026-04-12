@@ -50,9 +50,10 @@ export const TechniqueList: FunctionalComponent<TechniqueListProps> = ({
 }) => {
   const filteredAndSorted = useMemo(() => {
     // Filter by category
-    const filtered = categoryFilter === 'all'
-      ? techniques
-      : techniques.filter((t) => t.category === categoryFilter);
+    const filtered =
+      categoryFilter === 'all'
+        ? techniques
+        : techniques.filter((t) => t.category === categoryFilter);
 
     // Sort
     const sorted = [...filtered].sort((a, b) => {
@@ -72,9 +73,11 @@ export const TechniqueList: FunctionalComponent<TechniqueListProps> = ({
   if (filteredAndSorted.length === 0) {
     return (
       <EmptyState
-        message={categoryFilter === 'all'
-          ? 'No techniques available.'
-          : `No ${categoryFilter} techniques available.`}
+        message={
+          categoryFilter === 'all'
+            ? 'No techniques available.'
+            : `No ${categoryFilter} techniques available.`
+        }
       />
     );
   }
@@ -84,7 +87,7 @@ export const TechniqueList: FunctionalComponent<TechniqueListProps> = ({
     return (
       <div>
         {CATEGORY_SECTIONS.map((section) => {
-          const sectionItems = filteredAndSorted.filter(t => t.category === section.id);
+          const sectionItems = filteredAndSorted.filter((t) => t.category === section.id);
           if (sectionItems.length === 0) return null;
           return (
             <div key={section.id} className="mb-8">

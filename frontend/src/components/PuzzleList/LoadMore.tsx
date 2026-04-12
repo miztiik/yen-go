@@ -53,9 +53,7 @@ export const LoadMore: FunctionComponent<LoadMoreProps> = ({
 
   // Calculate progress if counts are provided
   const showProgress = typeof totalCount === 'number' && typeof loadedCount === 'number';
-  const progressText = showProgress
-    ? `${loadedCount} of ${totalCount} puzzles`
-    : undefined;
+  const progressText = showProgress ? `${loadedCount} of ${totalCount} puzzles` : undefined;
 
   return (
     <div className={`load-more ${className}`}>

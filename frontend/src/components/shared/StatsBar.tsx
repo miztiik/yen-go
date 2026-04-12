@@ -58,9 +58,7 @@ export const StatsBar: FunctionalComponent<StatsBarProps> = ({
             <span className="text-xl font-semibold text-[var(--color-text-primary)]">
               {stat.value}
             </span>
-            <span className="text-xs text-[var(--color-text-muted)]">
-              {stat.label}
-            </span>
+            <span className="text-xs text-[var(--color-text-muted)]">{stat.label}</span>
           </div>
         ))}
         {children}

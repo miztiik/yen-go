@@ -86,8 +86,10 @@ async function fetchAndValidateConfigs(): Promise<BootConfigs> {
     throw new Error('puzzle-levels.json: missing levels array');
   }
   const levels: PuzzleLevel[] = levelsData.levels.map((l: Record<string, unknown>) => {
-    if (!l.slug || typeof l.slug !== 'string') throw new Error('puzzle-levels.json: entry missing slug');
-    if (!l.name || typeof l.name !== 'string') throw new Error(`puzzle-levels.json: "${l.slug}" missing name`);
+    if (!l.slug || typeof l.slug !== 'string')
+      throw new Error('puzzle-levels.json: entry missing slug');
+    if (!l.name || typeof l.name !== 'string')
+      throw new Error(`puzzle-levels.json: "${l.slug}" missing name`);
     return {
       slug: l.slug,
       name: l.name,
@@ -101,27 +103,30 @@ async function fetchAndValidateConfigs(): Promise<BootConfigs> {
   if (!tagsData.tags || typeof tagsData.tags !== 'object') {
     throw new Error('tags.json: missing tags dictionary');
   }
-  const tags: TagDefinition[] = Object.values(tagsData.tags as Record<string, Record<string, unknown>>).map(
-    (entry) => {
-      if (!entry.slug || typeof entry.slug !== 'string') throw new Error('tags.json: entry missing slug');
-      if (!entry.name || typeof entry.name !== 'string') throw new Error(`tags.json: "${entry.slug}" missing name`);
-      if (!entry.category || !VALID_TAG_CATEGORIES.has(entry.category as string)) {
-        throw new Error(`tags.json: "${entry.slug}" invalid category "${String(entry.category)}"`);
-      }
-      if (!entry.description || typeof entry.description !== 'string') {
-        throw new Error(`tags.json: "${entry.slug}" missing description`);
-      }
-      if (typeof entry.id !== 'number') throw new Error(`tags.json: "${entry.slug}" missing numeric id`);
-      return {
-        id: entry.id,
-        slug: entry.slug,
-        name: entry.name,
-        category: entry.category as TagDefinition['category'],
-        description: entry.description,
-        aliases: Array.isArray(entry.aliases) ? (entry.aliases as string[]) : [],
-      };
+  const tags: TagDefinition[] = Object.values(
+    tagsData.tags as Record<string, Record<string, unknown>>
+  ).map((entry) => {
+    if (!entry.slug || typeof entry.slug !== 'string')
+      throw new Error('tags.json: entry missing slug');
+    if (!entry.name || typeof entry.name !== 'string')
+      throw new Error(`tags.json: "${entry.slug}" missing name`);
+    if (!entry.category || !VALID_TAG_CATEGORIES.has(entry.category as string)) {
+      throw new Error(`tags.json: "${entry.slug}" invalid category "${String(entry.category)}"`);
     }
-  );
+    if (!entry.description || typeof entry.description !== 'string') {
+      throw new Error(`tags.json: "${entry.slug}" missing description`);
+    }
+    if (typeof entry.id !== 'number')
+      throw new Error(`tags.json: "${entry.slug}" missing numeric id`);
+    return {
+      id: entry.id,
+      slug: entry.slug,
+      name: entry.name,
+      category: entry.category as TagDefinition['category'],
+      description: entry.description,
+      aliases: Array.isArray(entry.aliases) ? (entry.aliases as string[]) : [],
+    };
+  });
 
   // Validate tips
   if (!tipsData.schema_version) throw new Error('go-tips.json: missing schema_version field');

@@ -35,7 +35,9 @@ export const ClearAllFiltersButton: FunctionalComponent<ClearAllFiltersButtonPro
       aria-label="Clear all filters"
       data-testid={testId ?? 'clear-all-filters'}
     >
-      <span aria-hidden="true" className="text-xs">×</span>
+      <span aria-hidden="true" className="text-xs">
+        ×
+      </span>
       Clear all
     </button>
   );

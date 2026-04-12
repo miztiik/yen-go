@@ -82,8 +82,7 @@ export function VirtualList<T>({
 
   // Calculate visible range
   const { startIndex, endIndex, offsetTop } = useMemo(
-    () =>
-      calculateRange(scrollTop, containerHeight, itemHeight, items.length, overscan),
+    () => calculateRange(scrollTop, containerHeight, itemHeight, items.length, overscan),
     [scrollTop, containerHeight, itemHeight, items.length, overscan]
   );
 
@@ -126,11 +125,7 @@ export function VirtualList<T>({
       if (item === undefined) continue;
       const key = getKey ? getKey(item, i) : i;
       result.push(
-        <div
-          key={key}
-          className="virtual-list__item"
-          style={{ height: `${itemHeight}px` }}
-        >
+        <div key={key} className="virtual-list__item" style={{ height: `${itemHeight}px` }}>
           {renderItem(item, i)}
         </div>
       );
@@ -144,14 +139,8 @@ export function VirtualList<T>({
       className={`virtual-list ${className}`}
       style={{ height: `${containerHeight}px` }}
     >
-      <div
-        className="virtual-list__content"
-        style={{ height: `${totalHeight}px` }}
-      >
-        <div
-          className="virtual-list__visible"
-          style={{ transform: `translateY(${offsetTop}px)` }}
-        >
+      <div className="virtual-list__content" style={{ height: `${totalHeight}px` }}>
+        <div className="virtual-list__visible" style={{ transform: `translateY(${offsetTop}px)` }}>
           {visibleItems}
         </div>
       </div>

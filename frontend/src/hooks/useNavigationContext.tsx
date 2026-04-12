@@ -63,10 +63,7 @@ export function NavigationProvider({
     setCurrentFocus(context);
   }, []);
 
-  const hasFocus = useCallback(
-    (context: FocusContext) => currentFocus === context,
-    [currentFocus]
-  );
+  const hasFocus = useCallback((context: FocusContext) => currentFocus === context, [currentFocus]);
 
   const clearFocus = useCallback(() => {
     setCurrentFocus('none');
@@ -77,11 +74,7 @@ export function NavigationProvider({
     [currentFocus, setFocus, hasFocus, clearFocus]
   );
 
-  return (
-    <NavigationContext.Provider value={value}>
-      {children}
-    </NavigationContext.Provider>
-  );
+  return <NavigationContext.Provider value={value}>{children}</NavigationContext.Provider>;
 }
 
 /**

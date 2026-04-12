@@ -94,7 +94,9 @@ const styles = {
   tagButton: (isActive: boolean): JSX.CSSProperties => ({
     padding: '0.375rem 0.625rem',
     fontSize: '0.75rem',
-    border: isActive ? '2px solid var(--color-mode-collections-border)' : '1px solid var(--color-neutral-200)',
+    border: isActive
+      ? '2px solid var(--color-mode-collections-border)'
+      : '1px solid var(--color-neutral-200)',
     borderRadius: '6px',
     cursor: 'pointer',
     backgroundColor: isActive ? 'var(--color-mode-collections-light)' : 'white',
@@ -280,7 +282,6 @@ export function CreatePracticeSetModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Create Practice Set">
       <div style={styles.content}>
-
         {/* Level Selection */}
         <div style={styles.section}>
           <label style={styles.label}>Skill Level</label>
@@ -309,9 +310,7 @@ export function CreatePracticeSetModal({
         {/* Tag Selection */}
         {availableTags.length > 0 && (
           <div style={styles.section}>
-            <label style={styles.label}>
-              Techniques ({selectedTags.length} selected)
-            </label>
+            <label style={styles.label}>Techniques ({selectedTags.length} selected)</label>
             <div style={styles.buttonGroup}>
               {availableTags.map((tag) => (
                 <button
@@ -332,19 +331,15 @@ export function CreatePracticeSetModal({
           {isLoading ? (
             <span style={styles.loading}>Loading...</span>
           ) : hasNoPuzzles ? (
-            <EmptyState
-              message="No puzzles found - try adjusting your filters"
-            />
+            <EmptyState message="No puzzles found - try adjusting your filters" />
           ) : (
             <>
-              <div style={styles.countNumber}>
-                {actualPuzzleCount}
-              </div>
+              <div style={styles.countNumber}>{actualPuzzleCount}</div>
               <div style={styles.countLabel}>
                 puzzles available
-                {availableCount !== null && availableCount > actualPuzzleCount && (
-                  ` (${availableCount} total)`
-                )}
+                {availableCount !== null &&
+                  availableCount > actualPuzzleCount &&
+                  ` (${availableCount} total)`}
               </div>
 
               {/* Puzzle count slider */}
@@ -367,19 +362,15 @@ export function CreatePracticeSetModal({
           {/* Insufficient puzzles warning */}
           {showInsufficientWarning && (
             <div style={styles.warning}>
-              Only {availableCount} puzzles match your criteria. The practice set
-              will include all available puzzles.
+              Only {availableCount} puzzles match your criteria. The practice set will include all
+              available puzzles.
             </div>
           )}
         </div>
 
         {/* Actions */}
         <div style={styles.actions}>
-          <button
-            type="button"
-            style={styles.cancelButton}
-            onClick={onClose}
-          >
+          <button type="button" style={styles.cancelButton} onClick={onClose}>
             Cancel
           </button>
           <button

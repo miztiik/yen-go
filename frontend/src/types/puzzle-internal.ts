@@ -126,19 +126,19 @@ export interface PuzzleNavItem {
 
 /**
  * Parsed hints from YenGo SGF properties.
- * 
+ *
  * v7+ Format: YH[hint1|hint2|hint3] → stored in hints array
  * v6 Legacy: YH1/YH2/YH3 → also stored in hints array, legacy fields deprecated
  */
 export interface PuzzleHints {
-  /** 
-   * Compact hints array (v7+ format). 
+  /**
+   * Compact hints array (v7+ format).
    * - hints[0]: Area/position hint
-   * - hints[1]: Technique hint  
+   * - hints[1]: Technique hint
    * - hints[2]: Full solution text
    */
   hints: string[];
-  
+
   /** @deprecated Use hints[0] instead. Hint L1: Region to look at (position from YH1) */
   position?: Position;
   /** @deprecated Use hints[1] instead. Hint L2: Technique name (from YH2) */
@@ -218,12 +218,7 @@ export function isPuzzleStatus(value: unknown): value is PuzzleStatus {
  * Now uses 1-indexed bounds (Besogo pattern).
  */
 export function isValidPosition(pos: Position, boardSize: number): boolean {
-  return (
-    pos.x >= 1 &&
-    pos.x <= boardSize &&
-    pos.y >= 1 &&
-    pos.y <= boardSize
-  );
+  return pos.x >= 1 && pos.x <= boardSize && pos.y >= 1 && pos.y <= boardSize;
 }
 
 /**

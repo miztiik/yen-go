@@ -99,9 +99,12 @@ export function CollectionsModal({
   }, []);
 
   // Handle collection click
-  const handleCollectionClick = useCallback((collection: CollectionSummary) => {
-    onSelectCollection(collection);
-  }, [onSelectCollection]);
+  const handleCollectionClick = useCallback(
+    (collection: CollectionSummary) => {
+      onSelectCollection(collection);
+    },
+    [onSelectCollection]
+  );
 
   const contentStyle: JSX.CSSProperties = {
     display: 'flex',
@@ -127,16 +130,13 @@ export function CollectionsModal({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Browse Collections"
-      size="lg"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Browse Collections" size="lg">
       <div style={contentStyle}>
         <CollectionFilter
           filter={filter}
-          onFilterChange={(f) => { void handleFilterChange(f); }}
+          onFilterChange={(f) => {
+            void handleFilterChange(f);
+          }}
         />
 
         <div style={listContainerStyle}>
@@ -160,7 +160,7 @@ export function CollectionsModal({
           <span>{collections.length} collections</span>
           {Object.keys(progressMap).length > 0 && (
             <span>
-              {Object.values(progressMap).filter(p => p.status === 'completed').length} completed
+              {Object.values(progressMap).filter((p) => p.status === 'completed').length} completed
             </span>
           )}
         </div>

@@ -25,7 +25,9 @@ export const DifficultyChart: FunctionalComponent<DifficultyChartProps> = ({ dif
 
   return (
     <section data-testid="difficulty-chart" className="mb-6">
-      <h2 className="mb-3 text-lg font-bold text-[var(--color-text-primary)]">Difficulty Breakdown</h2>
+      <h2 className="mb-3 text-lg font-bold text-[var(--color-text-primary)]">
+        Difficulty Breakdown
+      </h2>
       <div className="overflow-x-auto">
         <svg
           width={chartWidth}
@@ -83,8 +85,8 @@ function shortenLabel(name: string): string {
   if (name.length <= 8) return name;
   const map: Record<string, string> = {
     'Upper-Intermediate': 'Upper-Int.',
-    'Intermediate': 'Inter.',
-    'Elementary': 'Elem.',
+    Intermediate: 'Inter.',
+    Elementary: 'Elem.',
   };
   return map[name] ?? name.slice(0, 8);
 }

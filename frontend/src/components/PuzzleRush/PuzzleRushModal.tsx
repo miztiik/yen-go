@@ -38,12 +38,7 @@ export const PuzzleRushModal: FunctionalComponent<PuzzleRushModalProps> = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Puzzle Rush"
-      size="md"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Puzzle Rush" size="md">
       <div className="flex flex-col gap-6">
         {/* Best score display */}
         <div className="rounded-xl bg-gradient-to-br from-[--color-mode-rush-border] to-[--color-mode-rush-text] p-6 text-center text-[--color-bg-panel]">
@@ -54,9 +49,7 @@ export const PuzzleRushModal: FunctionalComponent<PuzzleRushModalProps> = ({
             {bestScore !== undefined ? bestScore : <FireIcon size={40} />}
           </div>
           {bestScore !== undefined && (
-            <div className="mt-1 text-xs opacity-80">
-              Can you beat it?
-            </div>
+            <div className="mt-1 text-xs opacity-80">Can you beat it?</div>
           )}
         </div>
 
@@ -67,7 +60,9 @@ export const PuzzleRushModal: FunctionalComponent<PuzzleRushModalProps> = ({
           </h3>
           <ul className="m-0 pl-5 text-xs leading-relaxed text-[--color-mode-rush-text]">
             <li>Solve as many puzzles as you can before time runs out</li>
-            <li>Each correct answer: <strong>+10 points</strong></li>
+            <li>
+              Each correct answer: <strong>+10 points</strong>
+            </li>
             <li>3 wrong answers and you're out!</li>
             <li>Skip up to 3 puzzles (no penalty)</li>
             <li>Difficulty increases every 5 correct answers</li>
@@ -79,11 +74,11 @@ export const PuzzleRushModal: FunctionalComponent<PuzzleRushModalProps> = ({
           <label className="mb-3 block text-sm font-medium text-[--color-neutral-700]">
             Choose Duration
           </label>
-          
+
           <div className="flex flex-col gap-2">
             {DURATION_OPTIONS.map((option) => {
               const isSelected = selectedDuration === option.value;
-              
+
               return (
                 <button
                   key={option.value}
@@ -96,7 +91,13 @@ export const PuzzleRushModal: FunctionalComponent<PuzzleRushModalProps> = ({
                   }`}
                 >
                   <div className="text-left">
-                    <div className={isSelected ? 'font-semibold text-[--color-mode-rush-text]' : 'text-[--color-neutral-700]'}>
+                    <div
+                      className={
+                        isSelected
+                          ? 'font-semibold text-[--color-mode-rush-text]'
+                          : 'text-[--color-neutral-700]'
+                      }
+                    >
                       {option.label}
                     </div>
                     <div className="mt-0.5 text-xs text-[--color-neutral-500]">
@@ -119,11 +120,7 @@ export const PuzzleRushModal: FunctionalComponent<PuzzleRushModalProps> = ({
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            variant="primary"
-            onClick={handleStart}
-            className="bg-[--color-mode-rush-border]"
-          >
+          <Button variant="primary" onClick={handleStart} className="bg-[--color-mode-rush-border]">
             <FireIcon size={14} /> Start Rush ({selectedDuration}min)
           </Button>
         </div>

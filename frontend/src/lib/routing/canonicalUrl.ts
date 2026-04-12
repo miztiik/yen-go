@@ -64,7 +64,17 @@ export const CONTEXT_DIMENSIONS: readonly ContextDimension[] = [
 ];
 
 /** Deterministic param ordering: alphabetical. */
-export const CANONICAL_PARAM_ORDER = ['c', 'ct', 'dp', 'id', 'l', 'match', 'offset', 'q', 't'] as const;
+export const CANONICAL_PARAM_ORDER = [
+  'c',
+  'ct',
+  'dp',
+  'id',
+  'l',
+  'match',
+  'offset',
+  'q',
+  't',
+] as const;
 
 // ---------------------------------------------------------------------------
 // Internal helpers

@@ -8,19 +8,19 @@
  * Achievement category.
  */
 export type AchievementCategory =
-  | 'puzzle'      // Puzzle completion achievements
-  | 'streak'      // Daily streak achievements
-  | 'rush'        // Rush mode achievements
-  | 'mastery'     // Skill/mastery achievements
-  | 'milestone';  // General milestones
+  | 'puzzle' // Puzzle completion achievements
+  | 'streak' // Daily streak achievements
+  | 'rush' // Rush mode achievements
+  | 'mastery' // Skill/mastery achievements
+  | 'milestone'; // General milestones
 
 /**
  * Achievement tier (rarity/difficulty).
  */
 export type AchievementTier =
-  | 'bronze'   // Easy to obtain
-  | 'silver'   // Moderate effort
-  | 'gold'     // Significant effort
+  | 'bronze' // Easy to obtain
+  | 'silver' // Moderate effort
+  | 'gold' // Significant effort
   | 'platinum'; // Very difficult
 
 /**
@@ -328,7 +328,7 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
  * Get achievement by ID.
  */
 export function getAchievement(id: string): AchievementDefinition | undefined {
-  return ACHIEVEMENTS.find(a => a.id === id);
+  return ACHIEVEMENTS.find((a) => a.id === id);
 }
 
 /**
@@ -337,23 +337,21 @@ export function getAchievement(id: string): AchievementDefinition | undefined {
 export function getAchievementsByCategory(
   category: AchievementCategory
 ): readonly AchievementDefinition[] {
-  return ACHIEVEMENTS.filter(a => a.category === category);
+  return ACHIEVEMENTS.filter((a) => a.category === category);
 }
 
 /**
  * Get achievements by tier.
  */
-export function getAchievementsByTier(
-  tier: AchievementTier
-): readonly AchievementDefinition[] {
-  return ACHIEVEMENTS.filter(a => a.tier === tier);
+export function getAchievementsByTier(tier: AchievementTier): readonly AchievementDefinition[] {
+  return ACHIEVEMENTS.filter((a) => a.tier === tier);
 }
 
 /**
  * Achievement definition map for quick lookup.
  */
 export const ACHIEVEMENT_MAP: ReadonlyMap<string, AchievementDefinition> = new Map(
-  ACHIEVEMENTS.map(a => [a.id, a])
+  ACHIEVEMENTS.map((a) => [a.id, a])
 );
 
 /**
@@ -361,10 +359,14 @@ export const ACHIEVEMENT_MAP: ReadonlyMap<string, AchievementDefinition> = new M
  */
 export function getTierColor(tier: AchievementTier): string {
   switch (tier) {
-    case 'bronze': return '#CD7F32';
-    case 'silver': return '#C0C0C0';
-    case 'gold': return '#FFD700';
-    case 'platinum': return '#E5E4E2';
+    case 'bronze':
+      return '#CD7F32';
+    case 'silver':
+      return '#C0C0C0';
+    case 'gold':
+      return '#FFD700';
+    case 'platinum':
+      return '#E5E4E2';
   }
 }
 

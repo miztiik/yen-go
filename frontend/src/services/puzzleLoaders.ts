@@ -10,11 +10,21 @@
 
 import { fetchSGFContent, type LoaderResult } from './puzzleLoader';
 import { init as initDb } from './sqliteService';
-import { getPuzzlesByCollection, getPuzzlesByTag, getPuzzlesByLevel, getPuzzlesFiltered, type PuzzleRow } from './puzzleQueryService';
+import {
+  getPuzzlesByCollection,
+  getPuzzlesByTag,
+  getPuzzlesByLevel,
+  getPuzzlesFiltered,
+  type PuzzleRow,
+} from './puzzleQueryService';
 import { expandPath } from './entryDecoder';
 import { levelIdToSlug, levelSlugToId, tagSlugToId } from './configService';
 import { getNextRushPuzzle } from './puzzleRushService';
-import { resolveCollectionDirId, ensureCollectionIdsLoaded, getCollectionTypeBySlug } from './collectionService';
+import {
+  resolveCollectionDirId,
+  ensureCollectionIdsLoaded,
+  getCollectionTypeBySlug,
+} from './collectionService';
 import type { CollectionType, SkillLevel } from '@/models/collection';
 import { SHUFFLE_POLICY, shuffleArray } from '@/constants/collectionConfig';
 import { extractPuzzleIdFromPath } from '../lib/puzzle/utils';
@@ -151,7 +161,7 @@ export class CollectionPuzzleLoader implements PuzzleSetLoader {
     /** Optional collection type for shuffle policy. Resolved from config if not provided. */
     private readonly collectionType?: CollectionType,
     /** Optional chapter filter for chaptered collections. */
-    private readonly chapter?: string,
+    private readonly chapter?: string
   ) {}
 
   /**
@@ -178,7 +188,11 @@ export class CollectionPuzzleLoader implements PuzzleSetLoader {
         return;
       }
 
-      const hasFilters = this.levelIds.length > 0 || this.tagIds.length > 0 || this.contentTypeId > 0 || !!this.chapter;
+      const hasFilters =
+        this.levelIds.length > 0 ||
+        this.tagIds.length > 0 ||
+        this.contentTypeId > 0 ||
+        !!this.chapter;
       const isTagBased = this.collectionId.startsWith('tag-');
       const isLevelBased = this.collectionId.startsWith('level-');
 
@@ -191,7 +205,8 @@ export class CollectionPuzzleLoader implements PuzzleSetLoader {
             ? { levelId: numericId }
             : { collectionId: numericId };
         const firstLevelId = this.levelIds[0];
-        if (this.levelIds.length === 1 && firstLevelId !== undefined) filters.levelId = firstLevelId;
+        if (this.levelIds.length === 1 && firstLevelId !== undefined)
+          filters.levelId = firstLevelId;
         if (this.tagIds.length > 0) filters.tagIds = [...(filters.tagIds ?? []), ...this.tagIds];
         if (this.contentTypeId > 0) filters.contentType = this.contentTypeId;
         if (this.chapter) filters.chapter = this.chapter;
@@ -204,12 +219,12 @@ export class CollectionPuzzleLoader implements PuzzleSetLoader {
         rows = getPuzzlesByCollection(numericId);
       }
 
-      this.entries = rows.map(row => puzzleRowToEnriched(row));
+      this.entries = rows.map((row) => puzzleRowToEnriched(row));
 
       // For multi-level filter (more than one level), apply client-side
       if (this.levelIds.length > 1) {
-        const targetSlugs = this.levelIds.map(id => levelIdToSlug(id)).filter(Boolean);
-        this.entries = this.entries.filter(e => targetSlugs.includes(e.level));
+        const targetSlugs = this.levelIds.map((id) => levelIdToSlug(id)).filter(Boolean);
+        this.entries = this.entries.filter((e) => targetSlugs.includes(e.level));
       }
 
       // Apply shuffle policy based on collection type
@@ -318,7 +333,7 @@ export class TrainingPuzzleLoader implements PuzzleSetLoader {
     /** Optional tag IDs for client-side filtering (multi-select). */
     private readonly tagIds: readonly number[] = [],
     /** Optional content-type filter (1=curated, 2=practice). 0 = no filter. */
-    private readonly contentTypeId: number = 0,
+    private readonly contentTypeId: number = 0
   ) {}
 
   async load(): Promise<void> {
@@ -348,7 +363,7 @@ export class TrainingPuzzleLoader implements PuzzleSetLoader {
         rows = getPuzzlesByLevel(numericId);
       }
 
-      this.entries = rows.map(row => puzzleRowToEnriched(row, this.levelSlug));
+      this.entries = rows.map((row) => puzzleRowToEnriched(row, this.levelSlug));
 
       this.status = this.entries.length === 0 ? 'empty' : 'ready';
     } catch (err) {
@@ -423,7 +438,7 @@ export class DailyPuzzleLoader implements PuzzleSetLoader {
 
   constructor(
     private readonly date: string,
-    private readonly mode: string = 'standard',
+    private readonly mode: string = 'standard'
   ) {}
 
   async load(): Promise<void> {
@@ -445,7 +460,7 @@ export class DailyPuzzleLoader implements PuzzleSetLoader {
       // Timed defaults to blitz (timed_blitz).
       const section = this.mode === 'timed' ? 'timed_blitz' : 'standard';
       const puzzleRows = getDailyPuzzles(this.date, section);
-      this.entries = puzzleRows.map(row => ({
+      this.entries = puzzleRows.map((row) => ({
         level: levelIdToSlug(row.level_id) ?? 'beginner',
         path: `sgf/${row.batch}/${row.content_hash}.sgf`,
       }));
@@ -523,7 +538,7 @@ export class RushPuzzleLoader implements StreamingPuzzleSetLoader {
 
   constructor(
     private readonly levelId: number | null,
-    private readonly tagId: number | null,
+    private readonly tagId: number | null
   ) {}
 
   async load(): Promise<void> {
@@ -592,7 +607,12 @@ export class RushPuzzleLoader implements StreamingPuzzleSetLoader {
       const setUsedIds = (updater: (prev: Set<string>) => Set<string>): void => {
         this.usedPuzzleIds = updater(this.usedPuzzleIds);
       };
-      const puzzle = await getNextRushPuzzle(this.levelId, this.tagId, this.usedPuzzleIds, setUsedIds);
+      const puzzle = await getNextRushPuzzle(
+        this.levelId,
+        this.tagId,
+        this.usedPuzzleIds,
+        setUsedIds
+      );
       if (!puzzle) return 0;
 
       this.entries.push({ id: puzzle.id, path: puzzle.path, level: puzzle.level });
@@ -610,14 +630,16 @@ export class RushPuzzleLoader implements StreamingPuzzleSetLoader {
     const entry = this.entries[index];
     if (!entry || this.sgfCache.has(index)) return;
 
-    this.prefetchPromise = fetchSGFContent(entry.path).then(result => {
-      if (result.success && result.data) {
-        this.sgfCache.set(index, result.data);
-      }
-      this.prefetchPromise = null;
-    }).catch(() => {
-      this.prefetchPromise = null;
-    });
+    this.prefetchPromise = fetchSGFContent(entry.path)
+      .then((result) => {
+        if (result.success && result.data) {
+          this.sgfCache.set(index, result.data);
+        }
+        this.prefetchPromise = null;
+      })
+      .catch(() => {
+        this.prefetchPromise = null;
+      });
   }
 }
 
@@ -634,7 +656,7 @@ export class RandomPuzzleLoader implements StreamingPuzzleSetLoader {
 
   constructor(
     private readonly level: SkillLevel,
-    private readonly tagSlug?: string | null,
+    private readonly tagSlug?: string | null
   ) {}
 
   async load(): Promise<void> {
@@ -697,15 +719,16 @@ export class RandomPuzzleLoader implements StreamingPuzzleSetLoader {
       let rows;
       if (this.tagSlug) {
         const tagId = tagSlugToId(this.tagSlug);
-        rows = tagId !== undefined
-          ? getPuzzlesFiltered({ levelId, tagIds: [tagId] })
-          : getPuzzlesByLevel(levelId);
+        rows =
+          tagId !== undefined
+            ? getPuzzlesFiltered({ levelId, tagIds: [tagId] })
+            : getPuzzlesByLevel(levelId);
       } else {
         rows = getPuzzlesByLevel(levelId);
       }
 
       const allEntries = rows.map(puzzleRowToEntry);
-      const available = allEntries.filter(e => !this.usedIds.has(e.id));
+      const available = allEntries.filter((e) => !this.usedIds.has(e.id));
       if (available.length === 0) {
         // Reset pool when exhausted
         this.usedIds.clear();

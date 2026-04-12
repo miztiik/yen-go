@@ -47,7 +47,8 @@ const styles: Record<string, JSX.CSSProperties> = {
     flexDirection: 'column',
     gap: '0.5rem',
     padding: '1rem',
-    background: 'linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%)',
+    background:
+      'linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%)',
     borderRadius: '8px',
     border: '1px solid var(--color-border)',
     textAlign: 'center',
@@ -166,9 +167,7 @@ export function UnlockMessage({
   className,
 }: UnlockMessageProps): JSX.Element {
   const progressPercent =
-    puzzlesNeeded && puzzlesNeeded > 0
-      ? Math.round((puzzlesCompleted / puzzlesNeeded) * 100)
-      : 0;
+    puzzlesNeeded && puzzlesNeeded > 0 ? Math.round((puzzlesCompleted / puzzlesNeeded) * 100) : 0;
 
   if (variant === 'inline') {
     return (
@@ -185,8 +184,8 @@ export function UnlockMessage({
     return (
       <div style={styles.banner} className={className} role="alert">
         <p style={styles.message}>
-          Complete the <span style={styles.highlight}>{requiredChallengeDate}</span> challenge
-          to unlock this one.
+          Complete the <span style={styles.highlight}>{requiredChallengeDate}</span> challenge to
+          unlock this one.
         </p>
         {puzzlesNeeded && puzzlesNeeded > 0 && (
           <div style={styles.progress}>
@@ -209,7 +208,12 @@ export function UnlockMessage({
 
   // Modal variant
   return (
-    <div style={styles.modal} className={className} role="alertdialog" aria-labelledby="unlock-title">
+    <div
+      style={styles.modal}
+      className={className}
+      role="alertdialog"
+      aria-labelledby="unlock-title"
+    >
       <div style={styles.lockIcon}>
         <LargeLockIcon />
       </div>
@@ -217,9 +221,8 @@ export function UnlockMessage({
         Challenge Locked
       </h3>
       <p style={styles.message}>
-        Complete all puzzles in the{' '}
-        <span style={styles.highlight}>{requiredChallengeDate}</span> challenge to unlock this
-        one.
+        Complete all puzzles in the <span style={styles.highlight}>{requiredChallengeDate}</span>{' '}
+        challenge to unlock this one.
       </p>
       {puzzlesNeeded && puzzlesNeeded > 0 && (
         <div style={styles.progress}>

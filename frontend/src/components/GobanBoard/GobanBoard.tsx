@@ -126,33 +126,31 @@ export const GobanBoard: FunctionComponent<GobanBoardProps> = ({
   // -------------------------------------------------------------------------
   // goban hook -- manages goban lifecycle (UI-032: no boardRef, creates gobanDiv)
   // -------------------------------------------------------------------------
-  const { gobanRef, isReady, gobanDiv } = useGoban(
-    rawSgf,
-    treeContainerRef,
-    transforms,
-  );
+  const { gobanRef, isReady, gobanDiv } = useGoban(rawSgf, treeContainerRef, transforms);
 
   // -------------------------------------------------------------------------
   // Puzzle state — manages solve lifecycle
   // -------------------------------------------------------------------------
   const goban = isReady ? gobanRef.current : null;
-  const {
-    state: puzzleState,
-    onGobanReady,
-    elapsedMs,
-  } = usePuzzleState(goban);
+  const { state: puzzleState, onGobanReady, elapsedMs } = usePuzzleState(goban);
 
   // -------------------------------------------------------------------------
   // Callbacks: Status changes and completion
   // -------------------------------------------------------------------------
-  const handleStatusChange = useCallback((status: string, moveCount: number): void => {
-    onStatusChange?.(status, moveCount);
-  }, [onStatusChange]);
+  const handleStatusChange = useCallback(
+    (status: string, moveCount: number): void => {
+      onStatusChange?.(status, moveCount);
+    },
+    [onStatusChange]
+  );
 
-  const handleComplete = useCallback((isCorrect: boolean): void => {
-    const timeMs = elapsedMs ?? 0;
-    onComplete?.(isCorrect, puzzleState.moveCount, timeMs);
-  }, [onComplete, elapsedMs, puzzleState.moveCount]);
+  const handleComplete = useCallback(
+    (isCorrect: boolean): void => {
+      const timeMs = elapsedMs ?? 0;
+      onComplete?.(isCorrect, puzzleState.moveCount, timeMs);
+    },
+    [onComplete, elapsedMs, puzzleState.moveCount]
+  );
 
   // -------------------------------------------------------------------------
   // Effects: Initialize goban and track status
@@ -185,14 +183,8 @@ export const GobanBoard: FunctionComponent<GobanBoardProps> = ({
   // Loading state (not yet ready or no SGF)
   if (!isReady || !rawSgf) {
     return (
-      <div
-        ref={containerRef}
-        className={className}
-        style={styles.container}
-      >
-        <div style={styles.loading}>
-          Loading puzzle...
-        </div>
+      <div ref={containerRef} className={className} style={styles.container}>
+        <div style={styles.loading}>Loading puzzle...</div>
       </div>
     );
   }
@@ -211,23 +203,14 @@ export const GobanBoard: FunctionComponent<GobanBoardProps> = ({
   const statusStyle = getStatusStyle();
 
   return (
-    <div
-      ref={containerRef}
-      className={className}
-      style={styles.container}
-    >
+    <div ref={containerRef} className={className} style={styles.container}>
       <div style={styles.boardWrapper}>
         {/* UI-001: GobanContainer mounts the goban_div */}
-        <GobanContainer
-          gobanDiv={gobanDiv}
-          goban={goban}
-        />
+        <GobanContainer gobanDiv={gobanDiv} goban={goban} />
 
         {/* Status overlay (correct/wrong flash) */}
         {statusStyle && (
-          <div style={statusStyle}>
-            {puzzleState.status === 'correct' ? 'Correct!' : 'Wrong'}
-          </div>
+          <div style={statusStyle}>{puzzleState.status === 'correct' ? 'Correct!' : 'Wrong'}</div>
         )}
       </div>
     </div>

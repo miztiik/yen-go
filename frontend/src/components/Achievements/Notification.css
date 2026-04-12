@@ -8,7 +8,7 @@
   gap: var(--spacing-md, 12px);
   padding: var(--spacing-md, 16px);
   background: var(--surface-primary, #ffffff);
-  border-left: 4px solid var(--tier-color, #FFD700);
+  border-left: 4px solid var(--tier-color, #ffd700);
   border-radius: var(--radius-md, 8px);
   box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.15));
   animation: slide-in 0.3s ease-out;
@@ -58,7 +58,7 @@
 
 .achievement-notification__tier--bronze {
   background: rgba(205, 127, 50, 0.15);
-  color: #CD7F32;
+  color: #cd7f32;
 }
 
 .achievement-notification__tier--silver {
@@ -68,7 +68,7 @@
 
 .achievement-notification__tier--gold {
   background: rgba(255, 215, 0, 0.15);
-  color: #B8860B;
+  color: #b8860b;
 }
 
 .achievement-notification__tier--platinum {

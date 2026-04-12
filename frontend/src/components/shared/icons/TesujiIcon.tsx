@@ -11,11 +11,7 @@ interface IconProps {
  * Replaces U+26A1 (⚡) emoji in TechniqueCard category config.
  * Color: amber/orange (#f59e0b)
  */
-export function TesujiIcon({
-  size = 24,
-  color = '#f59e0b',
-  className,
-}: IconProps): JSX.Element {
+export function TesujiIcon({ size = 24, color = '#f59e0b', className }: IconProps): JSX.Element {
   return (
     <svg
       width={size}

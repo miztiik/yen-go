@@ -11,9 +11,9 @@
  * @module puzzle-config
  */
 
-import type { GobanConfig } from "goban";
-import type { GobanBounds } from "../types/goban";
-import type { PuzzleObject } from "./sgf-to-puzzle";
+import type { GobanConfig } from 'goban';
+import type { GobanBounds } from '../types/goban';
+import type { PuzzleObject } from './sgf-to-puzzle';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -42,19 +42,19 @@ export interface PuzzleConfigOptions {
  * All coordinate labels default to true (show all sides).
  */
 export const PUZZLE_CONFIG_DEFAULTS = {
-  mode: "puzzle" as const,
-  puzzle_opponent_move_mode: "automatic" as const,
-  puzzle_player_move_mode: "free" as const,
+  mode: 'puzzle' as const,
+  puzzle_opponent_move_mode: 'automatic' as const,
+  puzzle_player_move_mode: 'free' as const,
   interactive: true,
   draw_top_labels: true,
   draw_left_labels: true,
   draw_bottom_labels: true,
   draw_right_labels: true,
-  square_size: "auto" as unknown as number, // Let goban derive from display_width
-  display_width: 320,                       // Initial fallback; GobanContainer resizes via setSquareSizeBasedOnDisplayWidth
-  player_id: 1,    // Must be non-zero: goban's onMouseMove guard requires truthy player_id for hover stones
+  square_size: 'auto' as unknown as number, // Let goban derive from display_width
+  display_width: 320, // Initial fallback; GobanContainer resizes via setSquareSizeBasedOnDisplayWidth
+  player_id: 1, // Must be non-zero: goban's onMouseMove guard requires truthy player_id for hover stones
   dont_show_messages: true,
-  getPuzzlePlacementSetting: () => ({ mode: "play" as const }),
+  getPuzzlePlacementSetting: () => ({ mode: 'play' as const }),
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -72,10 +72,7 @@ export const PUZZLE_CONFIG_DEFAULTS = {
  * @param options - Board div, bounds, display width, label position
  * @returns GobanConfig ready for GobanCanvas or SVGRenderer constructor
  */
-export function buildPuzzleConfig(
-  puzzle: PuzzleObject,
-  options: PuzzleConfigOptions,
-): GobanConfig {
+export function buildPuzzleConfig(puzzle: PuzzleObject, options: PuzzleConfigOptions): GobanConfig {
   const showLabels = (options.labelPosition ?? 'all') === 'all';
 
   // The goban library allocates gutter space for labels on ALL enabled sides

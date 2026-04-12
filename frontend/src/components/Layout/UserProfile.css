@@ -22,18 +22,18 @@
   border-radius: var(--radius-full, 9999px);
   background: var(--color-bg-secondary);
   cursor: pointer;
-  transition: 
+  transition:
     background-color var(--transition-fast, 150ms ease),
     box-shadow var(--transition-fast, 150ms ease);
 }
 
 .profile-trigger:hover {
-  background: var(--color-accent-muted, #9A8A7A);
+  background: var(--color-accent-muted, #9a8a7a);
 }
 
 .profile-trigger:focus-visible {
   outline: none;
-  box-shadow: 
+  box-shadow:
     0 0 0 2px var(--color-focus-ring-offset, #f5f0e8),
     0 0 0 4px var(--color-focus-ring, rgba(201, 166, 107, 0.5));
 }
@@ -45,7 +45,7 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  color: var(--color-text-secondary, #5C4A32);
+  color: var(--color-text-secondary, #5c4a32);
 }
 
 /* Image avatar */
@@ -68,7 +68,7 @@
   border-radius: var(--radius-lg, 12px);
   box-shadow: var(--shadow-lg, 0 10px 15px rgba(0, 0, 0, 0.1));
   z-index: var(--z-dropdown, 1000);
-  
+
   /* Subtle animation */
   animation: dropdownFadeIn 0.15s ease-out;
 }
@@ -94,7 +94,7 @@
 .profile-username {
   font-size: var(--font-size-sm, 0.875rem);
   font-weight: var(--font-weight-semibold, 600);
-  color: var(--color-text-primary, #2C1810);
+  color: var(--color-text-primary, #2c1810);
 }
 
 /* Settings panel */
@@ -114,7 +114,7 @@
   margin: 0;
   font-size: var(--font-size-xs, 0.75rem);
   font-weight: var(--font-weight-semibold, 600);
-  color: var(--color-text-muted, #8B7355);
+  color: var(--color-text-muted, #8b7355);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -130,20 +130,20 @@
 
 .toggle-label {
   font-size: var(--font-size-sm, 0.875rem);
-  color: var(--color-text-primary, #2C1810);
+  color: var(--color-text-primary, #2c1810);
 }
 
 .toggle-track {
   position: relative;
   width: 44px;
   height: 24px;
-  background: var(--color-text-muted, #8B7355);
+  background: var(--color-text-muted, #8b7355);
   border-radius: var(--radius-full, 9999px);
   transition: background-color var(--transition-fast, 150ms ease);
 }
 
-.toggle-track[data-checked="true"] {
-  background: var(--color-success, #16A34A);
+.toggle-track[data-checked='true'] {
+  background: var(--color-success, #16a34a);
 }
 
 .toggle-input {
@@ -168,7 +168,7 @@
   pointer-events: none;
 }
 
-.toggle-track[data-checked="true"] .toggle-thumb {
+.toggle-track[data-checked='true'] .toggle-thumb {
   transform: translateX(20px);
 }
 
@@ -182,12 +182,12 @@
   flex: 1;
   padding: var(--spacing-2, 8px) var(--spacing-3, 12px);
   font-size: var(--font-size-sm, 0.875rem);
-  color: var(--color-text-secondary, #5C4A32);
+  color: var(--color-text-secondary, #5c4a32);
   background: var(--color-bg-secondary, #e8e0d5);
   border: 1px solid transparent;
   border-radius: var(--radius-md, 8px);
   cursor: pointer;
-  transition: 
+  transition:
     background-color var(--transition-fast, 150ms ease),
     border-color var(--transition-fast, 150ms ease),
     color var(--transition-fast, 150ms ease);
@@ -198,42 +198,42 @@
 }
 
 .theme-option.active {
-  background: var(--color-accent, #C9A66B);
+  background: var(--color-accent, #c9a66b);
   color: var(--color-text-inverse, #ffffff);
-  border-color: var(--color-accent, #C9A66B);
+  border-color: var(--color-accent, #c9a66b);
 }
 
 .theme-option:focus-visible {
   outline: none;
-  box-shadow: 
+  box-shadow:
     0 0 0 2px var(--color-focus-ring-offset, #f5f0e8),
     0 0 0 4px var(--color-focus-ring, rgba(201, 166, 107, 0.5));
 }
 
 /* Dark theme adjustments */
-[data-theme="dark"] .profile-trigger {
+[data-theme='dark'] .profile-trigger {
   background: var(--color-bg-secondary);
 }
 
-[data-theme="dark"] .profile-avatar-default {
+[data-theme='dark'] .profile-avatar-default {
   color: var(--color-text-secondary);
 }
 
-[data-theme="dark"] .profile-dropdown {
+[data-theme='dark'] .profile-dropdown {
   background: var(--color-bg-elevated);
   border-color: var(--color-card-border);
 }
 
-[data-theme="dark"] .toggle-track {
+[data-theme='dark'] .toggle-track {
   background: var(--color-text-muted);
 }
 
-[data-theme="dark"] .theme-option {
+[data-theme='dark'] .theme-option {
   background: var(--color-bg-secondary);
   color: var(--color-text-secondary);
 }
 
-[data-theme="dark"] .theme-option.active {
+[data-theme='dark'] .theme-option.active {
   background: var(--color-accent);
   color: var(--color-text-inverse);
 }

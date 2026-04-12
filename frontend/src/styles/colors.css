@@ -12,49 +12,49 @@
      ======================================== */
 
   /* Background colors */
-  --color-bg-primary: #1a1a2e;      /* Main background */
-  --color-bg-secondary: #16213e;    /* Cards, containers */
-  --color-bg-tertiary: #0f3460;     /* Elevated elements */
-  --color-bg-surface: #1f2937;      /* Input backgrounds */
+  --color-bg-primary: #1a1a2e; /* Main background */
+  --color-bg-secondary: #16213e; /* Cards, containers */
+  --color-bg-tertiary: #0f3460; /* Elevated elements */
+  --color-bg-surface: #1f2937; /* Input backgrounds */
 
   /* Text colors - WCAG AA compliant on dark backgrounds */
-  --color-text-primary: #f1f1f1;    /* Primary text - 12.63:1 on bg-primary */
-  --color-text-secondary: #d1d5db;  /* Secondary text - 9.53:1 on bg-primary */
-  --color-text-tertiary: #9ca3af;   /* Muted text - 5.74:1 on bg-primary */
-  --color-text-disabled: #6b7280;   /* Disabled - 3.72:1 (large text only) */
+  --color-text-primary: #f1f1f1; /* Primary text - 12.63:1 on bg-primary */
+  --color-text-secondary: #d1d5db; /* Secondary text - 9.53:1 on bg-primary */
+  --color-text-tertiary: #9ca3af; /* Muted text - 5.74:1 on bg-primary */
+  --color-text-disabled: #6b7280; /* Disabled - 3.72:1 (large text only) */
 
   /* Accent colors */
-  --color-accent-primary: #e94560;  /* Primary accent (red) */
+  --color-accent-primary: #e94560; /* Primary accent (red) */
   --color-accent-secondary: #0ea5e9; /* Secondary accent (blue) */
-  --color-accent-success: #22c55e;  /* Success (green) */
-  --color-accent-warning: #f59e0b;  /* Warning (amber) */
-  --color-accent-error: #ef4444;    /* Error (red) */
-  --color-accent-info: #3b82f6;     /* Info (blue) */
+  --color-accent-success: #22c55e; /* Success (green) */
+  --color-accent-warning: #f59e0b; /* Warning (amber) */
+  --color-accent-error: #ef4444; /* Error (red) */
+  --color-accent-info: #3b82f6; /* Info (blue) */
 
   /* ========================================
      BOARD COLORS
      ======================================== */
 
   /* Board surface */
-  --color-board-wood: #dcb35c;      /* Traditional wood color */
+  --color-board-wood: #dcb35c; /* Traditional wood color */
   --color-board-wood-light: #e8c983;
   --color-board-wood-dark: #c69d42;
-  --color-board-lines: #1a1a1a;     /* Grid lines - 10.7:1 on wood */
+  --color-board-lines: #1a1a1a; /* Grid lines - 10.7:1 on wood */
 
   /* Stones */
-  --color-stone-black: #1a1a1a;     /* Black stone */
+  --color-stone-black: #1a1a1a; /* Black stone */
   --color-stone-black-highlight: #3a3a3a;
-  --color-stone-white: #f5f5f5;     /* White stone */
+  --color-stone-white: #f5f5f5; /* White stone */
   --color-stone-white-highlight: #ffffff;
   --color-stone-shadow: rgba(0, 0, 0, 0.3);
 
   /* Move indicators */
-  --color-last-move: #e94560;       /* Last move marker */
-  --color-hint-primary: #22c55e;    /* Hint highlight - 4.67:1 on wood */
+  --color-last-move: #e94560; /* Last move marker */
+  --color-hint-primary: #22c55e; /* Hint highlight - 4.67:1 on wood */
   --color-hint-secondary: rgba(34, 197, 94, 0.4);
-  --color-correct: #22c55e;         /* Correct move */
-  --color-incorrect: #ef4444;       /* Incorrect move */
-  --color-cursor: #3b82f6;          /* Keyboard cursor */
+  --color-correct: #22c55e; /* Correct move */
+  --color-incorrect: #ef4444; /* Incorrect move */
+  --color-cursor: #3b82f6; /* Keyboard cursor */
 
   /* Territory colors (semi-transparent) */
   --color-territory-black: rgba(0, 0, 0, 0.2);
@@ -102,11 +102,11 @@
   --color-status-busy: #f59e0b;
 
   /* Difficulty levels */
-  --color-difficulty-beginner: #22c55e;  /* Green */
-  --color-difficulty-easy: #84cc16;      /* Lime */
-  --color-difficulty-medium: #f59e0b;    /* Amber */
-  --color-difficulty-hard: #ef4444;      /* Red */
-  --color-difficulty-expert: #8b5cf6;    /* Purple */
+  --color-difficulty-beginner: #22c55e; /* Green */
+  --color-difficulty-easy: #84cc16; /* Lime */
+  --color-difficulty-medium: #f59e0b; /* Amber */
+  --color-difficulty-hard: #ef4444; /* Red */
+  --color-difficulty-expert: #8b5cf6; /* Purple */
 
   /* Achievement tiers */
   --color-tier-bronze: #cd7f32;
@@ -169,10 +169,10 @@
     --color-text-primary: #ffffff;
     --color-text-secondary: #ffffff;
     --color-text-tertiary: #e5e7eb;
-    
+
     --color-card-border: rgba(255, 255, 255, 0.3);
     --color-input-border: #ffffff;
-    
+
     --color-focus-ring: #ffffff;
   }
 }
@@ -181,53 +181,99 @@
    UTILITY CLASSES
    ======================================== */
 
-.text-primary { color: var(--color-text-primary); }
-.text-secondary { color: var(--color-text-secondary); }
-.text-tertiary { color: var(--color-text-tertiary); }
-.text-disabled { color: var(--color-text-disabled); }
+.text-primary {
+  color: var(--color-text-primary);
+}
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+.text-tertiary {
+  color: var(--color-text-tertiary);
+}
+.text-disabled {
+  color: var(--color-text-disabled);
+}
 
-.text-accent { color: var(--color-accent-primary); }
-.text-success { color: var(--color-accent-success); }
-.text-warning { color: var(--color-accent-warning); }
-.text-error { color: var(--color-accent-error); }
-.text-info { color: var(--color-accent-info); }
+.text-accent {
+  color: var(--color-accent-primary);
+}
+.text-success {
+  color: var(--color-accent-success);
+}
+.text-warning {
+  color: var(--color-accent-warning);
+}
+.text-error {
+  color: var(--color-accent-error);
+}
+.text-info {
+  color: var(--color-accent-info);
+}
 
-.bg-primary { background-color: var(--color-bg-primary); }
-.bg-secondary { background-color: var(--color-bg-secondary); }
-.bg-tertiary { background-color: var(--color-bg-tertiary); }
-.bg-surface { background-color: var(--color-bg-surface); }
+.bg-primary {
+  background-color: var(--color-bg-primary);
+}
+.bg-secondary {
+  background-color: var(--color-bg-secondary);
+}
+.bg-tertiary {
+  background-color: var(--color-bg-tertiary);
+}
+.bg-surface {
+  background-color: var(--color-bg-surface);
+}
 
-.bg-accent { background-color: var(--color-accent-primary); }
-.bg-success { background-color: var(--color-accent-success); }
-.bg-warning { background-color: var(--color-accent-warning); }
-.bg-error { background-color: var(--color-accent-error); }
-.bg-info { background-color: var(--color-accent-info); }
+.bg-accent {
+  background-color: var(--color-accent-primary);
+}
+.bg-success {
+  background-color: var(--color-accent-success);
+}
+.bg-warning {
+  background-color: var(--color-accent-warning);
+}
+.bg-error {
+  background-color: var(--color-accent-error);
+}
+.bg-info {
+  background-color: var(--color-accent-info);
+}
 
 /* Difficulty badges */
-.difficulty-beginner { 
+.difficulty-beginner {
   color: var(--color-difficulty-beginner);
   border-color: var(--color-difficulty-beginner);
 }
-.difficulty-easy { 
+.difficulty-easy {
   color: var(--color-difficulty-easy);
   border-color: var(--color-difficulty-easy);
 }
-.difficulty-medium { 
+.difficulty-medium {
   color: var(--color-difficulty-medium);
   border-color: var(--color-difficulty-medium);
 }
-.difficulty-hard { 
+.difficulty-hard {
   color: var(--color-difficulty-hard);
   border-color: var(--color-difficulty-hard);
 }
-.difficulty-expert { 
+.difficulty-expert {
   color: var(--color-difficulty-expert);
   border-color: var(--color-difficulty-expert);
 }
 
 /* Tier badges */
-.tier-bronze { color: var(--color-tier-bronze); }
-.tier-silver { color: var(--color-tier-silver); }
-.tier-gold { color: var(--color-tier-gold); }
-.tier-platinum { color: var(--color-tier-platinum); }
-.tier-diamond { color: var(--color-tier-diamond); }
+.tier-bronze {
+  color: var(--color-tier-bronze);
+}
+.tier-silver {
+  color: var(--color-tier-silver);
+}
+.tier-gold {
+  color: var(--color-tier-gold);
+}
+.tier-platinum {
+  color: var(--color-tier-platinum);
+}
+.tier-diamond {
+  color: var(--color-tier-diamond);
+}

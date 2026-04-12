@@ -12,7 +12,12 @@ interface StarIconProps {
  * Star SVG icon — used for quality rating display.
  * Supports both filled and outline variants via the `filled` prop.
  */
-export function StarIcon({ size = 16, className, style, filled = false }: StarIconProps): JSX.Element {
+export function StarIcon({
+  size = 16,
+  className,
+  style,
+  filled = false,
+}: StarIconProps): JSX.Element {
   return (
     <svg
       width={size}

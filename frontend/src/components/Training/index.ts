@@ -1,1 +1,5 @@
-export { saveTrainingProgress, getTrainingProgress, type TrainingProgress } from './trainingProgressUtils';
+export {
+  saveTrainingProgress,
+  getTrainingProgress,
+  type TrainingProgress,
+} from './trainingProgressUtils';

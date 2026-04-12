@@ -64,13 +64,7 @@ export function StreakDisplay({
   compact = false,
   onMilestoneReached,
 }: StreakDisplayProps): JSX.Element {
-  const {
-    stats,
-    isLoading,
-    error,
-    recentMilestones,
-    clearMilestones,
-  } = useStreak();
+  const { stats, isLoading, error, recentMilestones, clearMilestones } = useStreak();
 
   // Handle milestone notification
   const handleMilestoneAcknowledge = useCallback(() => {
@@ -91,7 +85,9 @@ export function StreakDisplay({
   if (error) {
     return (
       <div className={`streak-display streak-error ${className ?? ''}`} role="alert">
-        <span><WarningIcon size={14} /> {error}</span>
+        <span>
+          <WarningIcon size={14} /> {error}
+        </span>
       </div>
     );
   }
@@ -114,7 +110,13 @@ export function StreakDisplay({
         aria-label="Daily streak"
       >
         <span className="streak-icon" aria-hidden="true">
-          {isActive ? <FireIcon size={16} /> : isAtRisk ? <WarningIcon size={16} /> : <SleepIcon size={16} />}
+          {isActive ? (
+            <FireIcon size={16} />
+          ) : isAtRisk ? (
+            <WarningIcon size={16} />
+          ) : (
+            <SleepIcon size={16} />
+          )}
         </span>
         <span className="streak-count">{currentStreak}</span>
         <span className="streak-unit">day{currentStreak !== 1 ? 's' : ''}</span>
@@ -143,7 +145,13 @@ export function StreakDisplay({
       <div className="streak-main">
         <div className="streak-flame">
           <span className="flame-icon" aria-hidden="true">
-            {isActive ? <FireIcon size={24} /> : isAtRisk ? <WarningIcon size={24} /> : <SleepIcon size={24} />}
+            {isActive ? (
+              <FireIcon size={24} />
+            ) : isAtRisk ? (
+              <WarningIcon size={24} />
+            ) : (
+              <SleepIcon size={24} />
+            )}
           </span>
           <span className="streak-number">{currentStreak}</span>
         </div>
@@ -162,7 +170,9 @@ export function StreakDisplay({
       {longestStreak > 0 && (
         <div className="streak-best">
           <span className="best-label">Best:</span>
-          <span className="best-value">{longestStreak} day{longestStreak !== 1 ? 's' : ''}</span>
+          <span className="best-value">
+            {longestStreak} day{longestStreak !== 1 ? 's' : ''}
+          </span>
         </div>
       )}
 
@@ -170,9 +180,15 @@ export function StreakDisplay({
       {nextMilestone && daysUntilNextMilestone !== null && (
         <div className="streak-progress">
           <div className="progress-label">
-            {daysUntilNextMilestone} more day{daysUntilNextMilestone !== 1 ? 's' : ''} to {nextMilestone}-day milestone
+            {daysUntilNextMilestone} more day{daysUntilNextMilestone !== 1 ? 's' : ''} to{' '}
+            {nextMilestone}-day milestone
           </div>
-          <div className="progress-bar" role="progressbar" aria-valuenow={currentStreak} aria-valuemax={nextMilestone}>
+          <div
+            className="progress-bar"
+            role="progressbar"
+            aria-valuenow={currentStreak}
+            aria-valuemax={nextMilestone}
+          >
             <div
               className="progress-fill"
               style={{

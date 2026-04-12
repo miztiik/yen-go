@@ -41,7 +41,10 @@ export interface FilterParams {
  */
 function toIntArray(s: string | null): number[] {
   if (s === null || s === '') return [];
-  return s.split(',').map(v => parseInt(v.trim(), 10)).filter(n => !Number.isNaN(n));
+  return s
+    .split(',')
+    .map((v) => parseInt(v.trim(), 10))
+    .filter((n) => !Number.isNaN(n));
 }
 
 /**
@@ -79,9 +82,7 @@ export function writeFilterParams(levels: readonly number[], tags: readonly numb
   }
 
   const search = params.toString();
-  const url = search
-    ? `${window.location.pathname}?${search}`
-    : window.location.pathname;
+  const url = search ? `${window.location.pathname}?${search}` : window.location.pathname;
 
   // Skip no-op writes (Finding 17)
   const current = window.location.pathname + window.location.search;
@@ -113,7 +114,7 @@ export function useFilterParams(
   tagIds: readonly number[],
   setLevelIds: (ids: number[]) => void,
   setTagIds: (ids: number[]) => void,
-  dimensions: readonly FilterDimension[] = ['level', 'tag'],
+  dimensions: readonly FilterDimension[] = ['level', 'tag']
 ): void {
   const initialized = useRef(false);
   const lastWritten = useRef<WrittenState>({ levels: [], tags: [] });
@@ -131,16 +132,13 @@ export function useFilterParams(
 
     // Validate IDs against known levels/tags (Finding 4 — discard invalid)
     const validLevels = supportsLevel
-      ? params.levels.filter(id => levelIdToSlug(id) !== String(id))
+      ? params.levels.filter((id) => levelIdToSlug(id) !== String(id))
       : [];
-    const validTags = supportsTag
-      ? params.tags.filter(id => tagIdToSlug(id) !== String(id))
-      : [];
+    const validTags = supportsTag ? params.tags.filter((id) => tagIdToSlug(id) !== String(id)) : [];
 
     // F14: Strip unsupported dimensions from URL
     const hadUnsupported =
-      (!supportsLevel && params.levels.length > 0) ||
-      (!supportsTag && params.tags.length > 0);
+      (!supportsLevel && params.levels.length > 0) || (!supportsTag && params.tags.length > 0);
     const hadInvalid =
       (supportsLevel && params.levels.length > 0 && validLevels.length !== params.levels.length) ||
       (supportsTag && params.tags.length > 0 && validTags.length !== params.tags.length);

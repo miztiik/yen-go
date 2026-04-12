@@ -24,12 +24,7 @@ export class FetchJsonError extends Error {
   /** Error category for programmatic handling */
   readonly category: 'network' | 'http' | 'content-type' | 'parse';
 
-  constructor(
-    message: string,
-    url: string,
-    status: number,
-    category: FetchJsonError['category']
-  ) {
+  constructor(message: string, url: string, status: number, category: FetchJsonError['category']) {
     super(message);
     this.name = 'FetchJsonError';
     this.url = url;
@@ -60,10 +55,7 @@ export class FetchJsonError extends Error {
  * const data = await safeFetchJson<LevelIndex>('views/by-level/120/page-001.json');
  * ```
  */
-export async function safeFetchJson<T>(
-  url: string,
-  init?: RequestInit
-): Promise<T> {
+export async function safeFetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   let response: Response;
 
   try {
@@ -132,10 +124,7 @@ export async function safeFetchJson<T>(
  * @returns Parsed JSON response typed as T
  * @throws {FetchJsonError} on content-type mismatch or parse error
  */
-export async function safeParseJson<T>(
-  response: Response,
-  url: string
-): Promise<T> {
+export async function safeParseJson<T>(response: Response, url: string): Promise<T> {
   const contentType = response.headers?.get?.('content-type') ?? '';
   if (contentType.includes('text/html')) {
     throw new FetchJsonError(

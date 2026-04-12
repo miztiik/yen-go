@@ -6,13 +6,13 @@
  * Uses existing puzzleLoader.ts for actual data fetching.
  *
  * Covers: FR-030 to FR-041 (Daily Challenge)
- * 
+ *
  * Supports both v1 (legacy) and v2.0 (spec 035) daily formats.
  * T112-T114: Version detection and backward compatibility.
  */
 
-import type { 
-  DailyIndex, 
+import type {
+  DailyIndex,
   DailyPuzzleEntry,
   DailyTimedV2,
   DailyByTag,
@@ -23,10 +23,7 @@ import { getDailySchedule, getDailyPuzzles, isDailyAvailable } from '@/services/
 import type { DailyScheduleRow, DailyPuzzleRow } from '@/services/dailyQueryService';
 import { getLevelSlug } from '@/lib/levels/config';
 import { DEFAULT_LEVEL } from '@/lib/levels/level-defaults';
-import type { 
-  DailyCountdown, 
-  DailyChallengeMode,
-} from '@/models/dailyChallenge';
+import type { DailyCountdown, DailyChallengeMode } from '@/models/dailyChallenge';
 
 // ============================================================================
 // Local Types for v2.0 Support
@@ -77,11 +74,7 @@ export interface NormalizedDailyChallenge {
 /**
  * Daily challenge status
  */
-export type DailyChallengeStatus =
-  | 'not-started'
-  | 'in-progress'
-  | 'completed'
-  | 'expired';
+export type DailyChallengeStatus = 'not-started' | 'in-progress' | 'completed' | 'expired';
 
 /**
  * Summary for daily challenge history view
@@ -139,7 +132,7 @@ function error<T>(errorType: LoaderError, message: string): LoaderResult<T> {
  */
 function buildDailyIndexFromDb(
   schedule: DailyScheduleRow,
-  puzzleRows: DailyPuzzleRow[],
+  puzzleRows: DailyPuzzleRow[]
 ): DailyIndex {
   // Group puzzle rows by section
   const bySection = new Map<string, DailyPuzzleRow[]>();
@@ -266,7 +259,7 @@ export function formatCountdown(countdown: DailyCountdown): string {
   if (countdown.isReady) {
     return 'Ready!';
   }
-  
+
   const parts: string[] = [];
   if (countdown.hours > 0) {
     parts.push(`${countdown.hours}h`);
@@ -277,7 +270,7 @@ export function formatCountdown(countdown: DailyCountdown): string {
   if (countdown.hours === 0) {
     parts.push(`${countdown.seconds}s`);
   }
-  
+
   return parts.join(' ');
 }
 
@@ -301,7 +294,7 @@ export function getChallenge(date: string): LoaderResult<DailyIndex> {
   if (isFutureDate(date)) {
     return error('not_found', `Daily challenge for ${date} is not yet available`);
   }
-  
+
   return loadDailyIndex(date);
 }
 
@@ -315,22 +308,20 @@ export function getCountdownToNext(): DailyCountdown {
 /**
  * Get list of available daily challenges (history).
  */
-export function getAvailableChallenges(
-  limit: number = 7
-): LoaderResult<string[]> {
+export function getAvailableChallenges(limit: number = 7): LoaderResult<string[]> {
   const dates: string[] = [];
   const today = new Date();
-  
+
   for (let i = 0; i < limit; i++) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
     const dateStr = date.toISOString().split('T')[0] as string;
-    
+
     if (isDailyAvailable(dateStr)) {
       dates.push(dateStr);
     }
   }
-  
+
   return success(dates);
 }
 
@@ -354,17 +345,17 @@ export function detectDailyVersion(challenge: DailyIndex): '1.0' | '2.0' {
   if (challenge.version === '2.0') {
     return '2.0';
   }
-  
+
   // Check for v2.0 structure: timed.sets array
   if (challenge.timed && 'sets' in challenge.timed && Array.isArray(challenge.timed.sets)) {
     return '2.0';
   }
-  
+
   // Check for v2.0 structure: by_tag object
   if (challenge.by_tag && typeof challenge.by_tag === 'object') {
     return '2.0';
   }
-  
+
   return '1.0';
 }
 
@@ -386,30 +377,28 @@ function isTimedV2Format(timed: DailyIndex['timed']): boolean {
 export function normalizeDailyChallenge(challenge: DailyIndex): NormalizedDailyChallenge {
   const version = detectDailyVersion(challenge);
   const generatedAt = challenge.generatedAt ?? challenge.generated_at ?? '';
-  
+
   if (version === '2.0') {
     // v2.0 format
     const standard = challenge.standard;
     const timed = challenge.timed;
     const byTag = challenge.by_tag ?? {};
-    
+
     // Extract timed sets from v2.0 structure
-    const timedSets: TimedSet[] = isTimedV2Format(timed) 
-      ? (timed as DailyTimedV2).sets.map(s => ({
+    const timedSets: TimedSet[] = isTimedV2Format(timed)
+      ? (timed as DailyTimedV2).sets.map((s) => ({
           set_number: s.set_number,
           puzzles: normalizePuzzleList(s.puzzles),
         }))
       : [];
-    
+
     // Extract scoring
-    const timedScoring = isTimedV2Format(timed) 
-      ? (timed as DailyTimedV2).scoring 
-      : timed?.scoring;
-    
+    const timedScoring = isTimedV2Format(timed) ? (timed as DailyTimedV2).scoring : timed?.scoring;
+
     const suggestedDurations = isTimedV2Format(timed)
       ? (timed as DailyTimedV2).suggested_durations
       : timed?.suggested_durations;
-    
+
     return {
       originalVersion: '2.0',
       date: challenge.date,
@@ -418,9 +407,8 @@ export function normalizeDailyChallenge(challenge: DailyIndex): NormalizedDailyC
       timedSets,
       byTag: normalizeByTag(byTag),
       techniqueOfDay: standard?.technique_of_day ?? challenge.techniqueOfDay,
-      distribution: 'distribution' in (standard ?? {}) 
-        ? (standard as DailyStandardV2).distribution 
-        : undefined,
+      distribution:
+        'distribution' in (standard ?? {}) ? (standard as DailyStandardV2).distribution : undefined,
       timedScoring: timedScoring as Record<string, number> | undefined,
       suggestedDurations,
     };
@@ -428,17 +416,20 @@ export function normalizeDailyChallenge(challenge: DailyIndex): NormalizedDailyC
     // v1 format - convert to normalized structure
     const standard = challenge.standard;
     const timed = challenge.timed;
-    
+
     // For v1, create a single "set" from the queue for backward compat
     // Cast to v1 type to access queue property
-    const timedV1 = timed as { queue?: (DailyPuzzleEntry | string)[]; scoring?: Record<string, number>; suggested_durations?: number[] } | undefined;
-    const timedPuzzles = timedV1?.queue 
-      ? normalizePuzzleList(timedV1.queue) 
-      : [];
-    const timedSets: TimedSet[] = timedPuzzles.length > 0 
-      ? [{ set_number: 1, puzzles: timedPuzzles }] 
-      : [];
-    
+    const timedV1 = timed as
+      | {
+          queue?: (DailyPuzzleEntry | string)[];
+          scoring?: Record<string, number>;
+          suggested_durations?: number[];
+        }
+      | undefined;
+    const timedPuzzles = timedV1?.queue ? normalizePuzzleList(timedV1.queue) : [];
+    const timedSets: TimedSet[] =
+      timedPuzzles.length > 0 ? [{ set_number: 1, puzzles: timedPuzzles }] : [];
+
     // Convert v1 tag challenge to by_tag format
     const byTag: ByTagChallenge = {};
     if (challenge.tag) {
@@ -447,7 +438,7 @@ export function normalizeDailyChallenge(challenge: DailyIndex): NormalizedDailyC
         total: challenge.tag.total ?? challenge.tag.puzzles.length,
       };
     }
-    
+
     return {
       originalVersion: '1.0',
       date: challenge.date,
@@ -455,7 +446,8 @@ export function normalizeDailyChallenge(challenge: DailyIndex): NormalizedDailyC
       standardPuzzles: normalizePuzzleList(standard?.puzzles ?? []),
       timedSets,
       byTag,
-      techniqueOfDay: standard?.technique_of_day ?? challenge.tag?.technique_of_day ?? challenge.techniqueOfDay,
+      techniqueOfDay:
+        standard?.technique_of_day ?? challenge.tag?.technique_of_day ?? challenge.techniqueOfDay,
       distribution: undefined,
       timedScoring: timedV1?.scoring,
       suggestedDurations: timedV1?.suggested_durations,
@@ -505,7 +497,7 @@ export function getPuzzleCount(
   timedSetNumber?: number
 ): number {
   const version = detectDailyVersion(challenge);
-  
+
   if (mode === 'standard') {
     const standard = challenge.standard;
     if (standard?.puzzles) {
@@ -516,12 +508,12 @@ export function getPuzzleCount(
     // Timed mode
     const timed = challenge.timed;
     if (!timed) return 0;
-    
+
     if (version === '2.0' && isTimedV2Format(timed)) {
       // v2.0: Get puzzles from specific set or total
       const timedV2 = timed as DailyTimedV2;
       if (timedSetNumber !== undefined) {
-        const set = timedV2.sets.find(s => s.set_number === timedSetNumber);
+        const set = timedV2.sets.find((s) => s.set_number === timedSetNumber);
         return set?.puzzles.length ?? 0;
       }
       // Return total across all sets
@@ -547,23 +539,23 @@ export function getModePuzzles(
   timedSetNumber?: number
 ): DailyPuzzleEntry[] {
   const version = detectDailyVersion(challenge);
-  
+
   if (mode === 'standard') {
     return normalizePuzzleList(challenge.standard?.puzzles ?? []);
   } else {
     // Timed mode
     const timed = challenge.timed;
     if (!timed) return [];
-    
+
     if (version === '2.0' && isTimedV2Format(timed)) {
       // v2.0: Get puzzles from specific set or all sets
       const timedV2 = timed as DailyTimedV2;
       if (timedSetNumber !== undefined) {
-        const set = timedV2.sets.find(s => s.set_number === timedSetNumber);
+        const set = timedV2.sets.find((s) => s.set_number === timedSetNumber);
         return normalizePuzzleList(set?.puzzles ?? []);
       }
       // Return all puzzles from all sets
-      return timedV2.sets.flatMap(s => normalizePuzzleList(s.puzzles));
+      return timedV2.sets.flatMap((s) => normalizePuzzleList(s.puzzles));
     } else {
       // v1: Use queue
       const timedV1 = timed as { queue?: (DailyPuzzleEntry | string)[] };
@@ -576,24 +568,21 @@ export function getModePuzzles(
  * Get puzzles for a specific tag (v2.0 by_tag support).
  * T114: New function for v2.0 by_tag challenges.
  */
-export function getTagPuzzles(
-  challenge: DailyIndex,
-  tag: string
-): DailyPuzzleEntry[] {
+export function getTagPuzzles(challenge: DailyIndex, tag: string): DailyPuzzleEntry[] {
   const version = detectDailyVersion(challenge);
-  
+
   if (version === '2.0' && challenge.by_tag) {
     const tagEntry = challenge.by_tag[tag];
     if (tagEntry) {
       return normalizePuzzleList(tagEntry.puzzles);
     }
   }
-  
+
   // v1 fallback: check tag section
   if (challenge.tag && challenge.tag.tag === tag) {
     return normalizePuzzleList(challenge.tag.puzzles);
   }
-  
+
   return [];
 }
 
@@ -603,16 +592,16 @@ export function getTagPuzzles(
  */
 export function getAvailableTags(challenge: DailyIndex): string[] {
   const version = detectDailyVersion(challenge);
-  
+
   if (version === '2.0' && challenge.by_tag) {
     return Object.keys(challenge.by_tag);
   }
-  
+
   // v1: Single tag
   if (challenge.tag) {
     return [challenge.tag.tag];
   }
-  
+
   return [];
 }
 
@@ -620,23 +609,25 @@ export function getAvailableTags(challenge: DailyIndex): string[] {
  * Get timed sets info (v2.0).
  * T114: For UI to show set selection.
  */
-export function getTimedSetsInfo(challenge: DailyIndex): { setNumber: number; puzzleCount: number }[] {
+export function getTimedSetsInfo(
+  challenge: DailyIndex
+): { setNumber: number; puzzleCount: number }[] {
   const version = detectDailyVersion(challenge);
-  
+
   if (version === '2.0' && challenge.timed && isTimedV2Format(challenge.timed)) {
     const timedV2 = challenge.timed as DailyTimedV2;
-    return timedV2.sets.map(s => ({
+    return timedV2.sets.map((s) => ({
       setNumber: s.set_number,
       puzzleCount: s.puzzles.length,
     }));
   }
-  
+
   // v1: Single "set" with all queue puzzles
   const timed = challenge.timed as { queue?: (DailyPuzzleEntry | string)[] } | undefined;
   if (timed?.queue) {
     return [{ setNumber: 1, puzzleCount: timed.queue.length }];
   }
-  
+
   return [];
 }
 

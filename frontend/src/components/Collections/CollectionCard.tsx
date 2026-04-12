@@ -117,7 +117,8 @@ export function CollectionCard({
   const progressBarFillStyle: JSX.CSSProperties = {
     height: '100%',
     width: `${percentComplete}%`,
-    backgroundColor: status === 'completed' ? 'var(--color-success-solid)' : 'var(--color-info-solid)',
+    backgroundColor:
+      status === 'completed' ? 'var(--color-success-solid)' : 'var(--color-info-solid)',
     borderRadius: '3px',
     transition: 'width 0.3s ease',
   };
@@ -136,11 +137,17 @@ export function CollectionCard({
     borderRadius: '4px',
     fontWeight: 500,
     backgroundColor:
-      status === 'completed' ? 'var(--color-success-bg-solid)' :
-      status === 'in-progress' ? 'var(--color-info-bg-solid)' : 'var(--color-neutral-100)',
+      status === 'completed'
+        ? 'var(--color-success-bg-solid)'
+        : status === 'in-progress'
+          ? 'var(--color-info-bg-solid)'
+          : 'var(--color-neutral-100)',
     color:
-      status === 'completed' ? 'var(--color-success-text)' :
-      status === 'in-progress' ? 'var(--color-info-text)' : 'var(--color-neutral-500)',
+      status === 'completed'
+        ? 'var(--color-success-text)'
+        : status === 'in-progress'
+          ? 'var(--color-info-text)'
+          : 'var(--color-neutral-500)',
   };
 
   return (
@@ -159,17 +166,13 @@ export function CollectionCard({
     >
       <h3 style={titleStyle}>{collection.name}</h3>
       <p style={descStyle}>{collection.description}</p>
-      
+
       <div style={metaStyle}>
-        <span style={metaItemStyle}>
-          📚 {collection.puzzleCount} puzzles
-        </span>
-        <span style={metaItemStyle}>
-          ⏱️ ~{collection.estimatedMinutes}min
-        </span>
+        <span style={metaItemStyle}>📚 {collection.puzzleCount} puzzles</span>
+        <span style={metaItemStyle}>⏱️ ~{collection.estimatedMinutes}min</span>
         <span style={levelBadgeStyle}>
           {getSkillLevelName(collection.levelRange.min)}
-          {collection.levelRange.min !== collection.levelRange.max && 
+          {collection.levelRange.min !== collection.levelRange.max &&
             ` - ${getSkillLevelName(collection.levelRange.max)}`}
         </span>
       </div>
@@ -180,10 +183,15 @@ export function CollectionCard({
             <div style={progressBarFillStyle} />
           </div>
           <div style={progressTextStyle}>
-            <span>{progress.completedCount} / {progress.totalPuzzles}</span>
+            <span>
+              {progress.completedCount} / {progress.totalPuzzles}
+            </span>
             <span style={statusBadgeStyle}>
-              {status === 'completed' ? '✓ Complete' :
-               status === 'in-progress' ? 'In Progress' : 'Not Started'}
+              {status === 'completed'
+                ? '✓ Complete'
+                : status === 'in-progress'
+                  ? 'In Progress'
+                  : 'Not Started'}
             </span>
           </div>
         </div>

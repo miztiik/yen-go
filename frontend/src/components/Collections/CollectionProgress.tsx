@@ -45,9 +45,7 @@ export function CollectionProgress({
   size = 'md',
   className = '',
 }: CollectionProgressProps): JSX.Element {
-  const percentComplete = totalPuzzles > 0
-    ? Math.round((completedCount / totalPuzzles) * 100)
-    : 0;
+  const percentComplete = totalPuzzles > 0 ? Math.round((completedCount / totalPuzzles) * 100) : 0;
 
   const config = sizeConfig[size];
 
@@ -99,11 +97,17 @@ export function CollectionProgress({
     borderRadius: '4px',
     fontWeight: 500,
     backgroundColor:
-      status === 'completed' ? 'var(--color-success-bg-solid)' :
-      status === 'in-progress' ? 'var(--color-info-bg-solid)' : 'var(--color-neutral-100)',
+      status === 'completed'
+        ? 'var(--color-success-bg-solid)'
+        : status === 'in-progress'
+          ? 'var(--color-info-bg-solid)'
+          : 'var(--color-neutral-100)',
     color:
-      status === 'completed' ? 'var(--color-success-text)' :
-      status === 'in-progress' ? 'var(--color-info-text)' : 'var(--color-neutral-500)',
+      status === 'completed'
+        ? 'var(--color-success-text)'
+        : status === 'in-progress'
+          ? 'var(--color-info-text)'
+          : 'var(--color-neutral-500)',
     marginLeft: '0.5rem',
   };
 
@@ -123,16 +127,19 @@ export function CollectionProgress({
       {(showPercentage || showCount) && (
         <div style={textContainerStyle}>
           {showCount && (
-            <span>{completedCount} / {totalPuzzles}</span>
+            <span>
+              {completedCount} / {totalPuzzles}
+            </span>
           )}
           <span>
-            {showPercentage && (
-              <span style={percentStyle}>{percentComplete}%</span>
-            )}
+            {showPercentage && <span style={percentStyle}>{percentComplete}%</span>}
             {status && (
               <span style={statusBadgeStyle}>
-                {status === 'completed' ? '✓ Complete' :
-                 status === 'in-progress' ? 'In Progress' : 'Not Started'}
+                {status === 'completed'
+                  ? '✓ Complete'
+                  : status === 'in-progress'
+                    ? 'In Progress'
+                    : 'Not Started'}
               </span>
             )}
           </span>

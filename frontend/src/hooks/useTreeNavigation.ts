@@ -21,11 +21,7 @@ import type {
   UseTreeNavigationResult,
   VisualTreeNode,
 } from '../types/tree';
-import {
-  computeTreeLayout,
-  findNodeById,
-  computePathToNode,
-} from '../lib/tree/layout';
+import { computeTreeLayout, findNodeById, computePathToNode } from '../lib/tree/layout';
 import {
   findNextNode,
   findPrevNode,
@@ -43,9 +39,7 @@ import { ACCESSIBILITY } from '../lib/tree/constants';
  * @param options - Configuration options
  * @returns Navigation state and actions
  */
-export function useTreeNavigation(
-  options: UseTreeNavigationOptions
-): UseTreeNavigationResult {
+export function useTreeNavigation(options: UseTreeNavigationOptions): UseTreeNavigationResult {
   const { tree, initialNodeId, onChange } = options;
 
   // Compute layout (memoized to avoid recomputation)
@@ -70,7 +64,7 @@ export function useTreeNavigation(
   // Update state when tree changes
   useEffect(() => {
     const newNode = initialNodeId
-      ? findNodeById(layout, initialNodeId) ?? layout.root
+      ? (findNodeById(layout, initialNodeId) ?? layout.root)
       : layout.root;
 
     setState({
@@ -147,29 +141,17 @@ export function useTreeNavigation(
   );
 
   // Convenience methods
-  const goTo = useCallback(
-    (nodeId: string) => dispatch({ type: 'GOTO_ID', nodeId }),
-    [dispatch]
-  );
+  const goTo = useCallback((nodeId: string) => dispatch({ type: 'GOTO_ID', nodeId }), [dispatch]);
 
   const next = useCallback(() => dispatch({ type: 'NEXT' }), [dispatch]);
 
   const prev = useCallback(() => dispatch({ type: 'PREV' }), [dispatch]);
 
-  const nextSibling = useCallback(
-    () => dispatch({ type: 'NEXT_SIBLING' }),
-    [dispatch]
-  );
+  const nextSibling = useCallback(() => dispatch({ type: 'NEXT_SIBLING' }), [dispatch]);
 
-  const prevSibling = useCallback(
-    () => dispatch({ type: 'PREV_SIBLING' }),
-    [dispatch]
-  );
+  const prevSibling = useCallback(() => dispatch({ type: 'PREV_SIBLING' }), [dispatch]);
 
-  const toBranchPoint = useCallback(
-    () => dispatch({ type: 'BRANCH_POINT' }),
-    [dispatch]
-  );
+  const toBranchPoint = useCallback(() => dispatch({ type: 'BRANCH_POINT' }), [dispatch]);
 
   const reset = useCallback(() => dispatch({ type: 'RESET' }), [dispatch]);
 
@@ -190,10 +172,7 @@ export function useTreeNavigation(
   }, [state.current]);
 
   /** Whether current node is at a branch point (has multiple children) */
-  const isAtBranchPoint = useMemo(
-    () => isBranchPoint(state.current),
-    [state.current]
-  );
+  const isAtBranchPoint = useMemo(() => isBranchPoint(state.current), [state.current]);
 
   /** Sibling nodes of current position */
   const siblings = useMemo(() => {

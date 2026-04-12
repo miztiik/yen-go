@@ -1,9 +1,9 @@
 /**
  * Tags Service - Runtime fetch of tags configuration
- * 
+ *
  * Fetches tags.json at runtime (not build-time) so tag changes
  * don't require frontend rebuild.
- * 
+ *
  * The tags.json file is the SINGLE SOURCE OF TRUTH for:
  * - Tag IDs (canonical names)
  * - Display names (for UI)
@@ -37,7 +37,7 @@ let fetchPromise: Promise<TagsConfig> | null = null;
 
 /**
  * Get tags configuration (cached after first load)
- * 
+ *
  * Uses prefetch hint in index.html for early loading.
  * Safe to call multiple times - will return cached value.
  */
@@ -46,15 +46,15 @@ export async function getTagsConfig(): Promise<TagsConfig> {
   if (tagsCache) {
     return tagsCache;
   }
-  
+
   // Return in-flight promise if fetch already started
   if (fetchPromise) {
     return fetchPromise;
   }
-  
+
   // Start fetch
   fetchPromise = fetchTagsConfig();
-  
+
   try {
     tagsCache = await fetchPromise;
     return tagsCache;
@@ -108,18 +108,18 @@ export function getCachedTagsConfig(): TagsConfig | null {
  */
 function getFallbackConfig(): TagsConfig {
   return {
-    version: "fallback",
-    description: "Fallback tags (fetch failed)",
+    version: 'fallback',
+    description: 'Fallback tags (fetch failed)',
     last_updated: new Date().toISOString(),
     tags: {
-      "life-and-death": {
+      'life-and-death': {
         id: 10,
-        slug: "life-and-death",
-        name: "Life & Death",
-        category: "objective",
-        description: "Core tsumego objective",
-        aliases: ["killing", "tsumego"]
-      }
-    }
+        slug: 'life-and-death',
+        name: 'Life & Death',
+        category: 'objective',
+        description: 'Core tsumego objective',
+        aliases: ['killing', 'tsumego'],
+      },
+    },
   };
 }

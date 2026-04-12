@@ -88,9 +88,7 @@ export function useBoardViewport(
   });
 
   // Current viewport (either fitted or full)
-  const viewport = isAutoCropEnabled
-    ? fittedViewport
-    : createFullBoardViewport(boardSize);
+  const viewport = isAutoCropEnabled ? fittedViewport : createFullBoardViewport(boardSize);
 
   // Recalculate when initial stones change
   useEffect(() => {

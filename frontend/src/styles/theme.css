@@ -18,76 +18,76 @@
   /* ========================================================================
    * SEMANTIC COLORS - Light Theme (Default)
    * ======================================================================== */
-  
+
   /* Background colors */
-  --color-bg-primary: #f5f0e8;        /* Main app background - warm paper */
-  --color-bg-secondary: #e8e0d5;      /* Cards, panels, secondary areas */
-  --color-bg-tertiary: #f0e8dc;       /* Subtle contrast areas */
-  --color-bg-elevated: #ffffff;       /* Elevated elements (modals, dropdowns) */
-  --color-bg-overlay: rgba(15, 23, 42, 0.5);  /* Modal backdrop */
-  
+  --color-bg-primary: #f5f0e8; /* Main app background - warm paper */
+  --color-bg-secondary: #e8e0d5; /* Cards, panels, secondary areas */
+  --color-bg-tertiary: #f0e8dc; /* Subtle contrast areas */
+  --color-bg-elevated: #ffffff; /* Elevated elements (modals, dropdowns) */
+  --color-bg-overlay: rgba(15, 23, 42, 0.5); /* Modal backdrop */
+
   /* Text colors */
-  --color-text-primary: #2C1810;      /* Primary text - dark brown */
-  --color-text-secondary: #5C4A32;    /* Secondary text - medium brown */
-  --color-text-muted: #8B7355;        /* Muted text - light brown */
-  --color-text-disabled: #a89e8c;     /* Disabled state text */
-  --color-text-inverse: #ffffff;      /* Text on dark backgrounds */
-  
+  --color-text-primary: #2c1810; /* Primary text - dark brown */
+  --color-text-secondary: #5c4a32; /* Secondary text - medium brown */
+  --color-text-muted: #8b7355; /* Muted text - light brown */
+  --color-text-disabled: #a89e8c; /* Disabled state text */
+  --color-text-inverse: #ffffff; /* Text on dark backgrounds */
+
   /* Brand & Accent colors */
-  --color-accent: #C9A66B;            /* Primary accent - gold/amber */
-  --color-accent-hover: #b8965b;      /* Accent hover state */
-  --color-accent-muted: #9A8A7A;      /* Muted accent for secondary actions */
-  
+  --color-accent: #c9a66b; /* Primary accent - gold/amber */
+  --color-accent-hover: #b8965b; /* Accent hover state */
+  --color-accent-muted: #9a8a7a; /* Muted accent for secondary actions */
+
   /* Semantic status colors */
-  --color-success: #16A34A;           /* Correct answer, success states */
+  --color-success: #16a34a; /* Correct answer, success states */
   --color-success-bg: rgba(22, 163, 74, 0.1);
-  --color-warning: #D97706;           /* Warning, attention needed */
+  --color-warning: #d97706; /* Warning, attention needed */
   --color-warning-bg: rgba(217, 119, 6, 0.1);
-  --color-error: #DC2626;             /* Wrong answer, errors */
+  --color-error: #dc2626; /* Wrong answer, errors */
   --color-error-bg: rgba(220, 38, 38, 0.1);
-  --color-info: #0ea5e9;              /* Informational */
+  --color-info: #0ea5e9; /* Informational */
   --color-info-bg: rgba(14, 165, 233, 0.1);
-  
+
   /* ========================================================================
    * GO BOARD COLORS - Domain Specific
    * Consulted: 1P Professional Go Player for authenticity
    * ======================================================================== */
-  
-  --color-board-wood: #E3C076;        /* Traditional kaya wood color */
-  --color-board-wood-dark: #d4b066;   /* Darker variant for depth */
-  --color-board-lines: #2d2d2d;       /* Grid lines - near black */
-  --color-board-lines-muted: rgba(45, 45, 45, 0.6);  /* Star points, labels */
-  
+
+  --color-board-wood: #e3c076; /* Traditional kaya wood color */
+  --color-board-wood-dark: #d4b066; /* Darker variant for depth */
+  --color-board-lines: #2d2d2d; /* Grid lines - near black */
+  --color-board-lines-muted: rgba(45, 45, 45, 0.6); /* Star points, labels */
+
   /* Stone colors */
-  --color-stone-black: #1a1a1a;       /* Black stones */
-  --color-stone-black-highlight: #333333;  /* 3D highlight */
-  --color-stone-white: #f5f5f5;       /* White stones */
-  --color-stone-white-highlight: #ffffff;  /* 3D highlight center */
-  --color-stone-shadow: rgba(0, 0, 0, 0.32);  /* Drop shadow */
-  
+  --color-stone-black: #1a1a1a; /* Black stones */
+  --color-stone-black-highlight: #333333; /* 3D highlight */
+  --color-stone-white: #f5f5f5; /* White stones */
+  --color-stone-white-highlight: #ffffff; /* 3D highlight center */
+  --color-stone-shadow: rgba(0, 0, 0, 0.32); /* Drop shadow */
+
   /* Ghost stone (hover preview) */
-  --color-ghost-opacity: 0.35;        /* 35% opacity per spec */
-  
+  --color-ghost-opacity: 0.35; /* 35% opacity per spec */
+
   /* Move markers */
-  --color-marker-last-move: #e94560;  /* Last move indicator */
+  --color-marker-last-move: #e94560; /* Last move indicator */
   --color-marker-correct: var(--color-success);
   --color-marker-wrong: var(--color-error);
-  --color-marker-variation: #6366f1;  /* Variation branches */
-  
+  --color-marker-variation: #6366f1; /* Variation branches */
+
   /* ========================================================================
    * UI COMPONENT COLORS
    * ======================================================================== */
-  
+
   /* Header */
   --color-header-bg: var(--color-bg-primary);
   --color-header-border: rgba(92, 74, 50, 0.1);
-  
+
   /* Panels & Cards */
   --color-panel-bg: rgba(255, 255, 255, 0.6);
   --color-panel-border: rgba(92, 74, 50, 0.1);
   --color-card-bg: var(--color-bg-elevated);
   --color-card-border: rgba(92, 74, 50, 0.08);
-  
+
   /* Buttons */
   --color-button-primary-bg: var(--color-accent);
   --color-button-primary-text: var(--color-text-inverse);
@@ -96,116 +96,118 @@
   --color-button-secondary-border: var(--color-accent);
   --color-button-disabled-bg: #d1d5db;
   --color-button-disabled-text: #9ca3af;
-  
+
   /* Focus ring (keyboard accessibility) */
   --color-focus-ring: rgba(201, 166, 107, 0.5);
   --color-focus-ring-offset: var(--color-bg-primary);
-  
+
   /* ========================================================================
    * DIFFICULTY LEVEL COLORS
    * Consulted: 1P Professional Go Player for Go rank associations
    * ======================================================================== */
-  
-  --color-level-novice: #4ade80;        /* 30-25 kyu - light green */
-  --color-level-beginner: #22c55e;      /* 24-20 kyu - green */
-  --color-level-elementary: #16a34a;    /* 19-15 kyu - dark green */
-  --color-level-intermediate: #0ea5e9;  /* 14-10 kyu - blue */
+
+  --color-level-novice: #4ade80; /* 30-25 kyu - light green */
+  --color-level-beginner: #22c55e; /* 24-20 kyu - green */
+  --color-level-elementary: #16a34a; /* 19-15 kyu - dark green */
+  --color-level-intermediate: #0ea5e9; /* 14-10 kyu - blue */
   --color-level-upper-intermediate: #6366f1; /* 9-5 kyu - indigo */
-  --color-level-advanced: #8b5cf6;      /* 4-1 kyu - purple */
-  --color-level-low-dan: #d946ef;       /* 1-3 dan - magenta */
-  --color-level-high-dan: #ec4899;      /* 4-6 dan - pink */
-  --color-level-expert: #ef4444;        /* 7+ dan/pro - red */
-  
+  --color-level-advanced: #8b5cf6; /* 4-1 kyu - purple */
+  --color-level-low-dan: #d946ef; /* 1-3 dan - magenta */
+  --color-level-high-dan: #ec4899; /* 4-6 dan - pink */
+  --color-level-expert: #ef4444; /* 7+ dan/pro - red */
+
   /* ========================================================================
    * SPACING SCALE
    * 4px base unit, Apple HIG aligned
    * ======================================================================== */
-  
+
   --spacing-0: 0;
-  --spacing-1: 4px;     /* 0.25rem */
-  --spacing-2: 8px;     /* 0.5rem */
-  --spacing-3: 12px;    /* 0.75rem */
-  --spacing-4: 16px;    /* 1rem */
-  --spacing-5: 20px;    /* 1.25rem */
-  --spacing-6: 24px;    /* 1.5rem */
-  --spacing-8: 32px;    /* 2rem */
-  --spacing-10: 40px;   /* 2.5rem */
-  --spacing-12: 48px;   /* 3rem */
-  --spacing-16: 64px;   /* 4rem */
-  
+  --spacing-1: 4px; /* 0.25rem */
+  --spacing-2: 8px; /* 0.5rem */
+  --spacing-3: 12px; /* 0.75rem */
+  --spacing-4: 16px; /* 1rem */
+  --spacing-5: 20px; /* 1.25rem */
+  --spacing-6: 24px; /* 1.5rem */
+  --spacing-8: 32px; /* 2rem */
+  --spacing-10: 40px; /* 2.5rem */
+  --spacing-12: 48px; /* 3rem */
+  --spacing-16: 64px; /* 4rem */
+
   /* Semantic spacing aliases */
   --spacing-xs: var(--spacing-1);
   --spacing-sm: var(--spacing-2);
   --spacing-md: var(--spacing-4);
   --spacing-lg: var(--spacing-6);
   --spacing-xl: var(--spacing-8);
-  
+
   /* ========================================================================
    * BORDER RADIUS
    * ======================================================================== */
-  
+
   --radius-none: 0;
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
   --radius-2xl: 24px;
-  --radius-full: 9999px;  /* Circular elements */
-  
+  --radius-full: 9999px; /* Circular elements */
+
   /* ========================================================================
    * SHADOWS
    * Soft, subtle shadows for depth
    * ======================================================================== */
-  
+
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
   --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
   --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.06);
-  
+
   /* Stone shadow */
   --shadow-stone: 2px 2px 4px rgba(0, 0, 0, 0.32);
-  
+
   /* ========================================================================
    * TYPOGRAPHY
    * ======================================================================== */
-  
-  --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 
-                 Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-family-mono: ui-monospace, 'SF Mono', Menlo, Monaco, 'Cascadia Mono',
-                      'Segoe UI Mono', 'Roboto Mono', monospace;
-  
-  --font-size-xs: 0.75rem;   /* 12px */
-  --font-size-sm: 0.875rem;  /* 14px */
-  --font-size-md: 1rem;      /* 16px */
-  --font-size-lg: 1.125rem;  /* 18px */
-  --font-size-xl: 1.25rem;   /* 20px */
-  --font-size-2xl: 1.5rem;   /* 24px */
+
+  --font-family:
+    system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-family-mono:
+    ui-monospace, 'SF Mono', Menlo, Monaco, 'Cascadia Mono', 'Segoe UI Mono', 'Roboto Mono',
+    monospace;
+
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-md: 1rem; /* 16px */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-2xl: 1.5rem; /* 24px */
   --font-size-3xl: 1.875rem; /* 30px */
-  --font-size-4xl: 2.25rem;  /* 36px */
-  
+  --font-size-4xl: 2.25rem; /* 36px */
+
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  
+
   --line-height-tight: 1.25;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.75;
-  
+
   /* ========================================================================
    * TRANSITIONS
    * ======================================================================== */
-  
+
   --transition-fast: 150ms ease;
   --transition-normal: 200ms ease;
   --transition-slow: 300ms ease;
-  
+
   /* ========================================================================
    * Z-INDEX SCALE
    * ======================================================================== */
-  
+
   --z-dropdown: 1000;
   --z-sticky: 1020;
   --z-fixed: 1030;
@@ -213,18 +215,18 @@
   --z-modal: 1050;
   --z-popover: 1060;
   --z-tooltip: 1070;
-  
+
   /* ========================================================================
    * TOUCH TARGETS (WCAG 2.2 / Apple HIG)
    * ======================================================================== */
-  
+
   --touch-target-min: 44px;
   --touch-target-comfortable: 48px;
-  
+
   /* ========================================================================
    * HEADER DIMENSIONS
    * ======================================================================== */
-  
+
   --header-height: 56px;
 }
 
@@ -233,26 +235,26 @@
  * Activated via [data-theme="dark"] on <html> or <body>
  * ============================================================================ */
 
-[data-theme="dark"] {
+[data-theme='dark'] {
   /* Background colors */
   --color-bg-primary: #1a1a2e;
   --color-bg-secondary: #16213e;
   --color-bg-tertiary: #1e2a47;
   --color-bg-elevated: #243b55;
   --color-bg-overlay: rgba(0, 0, 0, 0.7);
-  
+
   /* Text colors */
   --color-text-primary: #eaeaea;
   --color-text-secondary: #d1d5db;
   --color-text-muted: #9ca3af;
   --color-text-disabled: #6b7280;
   --color-text-inverse: #1a1a2e;
-  
+
   /* Accent colors */
   --color-accent: #e94560;
   --color-accent-hover: #d13a54;
   --color-accent-muted: #a8323f;
-  
+
   /* Status colors (brighter for dark backgrounds) */
   --color-success: #22c55e;
   --color-success-bg: rgba(34, 197, 94, 0.15);
@@ -262,29 +264,29 @@
   --color-error-bg: rgba(239, 68, 68, 0.15);
   --color-info: #38bdf8;
   --color-info-bg: rgba(56, 189, 248, 0.15);
-  
+
   /* Board colors - slightly warmer in dark mode */
   --color-board-wood: #c9a963;
   --color-board-wood-dark: #b89953;
-  
+
   /* Panels */
   --color-panel-bg: rgba(30, 41, 59, 0.9);
   --color-panel-border: rgba(255, 255, 255, 0.1);
   --color-card-bg: #243b55;
   --color-card-border: rgba(255, 255, 255, 0.08);
-  
+
   /* Header */
   --color-header-bg: #16213e;
   --color-header-border: rgba(255, 255, 255, 0.1);
-  
+
   /* Buttons */
   --color-button-disabled-bg: #374151;
   --color-button-disabled-text: #6b7280;
-  
+
   /* Focus ring */
   --color-focus-ring: rgba(233, 69, 96, 0.5);
   --color-focus-ring-offset: var(--color-bg-primary);
-  
+
   /* Shadows (more subtle in dark mode) */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);

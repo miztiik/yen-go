@@ -14,9 +14,7 @@ import { useState, useEffect, useCallback, useRef } from 'preact/hooks';
 /**
  * Read current values of managed keys from the URL, falling back to defaults.
  */
-function readParams<T extends Record<string, string>>(
-  defaults: T,
-): T {
+function readParams<T extends Record<string, string>>(defaults: T): T {
   const params = new URLSearchParams(window.location.search);
   const result = { ...defaults };
   for (const key of Object.keys(defaults)) {
@@ -35,10 +33,7 @@ function readParams<T extends Record<string, string>>(
  * writes back ALL params (preserving keys owned by other hooks).
  * Omits params whose value matches the default (clean URLs).
  */
-function writeParams<T extends Record<string, string>>(
-  values: T,
-  defaults: T,
-): void {
+function writeParams<T extends Record<string, string>>(values: T, defaults: T): void {
   const params = new URLSearchParams(window.location.search);
 
   for (const key of Object.keys(defaults)) {
@@ -74,7 +69,7 @@ function writeParams<T extends Record<string, string>>(
  * ```
  */
 export function useBrowseParams<T extends Record<string, string>>(
-  defaults: T,
+  defaults: T
 ): {
   readonly params: T;
   readonly setParam: <K extends keyof T & string>(key: K, value: T[K]) => void;
@@ -84,16 +79,13 @@ export function useBrowseParams<T extends Record<string, string>>(
 
   const [params, setParamsState] = useState<T>(() => readParams(defaults));
 
-  const setParam = useCallback(
-    <K extends keyof T & string>(key: K, value: T[K]): void => {
-      setParamsState((prev) => {
-        const next = { ...prev, [key]: value };
-        writeParams(next, defaultsRef.current);
-        return next;
-      });
-    },
-    [],
-  );
+  const setParam = useCallback(<K extends keyof T & string>(key: K, value: T[K]): void => {
+    setParamsState((prev) => {
+      const next = { ...prev, [key]: value };
+      writeParams(next, defaultsRef.current);
+      return next;
+    });
+  }, []);
 
   const clearParams = useCallback((): void => {
     const defs = defaultsRef.current;

@@ -99,10 +99,11 @@ const styles = {
  * Derives from config/puzzle-levels.json via Vite JSON import.
  */
 function createEmptySkillLevelStats(): StatisticsBySkillLevel {
-  const emptyRecord = Object.fromEntries(
-    LEVEL_SLUGS.map((slug) => [slug, 0])
-  ) as Record<LevelSlug, number>;
-  
+  const emptyRecord = Object.fromEntries(LEVEL_SLUGS.map((slug) => [slug, 0])) as Record<
+    LevelSlug,
+    number
+  >;
+
   return {
     puzzlesBySkillLevel: { ...emptyRecord },
     avgTimeBySkillLevel: { ...emptyRecord },
@@ -113,9 +114,7 @@ function createEmptySkillLevelStats(): StatisticsBySkillLevel {
  * Calculate skill level stats from progress.
  * Since PuzzleCompletion doesn't store skill level, we estimate from puzzle IDs.
  */
-function calculateSkillLevelStatsFromProgress(
-  _progress: UserProgress
-): StatisticsBySkillLevel {
+function calculateSkillLevelStatsFromProgress(_progress: UserProgress): StatisticsBySkillLevel {
   // In a real app, we'd need to look up puzzle metadata
   // For now, return empty stats (to be implemented with puzzle lookup)
   return createEmptySkillLevelStats();
@@ -129,9 +128,7 @@ function EmptyState(): JSX.Element {
     <div style={styles.emptyState}>
       <div style={styles.emptyIcon}>📊</div>
       <h2 style={styles.emptyTitle}>No statistics yet</h2>
-      <p style={styles.emptyDescription}>
-        Start solving puzzles to see your progress here!
-      </p>
+      <p style={styles.emptyDescription}>Start solving puzzles to see your progress here!</p>
     </div>
   );
 }
@@ -184,11 +181,7 @@ export function StatsPage({ onBack }: StatsPageProps): JSX.Element {
       {/* Header */}
       <header style={styles.header}>
         {onBack && (
-          <button
-            style={styles.backButton}
-            onClick={onBack}
-            aria-label="Go back"
-          >
+          <button style={styles.backButton} onClick={onBack} aria-label="Go back">
             ←
           </button>
         )}
@@ -221,16 +214,8 @@ export function StatsPage({ onBack }: StatsPageProps): JSX.Element {
                 value={summary.puzzlesSolved}
                 accent="primary"
               />
-              <StatCard
-                icon="⏱️"
-                label="Total Time"
-                value={summary.totalTime}
-              />
-              <StatCard
-                icon="📈"
-                label="Average Time"
-                value={summary.averageTime}
-              />
+              <StatCard icon="⏱️" label="Total Time" value={summary.totalTime} />
+              <StatCard icon="📈" label="Average Time" value={summary.averageTime} />
               <StatCard
                 icon="💡"
                 label="Hints Used"

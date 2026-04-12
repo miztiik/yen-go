@@ -94,5 +94,3 @@ export function decodePuzzleRow(row: PuzzleRow): DecodedEntry {
     ac: row.ac,
   };
 }
-
-

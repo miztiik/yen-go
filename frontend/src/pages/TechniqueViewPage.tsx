@@ -58,17 +58,17 @@ export interface TechniqueViewPageProps {
  */
 const MOBILE_LEVEL_CATEGORIES: readonly FilterOption[] = [
   { id: 'all', label: 'All' },
-  { id: 'ddk', label: 'DDK' },  // 30k-11k: novice, beginner, elementary, intermediate
-  { id: 'sdk', label: 'SDK' },  // 10k-1k: upper-intermediate, advanced
-  { id: 'dan', label: 'Dan' },  // 1d-9d: low-dan, high-dan, expert
+  { id: 'ddk', label: 'DDK' }, // 30k-11k: novice, beginner, elementary, intermediate
+  { id: 'sdk', label: 'SDK' }, // 10k-1k: upper-intermediate, advanced
+  { id: 'dan', label: 'Dan' }, // 1d-9d: low-dan, high-dan, expert
 ];
 
 /** Map category ID to level numeric IDs. */
 const CATEGORY_TO_LEVEL_IDS: Record<string, readonly number[]> = {
-  all: [],  // Empty = no filter
-  ddk: [110, 120, 130, 140],  // novice, beginner, elementary, intermediate
-  sdk: [150, 160],  // upper-intermediate, advanced
-  dan: [210, 220, 230],  // low-dan, high-dan, expert
+  all: [], // Empty = no filter
+  ddk: [110, 120, 130, 140], // novice, beginner, elementary, intermediate
+  sdk: [150, 160], // upper-intermediate, advanced
+  dan: [210, 220, 230], // low-dan, high-dan, expert
 };
 
 // ============================================================================
@@ -112,7 +112,9 @@ export function TechniqueViewPage({
     let cancelled = false;
     const numericId = tagSlugToId(techniqueId);
     if (!cancelled && numericId !== undefined) setQueryKey(`t${numericId}`);
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [techniqueId]);
 
   // P3: Load filter options from database distributions
@@ -139,23 +141,44 @@ export function TechniqueViewPage({
   // Global content-type preference
   const { contentType, setContentType } = useContentType();
   const levelMasterEntries: readonly LevelMasterEntry[] = filterOptions.levelOptions
-    .filter(o => o.id !== 'all')
-    .map(o => ({ id: Number(o.id), name: o.label, slug: '', count: o.count ?? 0, paginated: false, levels: {}, tags: {} }));
+    .filter((o) => o.id !== 'all')
+    .map((o) => ({
+      id: Number(o.id),
+      name: o.label,
+      slug: '',
+      count: o.count ?? 0,
+      paginated: false,
+      levels: {},
+      tags: {},
+    }));
   const tagMasterEntries: readonly TagMasterEntry[] = filterOptions.tagOptionGroups
-    .flatMap(g => g.options)
-    .map(o => ({ id: Number(o.id), name: o.label, slug: '', count: o.count ?? 0, paginated: false, levels: {}, tags: {} }));
+    .flatMap((g) => g.options)
+    .map((o) => ({
+      id: Number(o.id),
+      name: o.label,
+      slug: '',
+      count: o.count ?? 0,
+      paginated: false,
+      levels: {},
+      tags: {},
+    }));
 
   // Build a filterState adapter for the existing template code
   const filterState = {
     levelIds: [...filterLevelIds],
     tagIds: [...filterTagIds],
     setLevelIds: filterSetLevelIds,
-    setTagIds: (_ids: number[]) => { void _ids; },
+    setTagIds: (_ids: number[]) => {
+      void _ids;
+    },
     setTag: filterSetTag,
     setTagFromOption: filterSetTagFromOption,
     toggleLevel: filterToggleLevel,
     levelOptions: filterOptions.levelOptions as FilterOption[],
-    tagOptionGroups: filterOptions.tagOptionGroups.map(g => ({ label: g.label, options: [...g.options] as FilterOption[] })),
+    tagOptionGroups: filterOptions.tagOptionGroups.map((g) => ({
+      label: g.label,
+      options: [...g.options] as FilterOption[],
+    })),
     tagId: filterTagIds.length === 1 ? filterTagIds[0]! : null,
     levelId: filterLevelIds.length === 1 ? filterLevelIds[0]! : null,
     selectedLevelSlug,
@@ -170,33 +193,40 @@ export function TechniqueViewPage({
   // WP8 §8.8: Load collection master index on mount
   useEffect(() => {
     let cancelled = false;
-    void loadCollectionMasterIndex().then(collectionMaster => {
-      if (cancelled || !collectionMaster) return;
-      const meta = collectionMaster.collections.find(c => c.slug === techniqueId);
-      if (meta) {
-        const entry: CollectionMasterEntry = {
-          id: meta.id,
-          name: meta.name,
-          slug: meta.slug,
-          paginated: (meta.pages ?? 0) > 1,
-          count: meta.count,
-          ...(meta.pages !== undefined ? { pages: meta.pages } : {}),
-          levels: meta.levels ?? {},
-          tags: meta.tags ?? {},
-        };
-        setCollectionMeta(entry);
-      }
-    }).catch(() => { /* ignore */ });
-    return () => { cancelled = true; };
+    void loadCollectionMasterIndex()
+      .then((collectionMaster) => {
+        if (cancelled || !collectionMaster) return;
+        const meta = collectionMaster.collections.find((c) => c.slug === techniqueId);
+        if (meta) {
+          const entry: CollectionMasterEntry = {
+            id: meta.id,
+            name: meta.name,
+            slug: meta.slug,
+            paginated: (meta.pages ?? 0) > 1,
+            count: meta.count,
+            ...(meta.pages !== undefined ? { pages: meta.pages } : {}),
+            levels: meta.levels ?? {},
+            tags: meta.tags ?? {},
+          };
+          setCollectionMeta(entry);
+        }
+      })
+      .catch(() => {
+        /* ignore */
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [techniqueId]);
 
   // WP8: Level FilterBar options using collection-specific distributions
   const levelBarOptions = useMemo((): FilterOption[] => {
-    if (!collectionMeta) return filterState.levelOptions.map(o => {
-      const opt: FilterOption = { id: o.id, label: o.label };
-      if (o.count !== undefined) opt.count = o.count;
-      return opt;
-    });
+    if (!collectionMeta)
+      return filterState.levelOptions.map((o) => {
+        const opt: FilterOption = { id: o.id, label: o.label };
+        if (o.count !== undefined) opt.count = o.count;
+        return opt;
+      });
 
     // Use collection master's level distribution for counts
     const allCount = Object.values(collectionMeta.levels).reduce((s, c) => s + c, 0);
@@ -212,9 +242,9 @@ export function TechniqueViewPage({
 
   // WP8: Tag dropdown groups using collection-specific distributions
   const tagDropdownGroups = useMemo(() => {
-    return filterState.tagOptionGroups.map(g => ({
+    return filterState.tagOptionGroups.map((g) => ({
       label: g.label,
-      options: g.options.map(o => {
+      options: g.options.map((o) => {
         const count = collectionMeta ? (collectionMeta.tags[o.id] ?? 0) : (o.count ?? 0);
         return { id: o.id, label: o.label, count };
       }),
@@ -222,18 +252,27 @@ export function TechniqueViewPage({
   }, [filterState.tagOptionGroups, collectionMeta]);
 
   // WP8: Handle filter changes — multi-select toggles for technique pages
-  const handleLevelToggle = useCallback((id: string) => {
-    if (id === 'all') { filterState.setLevelIds([]); return; }
-    const n = Number(id);
-    if (!Number.isNaN(n)) filterState.toggleLevel(n);
-  }, [filterState]);
+  const handleLevelToggle = useCallback(
+    (id: string) => {
+      if (id === 'all') {
+        filterState.setLevelIds([]);
+        return;
+      }
+      const n = Number(id);
+      if (!Number.isNaN(n)) filterState.toggleLevel(n);
+    },
+    [filterState]
+  );
   const handleTagChange = filterState.setTagFromOption;
 
   // H6: Mobile category-based level filter handler
-  const handleMobileCategoryChange = useCallback((categoryId: string) => {
-    const levelIds = CATEGORY_TO_LEVEL_IDS[categoryId] ?? [];
-    filterState.setLevelIds([...levelIds]);
-  }, [filterState]);
+  const handleMobileCategoryChange = useCallback(
+    (categoryId: string) => {
+      const levelIds = CATEGORY_TO_LEVEL_IDS[categoryId] ?? [];
+      filterState.setLevelIds([...levelIds]);
+    },
+    [filterState]
+  );
 
   // H6: Derive currently selected mobile category from levelIds
   const selectedMobileCategory = useMemo(() => {
@@ -241,7 +280,7 @@ export function TechniqueViewPage({
     if (ids.length === 0) return 'all';
     for (const [cat, catIds] of Object.entries(CATEGORY_TO_LEVEL_IDS)) {
       if (cat === 'all') continue;
-      if (ids.length === catIds.length && ids.every(id => catIds.includes(id))) {
+      if (ids.length === catIds.length && ids.every((id) => catIds.includes(id))) {
         return cat;
       }
     }
@@ -250,17 +289,27 @@ export function TechniqueViewPage({
 
   // Create loader (memoized, re-created when filters change)
   const loader = useMemo(
-    () => new CollectionPuzzleLoader(collectionId, startIndex, filterLevelIds, filterTagIds, contentType),
-    [collectionId, filterLevelIds, filterTagIds, contentType],
+    () =>
+      new CollectionPuzzleLoader(
+        collectionId,
+        startIndex,
+        filterLevelIds,
+        filterTagIds,
+        contentType
+      ),
+    [collectionId, filterLevelIds, filterTagIds, contentType]
   );
 
   // Progress tracking: record collection puzzle completion + streak
-  const handlePuzzleComplete = useCallback((puzzleId: string, isCorrect: boolean) => {
-    recordCollectionPuzzleCompletion(collectionId, puzzleId, isCorrect, 0, 0);
-    if (isCorrect) {
-      recordPlay();
-    }
-  }, [collectionId]);
+  const handlePuzzleComplete = useCallback(
+    (puzzleId: string, isCorrect: boolean) => {
+      recordCollectionPuzzleCompletion(collectionId, puzzleId, isCorrect, 0, 0);
+      if (isCorrect) {
+        recordPlay();
+      }
+    },
+    [collectionId]
+  );
 
   // Human-readable technique name for header display
   const techniqueDisplayName = useMemo(() => {
@@ -269,83 +318,80 @@ export function TechniqueViewPage({
   }, [techniqueId, collectionMeta]);
 
   // Build filter strip content for PuzzleSetHeader
-  const filterStripContent = mastersLoaded && (levelMasterEntries.length > 0 || tagMasterEntries.length > 0)
-    ? (
-        <div className="flex flex-wrap items-center gap-2" data-testid="collection-filter-strip">
-          {/* Content type global filter */}
-          <ContentTypeFilter
-            counts={filterOptions.contentTypeOptions.reduce<Record<number, number>>((acc, o) => {
-              if (o.count !== undefined) acc[Number(o.id)] = o.count;
-              return acc;
-            }, {})}
-          />
+  const filterStripContent =
+    mastersLoaded && (levelMasterEntries.length > 0 || tagMasterEntries.length > 0) ? (
+      <div className="flex flex-wrap items-center gap-2" data-testid="collection-filter-strip">
+        {/* Content type global filter */}
+        <ContentTypeFilter
+          counts={filterOptions.contentTypeOptions.reduce<Record<number, number>>((acc, o) => {
+            if (o.count !== undefined) acc[Number(o.id)] = o.count;
+            return acc;
+          }, {})}
+        />
 
-          {/* Visual separator between content-type and level/tag filters */}
-          <div className="hidden sm:block w-px h-6 self-center bg-[var(--color-border)] mx-1" />
+        {/* Visual separator between content-type and level/tag filters */}
+        <div className="hidden sm:block w-px h-6 self-center bg-[var(--color-border)] mx-1" />
 
-          {/* Level FilterBar — H6: responsive categories on mobile, multi-select on desktop */}
-          {levelMasterEntries.length > 0 && (
-            isDesktop ? (
-              <div className="overflow-x-auto max-w-full">
-                <FilterBar
-                  label="Filter by level"
-                  options={levelBarOptions}
-                  selected={filterState.levelIds.length > 0 ? filterState.levelIds.map(String) : 'all'}
-                  onChange={handleLevelToggle}
-                  multiSelect
-                  testId="collection-level-filter"
-                />
-              </div>
-            ) : (
+        {/* Level FilterBar — H6: responsive categories on mobile, multi-select on desktop */}
+        {levelMasterEntries.length > 0 &&
+          (isDesktop ? (
+            <div className="overflow-x-auto max-w-full">
               <FilterBar
-                label="Filter by level category"
-                options={MOBILE_LEVEL_CATEGORIES}
-                selected={selectedMobileCategory}
-                onChange={handleMobileCategoryChange}
-                testId="collection-level-filter-mobile"
+                label="Filter by level"
+                options={levelBarOptions}
+                selected={
+                  filterState.levelIds.length > 0 ? filterState.levelIds.map(String) : 'all'
+                }
+                onChange={handleLevelToggle}
+                multiSelect
+                testId="collection-level-filter"
               />
-            )
-          )}
+            </div>
+          ) : (
+            <FilterBar
+              label="Filter by level category"
+              options={MOBILE_LEVEL_CATEGORIES}
+              selected={selectedMobileCategory}
+              onChange={handleMobileCategoryChange}
+              testId="collection-level-filter-mobile"
+            />
+          ))}
 
-          {/* Tag FilterDropdown */}
-          {tagMasterEntries.length > 0 && (
-            <FilterDropdown
-              label="Tag"
-              placeholder="All Tags"
-              groups={tagDropdownGroups}
-              selected={filterState.tagId !== null ? String(filterState.tagId) : null}
-              onChange={handleTagChange}
-              testId="collection-tag-filter"
+        {/* Tag FilterDropdown */}
+        {tagMasterEntries.length > 0 && (
+          <FilterDropdown
+            label="Tag"
+            placeholder="All Tags"
+            groups={tagDropdownGroups}
+            selected={filterState.tagId !== null ? String(filterState.tagId) : null}
+            onChange={handleTagChange}
+            testId="collection-tag-filter"
+          />
+        )}
+
+        {/* Active filter chips */}
+        <div className="ml-auto flex items-center gap-1.5">
+          {filterState.selectedLevelLabels.map((label, i) => (
+            <ActiveFilterChip
+              key={`level-${filterState.levelIds[i]}`}
+              label={label}
+              onDismiss={() => filterState.toggleLevel(filterState.levelIds[i]!)}
+              testId={`collection-level-chip-${filterState.levelIds[i]}`}
+            />
+          ))}
+          {filterState.selectedTagSlug && (
+            <ActiveFilterChip
+              label={filterState.selectedTagLabel ?? filterState.selectedTagSlug}
+              onDismiss={() => filterState.setTag(null)}
+              testId="collection-tag-chip"
             />
           )}
-
-          {/* Active filter chips */}
-          <div className="ml-auto flex items-center gap-1.5">
-            {filterState.selectedLevelLabels.map((label, i) => (
-              <ActiveFilterChip
-                key={`level-${filterState.levelIds[i]}`}
-                label={label}
-                onDismiss={() => filterState.toggleLevel(filterState.levelIds[i]!)}
-                testId={`collection-level-chip-${filterState.levelIds[i]}`}
-              />
-            ))}
-            {filterState.selectedTagSlug && (
-              <ActiveFilterChip
-                label={filterState.selectedTagLabel ?? filterState.selectedTagSlug}
-                onDismiss={() => filterState.setTag(null)}
-                testId="collection-tag-chip"
-              />
-            )}
-            {filterState.activeFilterCount >= 2 && (
-              <ClearAllFiltersButton
-                onClear={filterState.clearAll}
-                testId="collection-clear-all"
-              />
-            )}
-          </div>
+          {filterState.activeFilterCount >= 2 && (
+            <ClearAllFiltersButton onClear={filterState.clearAll} testId="collection-clear-all" />
+          )}
         </div>
-      )
-    : undefined;
+      </div>
+    ) : undefined;
 
   // Unified header using PuzzleSetHeader (Option A compact toolbar)
   const renderHeaderWithFilters = (info: HeaderInfo): JSX.Element => {
@@ -371,7 +417,9 @@ export function TechniqueViewPage({
         backLabel={backLabelProp ?? 'Back to techniques'}
         {...(filterStripContent ? { filterStrip: filterStripContent } : {})}
         {...(skipButton ? { rightContent: skipButton } : {})}
-        progress={info.totalPuzzles > 0 ? Math.round((info.completedCount / info.totalPuzzles) * 100) : 0}
+        progress={
+          info.totalPuzzles > 0 ? Math.round((info.completedCount / info.totalPuzzles) * 100) : 0
+        }
         testId="collection-header"
       />
     );
@@ -380,19 +428,26 @@ export function TechniqueViewPage({
   // H5: Render EmptyFilterState when filters produce zero results
   const hasAnyFilter = filterState.hasActiveFilters || contentType > 0;
 
-  const contentTypeInfo = contentType > 0
-    ? (() => {
-        const typeNames: Record<number, string> = { 1: 'Curated', 2: 'Practice', 3: 'Training Lab' };
-        const availableTypes = filterOptions.contentTypeOptions
-          .filter(opt => opt.id !== '0' && opt.id !== String(contentType) && (opt.count ?? 0) > 0)
-          .map(opt => ({ name: opt.label, count: opt.count ?? 0 }));
-        return {
-          activeTypeName: typeNames[contentType] ?? 'selected',
-          availableTypes,
-          onShowAllTypes: () => setContentType(0),
-        };
-      })()
-    : undefined;
+  const contentTypeInfo =
+    contentType > 0
+      ? (() => {
+          const typeNames: Record<number, string> = {
+            1: 'Curated',
+            2: 'Practice',
+            3: 'Training Lab',
+          };
+          const availableTypes = filterOptions.contentTypeOptions
+            .filter(
+              (opt) => opt.id !== '0' && opt.id !== String(contentType) && (opt.count ?? 0) > 0
+            )
+            .map((opt) => ({ name: opt.label, count: opt.count ?? 0 }));
+          return {
+            activeTypeName: typeNames[contentType] ?? 'selected',
+            availableTypes,
+            onShowAllTypes: () => setContentType(0),
+          };
+        })()
+      : undefined;
 
   const handleClearAllFilters = () => {
     filterState.clearAll();
@@ -402,7 +457,13 @@ export function TechniqueViewPage({
   const renderEmptyWithFilters = hasAnyFilter
     ? () => (
         <>
-          {renderHeaderWithFilters({ name: techniqueDisplayName, currentIndex: 0, totalPuzzles: 0, completedCount: 0, ...(onBack ? { onBack } : {}) })}
+          {renderHeaderWithFilters({
+            name: techniqueDisplayName,
+            currentIndex: 0,
+            totalPuzzles: 0,
+            completedCount: 0,
+            ...(onBack ? { onBack } : {}),
+          })}
           <EmptyFilterState
             onClearFilters={handleClearAllFilters}
             testId="collection-empty-filter"
@@ -413,11 +474,14 @@ export function TechniqueViewPage({
     : undefined;
 
   // Track current puzzle index + hash in URL for deep-linking and sharing
-  const handlePuzzleChange = useCallback((puzzleId: string | null, index?: number) => {
-    if (index === undefined) return;
-    urlSetOffset(index);
-    urlSetId(puzzleId ?? undefined);
-  }, [urlSetOffset, urlSetId]);
+  const handlePuzzleChange = useCallback(
+    (puzzleId: string | null, index?: number) => {
+      if (index === undefined) return;
+      urlSetOffset(index);
+      urlSetId(puzzleId ?? undefined);
+    },
+    [urlSetOffset, urlSetId]
+  );
 
   return (
     <PuzzleSetPlayer

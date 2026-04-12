@@ -73,9 +73,7 @@ function toAchievementProgress(achievement: Achievement): AchievementProgress {
 /**
  * Get achievements combined with user progress
  */
-function getAchievementsWithProgress(
-  progress: UserProgress | null
-): AchievementWithProgress[] {
+function getAchievementsWithProgress(progress: UserProgress | null): AchievementWithProgress[] {
   const userAchievements = new Map<AchievementId, AchievementProgress>();
 
   if (progress?.achievements) {
@@ -172,11 +170,14 @@ function AchievementCard({
 
         {!achievement.isUnlocked && (
           <div className="achievement-progress">
-            <div className="progress-bar" role="progressbar" aria-valuenow={achievement.progressPercent} aria-valuemin={0} aria-valuemax={100}>
-              <div
-                className="progress-fill"
-                style={{ width: `${achievement.progressPercent}%` }}
-              />
+            <div
+              className="progress-bar"
+              role="progressbar"
+              aria-valuenow={achievement.progressPercent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <div className="progress-fill" style={{ width: `${achievement.progressPercent}%` }} />
             </div>
             <span className="progress-text">
               {achievement.currentValue} / {achievement.target}
@@ -333,13 +334,21 @@ function AchievementSummary({
         <span className="summary-value">{unlocked}</span>
         <span className="summary-label">Unlocked</span>
       </div>
-      <div className="summary-divider" aria-hidden="true">/</div>
+      <div className="summary-divider" aria-hidden="true">
+        /
+      </div>
       <div className="summary-stat">
         <span className="summary-value">{total}</span>
         <span className="summary-label">Total</span>
       </div>
       <div className="summary-progress">
-        <div className="progress-bar" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
+        <div
+          className="progress-bar"
+          role="progressbar"
+          aria-valuenow={percent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
           <div className="progress-fill" style={{ width: `${percent}%` }} />
         </div>
         <span className="progress-percent">{percent}%</span>
@@ -371,9 +380,10 @@ export function AchievementList({
   }, [progress]);
 
   // Filter achievements by category
-  const filteredAchievements = selectedCategory === 'all'
-    ? achievements
-    : achievements.filter((a) => a.category === selectedCategory);
+  const filteredAchievements =
+    selectedCategory === 'all'
+      ? achievements
+      : achievements.filter((a) => a.category === selectedCategory);
 
   // Sort achievements
   const sortedAchievements = sortAchievements(filteredAchievements);

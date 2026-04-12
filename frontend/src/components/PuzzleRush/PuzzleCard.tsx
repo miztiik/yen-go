@@ -21,24 +21,17 @@ export interface PuzzleCardProps {
  * Card showing a completed puzzle result in the Rush sidebar.
  * Shows puzzle number, category tag, level, and result status.
  */
-export const PuzzleCard: FunctionalComponent<PuzzleCardProps> = ({
-  result,
-  isCompact = false,
-}) => {
+export const PuzzleCard: FunctionalComponent<PuzzleCardProps> = ({ result, isCompact = false }) => {
   const levelInfo = getSkillLevelInfo(result.level);
   const primaryTag = result.tags[0] ?? 'general';
-  
+
   const statusColor = result.skipped
     ? 'var(--color-neutral-400)'
     : result.success
       ? 'var(--color-mode-rush-border)'
       : 'var(--color-error)';
-  
-  const statusIcon = result.skipped
-    ? '⏭️'
-    : result.success
-      ? '✅'
-      : '❌';
+
+  const statusIcon = result.skipped ? '⏭️' : result.success ? '✅' : '❌';
 
   if (isCompact) {
     return (
@@ -46,12 +39,8 @@ export const PuzzleCard: FunctionalComponent<PuzzleCardProps> = ({
         className="flex items-center gap-2 px-2 py-1.5 bg-[--color-bg-panel] rounded text-xs"
         style={{ borderLeft: `3px solid ${statusColor}` }}
       >
-        <span className="font-medium text-[--color-neutral-500]">
-          #{result.puzzleNumber}
-        </span>
-        <span className="text-[--color-neutral-400]">
-          {levelInfo?.shortName}
-        </span>
+        <span className="font-medium text-[--color-neutral-500]">#{result.puzzleNumber}</span>
+        <span className="text-[--color-neutral-400]">{levelInfo?.shortName}</span>
       </div>
     );
   }
@@ -82,9 +71,7 @@ export const PuzzleCard: FunctionalComponent<PuzzleCardProps> = ({
       </div>
 
       {/* Status icon */}
-      <div className="text-base shrink-0">
-        {statusIcon}
-      </div>
+      <div className="text-base shrink-0">{statusIcon}</div>
     </div>
   );
 };

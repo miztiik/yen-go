@@ -34,9 +34,7 @@ export interface GoTipDisplayProps {
 function selectTip(tips: GoTip[], level?: string): GoTip | null {
   if (tips.length === 0) return null;
 
-  const filtered = level
-    ? tips.filter((t) => t.levels.includes(level))
-    : tips;
+  const filtered = level ? tips.filter((t) => t.levels.includes(level)) : tips;
 
   const pool = filtered.length > 0 ? filtered : tips;
   return pool[Math.floor(Math.random() * pool.length)] ?? null;

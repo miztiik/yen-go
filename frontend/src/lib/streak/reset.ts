@@ -5,7 +5,7 @@
  * Covers: US4 (Daily Streaks), FR-025 (Streak reset detection)
  *
  * Per spec.md US4-Scenario 3:
- * "Given I missed a day, When I play again, Then my streak resets to 1 
+ * "Given I missed a day, When I play again, Then my streak resets to 1
  *  with a message about the broken streak"
  *
  * Constitution Compliance:
@@ -21,11 +21,7 @@ import {
   isToday,
   isYesterday,
 } from './calculator';
-import {
-  shouldResetDueToClockJump,
-  DEFAULT_TOLERANCE,
-  type ToleranceConfig,
-} from './tolerance';
+import { shouldResetDueToClockJump, DEFAULT_TOLERANCE, type ToleranceConfig } from './tolerance';
 
 /**
  * Reason why a streak was or will be reset.
@@ -138,9 +134,10 @@ export function checkStreakResetStatus(
       reason: 'missed_day',
       daysMissed: 1,
       previousStreak: currentStreak,
-      message: currentStreak > 0
-        ? `You missed a day. Your ${currentStreak}-day streak has ended.`
-        : 'You missed a day. Starting a new streak!',
+      message:
+        currentStreak > 0
+          ? `You missed a day. Your ${currentStreak}-day streak has ended.`
+          : 'You missed a day. Starting a new streak!',
     };
   }
 
@@ -149,9 +146,10 @@ export function checkStreakResetStatus(
     reason: 'missed_multiple_days',
     daysMissed,
     previousStreak: currentStreak,
-    message: currentStreak > 0
-      ? `You missed ${daysMissed} days. Your ${currentStreak}-day streak has ended.`
-      : `It's been ${daysMissed} days. Starting a new streak!`,
+    message:
+      currentStreak > 0
+        ? `You missed ${daysMissed} days. Your ${currentStreak}-day streak has ended.`
+        : `It's been ${daysMissed} days. Starting a new streak!`,
   };
 }
 
@@ -220,10 +218,7 @@ export function getStreakResetNotification(info: StreakResetInfo): {
  * @param now - Current date/time (for testing)
  * @returns True if user hasn't played today and has an active streak
  */
-export function isStreakAtRisk(
-  streakData: StreakData,
-  now: Date = new Date()
-): boolean {
+export function isStreakAtRisk(streakData: StreakData, now: Date = new Date()): boolean {
   const today = getCurrentLocalDate(now);
   const { lastPlayedDate, currentStreak } = streakData;
 

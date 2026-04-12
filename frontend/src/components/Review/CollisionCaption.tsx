@@ -48,9 +48,8 @@ export function CollisionCaption({
   className,
 }: CollisionCaptionProps): JSX.Element | null {
   // Filter collisions up to current frame if specified
-  const visibleCollisions = currentFrame !== undefined
-    ? collisions.filter((c) => c.laterMove <= currentFrame)
-    : collisions;
+  const visibleCollisions =
+    currentFrame !== undefined ? collisions.filter((c) => c.laterMove <= currentFrame) : collisions;
 
   if (visibleCollisions.length === 0) {
     return null;
@@ -69,9 +68,7 @@ export function CollisionCaption({
       <span className="collision-caption__icon" aria-hidden="true">
         ⊙
       </span>
-      <span className="collision-caption__text">
-        {captionText}
-      </span>
+      <span className="collision-caption__text">{captionText}</span>
     </div>
   );
 }
@@ -105,11 +102,7 @@ export function CollisionList({
           <span className="collision-list__moves">
             {collision.laterMove} = {collision.originalMove}
           </span>
-          {collision.reason && (
-            <span className="collision-list__reason">
-              ({collision.reason})
-            </span>
-          )}
+          {collision.reason && <span className="collision-list__reason">({collision.reason})</span>}
         </li>
       ))}
     </ul>

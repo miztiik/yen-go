@@ -152,7 +152,7 @@ export function HomePage({
     const result = loadProgress();
     if (result.success && result.data) {
       setStreakData(result.data.streakData);
-      
+
       // Check if streak will be reset on next completion
       const resetInfo = checkStreakResetStatus(result.data.streakData);
       if (resetInfo.willReset) {
@@ -262,11 +262,7 @@ export function HomePage({
     <div style={styles.container} className={className}>
       {/* Streak Display - top right */}
       <div style={styles.headerTop}>
-        <StreakDisplay
-          streakData={streakData}
-          size="small"
-          showWarning={true}
-        />
+        <StreakDisplay streakData={streakData} size="small" showWarning={true} />
       </div>
       <div style={styles.header}>
         <div style={styles.titleRow}>
@@ -313,9 +309,7 @@ export function HomePage({
           role="alert"
           aria-live="polite"
         >
-          <p style={{ margin: 0, color: '#92400E', fontWeight: 500 }}>
-            {streakResetInfo.message}
-          </p>
+          <p style={{ margin: 0, color: '#92400E', fontWeight: 500 }}>{streakResetInfo.message}</p>
           <button
             onClick={() => setStreakResetInfo(null)}
             style={{

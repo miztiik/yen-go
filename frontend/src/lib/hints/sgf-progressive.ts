@@ -47,5 +47,3 @@ export const DEFAULT_SGF_HINT_STATE: SGFHintState = {
   highlightRegion: null,
   canAdvance: true,
 };
-
-

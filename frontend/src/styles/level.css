@@ -80,7 +80,10 @@
   background-color: var(--color-bg-secondary);
   border-radius: var(--border-radius-lg);
   border: 2px solid transparent;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
   cursor: pointer;
 }
 
@@ -185,7 +188,9 @@
   border-radius: var(--border-radius);
   cursor: pointer;
   font-size: var(--font-size-sm);
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .puzzle-grid__filter:hover {
@@ -289,7 +294,10 @@
   border: 2px solid transparent;
   border-radius: var(--border-radius);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .puzzle-card:hover,

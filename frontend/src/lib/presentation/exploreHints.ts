@@ -10,11 +10,7 @@
  * - VI. Type Safety: Strict TypeScript types
  */
 
-import type {
-  Coordinate,
-  ExploreHint,
-  StoneColor,
-} from '@models/SolutionPresentation';
+import type { Coordinate, ExploreHint, StoneColor } from '@models/SolutionPresentation';
 
 /**
  * Solution tree node with children representing valid moves.
@@ -138,9 +134,7 @@ export function getExploreHints(
  * @param currentNode - Current position in solution tree
  * @returns ExploreHintsResult with moves from solution tree only
  */
-export function getExploreHintsFromTree(
-  currentNode: SolutionTreeNode | null
-): ExploreHintsResult {
+export function getExploreHintsFromTree(currentNode: SolutionTreeNode | null): ExploreHintsResult {
   if (!currentNode || currentNode.children.length === 0) {
     return createEmptyResult();
   }
@@ -193,9 +187,7 @@ export function getOptimalMove(currentNode: SolutionTreeNode | null): Coordinate
   }
 
   // Otherwise, return the first correct child
-  const correctChild = currentNode.children.find(
-    (c) => c.isCorrect !== false && c.coord
-  );
+  const correctChild = currentNode.children.find((c) => c.isCorrect !== false && c.coord);
   return correctChild?.coord ?? null;
 }
 
@@ -206,10 +198,7 @@ export function getOptimalMove(currentNode: SolutionTreeNode | null): Coordinate
  * @param currentNode - Current position in solution tree
  * @returns True if move leads to correct continuation
  */
-export function isMoveValid(
-  coord: Coordinate,
-  currentNode: SolutionTreeNode | null
-): boolean {
+export function isMoveValid(coord: Coordinate, currentNode: SolutionTreeNode | null): boolean {
   if (!currentNode) return false;
 
   const key = coordToKey(coord);

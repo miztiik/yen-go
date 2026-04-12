@@ -30,8 +30,7 @@ export function EditionPicker({
   return (
     <div class="flex flex-col gap-4 p-4">
       <div class="text-sm text-gray-500 dark:text-gray-400">
-        This collection has multiple editions from different sources.
-        Choose an edition to study:
+        This collection has multiple editions from different sources. Choose an edition to study:
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {editions.map((edition) => {
@@ -45,9 +44,7 @@ export function EditionPicker({
               onClick={() => onSelect(edition.slug)}
               aria-label={`${label} - ${edition.puzzle_count} puzzles`}
             >
-              <span class="font-medium text-gray-900 dark:text-gray-100">
-                {label}
-              </span>
+              <span class="font-medium text-gray-900 dark:text-gray-100">{label}</span>
               <span class="text-sm text-gray-500 dark:text-gray-400">
                 {edition.puzzle_count} puzzles
               </span>

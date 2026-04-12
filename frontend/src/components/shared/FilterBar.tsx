@@ -62,60 +62,61 @@ export const FilterBar: FunctionalComponent<FilterBarProps> = ({
   const groupRef = useRef<HTMLDivElement>(null);
 
   // Normalize selected to a Set for consistent lookup
-  const selectedSet = typeof selected === 'string'
-    ? new Set([selected])
-    : new Set(selected);
+  const selectedSet = typeof selected === 'string' ? new Set([selected]) : new Set(selected);
 
   // PURSIG Finding 5: Roving tabindex — ArrowLeft/Right move focus + select
-  const handleGroupKeyDown = useCallback((e: KeyboardEvent) => {
-    const enabledOpts = options.filter(o => o.count !== 0);
-    if (enabledOpts.length === 0) return;
-    const activeId = (e.target as HTMLElement)?.getAttribute?.('data-option-id') ?? '';
-    const currentIdx = enabledOpts.findIndex(o => o.id === activeId);
-    let nextIdx: number;
+  const handleGroupKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      const enabledOpts = options.filter((o) => o.count !== 0);
+      if (enabledOpts.length === 0) return;
+      const activeId = (e.target as HTMLElement)?.getAttribute?.('data-option-id') ?? '';
+      const currentIdx = enabledOpts.findIndex((o) => o.id === activeId);
+      let nextIdx: number;
 
-    switch (e.key) {
-      case 'ArrowRight':
-      case 'ArrowDown':
-        e.preventDefault();
-        nextIdx = (currentIdx + 1) % enabledOpts.length;
-        break;
-      case 'ArrowLeft':
-      case 'ArrowUp':
-        e.preventDefault();
-        nextIdx = (currentIdx - 1 + enabledOpts.length) % enabledOpts.length;
-        break;
-      case 'Home':
-        e.preventDefault();
-        nextIdx = 0;
-        break;
-      case 'End':
-        e.preventDefault();
-        nextIdx = enabledOpts.length - 1;
-        break;
-      case 'Enter':
-      case ' ': {
-        // F1: Handle Enter/Space at group level to avoid double-fire from per-button onKeyDown.
-        // Native button click handles it in real browsers; this ensures JSDOM compat.
-        e.preventDefault();
-        const target = e.target as HTMLElement;
-        const optId = target?.getAttribute?.('data-option-id');
-        if (optId) onChange(optId);
-        return;
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+          e.preventDefault();
+          nextIdx = (currentIdx + 1) % enabledOpts.length;
+          break;
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          e.preventDefault();
+          nextIdx = (currentIdx - 1 + enabledOpts.length) % enabledOpts.length;
+          break;
+        case 'Home':
+          e.preventDefault();
+          nextIdx = 0;
+          break;
+        case 'End':
+          e.preventDefault();
+          nextIdx = enabledOpts.length - 1;
+          break;
+        case 'Enter':
+        case ' ': {
+          // F1: Handle Enter/Space at group level to avoid double-fire from per-button onKeyDown.
+          // Native button click handles it in real browsers; this ensures JSDOM compat.
+          e.preventDefault();
+          const target = e.target as HTMLElement;
+          const optId = target?.getAttribute?.('data-option-id');
+          if (optId) onChange(optId);
+          return;
+        }
+        default:
+          return;
       }
-      default:
-        return;
-    }
 
-    const nextOpt = enabledOpts[nextIdx];
-    if (nextOpt) {
-      onChange(nextOpt.id);
-      const btn = groupRef.current?.querySelector(
-        `[data-option-id="${nextOpt.id}"]`,
-      ) as HTMLElement | null;
-      btn?.focus();
-    }
-  }, [options, selected, onChange]);
+      const nextOpt = enabledOpts[nextIdx];
+      if (nextOpt) {
+        onChange(nextOpt.id);
+        const btn = groupRef.current?.querySelector(
+          `[data-option-id="${nextOpt.id}"]`
+        ) as HTMLElement | null;
+        btn?.focus();
+      }
+    },
+    [options, selected, onChange]
+  );
 
   return (
     <div

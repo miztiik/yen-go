@@ -216,8 +216,7 @@ export function safeSetItem<T>(key: string, value: T): StorageResult<T> {
     // Check if it's a quota exceeded error
     if (
       error instanceof DOMException &&
-      (error.name === 'QuotaExceededError' ||
-        error.name === 'NS_ERROR_DOM_QUOTA_REACHED')
+      (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')
     ) {
       listeners.onQuotaExceeded?.(key);
       return {

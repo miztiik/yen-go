@@ -91,9 +91,7 @@ export function KeyboardShortcutsLegend({
 }: KeyboardShortcutsLegendProps): JSX.Element | null {
   if (!visible) return null;
 
-  const visibleShortcuts = compact
-    ? shortcuts.filter((s) => !s.fullOnly)
-    : shortcuts;
+  const visibleShortcuts = compact ? shortcuts.filter((s) => !s.fullOnly) : shortcuts;
 
   return (
     <div
@@ -108,9 +106,7 @@ export function KeyboardShortcutsLegend({
           <kbd style={styles.kbd} title={shortcut.description}>
             {shortcut.key}
           </kbd>
-          {!compact && (
-            <span style={styles.description}>{shortcut.description}</span>
-          )}
+          {!compact && <span style={styles.description}>{shortcut.description}</span>}
         </span>
       ))}
     </div>

@@ -114,9 +114,7 @@ export function SolutionReveal({
       {/* Step controls — styled stepper (not native range) */}
       <div className="flex items-center gap-3">
         {isComplete ? (
-          <span className="text-sm font-medium text-[var(--color-accent)]">
-            Solution complete
-          </span>
+          <span className="text-sm font-medium text-[var(--color-accent)]">Solution complete</span>
         ) : (
           <button
             type="button"

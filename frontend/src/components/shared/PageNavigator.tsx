@@ -186,12 +186,7 @@ export function PageNavigator({
             placeholder={isCollection ? '#' : '#'}
           />
         </label>
-        <button
-          type="button"
-          class="page-navigator__jump-btn"
-          onClick={handleJump}
-          aria-label="Go"
-        >
+        <button type="button" class="page-navigator__jump-btn" onClick={handleJump} aria-label="Go">
           Go
         </button>
       </div>
@@ -199,9 +194,7 @@ export function PageNavigator({
       {/* Page info */}
       <div class="page-navigator__info" aria-live="polite">
         Page {currentPage} of {totalPages}
-        {totalItems > 0 && (
-          <span> ({totalItems.toLocaleString('en-US')} puzzles)</span>
-        )}
+        {totalItems > 0 && <span> ({totalItems.toLocaleString('en-US')} puzzles)</span>}
       </div>
     </nav>
   );
@@ -219,10 +212,7 @@ export function PageNavigator({
  * computeVisiblePages(20, 20) → [1, null, 16, 17, 18, 19, 20]
  * computeVisiblePages(3, 5)   → [1, 2, 3, 4, 5]
  */
-export function computeVisiblePages(
-  currentPage: number,
-  totalPages: number
-): Array<number | null> {
+export function computeVisiblePages(currentPage: number, totalPages: number): Array<number | null> {
   if (totalPages <= MAX_VISIBLE_PAGES) {
     return Array.from({ length: totalPages }, (_, i) => i + 1);
   }

@@ -50,12 +50,9 @@ export function StatusIndicator({
   onClick,
   className,
 }: StatusIndicatorProps): JSX.Element {
-  const classes = [
-    'status-indicator',
-    status,
-    isCurrent ? 'current' : '',
-    className,
-  ].filter(Boolean).join(' ');
+  const classes = ['status-indicator', status, isCurrent ? 'current' : '', className]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <button

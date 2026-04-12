@@ -89,10 +89,10 @@ export type ReadonlyBoardState = ReadonlyBoardGrid;
  * If positions are needed for animation, compute from board diff.
  */
 export interface Move {
-  readonly x: number;          // 1-indexed column
-  readonly y: number;          // 1-indexed row
-  readonly color: Stone;       // BLACK (-1) or WHITE (1)
-  readonly captures: number;   // Count only (Besogo pattern)
+  readonly x: number; // 1-indexed column
+  readonly y: number; // 1-indexed row
+  readonly color: Stone; // BLACK (-1) or WHITE (1)
+  readonly captures: number; // Count only (Besogo pattern)
   readonly overwrite: boolean; // Was this move an overwrite?
 }
 
@@ -171,7 +171,7 @@ export function createBoardState(size: number, sideToMove: Stone = BLACK): GameB
  * Clone a board grid (shallow copy of rows).
  */
 export function cloneGrid(grid: BoardGrid): BoardGrid {
-  return grid.map(row => [...row]);
+  return grid.map((row) => [...row]);
 }
 
 /**

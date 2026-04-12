@@ -84,7 +84,8 @@ const styles: Record<string, JSX.CSSProperties> = {
   header: {
     padding: '1rem',
     borderBottom: '1px solid var(--color-bg-secondary)',
-    background: 'linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-elevated) 100%)',
+    background:
+      'linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-elevated) 100%)',
   },
   headerTop: {
     display: 'flex',
@@ -279,11 +280,7 @@ export function ChallengeDetail({
       <div style={styles.header}>
         <div style={styles.headerTop}>
           {onBack && (
-            <button
-              style={styles.backButton}
-              onClick={onBack}
-              aria-label="Back to challenge list"
-            >
+            <button style={styles.backButton} onClick={onBack} aria-label="Back to challenge list">
               <BackIcon />
             </button>
           )}

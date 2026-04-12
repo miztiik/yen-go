@@ -1,9 +1,9 @@
 /**
  * Side To Move Indicator Component
  * @module components/shared/SideToMove
- * 
+ *
  * Shows "Black to play" or "White to play" (FR-037).
- * 
+ *
  * Constitution Compliance:
  * - III. Separation of Concerns: Display only
  * - IX. Accessibility: Screen reader friendly
@@ -49,26 +49,30 @@ const SIZE_CONFIG = {
 /**
  * Stone icon as SVG
  */
-const StoneIcon: FunctionComponent<{ color: 'black' | 'white'; size: number }> = ({ 
-  color, 
-  size 
+const StoneIcon: FunctionComponent<{ color: 'black' | 'white'; size: number }> = ({
+  color,
+  size,
 }) => {
   const fill = color === 'black' ? 'var(--color-stone-black)' : 'var(--color-stone-white)';
   const stroke = color === 'black' ? 'none' : 'var(--color-neutral-300)';
 
-  return h('svg', {
-    width: size,
-    height: size,
-    viewBox: '0 0 24 24',
-    'aria-hidden': 'true',
-  }, h('circle', {
-    cx: 12,
-    cy: 12,
-    r: 10,
-    fill,
-    stroke,
-    strokeWidth: stroke ? 1 : 0,
-  }));
+  return h(
+    'svg',
+    {
+      width: size,
+      height: size,
+      viewBox: '0 0 24 24',
+      'aria-hidden': 'true',
+    },
+    h('circle', {
+      cx: 12,
+      cy: 12,
+      r: 10,
+      fill,
+      stroke,
+      strokeWidth: stroke ? 1 : 0,
+    })
+  );
 };
 
 /**
@@ -93,16 +97,20 @@ export const SideToMove: FunctionComponent<SideToMoveProps> = ({
     color: 'var(--color-text, #374151)',
   };
 
-  return h('div', {
-    className: `side-to-move ${className}`.trim(),
-    style: containerStyle,
-    role: 'status',
-    'aria-live': 'polite',
-    'aria-label': label,
-  }, [
-    showIcon && h(StoneIcon, { key: 'icon', color, size: config.stoneSize }),
-    h('span', { key: 'label' }, label),
-  ]);
+  return h(
+    'div',
+    {
+      className: `side-to-move ${className}`.trim(),
+      style: containerStyle,
+      role: 'status',
+      'aria-live': 'polite',
+      'aria-label': label,
+    },
+    [
+      showIcon && h(StoneIcon, { key: 'icon', color, size: config.stoneSize }),
+      h('span', { key: 'label' }, label),
+    ]
+  );
 };
 
 export default SideToMove;

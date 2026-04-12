@@ -3,7 +3,7 @@
  * @module models/dailyChallenge
  *
  * Covers: FR-030 to FR-041 (Daily Challenge)
- * 
+ *
  * Supports both v1 (legacy) and v2.0 (spec 035) daily formats.
  * v2.0 introduces: timed.sets[], by_tag{}, structured standard section
  */
@@ -160,7 +160,11 @@ export type AnyDailyChallenge = DailyChallenge | DailyChallengeV2;
  * Type guard to check if a challenge is v2.x format (2.0 or 2.1)
  */
 export function isDailyChallengeV2(challenge: AnyDailyChallenge): challenge is DailyChallengeV2 {
-  return (challenge.version === '2.0' || challenge.version === '2.1') && 'standard' in challenge && 'timed' in challenge;
+  return (
+    (challenge.version === '2.0' || challenge.version === '2.1') &&
+    'standard' in challenge &&
+    'timed' in challenge
+  );
 }
 
 /**

@@ -64,10 +64,19 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map([
         version: 1,
         completedPuzzles: safeObject(data.completedPuzzles, {}),
         unlockedLevels: safeArray(data.unlockedLevels, []),
-        statistics: safeObject(data.statistics, DEFAULT_STATISTICS as unknown as Record<string, unknown>),
-        streakData: safeObject(data.streakData, DEFAULT_STREAK_DATA as unknown as Record<string, unknown>),
+        statistics: safeObject(
+          data.statistics,
+          DEFAULT_STATISTICS as unknown as Record<string, unknown>
+        ),
+        streakData: safeObject(
+          data.streakData,
+          DEFAULT_STREAK_DATA as unknown as Record<string, unknown>
+        ),
         achievements: safeArray(data.achievements, []),
-        preferences: safeObject(data.preferences, DEFAULT_PREFERENCES as unknown as Record<string, unknown>),
+        preferences: safeObject(
+          data.preferences,
+          DEFAULT_PREFERENCES as unknown as Record<string, unknown>
+        ),
       }),
     },
   ],
@@ -106,9 +115,7 @@ export function getDataVersion(data: Record<string, unknown>): number {
 /**
  * Apply all necessary migrations to bring data to current version.
  */
-export function migrateProgress(
-  data: Record<string, unknown>
-): MigrationResult {
+export function migrateProgress(data: Record<string, unknown>): MigrationResult {
   const migrationsApplied: number[] = [];
   let currentData = { ...data };
   let currentVersion = getDataVersion(currentData);
@@ -132,9 +139,7 @@ export function migrateProgress(
 
       if (!migration) {
         // No migration path available - reset to defaults
-        console.warn(
-          `No migration path from version ${currentVersion}. Resetting to defaults.`
-        );
+        console.warn(`No migration path from version ${currentVersion}. Resetting to defaults.`);
         return {
           success: true,
           progress: createDefaultProgress(),
@@ -184,9 +189,7 @@ export interface ValidationResult {
 /**
  * Validate that data has all required UserProgress fields.
  */
-export function validateProgress(
-  data: Record<string, unknown>
-): ValidationResult {
+export function validateProgress(data: Record<string, unknown>): ValidationResult {
   // Check version
   if (typeof data.version !== 'number') {
     return { success: false, error: 'Missing or invalid version' };
@@ -233,9 +236,7 @@ export function validateProgress(
  * Create a safe copy of progress with all required fields.
  * Used when loading potentially incomplete data.
  */
-export function ensureComplete(
-  partial: Partial<UserProgress>
-): UserProgress {
+export function ensureComplete(partial: Partial<UserProgress>): UserProgress {
   const defaults = createDefaultProgress();
 
   return {

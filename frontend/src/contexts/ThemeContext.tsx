@@ -109,21 +109,18 @@ function saveMode(mode: ThemeMode): void {
  */
 function applyTheme(theme: ResolvedTheme): void {
   if (typeof document === 'undefined') return;
-  
+
   const root = document.documentElement;
   if (theme === 'dark') {
     root.classList.add(DARK_CLASS);
   } else {
     root.classList.remove(DARK_CLASS);
   }
-  
+
   // Update meta theme-color for mobile browsers
   const metaThemeColor = document.querySelector('meta[name="theme-color"]');
   if (metaThemeColor) {
-    metaThemeColor.setAttribute(
-      'content',
-      theme === 'dark' ? '#1a1a2e' : '#f5f0e8'
-    );
+    metaThemeColor.setAttribute('content', theme === 'dark' ? '#1a1a2e' : '#f5f0e8');
   }
 }
 
@@ -142,10 +139,7 @@ export interface ThemeProviderProps {
  * ThemeProvider component.
  * Manages theme state and applies CSS class to document root.
  */
-export function ThemeProvider({
-  initialMode,
-  children,
-}: ThemeProviderProps): JSX.Element {
+export function ThemeProvider({ initialMode, children }: ThemeProviderProps): JSX.Element {
   // Initialize from localStorage or prop
   const [mode, setModeState] = useState<ThemeMode>(() => {
     if (initialMode !== undefined) return initialMode;
@@ -167,7 +161,7 @@ export function ThemeProvider({
     if (mode !== 'system') return;
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
+
     const handleChange = (e: MediaQueryListEvent) => {
       const newTheme: ResolvedTheme = e.matches ? 'dark' : 'light';
       setTheme(newTheme);
@@ -190,7 +184,7 @@ export function ThemeProvider({
 
   // Toggle between light and dark (bypasses system)
   const toggleTheme = useCallback(() => {
-    setModeState(current => {
+    setModeState((current) => {
       const resolved = resolveTheme(current);
       return resolved === 'light' ? 'dark' : 'light';
     });
@@ -204,11 +198,7 @@ export function ThemeProvider({
     isSystem: mode === 'system',
   };
 
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 // ============================================================================

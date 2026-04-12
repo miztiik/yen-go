@@ -31,7 +31,17 @@ import { safeFetchJson } from '@/utils/safeFetchJson';
 import { expandPath } from '@/services/entryDecoder';
 import { levelSlugToId, levelIdToSlug, tagSlugToId, getTagMeta } from '@/services/configService';
 import { init as initDb } from '@/services/sqliteService';
-import { getPuzzlesByCollection, getPuzzlesByLevel, getPuzzlesByTag, getTagCounts, getCollectionCounts, getFilterCounts, getCollectionChapters, getCollectionChapterCounts, getAllCollectionChapterCounts } from '@/services/puzzleQueryService';
+import {
+  getPuzzlesByCollection,
+  getPuzzlesByLevel,
+  getPuzzlesByTag,
+  getTagCounts,
+  getCollectionCounts,
+  getFilterCounts,
+  getCollectionChapters,
+  getCollectionChapterCounts,
+  getAllCollectionChapterCounts,
+} from '@/services/puzzleQueryService';
 import { TAG_SLUGS } from '@/lib/tags/config';
 import { DEFAULT_LEVEL, FIRST_LEVEL, LAST_LEVEL } from '@/lib/levels/level-defaults';
 
@@ -121,7 +131,7 @@ function tagToCollectionId(tag: string): string {
 function collectionIdToLevel(collectionId: string): SkillLevel | null {
   if (collectionId.startsWith('level-')) {
     const level = collectionId.slice(6);
-    return SKILL_LEVELS.some(l => l.slug === level) ? level : null;
+    return SKILL_LEVELS.some((l) => l.slug === level) ? level : null;
   }
   return null;
 }
@@ -208,7 +218,7 @@ async function loadCollectionViewIndex(slug: string): Promise<CollectionViewFile
     const rows = getPuzzlesByCollection(collectionId);
     if (rows.length === 0) return null;
 
-    const entries: CollectionViewEntry[] = rows.map(row => ({
+    const entries: CollectionViewEntry[] = rows.map((row) => ({
       path: expandPath(`${row.batch}/${row.content_hash}`),
       level: levelIdToSlug(row.level_id),
       sequence_number: row.sequence_number ?? 0,
@@ -251,7 +261,7 @@ export async function getChaptersForCollection(slug: string): Promise<{
 // ============================================================================
 // ============================================================================
 
-/** 
+/**
  * Puzzle entry from views/by-level/*.json or views/by-tag/*.json
  * Spec 119: Simplified schema - id extractable from path, level from filename
  * by-level entries: {path, tags}
@@ -278,7 +288,7 @@ async function loadLevelViewIndex(level: string): Promise<ViewPuzzleEntry[] | nu
     const rows = getPuzzlesByLevel(levelId);
     if (rows.length === 0) return null;
 
-    return rows.map(row => {
+    return rows.map((row) => {
       const path = expandPath(`${row.batch}/${row.content_hash}`);
       return {
         path,
@@ -303,7 +313,7 @@ async function loadTagIndex(tag: string): Promise<ViewPuzzleEntry[] | null> {
     const rows = getPuzzlesByTag(tagId);
     if (rows.length === 0) return null;
 
-    return rows.map(row => {
+    return rows.map((row) => {
       const path = expandPath(`${row.batch}/${row.content_hash}`);
       return {
         path,
@@ -353,7 +363,7 @@ export async function loadCollectionIndex(): Promise<LoaderResult<CollectionInde
   // 1. Load level-based collections (using direct fetch instead of loadLevelIndex)
   for (const levelInfo of SKILL_LEVELS) {
     const puzzles = await loadLevelViewIndex(levelInfo.slug);
-    
+
     if (puzzles && puzzles.length > 0) {
       collections.push({
         id: levelToCollectionId(levelInfo.slug),
@@ -372,18 +382,18 @@ export async function loadCollectionIndex(): Promise<LoaderResult<CollectionInde
 
   // 2. Load tag-based collections
   const availableTags = await discoverAvailableTags();
-  
+
   for (const tag of availableTags) {
     const puzzles = await loadTagIndex(tag);
     if (puzzles && puzzles.length > 0) {
       const tagMeta = getTagMeta(tag);
       const tagInfo = { name: tagMeta?.name ?? tag, description: tagMeta?.description ?? '' };
-      
+
       // Determine level range from puzzles
-      const levels = puzzles.map(p => p.level).filter((l, i, arr) => arr.indexOf(l) === i);
+      const levels = puzzles.map((p) => p.level).filter((l, i, arr) => arr.indexOf(l) === i);
       const minLevel = levels[0] ?? FIRST_LEVEL;
       const maxLevel = levels[levels.length - 1] ?? LAST_LEVEL;
-      
+
       collections.push({
         id: tagToCollectionId(tag),
         name: tagInfo.name,
@@ -407,7 +417,7 @@ export async function loadCollectionIndex(): Promise<LoaderResult<CollectionInde
       if (viewData && viewData.entries.length > 0) {
         // Determine level range from entries
         const entryLevels = viewData.entries
-          .map(e => e.level)
+          .map((e) => e.level)
           .filter((l, i, arr) => arr.indexOf(l) === i);
         const minLevel = entryLevels[0] ?? FIRST_LEVEL;
         const maxLevel = entryLevels[entryLevels.length - 1] ?? LAST_LEVEL;
@@ -457,19 +467,19 @@ export async function loadCollection(id: string): Promise<LoaderResult<Collectio
   const level = collectionIdToLevel(id);
   if (level !== null) {
     const puzzles = await loadLevelViewIndex(level);
-    
+
     if (!puzzles || puzzles.length === 0) {
       return error('not_found', `Collection ${id} not found`);
     }
 
-    const levelInfo = SKILL_LEVELS.find(l => l.slug === level);
+    const levelInfo = SKILL_LEVELS.find((l) => l.slug === level);
     const collection: Collection = {
       id,
       name: `${levelInfo?.name ?? level} Puzzles`,
       description: levelInfo?.description ?? '',
       version: '1.0',
       generatedAt: new Date().toISOString(),
-      puzzles: puzzles.map(p => {
+      puzzles: puzzles.map((p) => {
         const entry: CollectionPuzzleEntry = {
           id: p.id ?? extractPuzzleIdFromPath(p.path),
           path: p.path,
@@ -489,7 +499,7 @@ export async function loadCollection(id: string): Promise<LoaderResult<Collectio
   const tag = collectionIdToTag(id);
   if (tag !== null) {
     const puzzles = await loadTagIndex(tag);
-    
+
     if (!puzzles || puzzles.length === 0) {
       return error('not_found', `Collection ${id} not found`);
     }
@@ -502,7 +512,7 @@ export async function loadCollection(id: string): Promise<LoaderResult<Collectio
       description: tagInfo.description,
       version: '1.0',
       generatedAt: new Date().toISOString(),
-      puzzles: puzzles.map(p => {
+      puzzles: puzzles.map((p) => {
         const entry: CollectionPuzzleEntry = {
           id: p.id ?? extractPuzzleIdFromPath(p.path),
           path: p.path,
@@ -523,7 +533,7 @@ export async function loadCollection(id: string): Promise<LoaderResult<Collectio
 
   // D23: Load config first to populate slug→ID map (H3 fix)
   const config = await loadCollectionsConfig();
-  const curatedMeta = config?.collections.find(c => c.slug === slug);
+  const curatedMeta = config?.collections.find((c) => c.slug === slug);
 
   const viewData = await loadCollectionViewIndex(slug);
 
@@ -550,7 +560,7 @@ export async function loadCollection(id: string): Promise<LoaderResult<Collectio
     description: curatedMeta?.description ?? '',
     version: viewData.version,
     generatedAt: new Date().toISOString(),
-    puzzles: viewData.entries.map(e => ({
+    puzzles: viewData.entries.map((e) => ({
       id: extractPuzzleIdFromPath(e.path),
       path: e.path,
       rank: e.level,
@@ -573,7 +583,7 @@ export async function getFilteredCollections(
   filter: CollectionFilter
 ): Promise<LoaderResult<CollectionSummary[]>> {
   const indexResult = await loadCollectionIndex();
-  
+
   if (!indexResult.success || !indexResult.data) {
     return error(
       indexResult.error ?? 'not_found',
@@ -585,32 +595,27 @@ export async function getFilteredCollections(
 
   // Filter by minimum level
   if (filter.minLevel) {
-    filtered = filtered.filter(c => 
-      compareSkillLevels(c.levelRange.min, filter.minLevel!) >= 0
-    );
+    filtered = filtered.filter((c) => compareSkillLevels(c.levelRange.min, filter.minLevel!) >= 0);
   }
 
   // Filter by maximum level
   if (filter.maxLevel) {
-    filtered = filtered.filter(c => 
-      compareSkillLevels(c.levelRange.max, filter.maxLevel!) <= 0
-    );
+    filtered = filtered.filter((c) => compareSkillLevels(c.levelRange.max, filter.maxLevel!) <= 0);
   }
 
   // Filter by tags (any match)
   if (filter.tags && filter.tags.length > 0) {
-    filtered = filtered.filter(c => 
-      c.tags.some(tag => filter.tags!.includes(tag))
-    );
+    filtered = filtered.filter((c) => c.tags.some((tag) => filter.tags!.includes(tag)));
   }
 
   // Filter by search term (name, description, and aliases)
   if (filter.searchTerm) {
     const term = filter.searchTerm.toLowerCase();
-    filtered = filtered.filter(c => 
-      c.name.toLowerCase().includes(term) ||
-      c.description.toLowerCase().includes(term) ||
-      c.aliases?.some(a => a.toLowerCase().includes(term))
+    filtered = filtered.filter(
+      (c) =>
+        c.name.toLowerCase().includes(term) ||
+        c.description.toLowerCase().includes(term) ||
+        c.aliases?.some((a) => a.toLowerCase().includes(term))
     );
   }
 
@@ -629,7 +634,7 @@ export async function getCollectionPuzzle(
   index: number
 ): Promise<LoaderResult<CollectionPuzzleEntry>> {
   const collectionResult = await loadCollection(collectionId);
-  
+
   if (!collectionResult.success || !collectionResult.data) {
     return error(
       collectionResult.error ?? 'not_found',
@@ -638,12 +643,9 @@ export async function getCollectionPuzzle(
   }
 
   const puzzles = collectionResult.data.puzzles;
-  
+
   if (index < 0 || index >= puzzles.length) {
-    return error(
-      'invalid_data',
-      `Puzzle index ${index} out of range (0-${puzzles.length - 1})`
-    );
+    return error('invalid_data', `Puzzle index ${index} out of range (0-${puzzles.length - 1})`);
   }
 
   return success(puzzles[index] as CollectionPuzzleEntry);
@@ -658,9 +660,9 @@ export async function getCollectionPuzzle(
  */
 export async function isCollectionsAvailable(): Promise<boolean> {
   const indexResult = await loadCollectionIndex();
-  return indexResult.success && 
-    indexResult.data !== undefined && 
-    indexResult.data.collections.length > 0;
+  return (
+    indexResult.success && indexResult.data !== undefined && indexResult.data.collections.length > 0
+  );
 }
 
 // ============================================================================
@@ -759,13 +761,13 @@ const PROGRESS_STORAGE_KEY = 'yen-go-progress';
 /**
  * Estimate user's skill level based on puzzle completion history.
  * New users default to elementary level (LEVEL_SLUGS[2]).
- * 
+ *
  * Algorithm:
  * - Looks at accuracy across all completed puzzles
  * - If accuracy > 70% with 20+ puzzles, suggests moving up
  * - If accuracy < 40% with 10+ puzzles, suggests moving down
  * - Defaults to elementary for new users
- * 
+ *
  * @returns Estimated skill level
  */
 export function estimateUserLevel(): SkillLevel {
@@ -797,8 +799,8 @@ export function estimateUserLevel(): SkillLevel {
 
     const accuracy = totalCorrect / totalAttempted;
     const currentLevel = progress.currentLevel ?? DEFAULT_USER_LEVEL;
-    const currentIndex = SKILL_LEVELS.findIndex(l => l.slug === currentLevel);
-    
+    const currentIndex = SKILL_LEVELS.findIndex((l) => l.slug === currentLevel);
+
     // Suggest level adjustment based on performance
     if (accuracy > 0.7 && totalAttempted >= 20 && currentIndex < SKILL_LEVELS.length - 1) {
       // Player is doing well, suggest next level
@@ -820,7 +822,7 @@ export function estimateUserLevel(): SkillLevel {
 /**
  * Get a random puzzle at the specified skill level.
  * Uses current timestamp for non-deterministic randomness.
- * 
+ *
  * @param level - Target skill level
  * @returns Random puzzle or null if none available
  */
@@ -830,16 +832,16 @@ export async function getRandomPuzzle(
   try {
     // Load all puzzles at this level
     const puzzles = await loadFilteredPuzzles(level, []);
-    
+
     if (puzzles.length === 0) {
       return null;
     }
-    
+
     // Use current time for random seed
     const seed = Date.now();
     const shuffled = seededShuffle(puzzles, seed);
     const selected = shuffled[0];
-    
+
     return selected ? { ...selected, level } : null;
   } catch (err) {
     console.error('Error getting random puzzle:', err);
@@ -863,10 +865,7 @@ export async function createPracticeSet(
   const allPuzzles = await loadFilteredPuzzles(level, tags);
 
   if (allPuzzles.length === 0) {
-    return error(
-      'not_found',
-      'No puzzles match the selected criteria'
-    );
+    return error('not_found', 'No puzzles match the selected criteria');
   }
 
   // Shuffle and select
@@ -875,9 +874,7 @@ export async function createPracticeSet(
 
   // Generate collection ID
   const collectionId = `practice-${seed}`;
-  const levelName = level 
-    ? SKILL_LEVELS.find(l => l.slug === level)?.name 
-    : 'Mixed';
+  const levelName = level ? SKILL_LEVELS.find((l) => l.slug === level)?.name : 'Mixed';
   const tagNames = tags.length > 0 ? tags.join(', ') : 'All Techniques';
 
   const collection: Collection = {
@@ -917,7 +914,7 @@ const invalidPuzzles = new Map<string, InvalidReason>(); // id -> reason
 /**
  * Validate if a puzzle is loadable.
  * Returns cached result if already validated.
- * 
+ *
  * @param puzzle - Puzzle entry to validate
  * @returns Validation result
  */
@@ -928,12 +925,12 @@ export async function validatePuzzle(
   if (validatedPuzzles.has(puzzle.id)) {
     return { id: puzzle.id, valid: true, reason: undefined };
   }
-  
+
   const cachedInvalid = invalidPuzzles.get(puzzle.id);
   if (cachedInvalid !== undefined) {
-    return { 
-      id: puzzle.id, 
-      valid: false, 
+    return {
+      id: puzzle.id,
+      valid: false,
       reason: cachedInvalid,
     };
   }
@@ -948,9 +945,9 @@ export async function validatePuzzle(
   try {
     // Use base-aware path for puzzle files
     const puzzlePath = `${APP_CONSTANTS.paths.cdnBase}/${puzzle.path}`;
-    
+
     const response = await fetch(puzzlePath, { method: 'HEAD' });
-    
+
     if (response.ok) {
       validatedPuzzles.add(puzzle.id);
       return { id: puzzle.id, valid: true, reason: undefined };
@@ -961,7 +958,7 @@ export async function validatePuzzle(
       invalidPuzzles.set(puzzle.id, 'deprecated');
       return { id: puzzle.id, valid: false, reason: 'deprecated' };
     }
-    
+
     invalidPuzzles.set(puzzle.id, 'load_error');
     return { id: puzzle.id, valid: false, reason: 'load_error' };
   } catch {
@@ -973,28 +970,24 @@ export async function validatePuzzle(
 /**
  * Filter collection puzzles to only include valid (loadable) puzzles.
  * Adjusts count accordingly. Use for collections with known missing puzzles.
- * 
+ *
  * @param puzzles - Array of puzzle entries
  * @returns Filtered array with only valid puzzles
  */
 export async function filterValidPuzzles(
   puzzles: readonly CollectionPuzzleEntry[]
 ): Promise<CollectionPuzzleEntry[]> {
-  const results = await Promise.all(
-    puzzles.map(p => validatePuzzle(p))
-  );
-  
-  const validIds = new Set(
-    results.filter(r => r.valid).map(r => r.id)
-  );
-  
-  return puzzles.filter(p => validIds.has(p.id));
+  const results = await Promise.all(puzzles.map((p) => validatePuzzle(p)));
+
+  const validIds = new Set(results.filter((r) => r.valid).map((r) => r.id));
+
+  return puzzles.filter((p) => validIds.has(p.id));
 }
 
 /**
  * Get next valid puzzle in collection, skipping invalid ones.
  * Returns null if no more valid puzzles exist.
- * 
+ *
  * @param collectionId - Collection to get puzzle from
  * @param startIndex - Current index (will return next valid after this)
  * @returns Next valid puzzle entry with its index, or null
@@ -1004,13 +997,13 @@ export async function getNextValidPuzzle(
   startIndex: number
 ): Promise<{ puzzle: CollectionPuzzleEntry; index: number } | null> {
   const collectionResult = await loadCollection(collectionId);
-  
+
   if (!collectionResult.success || !collectionResult.data) {
     return null;
   }
 
   const puzzles = collectionResult.data.puzzles;
-  
+
   for (let i = startIndex + 1; i < puzzles.length; i++) {
     const puzzle = puzzles[i];
     if (puzzle) {
@@ -1020,7 +1013,7 @@ export async function getNextValidPuzzle(
       }
     }
   }
-  
+
   return null;
 }
 
@@ -1060,7 +1053,7 @@ let collectionMasterCache: CollectionMasterIndexV2 | null = null;
 export function getCollectionTypeBySlug(slug: string): CollectionType | undefined {
   const config = collectionCache.curatedConfig;
   if (!config) return undefined;
-  const entry = config.collections.find(c => c.slug === slug);
+  const entry = config.collections.find((c) => c.slug === slug);
   return entry?.type as CollectionType | undefined;
 }
 
@@ -1116,10 +1109,15 @@ export async function loadCollectionMasterIndex(): Promise<CollectionMasterIndex
     }
 
     collectionMasterCache = { collections };
-    console.info(`[CollectionService] Built collection master index from database with ${collections.length} collections`);
+    console.info(
+      `[CollectionService] Built collection master index from database with ${collections.length} collections`
+    );
     return collectionMasterCache;
   } catch (error) {
-    console.warn('[CollectionService] Failed to build collection master index:', error instanceof Error ? error.message : 'unknown');
+    console.warn(
+      '[CollectionService] Failed to build collection master index:',
+      error instanceof Error ? error.message : 'unknown'
+    );
     return null;
   }
 }
@@ -1146,7 +1144,9 @@ let collectionIdsFromConfig = false;
 function collectionSlugToId(slug: string): number | undefined {
   const id = collectionSlugToIdMap.get(slug);
   if (id === undefined) {
-    console.warn(`[CollectionService] collectionSlugToId: no numeric ID for '${slug}'. Ensure ensureCollectionIdsLoaded() was called.`);
+    console.warn(
+      `[CollectionService] collectionSlugToId: no numeric ID for '${slug}'. Ensure ensureCollectionIdsLoaded() was called.`
+    );
   }
   return id;
 }
@@ -1208,7 +1208,9 @@ export async function loadCollectionCatalog(): Promise<LoaderResult<CollectionCa
 
   try {
     // config/collections.json is served from project root /config/, not from CDN base
-    const configData = await safeFetchJson<CollectionsConfigFile>(`${APP_CONSTANTS.paths.configBase}/collections.json`).catch(() => null);
+    const configData = await safeFetchJson<CollectionsConfigFile>(
+      `${APP_CONSTANTS.paths.configBase}/collections.json`
+    ).catch(() => null);
 
     if (!configData?.collections || !Array.isArray(configData.collections)) {
       return error('not_found', 'Could not load collections config');
@@ -1250,7 +1252,7 @@ export async function loadCollectionCatalog(): Promise<LoaderResult<CollectionCa
         for (const c of configData.collections) {
           if (typeof c.id === 'number' && (chapterCountMap.get(c.id) ?? 0) > 0) {
             const chapters = getCollectionChapters(c.id);
-            const hasNamed = chapters.some(ch => !/^\d+$/.test(ch));
+            const hasNamed = chapters.some((ch) => !/^\d+$/.test(ch));
             namedChapterMap.set(c.id, hasNamed);
           }
         }
@@ -1259,7 +1261,9 @@ export async function loadCollectionCatalog(): Promise<LoaderResult<CollectionCa
       }
     } catch {
       // Database not available — all collections show as "Coming Soon"
-      console.warn('[CollectionService] Database unavailable, all collections will show as Coming Soon');
+      console.warn(
+        '[CollectionService] Database unavailable, all collections will show as Coming Soon'
+      );
     }
 
     // Enrich each config entry with availability data
@@ -1308,14 +1312,9 @@ export async function loadCollectionCatalog(): Promise<LoaderResult<CollectionCa
  * Selects editorial-tier collections with published data, randomized with type variety.
  * Returns up to `count` collections, ensuring at least 1 graded, 1 technique, 1 author if available.
  */
-export function getFeaturedCollections(
-  catalog: CollectionCatalog,
-  count = 6,
-): CuratedCollection[] {
+export function getFeaturedCollections(catalog: CollectionCatalog, count = 6): CuratedCollection[] {
   // Pool: editorial tier with data
-  const pool = catalog.collections.filter(
-    (c) => c.tier === 'editorial' && c.hasData,
-  );
+  const pool = catalog.collections.filter((c) => c.tier === 'editorial' && c.hasData);
 
   if (pool.length <= count) return [...pool];
 
@@ -1365,7 +1364,7 @@ export function getFeaturedCollections(
  */
 export function searchCollectionCatalog(
   catalog: CollectionCatalog,
-  term: string,
+  term: string
 ): CuratedCollection[] {
   if (!term.trim()) return [...catalog.collections];
 
@@ -1375,7 +1374,7 @@ export function searchCollectionCatalog(
       c.name.toLowerCase().includes(lower) ||
       c.description.toLowerCase().includes(lower) ||
       c.curator.toLowerCase().includes(lower) ||
-      c.aliases.some((a) => a.toLowerCase().includes(lower)),
+      c.aliases.some((a) => a.toLowerCase().includes(lower))
   );
 }
 

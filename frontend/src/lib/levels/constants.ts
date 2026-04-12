@@ -61,5 +61,3 @@ export function getAllLevelIds(): LevelId[] {
 export function isValidLevelId(id: number): id is LevelId {
   return id >= 1 && id <= 9 && Number.isInteger(id);
 }
-
-

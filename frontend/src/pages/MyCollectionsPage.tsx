@@ -181,7 +181,7 @@ export function MyCollectionsPage({
         // Load all progress
         const progressResult = getAllCollectionProgress();
         const progressMap = new Map<string, ProgressSummaryType>();
-        
+
         if (progressResult.success && progressResult.data) {
           for (const p of progressResult.data) {
             progressMap.set(p.collectionId, p);
@@ -195,26 +195,26 @@ export function MyCollectionsPage({
             const completedCount = existingProgress?.completedCount ?? 0;
             const totalPuzzles = collection.puzzleCount;
             const status = getStatus(completedCount, totalPuzzles);
-            const percentComplete = totalPuzzles > 0 
-              ? Math.round((completedCount / totalPuzzles) * 100) 
-              : 0;
+            const percentComplete =
+              totalPuzzles > 0 ? Math.round((completedCount / totalPuzzles) * 100) : 0;
 
-            const progress: ProgressSummaryType = existingProgress?.lastActivity !== undefined
-              ? {
-                  collectionId: collection.id,
-                  status,
-                  completedCount,
-                  totalPuzzles,
-                  percentComplete,
-                  lastActivity: existingProgress.lastActivity,
-                }
-              : {
-                  collectionId: collection.id,
-                  status,
-                  completedCount,
-                  totalPuzzles,
-                  percentComplete,
-                };
+            const progress: ProgressSummaryType =
+              existingProgress?.lastActivity !== undefined
+                ? {
+                    collectionId: collection.id,
+                    status,
+                    completedCount,
+                    totalPuzzles,
+                    percentComplete,
+                    lastActivity: existingProgress.lastActivity,
+                  }
+                : {
+                    collectionId: collection.id,
+                    status,
+                    completedCount,
+                    totalPuzzles,
+                    percentComplete,
+                  };
 
             return { collection, progress };
           }
@@ -298,12 +298,7 @@ export function MyCollectionsPage({
       <div style={styles.container} class={className}>
         <div style={styles.header}>
           {onBack && (
-            <button
-              type="button"
-              style={styles.backButton}
-              onClick={onBack}
-              aria-label="Go back"
-            >
+            <button type="button" style={styles.backButton} onClick={onBack} aria-label="Go back">
               <ChevronLeftIcon size={18} />
             </button>
           )}
@@ -314,21 +309,15 @@ export function MyCollectionsPage({
     );
   }
 
-  const overallPercent = stats.totalPuzzles > 0
-    ? Math.round((stats.completedPuzzles / stats.totalPuzzles) * 100)
-    : 0;
+  const overallPercent =
+    stats.totalPuzzles > 0 ? Math.round((stats.completedPuzzles / stats.totalPuzzles) * 100) : 0;
 
   return (
     <div style={styles.container} class={`my-collections-page ${className}`}>
       {/* Header */}
       <div style={styles.header}>
         {onBack && (
-          <button
-            type="button"
-            style={styles.backButton}
-            onClick={onBack}
-            aria-label="Go back"
-          >
+          <button type="button" style={styles.backButton} onClick={onBack} aria-label="Go back">
             <ChevronLeftIcon size={18} />
           </button>
         )}

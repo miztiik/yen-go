@@ -180,9 +180,7 @@ export interface StorageRecoveryResult extends StorageResult<UserProgress> {
  * @param getRaw - Function to get raw data from storage
  * @returns Storage recovery result
  */
-export function loadAndRecoverProgress(
-  getRaw: () => string | null
-): StorageRecoveryResult {
+export function loadAndRecoverProgress(getRaw: () => string | null): StorageRecoveryResult {
   try {
     const rawData = getRaw();
     const recoveryResult = recoverProgress(rawData);
@@ -193,11 +191,11 @@ export function loadAndRecoverProgress(
       action: recoveryResult.action,
       warnings: recoveryResult.warnings,
     };
-    
+
     if (!recoveryResult.success) {
       return { ...result, error: recoveryResult.message };
     }
-    
+
     return result;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -319,7 +317,7 @@ export function repairDataIntegrity(progress: UserProgress): UserProgress {
   }
 
   // Fix puzzle ID mismatches
-  const fixedCompletions: Record<string, typeof progress.completedPuzzles[string]> = {};
+  const fixedCompletions: Record<string, (typeof progress.completedPuzzles)[string]> = {};
   for (const [id, completion] of Object.entries(progress.completedPuzzles)) {
     fixedCompletions[id] = {
       ...completion,

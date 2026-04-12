@@ -1,7 +1,7 @@
 /**
  * Go Rules Engine - Enforces captures, ko, and legality
  * @module services/rulesEngine
- * 
+ *
  * Constitution Compliance:
  * - V. No Browser AI: Pure validation only, no move generation
  * - III. Separation of Concerns: Rules only, no UI or persistence

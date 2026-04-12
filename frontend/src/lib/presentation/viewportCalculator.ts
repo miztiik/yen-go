@@ -10,11 +10,7 @@
  * - II. Deterministic Builds: Same input → same output
  */
 
-import type {
-  Coordinate,
-  BoardViewport,
-  ViewportOptions,
-} from '@models/SolutionPresentation';
+import type { Coordinate, BoardViewport, ViewportOptions } from '@models/SolutionPresentation';
 
 /** Internal normalized options */
 interface NormalizedOptions {
@@ -27,7 +23,9 @@ interface NormalizedOptions {
 function normalizeOptions(options: ViewportOptions): NormalizedOptions {
   return {
     padding: options.padding ?? options.margin ?? 2,
-    snapToEdge: options.snapToEdge ?? (options.edgeSnapDistance !== undefined ? options.edgeSnapDistance > 0 : true),
+    snapToEdge:
+      options.snapToEdge ??
+      (options.edgeSnapDistance !== undefined ? options.edgeSnapDistance > 0 : true),
     minSize: options.minSize ?? 7,
   };
 }
@@ -245,10 +243,7 @@ export function isInViewport(coord: Coordinate, viewport: BoardViewport): boolea
  * @param viewport - Current viewport
  * @returns Transformed coordinate relative to viewport origin
  */
-export function transformToViewport(
-  coord: Coordinate,
-  viewport: BoardViewport
-): Coordinate {
+export function transformToViewport(coord: Coordinate, viewport: BoardViewport): Coordinate {
   return {
     x: coord.x - viewport.minX,
     y: coord.y - viewport.minY,
@@ -262,10 +257,7 @@ export function transformToViewport(
  * @param viewport - Current viewport
  * @returns Board coordinate
  */
-export function transformFromViewport(
-  coord: Coordinate,
-  viewport: BoardViewport
-): Coordinate {
+export function transformFromViewport(coord: Coordinate, viewport: BoardViewport): Coordinate {
   return {
     x: coord.x + viewport.minX,
     y: coord.y + viewport.minY,

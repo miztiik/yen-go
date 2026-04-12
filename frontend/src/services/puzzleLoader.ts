@@ -26,11 +26,7 @@ const CDN_BASE_PATH = APP_CONSTANTS.paths.cdnBase;
 // ============================================================================
 
 /** Error types for loader operations */
-export type LoaderError =
-  | 'network_error'
-  | 'not_found'
-  | 'parse_error'
-  | 'invalid_data';
+export type LoaderError = 'network_error' | 'not_found' | 'parse_error' | 'invalid_data';
 
 /** Result wrapper for all loader operations */
 export interface LoaderResult<T> {
@@ -181,7 +177,13 @@ function convertParsedSGFToInternal(
   }
 
   // Parse tags from YT (comma-separated)
-  const tags = yt !== '' ? yt.split(',').map(t => t.trim()).filter(t => t !== '') : [];
+  const tags =
+    yt !== ''
+      ? yt
+          .split(',')
+          .map((t) => t.trim())
+          .filter((t) => t !== '')
+      : [];
 
   // Extract hints using consolidated hint parser
   const hints = extractHints(props as Record<string, unknown>);

@@ -61,14 +61,14 @@ export function Notification({
       aria-live="polite"
       style={{ '--tier-color': tierColor } as JSX.CSSProperties}
     >
-      <div className="achievement-notification__icon">
-        {achievement.icon}
-      </div>
+      <div className="achievement-notification__icon">{achievement.icon}</div>
 
       <div className="achievement-notification__content">
         <div className="achievement-notification__header">
           <span className="achievement-notification__label">Achievement Unlocked!</span>
-          <span className={`achievement-notification__tier achievement-notification__tier--${achievement.tier}`}>
+          <span
+            className={`achievement-notification__tier achievement-notification__tier--${achievement.tier}`}
+          >
             {achievement.tier}
           </span>
         </div>

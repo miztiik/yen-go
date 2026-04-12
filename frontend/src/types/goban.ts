@@ -17,9 +17,9 @@ export interface YenGoMetadata {
   /** Progressive hints from YH property (pipe-delimited in SGF, parsed to array, max 3) */
   readonly hints: readonly string[];
   /** Ko context from YK property */
-  readonly koContext: "none" | "direct" | "approach";
+  readonly koContext: 'none' | 'direct' | 'approach';
   /** Move order flexibility from YO property */
-  readonly moveOrder: "strict" | "flexible";
+  readonly moveOrder: 'strict' | 'flexible';
   /** Collection membership from YL property (comma-separated slugs, schema v10) */
   readonly collections: readonly string[];
   /** Structured collection memberships with chapter/position from YL property */
@@ -58,12 +58,12 @@ export interface PreprocessedPuzzle {
 
 /** Puzzle solve status tracked in progress */
 export type PuzzleSolveState =
-  | "unsolved"
-  | "solving"
-  | "solved"
-  | "solved-with-hints"
-  | "failed"
-  | "review";
+  | 'unsolved'
+  | 'solving'
+  | 'solved'
+  | 'solved-with-hints'
+  | 'failed'
+  | 'review';
 
 /** Puzzle Rush session duration in seconds (60–1800, i.e., 1–30 min). */
 export type RushDuration = number;
@@ -116,9 +116,7 @@ export interface YenGoPuzzleConfig {
 }
 
 /** Renderer preference stored in localStorage */
-export type RendererPreference = "auto" | "svg" | "canvas";
+export type RendererPreference = 'auto' | 'svg' | 'canvas';
 
 /** localStorage key for renderer preference */
-export const RENDERER_PREFERENCE_KEY = "yengo-renderer-preference" as const;
-
-
+export const RENDERER_PREFERENCE_KEY = 'yengo-renderer-preference' as const;

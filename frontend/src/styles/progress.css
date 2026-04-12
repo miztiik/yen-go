@@ -198,7 +198,9 @@
   border-radius: 0.25rem;
   cursor: pointer;
   font-size: 0.875rem;
-  transition: background 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
 }
 
 .level-link:hover {
@@ -397,8 +399,12 @@
 }
 
 .achievement-card.unlocked {
-  border-color: var(--tier-color, #FFD700);
-  background: linear-gradient(135deg, var(--color-surface, #f3f4f6) 0%, rgba(var(--tier-color-rgb, 255, 215, 0), 0.1) 100%);
+  border-color: var(--tier-color, #ffd700);
+  background: linear-gradient(
+    135deg,
+    var(--color-surface, #f3f4f6) 0%,
+    rgba(var(--tier-color-rgb, 255, 215, 0), 0.1) 100%
+  );
 }
 
 .achievement-card.locked {
@@ -419,7 +425,7 @@
 }
 
 .achievement-card.unlocked .achievement-icon {
-  border-color: var(--tier-color, #FFD700);
+  border-color: var(--tier-color, #ffd700);
   box-shadow: 0 0 8px rgba(var(--tier-color-rgb, 255, 215, 0), 0.3);
 }
 
@@ -528,11 +534,13 @@
   gap: 0.75rem;
   padding: 1rem;
   background: white;
-  border: 2px solid var(--tier-color, #FFD700);
+  border: 2px solid var(--tier-color, #ffd700);
   border-radius: 0.5rem;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   pointer-events: auto;
-  animation: slideInRight 0.3s ease-out, fadeIn 0.3s ease-out;
+  animation:
+    slideInRight 0.3s ease-out,
+    fadeIn 0.3s ease-out;
 }
 
 @keyframes slideInRight {

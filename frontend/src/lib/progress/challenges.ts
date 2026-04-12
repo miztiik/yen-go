@@ -105,10 +105,7 @@ export function isToday(dateStr: string): boolean {
  * @param date - Challenge date (YYYY-MM-DD)
  * @returns True if challenge is accessible
  */
-export function isChallengeUnlocked(
-  _progress: UserProgress,
-  date: string
-): boolean {
+export function isChallengeUnlocked(_progress: UserProgress, date: string): boolean {
   // Future dates are locked
   if (isFutureDate(date)) {
     return false;
@@ -172,10 +169,7 @@ export function getChallengeUnlockStatus(
  * @param date - Challenge date to unlock
  * @returns Updated user progress
  */
-export function unlockChallenge(
-  progress: UserProgress,
-  date: string
-): UserProgress {
+export function unlockChallenge(progress: UserProgress, date: string): UserProgress {
   // Already unlocked check
   if (progress.unlockedLevels.includes(date)) {
     return progress;
@@ -204,10 +198,7 @@ export function getUnlockedChallenges(progress: UserProgress): readonly string[]
  * @param totalPuzzles - Total puzzles in challenge
  * @returns Progress percentage (0-100)
  */
-export function calculateChallengeProgress(
-  completedCount: number,
-  totalPuzzles: number
-): number {
+export function calculateChallengeProgress(completedCount: number, totalPuzzles: number): number {
   if (totalPuzzles === 0) return 0;
   return Math.round((completedCount / totalPuzzles) * 100);
 }
@@ -256,9 +247,7 @@ export function getStartedChallengeDates(progress: UserProgress): readonly strin
  * @param progress - User progress
  * @returns Most recent date or null if no completions
  */
-export function getMostRecentChallengeDate(
-  progress: UserProgress
-): string | null {
+export function getMostRecentChallengeDate(progress: UserProgress): string | null {
   const dates = getStartedChallengeDates(progress);
   return dates[0] ?? null;
 }

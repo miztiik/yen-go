@@ -50,14 +50,20 @@ export const TechniqueCard: FunctionalComponent<TechniqueCardProps> = ({
   stats,
   onSelect,
 }) => {
-  const accuracy = stats && stats.attempted > 0
-    ? Math.round((stats.correct / stats.attempted) * 100)
-    : 0;
+  const accuracy =
+    stats && stats.attempted > 0 ? Math.round((stats.correct / stats.attempted) * 100) : 0;
 
   // Use accuracy-based mastery from shared lib
-  const masteryLevel = getMasteryFromAccuracy(accuracy, stats?.attempted ?? 0, technique.puzzleCount);
+  const masteryLevel = getMasteryFromAccuracy(
+    accuracy,
+    stats?.attempted ?? 0,
+    technique.puzzleCount
+  );
   const masteryStyle = getMasteryStyle(masteryLevel);
-  const category = CATEGORY_CONFIG[technique.category] ?? { icon: <TesujiIcon size={24} />, label: 'Tesuji' };
+  const category = CATEGORY_CONFIG[technique.category] ?? {
+    icon: <TesujiIcon size={24} />,
+    label: 'Tesuji',
+  };
   const iconCircleClass = getIconCircleClass(masteryLevel);
   const isEmpty = technique.puzzleCount === 0;
 
@@ -104,9 +110,7 @@ export const TechniqueCard: FunctionalComponent<TechniqueCardProps> = ({
       <div className="mt-auto pt-4">
         {/* Puzzle count badge — same visual as HomeTile tags */}
         <div className="flex items-center gap-3">
-          <span
-            className="inline-flex items-center rounded-lg bg-[var(--color-bg-secondary)] px-3 py-1.5 text-xs font-bold text-[var(--color-text-secondary)]"
-          >
+          <span className="inline-flex items-center rounded-lg bg-[var(--color-bg-secondary)] px-3 py-1.5 text-xs font-bold text-[var(--color-text-secondary)]">
             {technique.puzzleCount} {technique.puzzleCount === 1 ? 'puzzle' : 'puzzles'}
           </span>
 

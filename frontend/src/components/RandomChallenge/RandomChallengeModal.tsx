@@ -39,23 +39,17 @@ export const RandomChallengeModal: FunctionalComponent<RandomChallengeModalProps
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Random Challenge"
-      size="md"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Random Challenge" size="md">
       <div className="flex flex-col gap-6">
         {/* Estimated level display */}
         <div className="rounded-xl bg-gradient-to-br from-[--color-mode-random-border] to-[--color-mode-random-text] p-6 text-center text-[--color-bg-panel]">
-          <div className="mb-1 text-sm opacity-90">
-            Your Estimated Level
-          </div>
+          <div className="mb-1 text-sm opacity-90">Your Estimated Level</div>
           <div className="text-2xl font-bold">
             {getSkillLevelInfo(estimatedLevel)?.name ?? estimatedLevel}
           </div>
           <div className="mt-1 text-xs opacity-80">
-            {getSkillLevelInfo(estimatedLevel)?.rankRange.min} - {getSkillLevelInfo(estimatedLevel)?.rankRange.max}
+            {getSkillLevelInfo(estimatedLevel)?.rankRange.min} -{' '}
+            {getSkillLevelInfo(estimatedLevel)?.rankRange.max}
           </div>
         </div>
 
@@ -67,12 +61,12 @@ export const RandomChallengeModal: FunctionalComponent<RandomChallengeModalProps
           <p className="mb-3 mt-0 text-xs text-[--color-text-secondary]">
             Start at your estimated level or choose a different difficulty
           </p>
-          
+
           <div className="grid grid-cols-3 gap-2">
             {SKILL_LEVELS.map((level) => {
               const isSelected = selectedLevel === level.slug;
               const isEstimated = estimatedLevel === level.slug;
-              
+
               return (
                 <button
                   key={level.slug}
@@ -84,7 +78,9 @@ export const RandomChallengeModal: FunctionalComponent<RandomChallengeModalProps
                       : 'border border-[--color-border] bg-[--color-bg-panel]'
                   }`}
                 >
-                  <div className={`text-sm ${isSelected ? 'font-semibold text-[--color-mode-random-text]' : 'text-[--color-text-primary]'}`}>
+                  <div
+                    className={`text-sm ${isSelected ? 'font-semibold text-[--color-mode-random-text]' : 'text-[--color-text-primary]'}`}
+                  >
                     {level.shortName}
                   </div>
                   <div className="mt-0.5 text-[0.625rem] text-[--color-text-muted]">
@@ -105,9 +101,7 @@ export const RandomChallengeModal: FunctionalComponent<RandomChallengeModalProps
             <div className="mb-1 font-semibold text-[--color-text-primary]">
               {levelInfo.name} ({levelInfo.rankRange.min} - {levelInfo.rankRange.max})
             </div>
-            <div className="text-[--color-text-secondary]">
-              {levelInfo.description}
-            </div>
+            <div className="text-[--color-text-secondary]">{levelInfo.description}</div>
           </div>
         )}
 

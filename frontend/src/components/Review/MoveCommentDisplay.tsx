@@ -103,9 +103,7 @@ function CommentItem({
           {icon}
         </span>
         {showMoveNumber && comment.moveNumber !== undefined && (
-          <span className="move-comment__move-number">
-            Move {comment.moveNumber}
-          </span>
+          <span className="move-comment__move-number">Move {comment.moveNumber}</span>
         )}
       </div>
       <div className="move-comment__body">

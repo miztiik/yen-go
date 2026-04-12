@@ -8,7 +8,16 @@ export interface LearningSection {
   readonly lessons: readonly LearningLesson[];
 }
 
-export type TopicIcon = 'seedling' | 'grid' | 'lightning' | 'trendUp' | 'star' | 'tesuji' | 'techniqueKey' | 'compass' | 'hint';
+export type TopicIcon =
+  | 'seedling'
+  | 'grid'
+  | 'lightning'
+  | 'trendUp'
+  | 'star'
+  | 'tesuji'
+  | 'techniqueKey'
+  | 'compass'
+  | 'hint';
 
 export type LearningTier = 'foundations' | 'building-strength' | 'advancing';
 
@@ -39,7 +48,8 @@ export const LEARNING_TOPICS: readonly LearningTopic[] = [
   {
     slug: 'beginner-fundamentals',
     title: 'Beginner Fundamentals',
-    description: 'Learn capturing, escaping, ko rule, eyes, and basic scoring \u2014 the essential building blocks of Go.',
+    description:
+      'Learn capturing, escaping, ko rule, eyes, and basic scoring \u2014 the essential building blocks of Go.',
     icon: 'seedling',
     status: 'active',
     tier: 'foundations',
@@ -125,7 +135,8 @@ export const LEARNING_TOPICS: readonly LearningTopic[] = [
   {
     slug: 'strategy-territory',
     title: 'Strategy & Territory',
-    description: 'Master territory control, endgame timing, and powerful tesuji for the middle game.',
+    description:
+      'Master territory control, endgame timing, and powerful tesuji for the middle game.',
     icon: 'grid',
     status: 'active',
     tier: 'foundations',
@@ -134,8 +145,8 @@ export const LEARNING_TOPICS: readonly LearningTopic[] = [
       {
         title: 'Part 6: Territory & Corner Control',
         lessons: [
-          { title: 'Reducing opponent\'s territory', url: 'https://online-go.com/puzzle/52433' },
-          { title: 'Enlarging one\'s own territory', url: 'https://online-go.com/puzzle/52446' },
+          { title: "Reducing opponent's territory", url: 'https://online-go.com/puzzle/52433' },
+          { title: "Enlarging one's own territory", url: 'https://online-go.com/puzzle/52446' },
           { title: 'Dame (neutral points)', url: 'https://online-go.com/puzzle/52562' },
           { title: 'Yose 1', url: 'https://online-go.com/puzzle/52575' },
           { title: 'Quiz 11', url: 'https://online-go.com/puzzle/52588' },
@@ -152,7 +163,10 @@ export const LEARNING_TOPICS: readonly LearningTopic[] = [
           { title: 'Extend on the side', url: 'https://online-go.com/puzzle/52796' },
           { title: 'Double extension', url: 'https://online-go.com/puzzle/52810' },
           { title: 'Connect the edge', url: 'https://online-go.com/puzzle/52837' },
-          { title: 'Cooperation of third and fourth line', url: 'https://online-go.com/puzzle/52857' },
+          {
+            title: 'Cooperation of third and fourth line',
+            url: 'https://online-go.com/puzzle/52857',
+          },
           { title: 'Quiz 13', url: 'https://online-go.com/puzzle/52872' },
           { title: 'Escape after atari', url: 'https://online-go.com/puzzle/48601' },
           { title: 'Ladder after atari', url: 'https://online-go.com/puzzle/48699' },
@@ -165,7 +179,10 @@ export const LEARNING_TOPICS: readonly LearningTopic[] = [
         title: 'Part 8: Advanced Tesuji Techniques',
         lessons: [
           { title: 'Oshi-Tsubushi (bloated bullock)', url: 'https://online-go.com/puzzle/52086' },
-          { title: 'Golden Chicken Standing on One Leg', url: 'https://online-go.com/puzzle/52099' },
+          {
+            title: 'Golden Chicken Standing on One Leg',
+            url: 'https://online-go.com/puzzle/52099',
+          },
           { title: 'Capture two, recapture one', url: 'https://online-go.com/puzzle/52112' },
           { title: 'Live after atari', url: 'https://online-go.com/puzzle/52125' },
           { title: 'Quiz 15', url: 'https://online-go.com/puzzle/52138' },
@@ -181,7 +198,8 @@ export const LEARNING_TOPICS: readonly LearningTopic[] = [
   {
     slug: 'capturing-races',
     title: 'Capturing Races & Reading',
-    description: 'Sharpen your reading with capturing races, key stones, and middle-game fundamentals.',
+    description:
+      'Sharpen your reading with capturing races, key stones, and middle-game fundamentals.',
     icon: 'lightning',
     status: 'active',
     tier: 'foundations',
@@ -210,7 +228,7 @@ export const LEARNING_TOPICS: readonly LearningTopic[] = [
           { title: 'Splitting move', url: 'https://online-go.com/puzzle/53156' },
           { title: 'Block', url: 'https://online-go.com/puzzle/53185' },
           { title: 'Quiz 19', url: 'https://online-go.com/puzzle/53211' },
-          { title: 'Crane\'s Nest Tesuji', url: 'https://online-go.com/puzzle/53449' },
+          { title: "Crane's Nest Tesuji", url: 'https://online-go.com/puzzle/53449' },
           { title: 'Two-stone edge squeeze', url: 'https://online-go.com/puzzle/53462' },
           { title: 'Life and Death training 5', url: 'https://online-go.com/puzzle/53477' },
           { title: 'Life and Death training 6', url: 'https://online-go.com/puzzle/53495' },
@@ -222,7 +240,8 @@ export const LEARNING_TOPICS: readonly LearningTopic[] = [
   {
     slug: 'kyu-to-dan',
     title: 'From Kyu to Dan',
-    description: 'Step up from kyu to dan with advanced techniques, cutting methods, and group shapes.',
+    description:
+      'Step up from kyu to dan with advanced techniques, cutting methods, and group shapes.',
     icon: 'trendUp',
     status: 'active',
     tier: 'building-strength',
@@ -308,7 +327,8 @@ export const LEARNING_TOPICS: readonly LearningTopic[] = [
   {
     slug: 'life-and-death',
     title: 'Life & Death Encyclopedia',
-    description: 'A comprehensive reference for corner, edge, and real-game life and death patterns.',
+    description:
+      'A comprehensive reference for corner, edge, and real-game life and death patterns.',
     icon: 'star',
     status: 'active',
     tier: 'building-strength',
@@ -323,8 +343,8 @@ export const LEARNING_TOPICS: readonly LearningTopic[] = [
           { title: 'Rectangular Eight 1', url: 'https://online-go.com/puzzle/56929' },
           { title: 'Rectangular Eight 2', url: 'https://online-go.com/puzzle/56986' },
           { title: 'Rectangular Eight 3', url: 'https://online-go.com/puzzle/56999' },
-          { title: 'Carpenter\'s Square', url: 'https://online-go.com/puzzle/57085' },
-          { title: 'Carpenter\'s Square 2', url: 'https://online-go.com/puzzle/57151' },
+          { title: "Carpenter's Square", url: 'https://online-go.com/puzzle/57085' },
+          { title: "Carpenter's Square 2", url: 'https://online-go.com/puzzle/57151' },
         ],
       },
       {
@@ -368,11 +388,20 @@ export const LEARNING_TOPICS: readonly LearningTopic[] = [
       {
         title: 'Advanced Questions',
         lessons: [
-          { title: 'Hondojo\'s secret question bank (2d-4d)', url: 'https://online-go.com/puzzle/47738' },
-          { title: 'Hondojo\'s secret question bank (4d-5d)', url: 'https://online-go.com/puzzle/48513' },
-          { title: 'Hondojo\'s secret question bank (>5d)', url: 'https://online-go.com/puzzle/48536' },
-          { title: 'Satan\'s move 1', url: 'https://online-go.com/puzzle/59960' },
-          { title: 'Satan\'s move 2', url: 'https://online-go.com/puzzle/60184' },
+          {
+            title: "Hondojo's secret question bank (2d-4d)",
+            url: 'https://online-go.com/puzzle/47738',
+          },
+          {
+            title: "Hondojo's secret question bank (4d-5d)",
+            url: 'https://online-go.com/puzzle/48513',
+          },
+          {
+            title: "Hondojo's secret question bank (>5d)",
+            url: 'https://online-go.com/puzzle/48536',
+          },
+          { title: "Satan's move 1", url: 'https://online-go.com/puzzle/59960' },
+          { title: "Satan's move 2", url: 'https://online-go.com/puzzle/60184' },
         ],
       },
     ],
@@ -424,7 +453,10 @@ export const LEARNING_TOPICS: readonly LearningTopic[] = [
           { title: 'The raccoon-dog drums his belly', url: 'https://online-go.com/puzzle/51777' },
           { title: 'Mouse stealing oil', url: 'https://online-go.com/puzzle/51788' },
           { title: 'Squeeze', url: 'https://online-go.com/puzzle/51800' },
-          { title: 'Golden Chicken Standing on one Leg', url: 'https://online-go.com/puzzle/51816' },
+          {
+            title: 'Golden Chicken Standing on one Leg',
+            url: 'https://online-go.com/puzzle/51816',
+          },
           { title: 'Two-stone edge squeeze', url: 'https://online-go.com/puzzle/51827' },
           { title: 'Acacia cut', url: 'https://online-go.com/puzzle/51748' },
         ],
@@ -448,10 +480,22 @@ export const LEARNING_TOPICS: readonly LearningTopic[] = [
           { title: 'Basic Double Gote Yose value 2', url: 'https://online-go.com/puzzle/50062' },
           { title: 'Basic Double Gote Yose value 3', url: 'https://online-go.com/puzzle/50182' },
           { title: 'Basic Single Sente Yose value', url: 'https://online-go.com/puzzle/49755' },
-          { title: 'Intermediate Double Gote Yose value 1', url: 'https://online-go.com/puzzle/50423' },
-          { title: 'Intermediate Double Gote Yose value 2', url: 'https://online-go.com/puzzle/50534' },
-          { title: 'Intermediate Double Gote Yose value 3', url: 'https://online-go.com/puzzle/50670' },
-          { title: 'Intermediate Single Sente Yose value', url: 'https://online-go.com/puzzle/50308' },
+          {
+            title: 'Intermediate Double Gote Yose value 1',
+            url: 'https://online-go.com/puzzle/50423',
+          },
+          {
+            title: 'Intermediate Double Gote Yose value 2',
+            url: 'https://online-go.com/puzzle/50534',
+          },
+          {
+            title: 'Intermediate Double Gote Yose value 3',
+            url: 'https://online-go.com/puzzle/50670',
+          },
+          {
+            title: 'Intermediate Single Sente Yose value',
+            url: 'https://online-go.com/puzzle/50308',
+          },
           { title: 'Advanced Double Gote Yose value 1', url: 'https://online-go.com/puzzle/50867' },
           { title: 'Advanced Double Gote Yose value 2', url: 'https://online-go.com/puzzle/50922' },
           { title: 'Advanced Double Gote Yose value 3', url: 'https://online-go.com/puzzle/50977' },
@@ -485,7 +529,8 @@ export const LEARNING_TOPICS: readonly LearningTopic[] = [
   {
     slug: 'openings',
     title: 'Openings & Joseki',
-    description: 'Learn opening theory, classical and AI-era joseki, and how to start a game with confidence.',
+    description:
+      'Learn opening theory, classical and AI-era joseki, and how to start a game with confidence.',
     icon: 'compass',
     status: 'active',
     tier: 'advancing',

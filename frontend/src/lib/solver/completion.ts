@@ -16,11 +16,7 @@ import { getProgress } from './traversal';
 /**
  * Completion status of a puzzle
  */
-export type CompletionStatus =
-  | 'not_started'
-  | 'in_progress'
-  | 'failed'
-  | 'complete';
+export type CompletionStatus = 'not_started' | 'in_progress' | 'failed' | 'complete';
 
 /**
  * Completion result with details
@@ -265,10 +261,7 @@ export function createCompletionTracker(
  * @param puzzle - Puzzle definition
  * @returns Score (0-100)
  */
-export function calculateScore(
-  result: CompletionResult,
-  puzzle: Puzzle
-): number {
+export function calculateScore(result: CompletionResult, puzzle: Puzzle): number {
   if (!result.isComplete) {
     return 0;
   }

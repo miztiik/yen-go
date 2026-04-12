@@ -144,11 +144,11 @@ export function useFilterState({
   }, []);
 
   const toggleLevel = useCallback((id: number) => {
-    setLevelIdsRaw(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    setLevelIdsRaw((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }, []);
 
   const toggleTag = useCallback((id: number) => {
-    setTagIdsRaw(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    setTagIdsRaw((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }, []);
 
   const clearAll = useCallback(() => {
@@ -159,13 +159,19 @@ export function useFilterState({
   // PURSIG Finding 13: Internalize 'all'→null conversion so pages don't duplicate it
   // F12: NaN guard for non-numeric option IDs
   const setLevelFromOption = useCallback((optionId: string) => {
-    if (optionId === 'all') { setLevelIdsRaw([]); return; }
+    if (optionId === 'all') {
+      setLevelIdsRaw([]);
+      return;
+    }
     const n = Number(optionId);
     setLevelIdsRaw(Number.isNaN(n) ? [] : [n]);
   }, []);
 
   const setTagFromOption = useCallback((optionId: string | null) => {
-    if (optionId === null) { setTagIdsRaw([]); return; }
+    if (optionId === null) {
+      setTagIdsRaw([]);
+      return;
+    }
     const n = Number(optionId);
     setTagIdsRaw(Number.isNaN(n) ? [] : [n]);
   }, []);
@@ -176,8 +182,9 @@ export function useFilterState({
   // ── Slug lookups (for display) ───────────────────────────────────
 
   const selectedLevelSlug = levelId !== null ? levelIdToSlug(levelId) : null;
-  const selectedTagSlug = tagId !== null ? tagIdToSlug(tagId) : null;  const selectedLevelSlugs = useMemo(() => levelIds.map(id => levelIdToSlug(id)), [levelIds]);
-  const selectedTagSlugs = useMemo(() => tagIds.map(id => tagIdToSlug(id)), [tagIds]);
+  const selectedTagSlug = tagId !== null ? tagIdToSlug(tagId) : null;
+  const selectedLevelSlugs = useMemo(() => levelIds.map((id) => levelIdToSlug(id)), [levelIds]);
+  const selectedTagSlugs = useMemo(() => tagIds.map((id) => tagIdToSlug(id)), [tagIds]);
 
   // ── Cascading level options ──────────────────────────────────────
 
@@ -205,18 +212,13 @@ export function useFilterState({
     }
 
     // "All" shows total sum
-    const allCount = tagIds.length > 0
-      ? sumMapValues(tagDistCounts)
-      : sumMapValues(masterCounts);
+    const allCount = tagIds.length > 0 ? sumMapValues(tagDistCounts) : sumMapValues(masterCounts);
 
-    const options: LevelFilterOption[] = [
-      { id: 'all', label: 'All', count: allCount },
-    ];
+    const options: LevelFilterOption[] = [{ id: 'all', label: 'All', count: allCount }];
 
     for (const level of levels) {
-      const count = tagIds.length > 0
-        ? tagDistCounts.get(level.id) ?? 0
-        : masterCounts.get(level.id) ?? 0;
+      const count =
+        tagIds.length > 0 ? (tagDistCounts.get(level.id) ?? 0) : (masterCounts.get(level.id) ?? 0);
       options.push({
         id: String(level.id),
         label: level.name,
@@ -262,9 +264,10 @@ export function useFilterState({
       if (tagsInCategory.length === 0) continue;
 
       const options: TagFilterOption[] = tagsInCategory.map((tag) => {
-        const count = levelIds.length > 0
-          ? levelDistCounts.get(tag.id) ?? 0
-          : masterCounts.get(tag.id) ?? 0;
+        const count =
+          levelIds.length > 0
+            ? (levelDistCounts.get(tag.id) ?? 0)
+            : (masterCounts.get(tag.id) ?? 0);
         return { id: String(tag.id), label: tag.name, count };
       });
 
@@ -283,26 +286,26 @@ export function useFilterState({
   // F18: Resolved display labels from options arrays (avoid duplicated lookup in pages)
   const selectedLevelLabel = useMemo(() => {
     if (levelId === null) return null;
-    const opt = levelOptions.find(o => o.id === String(levelId));
+    const opt = levelOptions.find((o) => o.id === String(levelId));
     return opt?.label ?? selectedLevelSlug;
   }, [levelId, levelOptions, selectedLevelSlug]);
 
   const selectedTagLabel = useMemo(() => {
     if (tagId === null) return null;
-    const opt = tagOptions.find(o => o.id === String(tagId));
+    const opt = tagOptions.find((o) => o.id === String(tagId));
     return opt?.label ?? selectedTagSlug;
   }, [tagId, tagOptions, selectedTagSlug]);
 
   const selectedLevelLabels = useMemo(() => {
-    return levelIds.map(id => {
-      const opt = levelOptions.find(o => o.id === String(id));
+    return levelIds.map((id) => {
+      const opt = levelOptions.find((o) => o.id === String(id));
       return opt?.label ?? levelIdToSlug(id);
     });
   }, [levelIds, levelOptions]);
 
   const selectedTagLabels = useMemo(() => {
-    return tagIds.map(id => {
-      const opt = tagOptions.find(o => o.id === String(id));
+    return tagIds.map((id) => {
+      const opt = tagOptions.find((o) => o.id === String(id));
       return opt?.label ?? tagIdToSlug(id);
     });
   }, [tagIds, tagOptions]);

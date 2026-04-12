@@ -22,10 +22,10 @@ export interface TechniqueStats {
   readonly tagName: string;
   readonly correct: number;
   readonly total: number;
-  readonly accuracy: number;       // correct/total * 100, 0 if total=0
+  readonly accuracy: number; // correct/total * 100, 0 if total=0
   readonly avgTimeMs: number;
-  readonly trend30d: number;       // accuracy delta vs 30+ days ago (-100 to +100)
-  readonly lowData: boolean;       // total < 10
+  readonly trend30d: number; // accuracy delta vs 30+ days ago (-100 to +100)
+  readonly lowData: boolean; // total < 10
 }
 
 export interface DifficultyStats {
@@ -114,7 +114,7 @@ export async function computeProgressSummary(): Promise<ProgressSummary> {
   for (const batch of batches) {
     const rows = query<{ content_hash: string; tag_id: number }>(
       `SELECT content_hash, tag_id FROM puzzle_tags WHERE content_hash IN (${placeholders(batch.length)})`,
-      batch,
+      batch
     );
 
     for (const row of rows) {
@@ -134,7 +134,7 @@ export async function computeProgressSummary(): Promise<ProgressSummary> {
   for (const batch of batches) {
     const rows = query<{ content_hash: string; level_id: number }>(
       `SELECT content_hash, level_id FROM puzzles WHERE content_hash IN (${placeholders(batch.length)})`,
-      batch,
+      batch
     );
 
     for (const row of rows) {
@@ -157,21 +157,18 @@ export async function computeProgressSummary(): Promise<ProgressSummary> {
     if (!info) continue;
 
     const total = completionList.length;
-    const correct = completionList.filter(c => c.attempts <= 1).length;
+    const correct = completionList.filter((c) => c.attempts <= 1).length;
     const accuracy = total > 0 ? (correct / total) * 100 : 0;
-    const avgTimeMs = total > 0
-      ? completionList.reduce((sum, c) => sum + c.timeSpentMs, 0) / total
-      : 0;
+    const avgTimeMs =
+      total > 0 ? completionList.reduce((sum, c) => sum + c.timeSpentMs, 0) / total : 0;
 
     // 30-day trend: compare recent vs older accuracy
-    const recent = completionList.filter(c => new Date(c.completedAt).getTime() >= thirtyDaysAgo);
-    const older = completionList.filter(c => new Date(c.completedAt).getTime() < thirtyDaysAgo);
-    const recentAcc = recent.length > 0
-      ? (recent.filter(c => c.attempts <= 1).length / recent.length) * 100
-      : 0;
-    const olderAcc = older.length > 0
-      ? (older.filter(c => c.attempts <= 1).length / older.length) * 100
-      : 0;
+    const recent = completionList.filter((c) => new Date(c.completedAt).getTime() >= thirtyDaysAgo);
+    const older = completionList.filter((c) => new Date(c.completedAt).getTime() < thirtyDaysAgo);
+    const recentAcc =
+      recent.length > 0 ? (recent.filter((c) => c.attempts <= 1).length / recent.length) * 100 : 0;
+    const olderAcc =
+      older.length > 0 ? (older.filter((c) => c.attempts <= 1).length / older.length) * 100 : 0;
     const trend30d = older.length > 0 ? recentAcc - olderAcc : 0;
 
     techniques.push({
@@ -213,11 +210,13 @@ export async function computeProgressSummary(): Promise<ProgressSummary> {
   // Overall stats
   const allCompletions = Object.values(completions);
   const totalSolved = allCompletions.length;
-  const overallCorrect = allCompletions.filter(c => c.attempts <= 1).length;
-  const overallAccuracy = totalSolved > 0 ? Math.round((overallCorrect / totalSolved) * 10000) / 100 : 0;
-  const avgTimeMs = totalSolved > 0
-    ? Math.round(allCompletions.reduce((sum, c) => sum + c.timeSpentMs, 0) / totalSolved)
-    : 0;
+  const overallCorrect = allCompletions.filter((c) => c.attempts <= 1).length;
+  const overallAccuracy =
+    totalSolved > 0 ? Math.round((overallCorrect / totalSolved) * 10000) / 100 : 0;
+  const avgTimeMs =
+    totalSolved > 0
+      ? Math.round(allCompletions.reduce((sum, c) => sum + c.timeSpentMs, 0) / totalSolved)
+      : 0;
 
   return {
     totalSolved,
@@ -237,7 +236,7 @@ export async function computeProgressSummary(): Promise<ProgressSummary> {
  */
 export async function getWeakestTechniques(n: number): Promise<TechniqueStats[]> {
   const summary = await computeProgressSummary();
-  const highData = summary.techniques.filter(t => !t.lowData);
+  const highData = summary.techniques.filter((t) => !t.lowData);
   const sorted = (highData.length >= n ? highData : [...summary.techniques])
     .slice()
     .sort((a, b) => a.accuracy - b.accuracy);

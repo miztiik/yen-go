@@ -46,8 +46,8 @@ const COLORS = {
     onWhite: '#1a1a1a',
   },
   marker: {
-    current: '#00bcd4',  // Cyan - Besogo style
-    hover: '#4dd0e1',    // Lighter cyan for hover
+    current: '#00bcd4', // Cyan - Besogo style
+    hover: '#4dd0e1', // Lighter cyan for hover
   },
   correctness: {
     correct: '#4CAF50',
@@ -78,14 +78,14 @@ function getNodeAriaLabel(node: VisualTreeNode): string {
   if (node.moveNumber === 0 && node.parent === null) {
     return 'Setup position, initial stones';
   }
-  
+
   // Pass move
   const move = node.node.move;
   if (move === '' || move === 'tt' || move === 'pass') {
     const color = node.node.player === 'B' ? 'Black' : 'White';
     return `Move ${node.moveNumber}: ${color} passes`;
   }
-  
+
   // Regular move
   const color = node.node.player === 'B' ? 'Black' : 'White';
   return `Move ${node.moveNumber}: ${color} at ${node.displayCoord}`;
@@ -144,9 +144,17 @@ function TreeNode({
 
   // Stone appearance (grey for setup/pass, normal for moves)
   const isBlack = player === 'B';
-  const fill = isSpecialNode ? '#999999' : (isBlack ? COLORS.stone.black : COLORS.stone.white);
-  const stroke = isSpecialNode ? '#666666' : (isBlack ? COLORS.stone.blackStroke : COLORS.stone.whiteStroke);
-  const labelColor = isSpecialNode ? '#ffffff' : (isBlack ? COLORS.label.onBlack : COLORS.label.onWhite);
+  const fill = isSpecialNode ? '#999999' : isBlack ? COLORS.stone.black : COLORS.stone.white;
+  const stroke = isSpecialNode
+    ? '#666666'
+    : isBlack
+      ? COLORS.stone.blackStroke
+      : COLORS.stone.whiteStroke;
+  const labelColor = isSpecialNode
+    ? '#ffffff'
+    : isBlack
+      ? COLORS.label.onBlack
+      : COLORS.label.onWhite;
 
   // Correctness indicator - never show on setup node (setup is neither correct nor wrong)
   const showCorrectnessRing = showCorrectness && isCorrect !== undefined && !isSetup;
@@ -329,19 +337,13 @@ export function SolutionTreeView({
   const layout = useMemo(() => computeTreeLayout(tree), [tree]);
 
   // Build paths (memoized - recomputes on tree or current change)
-  const paths = useMemo(
-    () => buildBranchPaths(layout, currentNodeId),
-    [layout, currentNodeId]
-  );
+  const paths = useMemo(() => buildBranchPaths(layout, currentNodeId), [layout, currentNodeId]);
 
   // Collect all nodes for rendering
   const nodes = useMemo(() => collectAllNodes(layout.root), [layout]);
 
   // Find current node
-  const currentNode = useMemo(
-    () => layout.nodeMap.get(currentNodeId),
-    [layout, currentNodeId]
-  );
+  const currentNode = useMemo(() => layout.nodeMap.get(currentNodeId), [layout, currentNodeId]);
 
   // Hover state
   const [hoveredNode, setHoveredNode] = useState<VisualTreeNode | null>(null);
@@ -520,7 +522,13 @@ export function SolutionTreeView({
         aria-live="polite"
         aria-atomic="true"
         class="sr-only"
-        style={{ position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0,0,0,0)' }}
+        style={{
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+        }}
       >
         {announcement}
       </div>

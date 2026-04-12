@@ -15,9 +15,10 @@ import { formatDuration } from '../../lib/progress';
 export type SkillLevel = LevelSlug;
 
 /** Skill level names derived from config */
-const SKILL_LEVEL_NAMES = Object.fromEntries(
-  LEVELS.map((lvl) => [lvl.slug, lvl.name])
-) as Record<LevelSlug, string>;
+const SKILL_LEVEL_NAMES = Object.fromEntries(LEVELS.map((lvl) => [lvl.slug, lvl.name])) as Record<
+  LevelSlug,
+  string
+>;
 
 /** Skill level rank ranges derived from config */
 const SKILL_LEVEL_RANKS = Object.fromEntries(
@@ -117,15 +118,15 @@ const styles = {
  * Level badge colors (9 levels).
  */
 const LEVEL_COLORS: Record<LevelSlug, string> = {
-  'novice': 'var(--color-level-novice)',
-  'beginner': 'var(--color-level-beginner)',
-  'elementary': 'var(--color-level-elementary)',
-  'intermediate': 'var(--color-level-intermediate)',
+  novice: 'var(--color-level-novice)',
+  beginner: 'var(--color-level-beginner)',
+  elementary: 'var(--color-level-elementary)',
+  intermediate: 'var(--color-level-intermediate)',
   'upper-intermediate': 'var(--color-level-upper-intermediate)',
-  'advanced': 'var(--color-level-advanced)',
+  advanced: 'var(--color-level-advanced)',
   'low-dan': 'var(--color-level-low-dan)',
   'high-dan': 'var(--color-level-high-dan)',
-  'expert': 'var(--color-level-expert)',
+  expert: 'var(--color-level-expert)',
 };
 
 /**
@@ -147,10 +148,7 @@ function LevelRow({
 
   return (
     <div class="skill-level-row" style={styles.levelRow}>
-      <div
-        class="level-badge"
-        style={`${styles.levelBadge} background: ${LEVEL_COLORS[level]};`}
-      >
+      <div class="level-badge" style={`${styles.levelBadge} background: ${LEVEL_COLORS[level]};`}>
         {levelMeta?.shortName ?? level}
       </div>
       <div style={styles.levelInfo}>
@@ -170,9 +168,7 @@ function LevelRow({
           <p style={styles.statLabel}>Solved</p>
         </div>
         <div style={styles.statItem}>
-          <p style={styles.statValue}>
-            {avgTime > 0 ? formatDuration(avgTime) : '—'}
-          </p>
+          <p style={styles.statValue}>{avgTime > 0 ? formatDuration(avgTime) : '—'}</p>
           <p style={styles.statLabel}>Avg</p>
         </div>
       </div>
@@ -183,10 +179,7 @@ function LevelRow({
 /**
  * SkillLevelStats component - shows stats by skill level.
  */
-export function SkillLevelStats({
-  stats,
-  totalByLevel,
-}: SkillLevelStatsProps): JSX.Element {
+export function SkillLevelStats({ stats, totalByLevel }: SkillLevelStatsProps): JSX.Element {
   return (
     <div class="skill-level-stats" style={styles.container}>
       {LEVEL_SLUGS.map((level) => (

@@ -56,7 +56,11 @@ export function RushIcon({ size = 'md', className = '' }: TileIconProps): JSX.El
  */
 export function CollectionsIcon({ size = 'md', className = '' }: TileIconProps): JSX.Element {
   return (
-    <span class={`tile-icon tile-icon--collections ${className}`} role="img" aria-label="Collections">
+    <span
+      class={`tile-icon tile-icon--collections ${className}`}
+      role="img"
+      aria-label="Collections"
+    >
       <BookIcon size={sizeMap[size]} />
     </span>
   );
@@ -81,10 +85,26 @@ export function TechniqueIcon({ size = 'md', className = '' }: TileIconProps): J
   const px = sizeMap[size];
   return (
     <span class={`tile-icon tile-icon--technique ${className}`} role="img" aria-label="Technique">
-      <svg width={px} height={px} viewBox="0 0 24 24" fill="none" stroke="var(--color-mode-technique-border, #10b981)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        width={px}
+        height={px}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="var(--color-mode-technique-border, #10b981)"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <circle cx="12" cy="12" r="10" />
         <circle cx="12" cy="12" r="6" />
-        <circle cx="12" cy="12" r="2" fill="var(--color-mode-technique-border, #10b981)" stroke="none" />
+        <circle
+          cx="12"
+          cy="12"
+          r="2"
+          fill="var(--color-mode-technique-border, #10b981)"
+          stroke="none"
+        />
       </svg>
     </span>
   );

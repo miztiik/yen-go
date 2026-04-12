@@ -11,7 +11,4 @@ export {
   type LoaderConfig,
 } from './loader';
 
-export {
-  extractPuzzleIdFromPath,
-  extractLevelFromPath,
-} from './utils';
+export { extractPuzzleIdFromPath, extractLevelFromPath } from './utils';

@@ -33,10 +33,7 @@ const styles = {
  */
 export function HomeGrid({ children, className = '' }: HomeGridProps): JSX.Element {
   return (
-    <div
-      class={`home-grid ${className}`}
-      style={styles.grid}
-    >
+    <div class={`home-grid ${className}`} style={styles.grid}>
       {children}
     </div>
   );

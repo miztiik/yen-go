@@ -87,10 +87,7 @@ export function QuickControls({
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       // Don't capture if user is typing in an input
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
 
@@ -150,7 +147,9 @@ export function QuickControls({
         data-testid="rotate-button"
         title={`Rotate board (${KEYBOARD_SHORTCUTS.rotate.toUpperCase()})`}
       >
-        <span className="icon" aria-hidden="true"><ResetIcon size={16} /></span>
+        <span className="icon" aria-hidden="true">
+          <ResetIcon size={16} />
+        </span>
         <span className="label">Rotate</span>
         <kbd className="shortcut">{KEYBOARD_SHORTCUTS.rotate.toUpperCase()}</kbd>
       </button>
@@ -164,7 +163,9 @@ export function QuickControls({
         data-testid="undo-button"
         title={`Undo (${KEYBOARD_SHORTCUTS.undo.toUpperCase()})`}
       >
-        <span className="icon" aria-hidden="true"><UndoIcon size={16} /></span>
+        <span className="icon" aria-hidden="true">
+          <UndoIcon size={16} />
+        </span>
         <span className="label">Undo</span>
         <kbd className="shortcut">{KEYBOARD_SHORTCUTS.undo.toUpperCase()}</kbd>
       </button>
@@ -177,7 +178,9 @@ export function QuickControls({
         data-testid="reset-button"
         title={`Reset (${KEYBOARD_SHORTCUTS.reset.toUpperCase()})`}
       >
-        <span className="icon" aria-hidden="true"><ResetIcon size={16} /></span>
+        <span className="icon" aria-hidden="true">
+          <ResetIcon size={16} />
+        </span>
         <span className="label">Reset</span>
         <kbd className="shortcut">{KEYBOARD_SHORTCUTS.reset.toUpperCase()}</kbd>
       </button>
@@ -187,16 +190,22 @@ export function QuickControls({
         className={`control-button hint ${hintsRemaining === 0 ? 'exhausted' : ''}`}
         onClick={onHint}
         disabled={hintsRemaining === 0}
-        aria-label={hintsRemaining === 0 ? 'No hints remaining' : `Get hint (${hintsRemaining} remaining)`}
+        aria-label={
+          hintsRemaining === 0 ? 'No hints remaining' : `Get hint (${hintsRemaining} remaining)`
+        }
         data-testid="hint-button"
-        title={hintsRemaining > 0 ? `Hint (${KEYBOARD_SHORTCUTS.hint.toUpperCase()}) - ${hintsRemaining} left` : 'No hints available'}
+        title={
+          hintsRemaining > 0
+            ? `Hint (${KEYBOARD_SHORTCUTS.hint.toUpperCase()}) - ${hintsRemaining} left`
+            : 'No hints available'
+        }
       >
-        <span className="icon" aria-hidden="true"><HintIcon size={16} /></span>
+        <span className="icon" aria-hidden="true">
+          <HintIcon size={16} />
+        </span>
         <span className="label">
           Hint
-          {hintsRemaining > 0 && (
-            <span className="hint-count">{hintsRemaining}</span>
-          )}
+          {hintsRemaining > 0 && <span className="hint-count">{hintsRemaining}</span>}
         </span>
         <kbd className="shortcut">{KEYBOARD_SHORTCUTS.hint.toUpperCase()}</kbd>
       </button>
@@ -211,7 +220,9 @@ export function QuickControls({
           data-testid="explore-button"
           title={`${isExploreMode ? 'Exit' : 'Explore'} (${KEYBOARD_SHORTCUTS.explore.toUpperCase()})`}
         >
-          <span className="icon" aria-hidden="true">⏇</span>
+          <span className="icon" aria-hidden="true">
+            ⏇
+          </span>
           <span className="label">Explore</span>
           <kbd className="shortcut">{KEYBOARD_SHORTCUTS.explore.toUpperCase()}</kbd>
         </button>

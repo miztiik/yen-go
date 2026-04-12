@@ -14,7 +14,10 @@ import { forwardRef } from 'preact/compat';
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
-export interface ButtonProps extends Omit<JSX.HTMLAttributes<HTMLButtonElement>, 'size' | 'disabled'> {
+export interface ButtonProps extends Omit<
+  JSX.HTMLAttributes<HTMLButtonElement>,
+  'size' | 'disabled'
+> {
   /** Button variant for styling */
   variant?: ButtonVariant;
   /** Button size */
@@ -82,84 +85,78 @@ const sizeStyles: Record<ButtonSize, JSX.CSSProperties> = {
  * Accessible button component with ARIA support
  * Meets WCAG 2.1 AA requirements for touch targets and screen readers
  */
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  function Button(
-    props,
-    ref
-  ) {
-    const {
-      variant = 'primary',
-      size = 'md',
-      loading = false,
-      leftIcon,
-      rightIcon,
-      fullWidth = false,
-      children,
-      className,
-      style,
-      disabled,
-      'aria-label': ariaLabel,
-      'aria-describedby': ariaDescribedBy,
-      ...restProps
-    } = props;
-    const isDisabled = disabled === true || loading;
-    // Only spread style if it's a plain object (not a signal)
-    const styleObj: JSX.CSSProperties = typeof style === 'object' && style !== null && !('value' in style)
-      ? (style)
-      : {};
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(props, ref) {
+  const {
+    variant = 'primary',
+    size = 'md',
+    loading = false,
+    leftIcon,
+    rightIcon,
+    fullWidth = false,
+    children,
+    className,
+    style,
+    disabled,
+    'aria-label': ariaLabel,
+    'aria-describedby': ariaDescribedBy,
+    ...restProps
+  } = props;
+  const isDisabled = disabled === true || loading;
+  // Only spread style if it's a plain object (not a signal)
+  const styleObj: JSX.CSSProperties =
+    typeof style === 'object' && style !== null && !('value' in style) ? style : {};
 
-    const buttonStyle: JSX.CSSProperties = {
-      ...variantStyles[variant],
-      ...sizeStyles[size],
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '0.5rem',
-      borderRadius: 'var(--border-radius, 8px)',
-      cursor: isDisabled ? 'not-allowed' : 'pointer',
-      opacity: isDisabled ? 0.6 : 1,
-      transition: 'background-color 0.2s, opacity 0.2s, transform 0.1s',
-      fontWeight: 500,
-      textDecoration: 'none',
-      lineHeight: 1.5,
-      width: fullWidth ? '100%' : 'auto',
-      ...styleObj,
-    };
+  const buttonStyle: JSX.CSSProperties = {
+    ...variantStyles[variant],
+    ...sizeStyles[size],
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    borderRadius: 'var(--border-radius, 8px)',
+    cursor: isDisabled ? 'not-allowed' : 'pointer',
+    opacity: isDisabled ? 0.6 : 1,
+    transition: 'background-color 0.2s, opacity 0.2s, transform 0.1s',
+    fontWeight: 500,
+    textDecoration: 'none',
+    lineHeight: 1.5,
+    width: fullWidth ? '100%' : 'auto',
+    ...styleObj,
+  };
 
-    return (
-      <button
-        ref={ref}
-        disabled={isDisabled}
-        className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-primary)] ${typeof className === 'string' ? className : ''}`}
-        style={buttonStyle}
-        aria-label={ariaLabel}
-        aria-describedby={ariaDescribedBy}
-        aria-disabled={isDisabled}
-        aria-busy={loading}
-        {...restProps}
-      >
-        {loading ? (
-          <span
-            role="status"
-            aria-label="Loading"
-            style={{
-              display: 'inline-block',
-              width: '1em',
-              height: '1em',
-              border: '2px solid currentColor',
-              borderRightColor: 'transparent',
-              borderRadius: '50%',
-              animation: 'button-spin 0.75s linear infinite',
-            }}
-          />
-        ) : (
-          leftIcon
-        )}
-        {children}
-        {!loading && rightIcon}
-      </button>
-    );
-  }
-);
+  return (
+    <button
+      ref={ref}
+      disabled={isDisabled}
+      className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-primary)] ${typeof className === 'string' ? className : ''}`}
+      style={buttonStyle}
+      aria-label={ariaLabel}
+      aria-describedby={ariaDescribedBy}
+      aria-disabled={isDisabled}
+      aria-busy={loading}
+      {...restProps}
+    >
+      {loading ? (
+        <span
+          role="status"
+          aria-label="Loading"
+          style={{
+            display: 'inline-block',
+            width: '1em',
+            height: '1em',
+            border: '2px solid currentColor',
+            borderRightColor: 'transparent',
+            borderRadius: '50%',
+            animation: 'button-spin 0.75s linear infinite',
+          }}
+        />
+      ) : (
+        leftIcon
+      )}
+      {children}
+      {!loading && rightIcon}
+    </button>
+  );
+});
 
 export default Button;

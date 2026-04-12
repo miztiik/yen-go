@@ -61,10 +61,7 @@ export interface CompletionResult {
  * @param puzzleId - Puzzle ID to check
  * @returns True if puzzle is completed
  */
-export function isPuzzleCompleted(
-  progress: UserProgress,
-  puzzleId: string
-): boolean {
+export function isPuzzleCompleted(progress: UserProgress, puzzleId: string): boolean {
   return puzzleId in progress.completedPuzzles;
 }
 
@@ -145,10 +142,7 @@ export function getCompletionsBySkillLevel(
  * @returns Updated user progress (immutable)
  * @deprecated Use recordCompletionWithStreak for streak support
  */
-export function recordCompletion(
-  progress: UserProgress,
-  data: CompletionData
-): UserProgress {
+export function recordCompletion(progress: UserProgress, data: CompletionData): UserProgress {
   const { puzzleId, timeSpentMs, attempts, hintsUsed } = data;
 
   // Don't overwrite existing completion (first completion wins)
@@ -185,10 +179,7 @@ const MILESTONE_THRESHOLDS = [7, 30, 100, 365] as const;
  * @param currentStreak - Streak count after completion
  * @returns Milestone number if just reached, null otherwise
  */
-function checkMilestoneReached(
-  previousStreak: number,
-  currentStreak: number
-): number | null {
+function checkMilestoneReached(previousStreak: number, currentStreak: number): number | null {
   for (const milestone of MILESTONE_THRESHOLDS) {
     if (currentStreak >= milestone && previousStreak < milestone) {
       return milestone;
@@ -260,7 +251,8 @@ export function recordCompletionWithStreak(
       currentStreak: streakResult.streakData.currentStreak,
       longestStreak: streakResult.streakData.longestStreak,
       lastPlayedDate: streakResult.streakData.lastPlayedDate ?? progress.streakData.lastPlayedDate,
-      streakStartDate: streakResult.streakData.streakStartDate ?? progress.streakData.streakStartDate,
+      streakStartDate:
+        streakResult.streakData.streakStartDate ?? progress.streakData.streakStartDate,
     },
   };
 
@@ -299,10 +291,7 @@ export function recordCompletionWithStreak(
  * @param puzzleId - Puzzle ID to clear
  * @returns Updated user progress
  */
-export function clearCompletion(
-  progress: UserProgress,
-  puzzleId: string
-): UserProgress {
+export function clearCompletion(progress: UserProgress, puzzleId: string): UserProgress {
   if (!isPuzzleCompleted(progress, puzzleId)) {
     return progress;
   }
@@ -402,9 +391,7 @@ export function getTodayCompletions(progress: UserProgress): readonly string[] {
  * @returns Count of puzzles with 0 hints used
  */
 export function countPuzzlesWithoutHints(progress: UserProgress): number {
-  return Object.values(progress.completedPuzzles)
-    .filter((c) => c.hintsUsed === 0)
-    .length;
+  return Object.values(progress.completedPuzzles).filter((c) => c.hintsUsed === 0).length;
 }
 
 /**

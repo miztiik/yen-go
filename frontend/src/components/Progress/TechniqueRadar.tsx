@@ -12,12 +12,30 @@ export interface TechniqueRadarProps {
 
 function TrendArrow({ trend }: { trend: number }) {
   if (trend > 0) {
-    return <span className="text-xs font-medium text-green-600" aria-label={`Up ${Math.abs(trend).toFixed(1)}%`}>+{Math.abs(trend).toFixed(1)}%</span>;
+    return (
+      <span
+        className="text-xs font-medium text-green-600"
+        aria-label={`Up ${Math.abs(trend).toFixed(1)}%`}
+      >
+        +{Math.abs(trend).toFixed(1)}%
+      </span>
+    );
   }
   if (trend < 0) {
-    return <span className="text-xs font-medium text-red-600" aria-label={`Down ${Math.abs(trend).toFixed(1)}%`}>-{Math.abs(trend).toFixed(1)}%</span>;
+    return (
+      <span
+        className="text-xs font-medium text-red-600"
+        aria-label={`Down ${Math.abs(trend).toFixed(1)}%`}
+      >
+        -{Math.abs(trend).toFixed(1)}%
+      </span>
+    );
   }
-  return <span className="text-xs text-[var(--color-text-muted)]" aria-label="No change">--</span>;
+  return (
+    <span className="text-xs text-[var(--color-text-muted)]" aria-label="No change">
+      --
+    </span>
+  );
 }
 
 export const TechniqueRadar: FunctionalComponent<TechniqueRadarProps> = ({ techniques }) => {
@@ -26,16 +44,20 @@ export const TechniqueRadar: FunctionalComponent<TechniqueRadarProps> = ({ techn
   const sorted = [...techniques].sort((a, b) => b.total - a.total).slice(0, 10);
 
   const weakest = sorted.reduce<TechniqueStats | null>(
-    (prev, curr) => (!prev || curr.accuracy < prev.accuracy) ? curr : prev,
-    null,
+    (prev, curr) => (!prev || curr.accuracy < prev.accuracy ? curr : prev),
+    null
   );
 
   return (
     <section data-testid="technique-radar" className="mb-6">
       <h2 className="mb-3 text-lg font-bold text-[var(--color-text-primary)]">Techniques</h2>
       <div className="space-y-2">
-        {sorted.map(t => (
-          <div key={t.tagId} className="flex items-center gap-3" data-testid={`technique-${t.tagSlug}`}>
+        {sorted.map((t) => (
+          <div
+            key={t.tagId}
+            className="flex items-center gap-3"
+            data-testid={`technique-${t.tagSlug}`}
+          >
             <span className="w-28 shrink-0 truncate text-sm font-medium text-[var(--color-text-primary)]">
               {t.tagName}
             </span>
@@ -48,7 +70,9 @@ export const TechniqueRadar: FunctionalComponent<TechniqueRadarProps> = ({ techn
             <span className="w-12 text-right text-sm font-medium text-[var(--color-text-primary)]">
               {Math.round(t.accuracy)}%
             </span>
-            <span className="w-10 text-right text-xs text-[var(--color-text-muted)]">{t.total}</span>
+            <span className="w-10 text-right text-xs text-[var(--color-text-muted)]">
+              {t.total}
+            </span>
             <div className="w-14 text-right">
               <TrendArrow trend={t.trend30d} />
             </div>

@@ -56,9 +56,24 @@ interface DurationOption {
 }
 
 const DURATION_OPTIONS: DurationOption[] = [
-  { minutes: 3, seconds: 180, label: '3 Minutes', description: 'Quick sprint — perfect for warm-ups' },
-  { minutes: 5, seconds: 300, label: '5 Minutes', description: 'The classic challenge — balanced pace' },
-  { minutes: 10, seconds: 600, label: '10 Minutes', description: 'Marathon mode — test your endurance' },
+  {
+    minutes: 3,
+    seconds: 180,
+    label: '3 Minutes',
+    description: 'Quick sprint — perfect for warm-ups',
+  },
+  {
+    minutes: 5,
+    seconds: 300,
+    label: '5 Minutes',
+    description: 'The classic challenge — balanced pace',
+  },
+  {
+    minutes: 10,
+    seconds: 600,
+    label: '10 Minutes',
+    description: 'Marathon mode — test your endurance',
+  },
 ];
 
 /** Valid custom duration steps in seconds.
@@ -105,9 +120,14 @@ export const RushBrowsePage: FunctionalComponent<RushBrowsePageProps> = ({
     levelId: filterLevelIds.length === 1 ? filterLevelIds[0]! : null,
     tagId: filterTagIds.length === 1 ? filterTagIds[0]! : null,
     levelOptions: [
-      { id: 'all', label: 'All', count: masterLoaded ? totalCount : undefined } as { id: string; label: string; count?: number; tooltip?: string },
-      ...allLevels.map(l => {
-        const masterEntry = levelMasterEntries.find(e => e.id === l.id);
+      { id: 'all', label: 'All', count: masterLoaded ? totalCount : undefined } as {
+        id: string;
+        label: string;
+        count?: number;
+        tooltip?: string;
+      },
+      ...allLevels.map((l) => {
+        const masterEntry = levelMasterEntries.find((e) => e.id === l.id);
         return {
           id: String(l.id),
           label: l.name,
@@ -116,19 +136,28 @@ export const RushBrowsePage: FunctionalComponent<RushBrowsePageProps> = ({
         } as { id: string; label: string; count?: number; tooltip?: string };
       }),
     ],
-    tagOptionGroups: getOrderedTagCategories().map(cat => ({
+    tagOptionGroups: getOrderedTagCategories().map((cat) => ({
       label: cat.label,
-      options: getTagsByCategory(cat.key).map(t => ({
-        id: String(t.id), label: t.name,
+      options: getTagsByCategory(cat.key).map((t) => ({
+        id: String(t.id),
+        label: t.name,
       })),
     })),
     setLevelFromOption: (id: string | null) => {
-      if (id === null || id === '' || id === 'all') { setFilters({ l: [] }); return; }
-      const n = Number(id); if (!Number.isNaN(n)) setFilters({ l: [n] });
+      if (id === null || id === '' || id === 'all') {
+        setFilters({ l: [] });
+        return;
+      }
+      const n = Number(id);
+      if (!Number.isNaN(n)) setFilters({ l: [n] });
     },
     setTagFromOption: (id: string | null) => {
-      if (id === null || id === '') { setFilters({ t: [] }); return; }
-      const n = Number(id); if (!Number.isNaN(n)) setFilters({ t: [n] });
+      if (id === null || id === '') {
+        setFilters({ t: [] });
+        return;
+      }
+      const n = Number(id);
+      if (!Number.isNaN(n)) setFilters({ t: [n] });
     },
     hasActiveFilters: filterLevelIds.length > 0 || filterTagIds.length > 0,
     clearAll: clearFilters,
@@ -138,14 +167,15 @@ export const RushBrowsePage: FunctionalComponent<RushBrowsePageProps> = ({
   const availableCount = useMemo(() => {
     if (!masterLoaded) return null;
     if (filterState.levelId !== null) {
-      const opt = filterState.levelOptions.find(o => o.id === String(filterState.levelId));
+      const opt = filterState.levelOptions.find((o) => o.id === String(filterState.levelId));
       return opt?.count ?? 0;
     }
     // No level selected — "All" count (cascaded by tag selection)
     return filterState.levelOptions[0]?.count ?? 0;
   }, [masterLoaded, filterState.levelId, filterState.levelOptions]);
 
-  const isLowCount = availableCount !== null && availableCount < LOW_PUZZLE_THRESHOLD && availableCount > 0;
+  const isLowCount =
+    availableCount !== null && availableCount < LOW_PUZZLE_THRESHOLD && availableCount > 0;
   const isZeroCount = availableCount === 0;
 
   // ── Custom duration state ──────────────────────────────────────────
@@ -165,13 +195,16 @@ export const RushBrowsePage: FunctionalComponent<RushBrowsePageProps> = ({
   }, [bestScore]);
 
   // ── Handlers ───────────────────────────────────────────────────────
-  const handleDurationClick = useCallback((duration: number) => {
-    setShowCustomSlider(false);
-    onStartRush(duration, filterState.levelId, filterState.tagId);
-  }, [onStartRush, filterState.levelId, filterState.tagId]);
+  const handleDurationClick = useCallback(
+    (duration: number) => {
+      setShowCustomSlider(false);
+      onStartRush(duration, filterState.levelId, filterState.tagId);
+    },
+    [onStartRush, filterState.levelId, filterState.tagId]
+  );
 
   const handleCustomToggle = useCallback(() => {
-    setShowCustomSlider(prev => !prev);
+    setShowCustomSlider((prev) => !prev);
   }, []);
 
   const handleCustomStart = useCallback(() => {
@@ -193,10 +226,7 @@ export const RushBrowsePage: FunctionalComponent<RushBrowsePageProps> = ({
         />
 
         {/* Accent divider */}
-        <div
-          className="h-[3px]"
-          style={{ backgroundColor: ACCENT.border }}
-        />
+        <div className="h-[3px]" style={{ backgroundColor: ACCENT.border }} />
 
         {/* Content */}
         <div className="mx-auto w-full max-w-5xl flex-1 p-4">
@@ -223,10 +253,7 @@ export const RushBrowsePage: FunctionalComponent<RushBrowsePageProps> = ({
                     className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl"
                     style={{ backgroundColor: ACCENT.bg }}
                   >
-                    <span
-                      className="text-2xl font-extrabold"
-                      style={{ color: ACCENT.text }}
-                    >
+                    <span className="text-2xl font-extrabold" style={{ color: ACCENT.text }}>
                       {option.minutes}
                     </span>
                   </div>
@@ -259,7 +286,9 @@ export const RushBrowsePage: FunctionalComponent<RushBrowsePageProps> = ({
               disabled={isZeroCount}
               className="flex w-full cursor-pointer items-center justify-between rounded-2xl border-2 bg-[var(--color-bg-panel)] px-6 py-4 text-left shadow-sm transition-all duration-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-50"
               style={{
-                borderColor: showCustomSlider ? 'var(--color-accent, var(--color-mode-rush-border))' : 'var(--color-border, #d4c9b8)',
+                borderColor: showCustomSlider
+                  ? 'var(--color-accent, var(--color-mode-rush-border))'
+                  : 'var(--color-border, #d4c9b8)',
               }}
               data-testid="rush-duration-custom"
             >
@@ -286,7 +315,9 @@ export const RushBrowsePage: FunctionalComponent<RushBrowsePageProps> = ({
                 data-testid="rush-custom-slider"
               >
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="text-sm font-semibold text-[var(--color-text-secondary)]">Duration</span>
+                  <span className="text-sm font-semibold text-[var(--color-text-secondary)]">
+                    Duration
+                  </span>
                   <span
                     className="text-2xl font-extrabold"
                     style={{ color: ACCENT.text }}
@@ -300,7 +331,9 @@ export const RushBrowsePage: FunctionalComponent<RushBrowsePageProps> = ({
                   min={0}
                   max={CUSTOM_DURATION_STEPS.length - 1}
                   value={customSliderIndex}
-                  onInput={(e) => setCustomSliderIndex(Number((e.target as HTMLInputElement).value))}
+                  onInput={(e) =>
+                    setCustomSliderIndex(Number((e.target as HTMLInputElement).value))
+                  }
                   className="w-full accent-[var(--color-accent)]"
                   style={{ height: '44px' }}
                   aria-label="Custom duration slider"
@@ -335,7 +368,10 @@ export const RushBrowsePage: FunctionalComponent<RushBrowsePageProps> = ({
 
           {/* ── Filter section ────────────────────────────────────── */}
           {masterLoaded && (
-            <div className="mt-8 rounded-xl bg-[var(--color-bg-elevated)] p-6" data-testid="rush-filters">
+            <div
+              className="mt-8 rounded-xl bg-[var(--color-bg-elevated)] p-6"
+              data-testid="rush-filters"
+            >
               <h2 className="m-0 mb-1 text-sm font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
                 Customize Your Challenge
               </h2>
@@ -380,8 +416,12 @@ export const RushBrowsePage: FunctionalComponent<RushBrowsePageProps> = ({
                       No puzzles match your filters — try broadening your selection
                     </p>
                   ) : isLowCount ? (
-                    <p className="m-0 text-sm font-medium" style={{ color: 'var(--color-warning, #d97706)' }}>
-                      ~{availableCount.toLocaleString()} puzzles available — consider broadening filters for a better experience
+                    <p
+                      className="m-0 text-sm font-medium"
+                      style={{ color: 'var(--color-warning, #d97706)' }}
+                    >
+                      ~{availableCount.toLocaleString()} puzzles available — consider broadening
+                      filters for a better experience
                     </p>
                   ) : (
                     <p className="m-0 text-sm text-[var(--color-text-muted)]">
@@ -400,15 +440,30 @@ export const RushBrowsePage: FunctionalComponent<RushBrowsePageProps> = ({
             </h3>
             <ul className="m-0 list-none space-y-2 p-0 text-sm text-[var(--color-text-secondary)]">
               <li className="flex items-center gap-2">
-                <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold" style={{ backgroundColor: ACCENT.bg, color: ACCENT.text }}>1</span>
+                <span
+                  className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                  style={{ backgroundColor: ACCENT.bg, color: ACCENT.text }}
+                >
+                  1
+                </span>
                 Puzzles are served one after another — solve as many as you can
               </li>
               <li className="flex items-center gap-2">
-                <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold" style={{ backgroundColor: ACCENT.bg, color: ACCENT.text }}>2</span>
+                <span
+                  className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                  style={{ backgroundColor: ACCENT.bg, color: ACCENT.text }}
+                >
+                  2
+                </span>
                 Each wrong answer costs a life — 3 lives total
               </li>
               <li className="flex items-center gap-2">
-                <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold" style={{ backgroundColor: ACCENT.bg, color: ACCENT.text }}>3</span>
+                <span
+                  className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                  style={{ backgroundColor: ACCENT.bg, color: ACCENT.text }}
+                >
+                  3
+                </span>
                 Build streaks for bonus points — consecutive correct answers multiply your score
               </li>
             </ul>

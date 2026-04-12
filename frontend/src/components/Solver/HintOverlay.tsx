@@ -71,13 +71,20 @@ function getMaxLevel(hints: string[]): 1 | 2 | 3 {
  */
 export function cornerPositionToLabel(corner?: string): string {
   switch (corner) {
-    case 'TL': return 'top-left corner';
-    case 'TR': return 'top-right corner';
-    case 'BL': return 'bottom-left corner';
-    case 'BR': return 'bottom-right corner';
-    case 'C':  return 'center';
-    case 'E':  return 'edge';
-    default:   return 'board';
+    case 'TL':
+      return 'top-left corner';
+    case 'TR':
+      return 'top-right corner';
+    case 'BL':
+      return 'bottom-left corner';
+    case 'BR':
+      return 'bottom-right corner';
+    case 'C':
+      return 'center';
+    case 'E':
+      return 'edge';
+    default:
+      return 'board';
   }
 }
 

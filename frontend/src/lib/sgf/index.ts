@@ -18,19 +18,10 @@ export type {
   ISGFParser,
 } from './types';
 
-export {
-  isValidPlayer,
-  isSGFProperties,
-} from './types';
+export { isValidPlayer, isSGFProperties } from './types';
 
 // Parser
-export {
-  parseSGF,
-  validateSGF,
-  SGFParser,
-  SGFParseErrorImpl,
-  defaultParser,
-} from './parser';
+export { parseSGF, validateSGF, SGFParser, SGFParseErrorImpl, defaultParser } from './parser';
 
 // Coordinate utilities
 export {

@@ -4,11 +4,7 @@
  * @module lib/achievements/checker
  */
 
-import {
-  ACHIEVEMENTS,
-  ACHIEVEMENT_MAP,
-  type AchievementDefinition,
-} from './definitions';
+import { ACHIEVEMENTS, ACHIEVEMENT_MAP, type AchievementDefinition } from './definitions';
 import type { AchievementProgress } from './progress';
 
 /**
@@ -74,10 +70,7 @@ export interface ProgressStats {
 /**
  * Get current value for an achievement based on stats.
  */
-function getCurrentValue(
-  achievement: AchievementDefinition,
-  stats: ProgressStats
-): number {
+function getCurrentValue(achievement: AchievementDefinition, stats: ProgressStats): number {
   switch (achievement.id) {
     // Puzzle count achievements
     case 'first_solve':
@@ -207,9 +200,18 @@ export function getRelevantAchievements(trigger: AchievementTrigger): readonly s
   switch (trigger) {
     case 'puzzle_solved':
       return [
-        'first_solve', 'puzzles_10', 'puzzles_50', 'puzzles_100', 'puzzles_500', 'puzzles_1000',
-        'no_hints_10', 'no_hints_50', 'no_hints_100',
-        'difficulty_easy_10', 'difficulty_hard_10', 'difficulty_expert_10',
+        'first_solve',
+        'puzzles_10',
+        'puzzles_50',
+        'puzzles_100',
+        'puzzles_500',
+        'puzzles_1000',
+        'no_hints_10',
+        'no_hints_50',
+        'no_hints_100',
+        'difficulty_easy_10',
+        'difficulty_hard_10',
+        'difficulty_expert_10',
       ];
 
     case 'streak_updated':
@@ -217,8 +219,12 @@ export function getRelevantAchievements(trigger: AchievementTrigger): readonly s
 
     case 'rush_completed':
       return [
-        'rush_first', 'rush_score_500', 'rush_score_1000', 'rush_score_2000',
-        'rush_perfect', 'rush_streak_10',
+        'rush_first',
+        'rush_score_500',
+        'rush_score_1000',
+        'rush_score_2000',
+        'rush_perfect',
+        'rush_streak_10',
       ];
 
     case 'challenge_completed':

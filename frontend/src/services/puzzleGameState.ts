@@ -40,11 +40,14 @@ export function isPuzzleMoveValid(board: PuzzleBoard, coord: Coordinate): boolea
 /**
  * Execute a move on the puzzle board.
  */
-export function executePuzzleMove(board: PuzzleBoard, coord: Coordinate): { 
-  success: boolean; 
-  newBoard?: PuzzleBoard; 
-  captures?: Coordinate[]; 
-  error?: string 
+export function executePuzzleMove(
+  board: PuzzleBoard,
+  coord: Coordinate
+): {
+  success: boolean;
+  newBoard?: PuzzleBoard;
+  captures?: Coordinate[];
+  error?: string;
 } {
   const color = sideToColor(board.sideToMove);
   const result = placeStone(
@@ -60,9 +63,9 @@ export function executePuzzleMove(board: PuzzleBoard, coord: Coordinate): {
   }
 
   const captures = result.capturedStones || [];
-  
+
   // Calculate new Ko State. Logic from rulesEngine.getNewKoState
-  // We use 0 as move number since PuzzleBoard doesn't track it, 
+  // We use 0 as move number since PuzzleBoard doesn't track it,
   // and rulesEngine checks only depend on position equality.
   const nextKoState = getNewKoState(captures, coord, 0);
 
@@ -72,13 +75,13 @@ export function executePuzzleMove(board: PuzzleBoard, coord: Coordinate): {
     grid: result.newBoard!,
     size: board.size,
     sideToMove: nextSide,
-    koState: nextKoState
+    koState: nextKoState,
   };
 
   return {
     success: true,
     newBoard: newPuzzleBoard,
-    captures: captures ? [...captures] : []
+    captures: captures ? [...captures] : [],
   };
 }
 

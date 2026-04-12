@@ -61,10 +61,7 @@ export function Timer({
         aria-valuemin={0}
         aria-valuemax={100}
       >
-        <div
-          className="rush-timer__progress-bar"
-          style={{ width: `${progressPercent}%` }}
-        />
+        <div className="rush-timer__progress-bar" style={{ width: `${progressPercent}%` }} />
       </div>
 
       {urgency === 'critical' && isRunning && !isPaused && (

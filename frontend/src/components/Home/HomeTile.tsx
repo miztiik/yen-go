@@ -9,7 +9,14 @@
 
 import type { JSX, ComponentChildren } from 'preact';
 
-export type TileVariant = 'daily' | 'rush' | 'collections' | 'training' | 'technique' | 'random' | 'learning';
+export type TileVariant =
+  | 'daily'
+  | 'rush'
+  | 'collections'
+  | 'training'
+  | 'technique'
+  | 'random'
+  | 'learning';
 
 export interface HomeTileProps {
   /** Tile variant for styling */
@@ -40,14 +47,52 @@ export interface HomeTileProps {
   className?: string | undefined;
 }
 
-const variantColors: Record<TileVariant, { border: string; bg: string; text: string; light: string }> = {
-  daily: { border: 'var(--color-mode-daily-border)', bg: 'var(--color-mode-daily-bg)', text: 'var(--color-mode-daily-text)', light: 'var(--color-mode-daily-light)' },
-  rush: { border: 'var(--color-mode-rush-border)', bg: 'var(--color-mode-rush-bg)', text: 'var(--color-mode-rush-text)', light: 'var(--color-mode-rush-light)' },
-  collections: { border: 'var(--color-mode-collections-border)', bg: 'var(--color-mode-collections-bg)', text: 'var(--color-mode-collections-text)', light: 'var(--color-mode-collections-light)' },
-  training: { border: 'var(--color-mode-training-border)', bg: 'var(--color-mode-training-bg)', text: 'var(--color-mode-training-text)', light: 'var(--color-mode-training-light)' },
-  technique: { border: 'var(--color-mode-technique-border)', bg: 'var(--color-mode-technique-bg)', text: 'var(--color-mode-technique-text)', light: 'var(--color-mode-technique-light)' },
-  random: { border: 'var(--color-mode-random-border)', bg: 'var(--color-mode-random-bg)', text: 'var(--color-mode-random-text)', light: 'var(--color-mode-random-light)' },
-  learning: { border: 'var(--color-mode-learning-border)', bg: 'var(--color-mode-learning-bg)', text: 'var(--color-mode-learning-text)', light: 'var(--color-mode-learning-light)' },
+const variantColors: Record<
+  TileVariant,
+  { border: string; bg: string; text: string; light: string }
+> = {
+  daily: {
+    border: 'var(--color-mode-daily-border)',
+    bg: 'var(--color-mode-daily-bg)',
+    text: 'var(--color-mode-daily-text)',
+    light: 'var(--color-mode-daily-light)',
+  },
+  rush: {
+    border: 'var(--color-mode-rush-border)',
+    bg: 'var(--color-mode-rush-bg)',
+    text: 'var(--color-mode-rush-text)',
+    light: 'var(--color-mode-rush-light)',
+  },
+  collections: {
+    border: 'var(--color-mode-collections-border)',
+    bg: 'var(--color-mode-collections-bg)',
+    text: 'var(--color-mode-collections-text)',
+    light: 'var(--color-mode-collections-light)',
+  },
+  training: {
+    border: 'var(--color-mode-training-border)',
+    bg: 'var(--color-mode-training-bg)',
+    text: 'var(--color-mode-training-text)',
+    light: 'var(--color-mode-training-light)',
+  },
+  technique: {
+    border: 'var(--color-mode-technique-border)',
+    bg: 'var(--color-mode-technique-bg)',
+    text: 'var(--color-mode-technique-text)',
+    light: 'var(--color-mode-technique-light)',
+  },
+  random: {
+    border: 'var(--color-mode-random-border)',
+    bg: 'var(--color-mode-random-bg)',
+    text: 'var(--color-mode-random-text)',
+    light: 'var(--color-mode-random-light)',
+  },
+  learning: {
+    border: 'var(--color-mode-learning-border)',
+    bg: 'var(--color-mode-learning-bg)',
+    text: 'var(--color-mode-learning-text)',
+    light: 'var(--color-mode-learning-light)',
+  },
 };
 
 const styles = {
@@ -213,9 +258,7 @@ export function HomeTile({
       }}
     >
       {/* Featured Badge */}
-      {isFeatured && (
-        <div style={styles.featuredBadge}>NEW</div>
-      )}
+      {isFeatured && <div style={styles.featuredBadge}>NEW</div>}
 
       {/* Header with icon */}
       <div style={styles.header}>
@@ -231,9 +274,7 @@ export function HomeTile({
         </div>
 
         {/* Icon */}
-        <div style={{ ...styles.iconContainer, backgroundColor: colors.light }}>
-          {icon}
-        </div>
+        <div style={{ ...styles.iconContainer, backgroundColor: colors.light }}>{icon}</div>
       </div>
 
       {/* Description */}
@@ -264,7 +305,9 @@ export function HomeTile({
       {tags && tags.length > 0 && (
         <div style={styles.tagsContainer}>
           {tags.map((tag) => (
-            <span key={tag} style={styles.tag}>{tag}</span>
+            <span key={tag} style={styles.tag}>
+              {tag}
+            </span>
           ))}
         </div>
       )}

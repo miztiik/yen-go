@@ -93,7 +93,11 @@ export const RushOverlay: FunctionComponent<RushOverlayProps> = ({
           {Array.from({ length: maxLives }).map((_, i) => (
             <span
               key={i}
-              className={i < lives ? 'text-[var(--color-accent)]' : 'opacity-25 text-[var(--color-text-muted)]'}
+              className={
+                i < lives
+                  ? 'text-[var(--color-accent)]'
+                  : 'opacity-25 text-[var(--color-text-muted)]'
+              }
               aria-label={i < lives ? 'Life remaining' : 'Life lost'}
             >
               <HeartIcon size={20} filled={i < lives} />
@@ -103,8 +107,12 @@ export const RushOverlay: FunctionComponent<RushOverlayProps> = ({
 
         {/* Score */}
         <div className="flex items-center gap-1.5">
-          <span className="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">Score</span>
-          <span className="text-xl font-semibold" data-testid="rush-score">{score}</span>
+          <span className="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
+            Score
+          </span>
+          <span className="text-xl font-semibold" data-testid="rush-score">
+            {score}
+          </span>
         </div>
 
         {/* Streak (if > 0) */}

@@ -61,7 +61,7 @@ export const ActivityHeatmap: FunctionalComponent<ActivityHeatmapProps> = ({ act
           data-count={count}
         >
           <title>{`${dateKey}: ${count} puzzle${count !== 1 ? 's' : ''}`}</title>
-        </rect>,
+        </rect>
       );
     }
   }

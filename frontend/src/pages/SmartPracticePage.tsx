@@ -65,7 +65,11 @@ class SmartPracticeLoader implements PuzzleSetLoader {
   getPuzzleSgf(index: number): Promise<LoaderResult<string>> {
     const entry = this.entries[index];
     if (!entry) {
-      return Promise.resolve({ success: false, error: 'not_found' as const, message: 'No entry at index' });
+      return Promise.resolve({
+        success: false,
+        error: 'not_found' as const,
+        message: 'No entry at index',
+      });
     }
     return fetchSGFContent(entry.path);
   }
@@ -124,10 +128,10 @@ export const SmartPracticePage: FunctionalComponent<SmartPracticePageProps> = ({
       if (techniquesProp && techniquesProp.length > 0) {
         // Use prop-provided technique slugs — fetch their stats for display
         const allWeak = await getWeakestTechniques(10);
-        techStats = allWeak.filter(t => techniquesProp.includes(t.tagSlug));
+        techStats = allWeak.filter((t) => techniquesProp.includes(t.tagSlug));
         // If none matched from analytics, create minimal entries for resolution
         if (techStats.length === 0) {
-          techStats = techniquesProp.map(slug => ({
+          techStats = techniquesProp.map((slug) => ({
             tagId: tagSlugToId(slug) ?? 0,
             tagSlug: slug,
             tagName: slug,
@@ -179,19 +183,24 @@ export const SmartPracticePage: FunctionalComponent<SmartPracticePageProps> = ({
     }
 
     void init();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [techniquesProp]);
 
-  const handlePuzzleComplete = useCallback((puzzleId: string, isCorrect: boolean) => {
-    if (!isCorrect) {
-      let context = 'smart-practice';
-      if (state.phase === 'playing') {
-        const first = state.techniques[0];
-        if (first) context = first.tagSlug;
+  const handlePuzzleComplete = useCallback(
+    (puzzleId: string, isCorrect: boolean) => {
+      if (!isCorrect) {
+        let context = 'smart-practice';
+        if (state.phase === 'playing') {
+          const first = state.techniques[0];
+          if (first) context = first.tagSlug;
+        }
+        addToRetryQueue(puzzleId, context);
       }
-      addToRetryQueue(puzzleId, context);
-    }
-  }, [state]);
+    },
+    [state]
+  );
 
   const handleAllComplete = useCallback(() => {
     if (state.phase === 'playing') {
@@ -206,10 +215,7 @@ export const SmartPracticePage: FunctionalComponent<SmartPracticePageProps> = ({
   if (state.phase === 'loading') {
     return (
       <PageLayout>
-        <PageHeader
-          title="Smart Practice"
-          onBack={onBack}
-        />
+        <PageHeader title="Smart Practice" onBack={onBack} />
         <div className="flex flex-1 items-center justify-center">
           <p className="text-[var(--color-text-secondary)]">Analyzing your progress...</p>
         </div>
@@ -220,14 +226,9 @@ export const SmartPracticePage: FunctionalComponent<SmartPracticePageProps> = ({
   if (state.phase === 'empty') {
     return (
       <PageLayout>
-        <PageHeader
-          title="Smart Practice"
-          onBack={onBack}
-        />
+        <PageHeader title="Smart Practice" onBack={onBack} />
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 text-center">
-          <p className="text-lg font-medium text-[var(--color-text-primary)]">
-            All caught up!
-          </p>
+          <p className="text-lg font-medium text-[var(--color-text-primary)]">All caught up!</p>
           <p className="text-[var(--color-text-secondary)]">
             No unsolved puzzles found for your weak techniques. Keep practicing to unlock more!
           </p>
@@ -240,20 +241,13 @@ export const SmartPracticePage: FunctionalComponent<SmartPracticePageProps> = ({
   }
 
   if (state.phase === 'complete') {
-    const techNames = state.techniques.map(t => t.tagName).join(', ');
+    const techNames = state.techniques.map((t) => t.tagName).join(', ');
     return (
       <PageLayout>
-        <PageHeader
-          title="Smart Practice"
-          onBack={onBack}
-        />
+        <PageHeader title="Smart Practice" onBack={onBack} />
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 text-center">
-          <p className="text-lg font-medium text-[var(--color-text-primary)]">
-            Session Complete
-          </p>
-          <p className="text-[var(--color-text-secondary)]">
-            Focused techniques: {techNames}
-          </p>
+          <p className="text-lg font-medium text-[var(--color-text-primary)]">Session Complete</p>
+          <p className="text-[var(--color-text-secondary)]">Focused techniques: {techNames}</p>
           <Button onClick={onBack} variant="secondary">
             Done
           </Button>

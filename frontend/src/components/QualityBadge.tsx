@@ -1,8 +1,8 @@
 /**
  * QualityBadge component for displaying puzzle quality level as stars.
- * 
+ *
  * Provides visual quality indicator with level-specific colors and tooltips.
- * 
+ *
  * @module components/QualityBadge
  */
 
@@ -81,9 +81,7 @@ const Tooltip: FunctionalComponent<{
       }}
     >
       <strong>{levelLabel}</strong>
-      <div style={{ opacity: 0.9, fontSize: '11px', marginTop: '2px' }}>
-        {description}
-      </div>
+      <div style={{ opacity: 0.9, fontSize: '11px', marginTop: '2px' }}>{description}</div>
     </div>
   );
 };
@@ -111,9 +109,9 @@ function getLevelDescription(level: PuzzleQualityLevel): string {
 
 /**
  * QualityBadge component
- * 
+ *
  * Displays quality tier as visual stars with color coding.
- * 
+ *
  * Usage:
  * ```tsx
  * <QualityBadge tier={2} />

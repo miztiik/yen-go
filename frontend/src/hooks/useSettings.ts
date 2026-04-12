@@ -89,9 +89,18 @@ function loadSettings(): AppSettings {
         ...DEFAULT_SETTINGS,
         theme: validateTheme(parsed.theme),
         autoAdvanceDelay: validateDelay(parsed.autoAdvanceDelay),
-        soundEnabled: typeof parsed.soundEnabled === 'boolean' ? parsed.soundEnabled : DEFAULT_SETTINGS.soundEnabled,
-        coordinateLabels: typeof parsed.coordinateLabels === 'boolean' ? parsed.coordinateLabels : DEFAULT_SETTINGS.coordinateLabels,
-        autoAdvance: typeof parsed.autoAdvance === 'boolean' ? parsed.autoAdvance : DEFAULT_SETTINGS.autoAdvance,
+        soundEnabled:
+          typeof parsed.soundEnabled === 'boolean'
+            ? parsed.soundEnabled
+            : DEFAULT_SETTINGS.soundEnabled,
+        coordinateLabels:
+          typeof parsed.coordinateLabels === 'boolean'
+            ? parsed.coordinateLabels
+            : DEFAULT_SETTINGS.coordinateLabels,
+        autoAdvance:
+          typeof parsed.autoAdvance === 'boolean'
+            ? parsed.autoAdvance
+            : DEFAULT_SETTINGS.autoAdvance,
       };
     }
   } catch {
@@ -178,26 +187,25 @@ export function useSettings(): UseSettingsReturn {
   useEffect(() => {
     const listener = (): void => forceUpdate((c) => c + 1);
     listeners.add(listener);
-    return () => { listeners.delete(listener); };
+    return () => {
+      listeners.delete(listener);
+    };
   }, []);
 
   const settings = getSettings();
 
-  const updateSettings = useCallback(
-    (updates: Partial<AppSettings>) => {
-      const next: AppSettings = {
-        ...getSettings(),
-        ...updates,
-      };
-      next.theme = validateTheme(next.theme);
-      next.autoAdvanceDelay = validateDelay(next.autoAdvanceDelay);
-      currentSettings = next;
-      saveSettings(next);
-      applyTheme(next.theme);
-      notifyListeners();
-    },
-    [],
-  );
+  const updateSettings = useCallback((updates: Partial<AppSettings>) => {
+    const next: AppSettings = {
+      ...getSettings(),
+      ...updates,
+    };
+    next.theme = validateTheme(next.theme);
+    next.autoAdvanceDelay = validateDelay(next.autoAdvanceDelay);
+    currentSettings = next;
+    saveSettings(next);
+    applyTheme(next.theme);
+    notifyListeners();
+  }, []);
 
   const resetSettings = useCallback(() => {
     currentSettings = { ...DEFAULT_SETTINGS };

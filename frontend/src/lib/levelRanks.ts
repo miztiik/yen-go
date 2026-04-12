@@ -19,7 +19,7 @@ export interface RankRange {
  * Rank ranges derived from config/puzzle-levels.json.
  */
 const RANK_RANGES: Readonly<Record<string, RankRange>> = Object.fromEntries(
-  LEVELS.map(l => [l.slug, { min: l.rankRange.min, max: l.rankRange.max }])
+  LEVELS.map((l) => [l.slug, { min: l.rankRange.min, max: l.rankRange.max }])
 );
 
 /**
@@ -49,7 +49,10 @@ export function formatRankRange(levelSlug: string): string | null {
  * @returns e.g. "Cho Chikun Life Death Elementary"
  */
 export function humanizeCollectionName(slug: string): string {
-  return slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  return slug
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
 }
 
 /**
@@ -64,18 +67,12 @@ export function humanizeCollectionName(slug: string): string {
  * @param position - Position within chapter (0 = no position)
  * @returns Formatted pill text
  */
-export function formatCollectionPill(
-  slug: string,
-  chapter: string,
-  position: number,
-): string {
+export function formatCollectionPill(slug: string, chapter: string, position: number): string {
   const name = humanizeCollectionName(slug);
   if (!chapter || chapter === '0') return name;
 
   const isNumeric = /^\d+$/.test(chapter);
-  const chapterLabel = isNumeric
-    ? `Ch.${chapter}`
-    : humanizeCollectionName(chapter);
+  const chapterLabel = isNumeric ? `Ch.${chapter}` : humanizeCollectionName(chapter);
   const positionSuffix = position > 0 ? ` #${position}` : '';
 
   return `${name} - ${chapterLabel}${positionSuffix}`;

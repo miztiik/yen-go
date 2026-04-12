@@ -12,8 +12,8 @@
 
 export interface RetryEntry {
   readonly puzzleId: string;
-  readonly context: string;       // technique slug or collection slug
-  readonly failedAt: string;      // ISO 8601
+  readonly context: string; // technique slug or collection slug
+  readonly failedAt: string; // ISO 8601
   readonly retryCount: number;
 }
 
@@ -51,7 +51,7 @@ function writeQueue(entries: readonly RetryEntry[]): void {
  */
 export function addToRetryQueue(puzzleId: string, context: string): void {
   const queue = readQueue();
-  const idx = queue.findIndex(e => e.puzzleId === puzzleId);
+  const idx = queue.findIndex((e) => e.puzzleId === puzzleId);
 
   if (idx >= 0) {
     const existing = queue[idx]!;
@@ -79,7 +79,7 @@ export function addToRetryQueue(puzzleId: string, context: string): void {
 export function getRetryQueue(context?: string): readonly RetryEntry[] {
   const queue = readQueue();
   if (context === undefined) return queue;
-  return queue.filter(e => e.context === context);
+  return queue.filter((e) => e.context === context);
 }
 
 /**
@@ -87,7 +87,7 @@ export function getRetryQueue(context?: string): readonly RetryEntry[] {
  */
 export function removeFromRetryQueue(puzzleId: string): void {
   const queue = readQueue();
-  writeQueue(queue.filter(e => e.puzzleId !== puzzleId));
+  writeQueue(queue.filter((e) => e.puzzleId !== puzzleId));
 }
 
 /**
@@ -99,5 +99,5 @@ export function clearRetryQueue(context?: string): void {
     return;
   }
   const queue = readQueue();
-  writeQueue(queue.filter(e => e.context !== context));
+  writeQueue(queue.filter((e) => e.context !== context));
 }

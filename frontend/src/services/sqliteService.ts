@@ -39,7 +39,9 @@ export async function init(): Promise<void> {
           localStorage.setItem(DB_VERSION_KEY, data.db_version);
         }
       })
-      .catch(() => {/* best-effort */});
+      .catch(() => {
+        /* best-effort */
+      });
   })();
 
   void initPromise.catch(() => {
@@ -52,7 +54,7 @@ export async function init(): Promise<void> {
 /** Execute a SQL query and return typed results. */
 export function query<T = Record<string, unknown>>(
   sql: string,
-  params?: (string | number | null)[],
+  params?: (string | number | null)[]
 ): T[] {
   if (!db) throw new Error('Database not initialized. Call init() first.');
 

@@ -1,7 +1,7 @@
 /**
  * Solution Tree Component
  * @module components/SolutionTree/SolutionTree
- * 
+ *
  * @description
  * Visualizes the puzzle solution tree showing player's path and branches.
  * This component renders an accessible, interactive tree visualization with:
@@ -36,7 +36,7 @@
  *
  * @see SolutionTreeErrorBoundary - For error handling wrapper
  * @see TreeNode - Individual node rendering (TreeNode.tsx)
- * 
+ *
  * Covers: T039, T004-T020
  */
 
@@ -94,13 +94,13 @@ export interface SolutionTreeProps {
   showResponses?: boolean;
   /** CSS class name */
   className?: string;
-  /** 
+  /**
    * Reveal mode for progressive disclosure (T3.2).
    * - 'progressive': Only show explored branches (nodes player has visited)
    * - 'full': Show entire solution tree (default, for completion/show answer)
    */
   revealMode?: 'progressive' | 'full';
-  /** 
+  /**
    * Set of node IDs that have been explored/visited.
    * Used when revealMode='progressive' to filter visible nodes.
    */
@@ -113,15 +113,15 @@ export interface SolutionTreeProps {
  */
 function positionToDisplay(sgfMove: string, boardSize: number = 9): string {
   if (!sgfMove || sgfMove.length !== 2) return '??';
-  
+
   const x = sgfMove.charCodeAt(0) - 97; // 'a' = 0
   const y = sgfMove.charCodeAt(1) - 97;
-  
+
   // Convert to standard Go notation (A-T, excluding I, 1-19 from bottom)
   const letters = 'ABCDEFGHJKLMNOPQRST'; // No 'I'
   const col = letters[x] || '?';
   const row = boardSize - y;
-  
+
   return `${col}${row}`;
 }
 
@@ -206,7 +206,9 @@ function TreeNode({
     node.isTesuji ? 'tesuji' : '',
     node.isSetupNode ? 'setup-node' : '',
     node.isUserMove ? 'user-move' : 'opponent-move',
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   // Spec 012: Build ARIA label for accessibility
   const ariaLabel = [
@@ -214,7 +216,9 @@ function TreeNode({
     !node.isCorrect ? 'Wrong move' : '',
     node.isTesuji ? 'Tesuji - key move' : '',
     isDeadEnd ? 'Dead end' : '',
-  ].filter(Boolean).join(', ');
+  ]
+    .filter(Boolean)
+    .join(', ');
 
   /**
    * Handle keyboard activation for accessibility.
@@ -228,7 +232,7 @@ function TreeNode({
   };
 
   // FR-002: Stone icons - black for user, white for opponent
-  const stoneIcon = node.isSetupNode ? '+' : (node.isUserMove ? '●' : '○');
+  const stoneIcon = node.isSetupNode ? '+' : node.isUserMove ? '●' : '○';
 
   return (
     <div
@@ -259,23 +263,23 @@ function TreeNode({
           </span>
         )}
       </span>
-      
+
       {node.children.length > 0 && (
         <div className="tree-children" role="group">
           {node.children
             // T3.2: Filter children in progressive mode - only show explored nodes
             .filter((child) => revealMode === 'full' || exploredNodes.has(child.id))
             .map((child) => (
-            <TreeNode
-              key={child.id}
-              node={child}
-              showMoveNumbers={showMoveNumbers}
-              onNodeClick={onNodeClick}
-              maxDepth={maxDepth}
-              revealMode={revealMode}
-              exploredNodes={exploredNodes}
-            />
-          ))}
+              <TreeNode
+                key={child.id}
+                node={child}
+                showMoveNumbers={showMoveNumbers}
+                onNodeClick={onNodeClick}
+                maxDepth={maxDepth}
+                revealMode={revealMode}
+                exploredNodes={exploredNodes}
+              />
+            ))}
         </div>
       )}
     </div>
@@ -312,15 +316,12 @@ export function SolutionTree({
     const explored = new Set<string>();
     explored.add('0-'); // Root is always visible
     explored.add('0-root'); // Root variant
-    currentPath.forEach(id => explored.add(id));
+    currentPath.forEach((id) => explored.add(id));
     return explored;
   }, [exploredNodesProp, currentPath]);
 
   // Build tree data with path marking
-  const treeData = useMemo(
-    () => buildTreeData(tree, pathSet, 0, 1, true),
-    [tree, pathSet]
-  );
+  const treeData = useMemo(() => buildTreeData(tree, pathSet, 0, 1, true), [tree, pathSet]);
 
   const handleNodeClick = useCallback(
     (nodeId: string) => {

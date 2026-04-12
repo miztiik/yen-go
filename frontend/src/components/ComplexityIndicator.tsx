@@ -1,8 +1,8 @@
 /**
  * ComplexityIndicator component showing puzzle complexity metrics.
- * 
+ *
  * Displays solution depth, reading count, stone count, and uniqueness score.
- * 
+ *
  * @module components/ComplexityIndicator
  */
 
@@ -30,10 +30,7 @@ const MetricItem: FunctionalComponent<{
   value: number | string;
   description?: string;
 }> = ({ icon, label, value, description }) => (
-  <div
-    className="flex items-center gap-2 py-1.5"
-    title={description}
-  >
+  <div className="flex items-center gap-2 py-1.5" title={description}>
     <span className="text-base">{icon}</span>
     <span className="flex-1 text-[13px] text-[--color-text-secondary]">{label}</span>
     <span className="min-w-[32px] text-right text-sm font-semibold text-[--color-text-primary]">
@@ -63,12 +60,12 @@ function getComplexityLevel(metrics: ComplexityMetrics): {
 
 /**
  * ComplexityIndicator component
- * 
+ *
  * Shows puzzle complexity metrics (depth, reading, stones).
- * 
+ *
  * Usage:
  * ```tsx
- * <ComplexityIndicator 
+ * <ComplexityIndicator
  *   metrics={{ solutionDepth: 5, readingCount: 3, stoneCount: 12 }}
  * />
  * ```

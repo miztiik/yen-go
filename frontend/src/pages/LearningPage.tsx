@@ -49,40 +49,85 @@ const TIER_CONFIG: Record<LearningTier, { emoji: string; description: string }> 
 function getTopicIcon(icon: TopicIcon, size = 24): JSX.Element {
   const color = 'var(--color-mode-learning-border, #06b6d4)';
   switch (icon) {
-    case 'seedling': return <SeedlingIcon size={size} color={color} />;
-    case 'grid': return <GridIcon size={size} />;
-    case 'lightning': return <LightningIcon size={size} color={color} />;
-    case 'trendUp': return (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
-        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-        <polyline points="16 7 22 7 22 13" />
-      </svg>
-    );
-    case 'star': return (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
-        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-      </svg>
-    );
-    case 'tesuji': return <TesujiIcon size={size} color={color} />;
-    case 'techniqueKey': return <TechniqueKeyIcon size={size} color={color} />;
-    case 'compass': return (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
-        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="10" />
-        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-      </svg>
-    );
-    case 'hint': return <SeedlingIcon size={size} color={color} />;
+    case 'seedling':
+      return <SeedlingIcon size={size} color={color} />;
+    case 'grid':
+      return <GridIcon size={size} />;
+    case 'lightning':
+      return <LightningIcon size={size} color={color} />;
+    case 'trendUp':
+      return (
+        <svg
+          width={size}
+          height={size}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+          <polyline points="16 7 22 7 22 13" />
+        </svg>
+      );
+    case 'star':
+      return (
+        <svg
+          width={size}
+          height={size}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+      );
+    case 'tesuji':
+      return <TesujiIcon size={size} color={color} />;
+    case 'techniqueKey':
+      return <TechniqueKeyIcon size={size} color={color} />;
+    case 'compass':
+      return (
+        <svg
+          width={size}
+          height={size}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+        </svg>
+      );
+    case 'hint':
+      return <SeedlingIcon size={size} color={color} />;
   }
 }
 
 function ExternalLinkIcon(): JSX.Element {
   return (
-    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-      className="inline-block shrink-0 opacity-0 transition-opacity group-hover/link:opacity-60">
+    <svg
+      width={14}
+      height={14}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="inline-block shrink-0 opacity-0 transition-opacity group-hover/link:opacity-60"
+    >
       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
       <polyline points="15 3 21 3 21 9" />
       <line x1="10" y1="14" x2="21" y2="3" />
@@ -93,8 +138,14 @@ function ExternalLinkIcon(): JSX.Element {
 function ChevronDownIcon({ open }: { open: boolean }): JSX.Element {
   return (
     <svg
-      width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      width={18}
+      height={18}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className={`shrink-0 text-[var(--color-text-muted)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
       aria-hidden="true"
     >
@@ -112,7 +163,7 @@ function countLessons(topic: LearningTopic): number {
 }
 
 function countLinks(topic: LearningTopic): number {
-  return topic.sections.reduce((sum, s) => sum + s.lessons.filter(l => l.url).length, 0);
+  return topic.sections.reduce((sum, s) => sum + s.lessons.filter((l) => l.url).length, 0);
 }
 
 // ============================================================================
@@ -171,9 +222,7 @@ function SectionBlock({
               <li
                 key={i}
                 className={`col-span-1 sm:col-span-2 my-0.5 flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-semibold transition-colors ${
-                  lesson.url
-                    ? 'group/link hover:brightness-110'
-                    : ''
+                  lesson.url ? 'group/link hover:brightness-110' : ''
                 }`}
                 style={{ backgroundColor: 'rgba(251, 191, 36, 0.08)' }}
               >
@@ -197,7 +246,10 @@ function SectionBlock({
                     <ExternalLinkIcon />
                   </a>
                 ) : (
-                  <span className="flex-1 truncate text-[var(--color-text-muted)]" title={lesson.title}>
+                  <span
+                    className="flex-1 truncate text-[var(--color-text-muted)]"
+                    title={lesson.title}
+                  >
                     Review
                   </span>
                 )}
@@ -218,7 +270,9 @@ function SectionBlock({
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[10px] font-semibold tabular-nums ${
                   lesson.url ? '' : 'bg-[var(--color-neutral-100)] text-[var(--color-text-muted)]'
                 }`}
-                style={lesson.url ? { backgroundColor: ACCENT.light, color: ACCENT.text } : undefined}
+                style={
+                  lesson.url ? { backgroundColor: ACCENT.light, color: ACCENT.text } : undefined
+                }
               >
                 {i + 1}
               </span>
@@ -236,7 +290,10 @@ function SectionBlock({
                   <ExternalLinkIcon />
                 </a>
               ) : (
-                <span className="flex-1 truncate text-[var(--color-text-muted)]" title={lesson.title}>
+                <span
+                  className="flex-1 truncate text-[var(--color-text-muted)]"
+                  title={lesson.title}
+                >
                   {lesson.title}
                 </span>
               )}
@@ -260,11 +317,7 @@ function TopicExpanded({ topic }: { topic: LearningTopic }): JSX.Element {
       {/* All sections — scrollable if content is long */}
       <div className="max-h-[520px] space-y-5 overflow-y-auto pr-1">
         {topic.sections.map((section, i) => (
-          <SectionBlock
-            key={i}
-            section={section}
-            sectionIndex={i}
-          />
+          <SectionBlock key={i} section={section} sectionIndex={i} />
         ))}
       </div>
     </div>
@@ -272,7 +325,11 @@ function TopicExpanded({ topic }: { topic: LearningTopic }): JSX.Element {
 }
 
 /** Topic card — HomeTile DNA: rounded-3xl, shadow, accent bottom border, hover lift */
-function TopicCard({ topic, isExpanded, onToggle }: {
+function TopicCard({
+  topic,
+  isExpanded,
+  onToggle,
+}: {
   topic: LearningTopic;
   isExpanded: boolean;
   onToggle: () => void;
@@ -331,14 +388,10 @@ function TopicCard({ topic, isExpanded, onToggle }: {
               {topic.sections.length} {topic.sections.length === 1 ? 'section' : 'sections'}
             </span>
             {/* Lesson count */}
-            <span className="text-xs text-[var(--color-text-muted)]">
-              {lessonCount} lessons
-            </span>
+            <span className="text-xs text-[var(--color-text-muted)]">{lessonCount} lessons</span>
             {/* Puzzle link count (if different from total) */}
             {linkCount > 0 && linkCount < lessonCount && (
-              <span className="text-xs text-[var(--color-text-muted)]">
-                {linkCount} puzzles
-              </span>
+              <span className="text-xs text-[var(--color-text-muted)]">{linkCount} puzzles</span>
             )}
           </div>
         </div>
@@ -365,7 +418,7 @@ export function LearningPage({ onNavigateHome }: LearningPageProps): JSX.Element
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
 
   const toggleTopic = useCallback((slug: string) => {
-    setExpandedTopics(prev => {
+    setExpandedTopics((prev) => {
       const next = new Set(prev);
       if (next.has(slug)) next.delete(slug);
       else next.add(slug);
@@ -373,7 +426,7 @@ export function LearningPage({ onNavigateHome }: LearningPageProps): JSX.Element
     });
   }, []);
 
-  const activeTopics = LEARNING_TOPICS.filter(t => t.status === 'active');
+  const activeTopics = LEARNING_TOPICS.filter((t) => t.status === 'active');
   const totalLessons = activeTopics.reduce((sum, t) => sum + countLessons(t), 0);
   const totalLinks = activeTopics.reduce((sum, t) => sum + countLinks(t), 0);
 
@@ -411,7 +464,10 @@ export function LearningPage({ onNavigateHome }: LearningPageProps): JSX.Element
                 >
                   Learn Go
                 </h1>
-                <p className="m-0 mt-1.5 text-sm text-[var(--color-text-muted)] sm:text-base" style={{ fontWeight: 500 }}>
+                <p
+                  className="m-0 mt-1.5 text-sm text-[var(--color-text-muted)] sm:text-base"
+                  style={{ fontWeight: 500 }}
+                >
                   Interactive puzzles from beginner to dan
                 </p>
               </div>
@@ -451,8 +507,8 @@ export function LearningPage({ onNavigateHome }: LearningPageProps): JSX.Element
             Content — Tier sections with topic cards
         ================================================================ */}
         <div className="mx-auto max-w-5xl px-4 py-6">
-          {LEARNING_TIERS.map(tier => {
-            const tierTopics = activeTopics.filter(t => t.tier === tier.id);
+          {LEARNING_TIERS.map((tier) => {
+            const tierTopics = activeTopics.filter((t) => t.tier === tier.id);
             if (tierTopics.length === 0) return null;
 
             const tierConfig = TIER_CONFIG[tier.id];
@@ -480,7 +536,7 @@ export function LearningPage({ onNavigateHome }: LearningPageProps): JSX.Element
 
                 {/* Topic cards — single column for clean expansion */}
                 <div className="space-y-4">
-                  {tierTopics.map(topic => (
+                  {tierTopics.map((topic) => (
                     <TopicCard
                       key={topic.slug}
                       topic={topic}

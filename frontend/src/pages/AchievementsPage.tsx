@@ -9,11 +9,7 @@
 
 import type { JSX } from 'preact';
 import { useState, useMemo } from 'preact/hooks';
-import {
-  ACHIEVEMENTS,
-  type AchievementCategory,
-  type AchievementTier,
-} from '../lib/achievements';
+import { ACHIEVEMENTS, type AchievementCategory, type AchievementTier } from '../lib/achievements';
 import {
   loadAchievementProgress,
   getUnlockRecord,
@@ -57,7 +53,8 @@ const styles: Record<string, JSX.CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 50%, var(--color-bg-tertiary) 100%)',
+    background:
+      'linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 50%, var(--color-bg-tertiary) 100%)',
   },
   header: {
     display: 'flex',
@@ -186,10 +183,7 @@ const styles: Record<string, JSX.CSSProperties> = {
 /**
  * Achievements Page Component.
  */
-export function AchievementsPage({
-  onBack,
-  className = '',
-}: AchievementsPageProps): JSX.Element {
+export function AchievementsPage({ onBack, className = '' }: AchievementsPageProps): JSX.Element {
   const [tierFilter, setTierFilter] = useState<AchievementTier | 'all'>('all');
   const [showUnlockedOnly, setShowUnlockedOnly] = useState(false);
 
@@ -222,7 +216,7 @@ export function AchievementsPage({
 
   // Filter achievements
   const filteredAchievements = useMemo(() => {
-    return ACHIEVEMENTS.filter(a => {
+    return ACHIEVEMENTS.filter((a) => {
       if (tierFilter !== 'all' && a.tier !== tierFilter) return false;
       if (showUnlockedOnly && !progress.unlockedIds.includes(a.id)) return false;
       return true;
@@ -236,12 +230,7 @@ export function AchievementsPage({
     <div className={`achievements-page ${className}`} style={styles.container}>
       <header style={styles.header}>
         {onBack && (
-          <button
-            type="button"
-            style={styles.backButton}
-            onClick={onBack}
-            aria-label="Go back"
-          >
+          <button type="button" style={styles.backButton} onClick={onBack} aria-label="Go back">
             ←
           </button>
         )}
@@ -263,14 +252,16 @@ export function AchievementsPage({
             <span style={styles.summaryLabel}>Complete</span>
           </div>
           <div style={styles.summaryItem}>
-            <span style={styles.summaryValue}>{tierCounts.gold.unlocked + tierCounts.platinum.unlocked}</span>
+            <span style={styles.summaryValue}>
+              {tierCounts.gold.unlocked + tierCounts.platinum.unlocked}
+            </span>
             <span style={styles.summaryLabel}>Rare</span>
           </div>
         </div>
 
         {/* Filters */}
         <div style={styles.filters}>
-          {TIER_OPTIONS.map(tier => (
+          {TIER_OPTIONS.map((tier) => (
             <button
               key={tier}
               type="button"
@@ -301,12 +292,14 @@ export function AchievementsPage({
             <p>No achievements match your filters.</p>
           </div>
         ) : (
-          categories.map(category => {
-            const categoryAchievements = filteredAchievements.filter(a => a.category === category);
+          categories.map((category) => {
+            const categoryAchievements = filteredAchievements.filter(
+              (a) => a.category === category
+            );
             if (categoryAchievements.length === 0) return null;
 
             const categoryInfo = CATEGORY_INFO[category];
-            const categoryUnlocked = categoryAchievements.filter(a =>
+            const categoryUnlocked = categoryAchievements.filter((a) =>
               progress.unlockedIds.includes(a.id)
             ).length;
 
@@ -321,7 +314,7 @@ export function AchievementsPage({
                 </div>
 
                 <div style={styles.achievementGrid}>
-                  {categoryAchievements.map(achievement => {
+                  {categoryAchievements.map((achievement) => {
                     const unlockRecord = getUnlockRecord(progress, achievement.id);
                     return (
                       <AchievementCard

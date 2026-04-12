@@ -1,7 +1,7 @@
 /**
  * TreeNode Component
  * @module components/SolutionTree/TreeNode
- * 
+ *
  * @description
  * Individual node component for solution tree visualization.
  * Renders a single node with all its visual states and children recursively.
@@ -74,7 +74,9 @@ export function TreeNode({
     node.isCurrent ? 'current' : '',
     node.isCorrect ? 'correct' : 'wrong',
     node.isUserMove ? 'user-move' : 'opponent-move',
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const handleClick = () => {
     onNodeClick?.(node.id);
@@ -100,15 +102,17 @@ export function TreeNode({
       tabIndex={0}
     >
       <span className="node-content">
-        {showMoveNumbers && (
-          <span className="move-number">{node.moveNumber}</span>
-        )}
+        {showMoveNumbers && <span className="move-number">{node.moveNumber}</span>}
         <span className="move-coord">{node.displayMove}</span>
         {node.isUserMove && (
-          <span className="stone-indicator black" aria-hidden="true">●</span>
+          <span className="stone-indicator black" aria-hidden="true">
+            ●
+          </span>
         )}
         {!node.isUserMove && (
-          <span className="stone-indicator white" aria-hidden="true">○</span>
+          <span className="stone-indicator white" aria-hidden="true">
+            ○
+          </span>
         )}
         {isDeadEnd && (
           <span className="dead-end" data-testid="dead-end" aria-label="Dead end">
@@ -116,7 +120,7 @@ export function TreeNode({
           </span>
         )}
       </span>
-      
+
       {node.children.length > 0 && (
         <div className="tree-children" role="group">
           {node.children.map((child) => (

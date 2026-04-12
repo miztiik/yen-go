@@ -73,7 +73,7 @@ export function calculateStatsBySkillLevel(
   const avgTimeBySkillLevel: Record<LevelSlug, number> = Object.fromEntries(
     LEVEL_SLUGS.map((slug) => [
       slug,
-      countByLevel[slug] ?? 0 > 0 ? (totalTimeByLevel[slug] ?? 0) / (countByLevel[slug] ?? 1) : 0,
+      (countByLevel[slug] ?? 0 > 0) ? (totalTimeByLevel[slug] ?? 0) / (countByLevel[slug] ?? 1) : 0,
     ])
   ) as Record<LevelSlug, number>;
 
@@ -132,8 +132,7 @@ export function updateStatisticsAfterCompletion(
     totalPuzzlesSolved: stats.totalPuzzlesSolved + 1,
     totalTimeSpentMs: stats.totalTimeSpentMs + completion.timeSpentMs,
     totalHintsUsed: stats.totalHintsUsed + completion.hintsUsed,
-    puzzlesWithoutHints:
-      stats.puzzlesWithoutHints + (completion.hintsUsed === 0 ? 1 : 0),
+    puzzlesWithoutHints: stats.puzzlesWithoutHints + (completion.hintsUsed === 0 ? 1 : 0),
   };
 
   return {
@@ -150,10 +149,7 @@ export function updateStatisticsAfterCompletion(
  * @param score - Rush score to add
  * @returns Updated user progress
  */
-export function addRushHighScore(
-  progress: UserProgress,
-  score: RushScore
-): UserProgress {
+export function addRushHighScore(progress: UserProgress, score: RushScore): UserProgress {
   const currentScores = [...progress.statistics.rushHighScores];
 
   // Add new score

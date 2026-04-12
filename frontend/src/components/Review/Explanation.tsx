@@ -55,9 +55,7 @@ export const Explanation: FunctionalComponent<ExplanationProps> = ({
         <p className="explanation__text">
           Initial position. Use the controls to step through the solution.
         </p>
-        <p className="explanation__hint">
-          Press → or click Next to see the first move.
-        </p>
+        <p className="explanation__hint">Press → or click Next to see the first move.</p>
       </div>
     );
   }
@@ -80,13 +78,13 @@ export const Explanation: FunctionalComponent<ExplanationProps> = ({
         </span>
       </div>
 
-      {move.explanation && (
-        <p className="explanation__text">{move.explanation}</p>
-      )}
+      {move.explanation && <p className="explanation__text">{move.explanation}</p>}
 
       {isLastMove && (
         <div className="explanation__complete">
-          <span className="explanation__complete-icon" aria-hidden="true">✓</span>
+          <span className="explanation__complete-icon" aria-hidden="true">
+            ✓
+          </span>
           <span className="explanation__complete-text">Solution complete!</span>
         </div>
       )}

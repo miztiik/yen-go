@@ -42,7 +42,10 @@ export function extractHints(properties: Record<string, unknown>): PuzzleHints {
   // Try v7+ compact format first
   const yh = properties.YH as string | undefined;
   if (yh !== undefined && yh !== '') {
-    hints.hints = yh.split('|').map(h => h.trim()).filter(h => h.length > 0);
+    hints.hints = yh
+      .split('|')
+      .map((h) => h.trim())
+      .filter((h) => h.length > 0);
     // Populate legacy fields for backward compatibility
     if (hints.hints[0] !== undefined) {
       const position = sgfToPosition(hints.hints[0]);

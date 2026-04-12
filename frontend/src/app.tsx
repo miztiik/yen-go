@@ -32,11 +32,13 @@ audioService.preload();
 
 export const App: FunctionComponent = (): JSX.Element => {
   // Route state
-  const [route, setRoute] = useState<Route>(() => parseRoute(window.location.pathname, window.location.search));
-  
+  const [route, setRoute] = useState<Route>(() =>
+    parseRoute(window.location.pathname, window.location.search)
+  );
+
   // Get current streak for header display
   const [streak, setStreak] = useState<number>(0);
-  
+
   // Puzzle Rush state
   const [rushDuration, setRushDuration] = useState<RushDuration | null>(null);
   const [rushLevelId, setRushLevelId] = useState<number | null>(null);
@@ -47,7 +49,7 @@ export const App: FunctionComponent = (): JSX.Element => {
   useEffect(() => {
     initializeProgressSystem();
   }, []);
-  
+
   // Load streak on mount
   useEffect(() => {
     try {
@@ -57,13 +59,13 @@ export const App: FunctionComponent = (): JSX.Element => {
       // Ignore errors, streak defaults to 0
     }
   }, []);
-  
+
   // Handle browser back/forward for routes
   useEffect(() => {
     const handlePopState = (): void => {
       setRoute(parseRoute(window.location.pathname, window.location.search));
     };
-    
+
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
@@ -78,7 +80,7 @@ export const App: FunctionComponent = (): JSX.Element => {
       setRushTagId(null);
     }
   }, [route.type, rushDuration]);
-  
+
   const handleBackToHome = useCallback(() => {
     const newRoute: Route = { type: 'home' };
     setRoute(newRoute);
@@ -88,7 +90,11 @@ export const App: FunctionComponent = (): JSX.Element => {
   // Navigation handlers for HomePageGrid
   const handleNavigateDaily = useCallback((mode?: DailyChallengeMode, date?: string) => {
     if (date) {
-      const newRoute: Route = { type: 'modes-daily-date', date, ...(mode === 'timed' ? { mode } : {}) };
+      const newRoute: Route = {
+        type: 'modes-daily-date',
+        date,
+        ...(mode === 'timed' ? { mode } : {}),
+      };
       setRoute(newRoute);
       navigateTo(newRoute);
     } else {
@@ -100,7 +106,12 @@ export const App: FunctionComponent = (): JSX.Element => {
 
   const handleNavigateCollection = useCallback((collectionId: string) => {
     if (collectionId) {
-      const newRoute: Route = { type: 'context', dimension: 'collection', slug: collectionId, filters: {} };
+      const newRoute: Route = {
+        type: 'context',
+        dimension: 'collection',
+        slug: collectionId,
+        filters: {},
+      };
       setRoute(newRoute);
       navigateTo(newRoute);
     } else {
@@ -130,7 +141,12 @@ export const App: FunctionComponent = (): JSX.Element => {
   }, []);
 
   const handleSelectTechnique = useCallback((techniqueId: string) => {
-    const newRoute: Route = { type: 'context', dimension: 'technique', slug: techniqueId, filters: {} };
+    const newRoute: Route = {
+      type: 'context',
+      dimension: 'technique',
+      slug: techniqueId,
+      filters: {},
+    };
     setRoute(newRoute);
     navigateTo(newRoute);
   }, []);
@@ -154,7 +170,10 @@ export const App: FunctionComponent = (): JSX.Element => {
   }, []);
 
   const handleNavigateSmartPractice = useCallback((techniques?: readonly string[]) => {
-    const newRoute: Route = { type: 'smart-practice', ...(techniques?.length ? { techniques: [...techniques] } : {}) };
+    const newRoute: Route = {
+      type: 'smart-practice',
+      ...(techniques?.length ? { techniques: [...techniques] } : {}),
+    };
     setRoute(newRoute);
     navigateTo(newRoute);
   }, []);
@@ -183,11 +202,14 @@ export const App: FunctionComponent = (): JSX.Element => {
   const [randomTagSlug, setRandomTagSlug] = useState<string | null>(null);
 
   // Puzzle Rush handlers
-  const handleRushStart = useCallback((duration: RushDuration, levelId: number | null = null, tagId: number | null = null) => {
-    setRushDuration(duration);
-    setRushLevelId(levelId);
-    setRushTagId(tagId);
-  }, []);
+  const handleRushStart = useCallback(
+    (duration: RushDuration, levelId: number | null = null, tagId: number | null = null) => {
+      setRushDuration(duration);
+      setRushLevelId(levelId);
+      setRushTagId(tagId);
+    },
+    []
+  );
 
   const handleRushNewGame = useCallback(() => {
     setRushDuration(null);
@@ -277,22 +299,13 @@ export const App: FunctionComponent = (): JSX.Element => {
     // Daily challenge browse page (mode selection)
     if (route.type === 'modes-daily') {
       return (
-        <DailyBrowsePage
-          onStartChallenge={handleNavigateDaily}
-          onNavigateHome={handleBackToHome}
-        />
+        <DailyBrowsePage onStartChallenge={handleNavigateDaily} onNavigateHome={handleBackToHome} />
       );
     }
 
     // Daily challenge puzzle solving (specific date)
     if (route.type === 'modes-daily-date') {
-      return (
-        <DailyChallengePage
-          date={route.date}
-          mode={route.mode}
-          onBack={handleBackToHome}
-        />
-      );
+      return <DailyChallengePage date={route.date} mode={route.mode} onBack={handleBackToHome} />;
     }
 
     // Puzzle Rush mode
@@ -372,11 +385,7 @@ export const App: FunctionComponent = (): JSX.Element => {
 
     // Learn Go — topic browse
     if (route.type === 'learning-browse') {
-      return (
-        <LearningPage
-          onNavigateHome={handleBackToHome}
-        />
-      );
+      return <LearningPage onNavigateHome={handleBackToHome} />;
     }
 
     // Progress dashboard
@@ -421,7 +430,11 @@ export const App: FunctionComponent = (): JSX.Element => {
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-bg-primary)]">
-      <AppHeader streak={streak} compact={isPuzzlePlayerRoute} onClickProfile={handleNavigateProgress} />
+      <AppHeader
+        streak={streak}
+        compact={isPuzzlePlayerRoute}
+        onClickProfile={handleNavigateProgress}
+      />
       <div class="route-fade-in" key={route.type}>
         {renderRouteContent()}
       </div>

@@ -166,9 +166,7 @@ export function StatCard({
     .filter(Boolean)
     .join(' ');
 
-  const trendStyle = trend
-    ? [styles.trend.base, styles.trend[trend]].join(' ')
-    : '';
+  const trendStyle = trend ? [styles.trend.base, styles.trend[trend]].join(' ') : '';
 
   const handleClick = onClick
     ? (e: Event) => {

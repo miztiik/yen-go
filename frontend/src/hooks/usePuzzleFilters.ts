@@ -146,11 +146,21 @@ function queryKeyToFilters(key: string): QueryFilters {
     const dim = m[1]!;
     const id = Number(m[2]);
     switch (dim) {
-      case 'l': result.levelId = id; break;
-      case 't': result.tagIds = [...(result.tagIds ?? []), id]; break;
-      case 'c': result.collectionId = id; break;
-      case 'q': result.quality = id; break;
-      case 'ct': result.contentType = id; break;
+      case 'l':
+        result.levelId = id;
+        break;
+      case 't':
+        result.tagIds = [...(result.tagIds ?? []), id];
+        break;
+      case 'c':
+        result.collectionId = id;
+        break;
+      case 'q':
+        result.quality = id;
+        break;
+      case 'ct':
+        result.contentType = id;
+        break;
     }
   }
   return result;
@@ -162,7 +172,7 @@ function queryKeyToFilters(key: string): QueryFilters {
  * Exported for use by Archetype B pages that wire filters directly.
  */
 export function depthPresetToRange(
-  presetId: string | null | undefined,
+  presetId: string | null | undefined
 ): Pick<QueryFilters, 'minDepth' | 'maxDepth'> {
   if (!presetId) return {};
   const preset = depthPresetsConfig.presets.find((p) => p.id === presetId);
@@ -191,12 +201,10 @@ interface FilterDistributions {
  * Includes an "All" synthetic option at index 0 whose count is the sum of
  * all individual level counts. Levels are sorted by ID ascending (difficulty).
  */
-function buildLevelOptions(
-  dist: Readonly<Record<string, number>>,
-): readonly FilterOption[] {
+function buildLevelOptions(dist: Readonly<Record<string, number>>): readonly FilterOption[] {
   const entries = Object.entries(dist)
     .map(([key, count]) => ({ id: Number(key), count }))
-    .filter(e => !Number.isNaN(e.id) && (e.id !== 0 || e.count > 0));
+    .filter((e) => !Number.isNaN(e.id) && (e.id !== 0 || e.count > 0));
 
   // Sort by numeric ID ascending (maps to difficulty order).
   entries.sort((a, b) => a.id - b.id);
@@ -213,9 +221,7 @@ function buildLevelOptions(
     const slug = levelIdToSlug(id);
     const meta = getLevelMeta(slug);
     const label = meta?.name ?? slug;
-    const tooltip = meta
-      ? `${meta.name} (${meta.rankRange.min}–${meta.rankRange.max})`
-      : undefined;
+    const tooltip = meta ? `${meta.name} (${meta.rankRange.min}–${meta.rankRange.max})` : undefined;
     return { id: String(id), label, count, tooltip };
   });
 
@@ -229,7 +235,7 @@ function buildLevelOptions(
  * Tags not present in the distribution are omitted.
  */
 function buildTagOptionGroups(
-  dist: Readonly<Record<string, number>>,
+  dist: Readonly<Record<string, number>>
 ): readonly { label: string; options: readonly FilterOption[] }[] {
   // Build a lookup: tag slug → { id, count }
   const tagCountMap = new Map<string, { numericId: number; count: number }>();
@@ -273,12 +279,10 @@ function buildTagOptionGroups(
  * Build quality filter options from a distribution map.
  * Sorted by quality ID ascending.
  */
-function buildQualityOptions(
-  dist: Readonly<Record<string, number>>,
-): readonly FilterOption[] {
+function buildQualityOptions(dist: Readonly<Record<string, number>>): readonly FilterOption[] {
   const entries = Object.entries(dist)
     .map(([key, count]) => ({ id: Number(key), count }))
-    .filter(e => !Number.isNaN(e.id) && (e.id !== 0 || e.count > 0));
+    .filter((e) => !Number.isNaN(e.id) && (e.id !== 0 || e.count > 0));
 
   entries.sort((a, b) => a.id - b.id);
 
@@ -294,12 +298,10 @@ function buildQualityOptions(
  * Build content-type filter options from a distribution map.
  * Sorted by content-type ID ascending.
  */
-function buildContentTypeOptions(
-  dist: Readonly<Record<string, number>>,
-): readonly FilterOption[] {
+function buildContentTypeOptions(dist: Readonly<Record<string, number>>): readonly FilterOption[] {
   const entries = Object.entries(dist)
     .map(([key, count]) => ({ id: Number(key), count }))
-    .filter(e => !Number.isNaN(e.id) && (e.id !== 0 || e.count > 0));
+    .filter((e) => !Number.isNaN(e.id) && (e.id !== 0 || e.count > 0));
 
   entries.sort((a, b) => a.id - b.id);
 
@@ -317,7 +319,7 @@ function buildContentTypeOptions(
  * Exported for use by Archetype B pages that wire filters directly.
  */
 export function buildDepthPresetOptions(
-  dist: Readonly<Record<string, number>>,
+  dist: Readonly<Record<string, number>>
 ): readonly FilterOption[] {
   return depthPresetsConfig.presets.map((preset) => ({
     id: preset.id,
@@ -379,7 +381,7 @@ function buildFilterOptions(distributions: FilterDistributions): PuzzleFilterOpt
  */
 export function usePuzzleFilters(
   queryKey: string | null,
-  _options?: { dimensions?: readonly ('level' | 'tag' | 'quality')[] },
+  _options?: { dimensions?: readonly ('level' | 'tag' | 'quality')[] }
 ): UsePuzzleFiltersResult {
   // ── Filter counts fetch state ───────────────────────────────────
   const [distributions, setDistributions] = useState<FilterDistributions | null>(null);
@@ -412,8 +414,7 @@ export function usePuzzleFilters(
         setIsLoaded(true);
       } catch (err: unknown) {
         if (cancelled) return;
-        const message =
-          err instanceof Error ? err.message : 'Failed to load filter counts';
+        const message = err instanceof Error ? err.message : 'Failed to load filter counts';
         setError(message);
         setIsLoaded(true); // loaded (with error)
       }
@@ -427,7 +428,7 @@ export function usePuzzleFilters(
   // ── Filter options (derived from distributions) ─────────────────
   const filterOptions = useMemo<PuzzleFilterOptions>(
     () => (distributions ? buildFilterOptions(distributions) : EMPTY_FILTER_OPTIONS),
-    [distributions],
+    [distributions]
   );
 
   // ── Canonical URL filter state ──────────────────────────────────
@@ -444,29 +445,23 @@ export function usePuzzleFilters(
   } = useCanonicalUrl();
 
   // ── Convenience accessors ───────────────────────────────────────
-  const levelIds: readonly number[] = useMemo(
-    () => filters.l ?? [],
-    [filters.l],
-  );
+  const levelIds: readonly number[] = useMemo(() => filters.l ?? [], [filters.l]);
 
-  const tagIds: readonly number[] = useMemo(
-    () => filters.t ?? [],
-    [filters.t],
-  );
+  const tagIds: readonly number[] = useMemo(() => filters.t ?? [], [filters.t]);
 
   const selectedLevelSlug: string | null = useMemo(
     () => (levelIds.length === 1 ? levelIdToSlug(levelIds[0]!) : null),
-    [levelIds],
+    [levelIds]
   );
 
   const selectedTagSlug: string | null = useMemo(
     () => (tagIds.length === 1 ? tagIdToSlug(tagIds[0]!) : null),
-    [tagIds],
+    [tagIds]
   );
 
   const selectedTagLabel: string | null = useMemo(
-    () => (selectedTagSlug ? getTagMeta(selectedTagSlug)?.name ?? null : null),
-    [selectedTagSlug],
+    () => (selectedTagSlug ? (getTagMeta(selectedTagSlug)?.name ?? null) : null),
+    [selectedTagSlug]
   );
 
   const selectedLevelLabels: readonly string[] = useMemo(
@@ -475,7 +470,7 @@ export function usePuzzleFilters(
         const slug = levelIdToSlug(id);
         return getLevelMeta(slug)?.name ?? '';
       }),
-    [levelIds],
+    [levelIds]
   );
 
   // ── Convenience setters ─────────────────────────────────────────
@@ -484,12 +479,10 @@ export function usePuzzleFilters(
   const toggleLevel = useCallback(
     (id: number): void => {
       const current = filters.l ?? [];
-      const next = current.includes(id)
-        ? current.filter((v) => v !== id)
-        : [...current, id];
+      const next = current.includes(id) ? current.filter((v) => v !== id) : [...current, id];
       setFilters({ l: next });
     },
-    [filters.l, setFilters],
+    [filters.l, setFilters]
   );
 
   /** Replace all selected level IDs. */
@@ -497,7 +490,7 @@ export function usePuzzleFilters(
     (ids: number[]): void => {
       setFilters({ l: ids });
     },
-    [setFilters],
+    [setFilters]
   );
 
   /** Replace all selected tag IDs. */
@@ -505,7 +498,7 @@ export function usePuzzleFilters(
     (ids: number[]): void => {
       setFilters({ t: ids });
     },
-    [setFilters],
+    [setFilters]
   );
 
   /** Set a single tag selection (or null to clear). */
@@ -513,7 +506,7 @@ export function usePuzzleFilters(
     (id: number | null): void => {
       setFilters({ t: id === null ? [] : [id] });
     },
-    [setFilters],
+    [setFilters]
   );
 
   /**
@@ -530,7 +523,7 @@ export function usePuzzleFilters(
       if (Number.isNaN(numericId)) return;
       setFilters({ t: [numericId] });
     },
-    [setFilters],
+    [setFilters]
   );
 
   /**
@@ -547,7 +540,7 @@ export function usePuzzleFilters(
       if (Number.isNaN(numericId)) return;
       setFilters({ l: [numericId] });
     },
-    [setFilters],
+    [setFilters]
   );
 
   // ── Depth preset accessors ──────────────────────────────────────
@@ -562,7 +555,7 @@ export function usePuzzleFilters(
         setFilters({});
       }
     },
-    [setFilters],
+    [setFilters]
   );
 
   // ── Return ──────────────────────────────────────────────────────

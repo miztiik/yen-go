@@ -10,7 +10,7 @@ import { EMPTY } from './puzzle';
 
 /** A group of connected stones */
 export interface StoneGroup {
-  readonly color: Stone;  // Now uses integer Stone (-1 or 1)
+  readonly color: Stone; // Now uses integer Stone (-1 or 1)
   readonly stones: readonly Coordinate[];
   readonly liberties: readonly Coordinate[];
 }
@@ -33,7 +33,7 @@ export interface KoState {
 export interface GameBoardState {
   readonly board: Stone[][];
   readonly boardSize: BoardSize;
-  readonly currentPlayer: Stone;  // Now uses integer Stone
+  readonly currentPlayer: Stone; // Now uses integer Stone
   readonly moveNumber: number;
   readonly koState: KoState;
   readonly capturedByBlack: number;
@@ -44,9 +44,9 @@ export interface GameBoardState {
 /** Direction offsets for adjacent positions */
 export const DIRECTIONS: readonly Coordinate[] = [
   { x: 0, y: -1 }, // up
-  { x: 0, y: 1 },  // down
+  { x: 0, y: 1 }, // down
   { x: -1, y: 0 }, // left
-  { x: 1, y: 0 },  // right
+  { x: 1, y: 0 }, // right
 ];
 
 /** Get adjacent coordinates (1-indexed per Besogo pattern) */
@@ -84,18 +84,28 @@ export function getOpponent(color: Stone): Stone {
 /** Star point (hoshi) positions for each board size (1-indexed per Besogo) */
 export const STAR_POINTS: Record<BoardSize, readonly Coordinate[]> = {
   9: [
-    { x: 3, y: 3 }, { x: 7, y: 3 },
+    { x: 3, y: 3 },
+    { x: 7, y: 3 },
     { x: 5, y: 5 }, // tengen
-    { x: 3, y: 7 }, { x: 7, y: 7 },
+    { x: 3, y: 7 },
+    { x: 7, y: 7 },
   ],
   13: [
-    { x: 4, y: 4 }, { x: 10, y: 4 },
+    { x: 4, y: 4 },
+    { x: 10, y: 4 },
     { x: 7, y: 7 }, // tengen
-    { x: 4, y: 10 }, { x: 10, y: 10 },
+    { x: 4, y: 10 },
+    { x: 10, y: 10 },
   ],
   19: [
-    { x: 4, y: 4 }, { x: 10, y: 4 }, { x: 16, y: 4 },
-    { x: 4, y: 10 }, { x: 10, y: 10 }, { x: 16, y: 10 }, // tengen at 10,10
-    { x: 4, y: 16 }, { x: 10, y: 16 }, { x: 16, y: 16 },
+    { x: 4, y: 4 },
+    { x: 10, y: 4 },
+    { x: 16, y: 4 },
+    { x: 4, y: 10 },
+    { x: 10, y: 10 },
+    { x: 16, y: 10 }, // tengen at 10,10
+    { x: 4, y: 16 },
+    { x: 10, y: 16 },
+    { x: 16, y: 16 },
   ],
 };

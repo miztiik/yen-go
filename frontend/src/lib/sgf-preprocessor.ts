@@ -35,13 +35,11 @@ import { parseSgfToTree, extractMetadataFromTree } from './sgf-metadata';
  */
 export function validateSgfLevel(
   level: string,
-  validLevels: ReadonlyArray<{ slug: string }>,
+  validLevels: ReadonlyArray<{ slug: string }>
 ): void {
   const validSlugs = validLevels.map((l) => l.slug);
   if (!validSlugs.includes(level)) {
-    throw new Error(
-      `Unrecognized level "${level}". Valid levels: ${validSlugs.join(', ')}`,
-    );
+    throw new Error(`Unrecognized level "${level}". Valid levels: ${validSlugs.join(', ')}`);
   }
 }
 
@@ -51,14 +49,12 @@ export function validateSgfLevel(
  */
 export function validateSgfTags(
   tags: readonly string[],
-  validTags: ReadonlyArray<{ slug: string }>,
+  validTags: ReadonlyArray<{ slug: string }>
 ): void {
   const validIds = new Set(validTags.map((t) => t.slug));
   for (const tag of tags) {
     if (!validIds.has(tag)) {
-      throw new Error(
-        `Unrecognized tag "${tag}". Valid tags: ${[...validIds].join(', ')}`,
-      );
+      throw new Error(`Unrecognized tag "${tag}". Valid tags: ${[...validIds].join(', ')}`);
     }
   }
 }
@@ -79,10 +75,7 @@ function validateAgainstBootConfig(metadata: YenGoMetadata): boolean {
     validateSgfTags(metadata.tags, bootConfigs.tags);
     return true;
   } catch (err) {
-    console.warn(
-      '[sgf-preprocessor] Validation warning:',
-      (err as Error).message,
-    );
+    console.warn('[sgf-preprocessor] Validation warning:', (err as Error).message);
     return false;
   }
 }
@@ -289,8 +282,7 @@ export function transformSgfCoordinate(
 
   const [tx, ty] = transformCoordinate(x, y, boardSize, settings);
 
-  return String.fromCharCode('a'.charCodeAt(0) + tx) +
-         String.fromCharCode('a'.charCodeAt(0) + ty);
+  return String.fromCharCode('a'.charCodeAt(0) + tx) + String.fromCharCode('a'.charCodeAt(0) + ty);
 }
 
 /**
@@ -468,9 +460,18 @@ function extractSetupPositions(sgf: string): Array<[number, number]> {
   let depth = 0;
   for (let i = rootStart + 2; i < sgf.length; i++) {
     const ch = sgf[i];
-    if (ch === '\\') { i++; continue; } // skip escaped char
-    if (ch === '[') { depth++; continue; }
-    if (ch === ']') { depth = Math.max(0, depth - 1); continue; }
+    if (ch === '\\') {
+      i++;
+      continue;
+    } // skip escaped char
+    if (ch === '[') {
+      depth++;
+      continue;
+    }
+    if (ch === ']') {
+      depth = Math.max(0, depth - 1);
+      continue;
+    }
     if (depth === 0 && (ch === ';' || ch === '(')) {
       rootEnd = i;
       break;

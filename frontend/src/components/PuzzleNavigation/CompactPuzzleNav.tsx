@@ -74,10 +74,7 @@ function calculateVisibleWindow(
 /**
  * Get indicator style based on status
  */
-function getIndicatorStyle(
-  status: PuzzleStatus,
-  isCurrent: boolean
-): JSX.CSSProperties {
+function getIndicatorStyle(status: PuzzleStatus, isCurrent: boolean): JSX.CSSProperties {
   const base: JSX.CSSProperties = {
     width: '28px',
     height: '28px',
@@ -167,7 +164,7 @@ const styles: Record<string, JSX.CSSProperties> = {
 
 /**
  * CompactPuzzleNav - Unified navigation for puzzle collections
- * 
+ *
  * Apple-inspired design:
  * [⏮] [←] ... 68 69 (70) 71 72 ... [→] [⏭]
  *  ^    ^       numbers centered        ^    ^
@@ -195,8 +192,7 @@ export function CompactPuzzleNav({
   // Show ellipsis indicators
   const showStartEllipsis = visibleIndices[0] !== undefined && visibleIndices[0] > 0;
   const lastVisibleIndex = visibleIndices[visibleIndices.length - 1];
-  const showEndEllipsis =
-    lastVisibleIndex !== undefined && lastVisibleIndex < totalPuzzles - 1;
+  const showEndEllipsis = lastVisibleIndex !== undefined && lastVisibleIndex < totalPuzzles - 1;
 
   // Navigation handlers
   const handleFirst = useCallback(() => {

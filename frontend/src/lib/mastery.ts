@@ -36,16 +36,16 @@ export const MASTERY_LABELS: Record<MasteryLevel, string> = {
 
 /** Accuracy thresholds (percentage) */
 export const MASTERY_THRESHOLDS = {
-  learning: 50,      // < 50% accuracy = struggling
-  practiced: 70,     // 50-69% = getting better
-  proficient: 85,    // 70-84% = good
-  mastered: 85,      // ≥ 85% + volume = mastered
+  learning: 50, // < 50% accuracy = struggling
+  practiced: 70, // 50-69% = getting better
+  proficient: 85, // 70-84% = good
+  mastered: 85, // ≥ 85% + volume = mastered
 } as const;
 
 /** Minimum volume thresholds */
 export const VOLUME_THRESHOLDS = {
-  minForJudgment: 5,   // Need at least 5 attempts to judge skill
-  minForMastery: 10,   // Need at least 10 for mastery (or 50% of total if less available)
+  minForJudgment: 5, // Need at least 5 attempts to judge skill
+  minForMastery: 10, // Need at least 10 for mastery (or 50% of total if less available)
 } as const;
 
 // ============================================================================
@@ -71,7 +71,7 @@ export const VOLUME_THRESHOLDS = {
 export function getMasteryFromAccuracy(
   accuracy: number,
   attempted: number,
-  total: number,
+  total: number
 ): MasteryLevel {
   if (attempted === 0) return 'new';
   if (attempted < VOLUME_THRESHOLDS.minForJudgment) return 'started';
@@ -94,7 +94,7 @@ export function getMasteryFromAccuracy(
  * @param progress Object with completed count, total, and accuracy percentage
  */
 export function getMasteryFromProgress(
-  progress: { completed: number; total: number; accuracy?: number | undefined } | undefined,
+  progress: { completed: number; total: number; accuracy?: number | undefined } | undefined
 ): MasteryLevel {
   if (!progress || progress.total === 0) return 'new';
   // If accuracy is provided, use accuracy-based calculation

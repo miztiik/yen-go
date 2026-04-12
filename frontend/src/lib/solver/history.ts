@@ -59,10 +59,7 @@ export interface HistoryState {
  * @param initialBoard - Initial board state
  * @returns New history state
  */
-export function createHistoryState(
-  puzzleId: string,
-  initialBoard: PuzzleBoard
-): HistoryState {
+export function createHistoryState(puzzleId: string, initialBoard: PuzzleBoard): HistoryState {
   return {
     puzzleId,
     entries: [],
@@ -381,10 +378,7 @@ export function savePuzzleState(state: HistoryState): string {
  * @param initialBoard - Initial board state (needs to be reconstructed)
  * @returns Restored history state or null if invalid
  */
-export function restorePuzzleState(
-  json: string,
-  initialBoard: PuzzleBoard
-): HistoryState | null {
+export function restorePuzzleState(json: string, initialBoard: PuzzleBoard): HistoryState | null {
   try {
     interface SerializedEntry {
       turn: number;

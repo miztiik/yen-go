@@ -7,7 +7,7 @@
  * Spec 127: UI Layout Decoupling — FR-002, FR-010, FR-017
  */
 
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* ============================================================================
  * DESIGN TOKENS — Light Theme (Default)
@@ -19,41 +19,41 @@
 @theme {
   /* ── MD3 Surface System (Warm Kaya) ──────────────────────────────────── */
   /* Surface hierarchy: lowest → highest creates depth via warm tinting   */
-  --color-bg-primary: #FFF9F3;          /* surface / surface-dim          */
-  --color-bg-secondary: #F5EDE2;        /* surface-container-low          */
-  --color-bg-tertiary: #EFEAD4;         /* surface-container              */
-  --color-bg-elevated: #FFFFFF;         /* surface-bright                 */
+  --color-bg-primary: #fff9f3; /* surface / surface-dim          */
+  --color-bg-secondary: #f5ede2; /* surface-container-low          */
+  --color-bg-tertiary: #efead4; /* surface-container              */
+  --color-bg-elevated: #ffffff; /* surface-bright                 */
   --color-bg-overlay: rgba(29, 27, 22, 0.5); /* scrim                    */
 
   /* ── MD3 On-Surface Text ────────────────────────────────────────────── */
-  --color-text-primary: #1D1B16;        /* on-surface                     */
-  --color-text-secondary: #4A4739;      /* on-surface-variant             */
-  --color-text-muted: #7B7768;          /* outline-variant                */
-  --color-text-disabled: #C4C0B4;       /* on-surface at 0.38 opacity     */
-  --color-text-inverse: #F5F0E7;        /* inverse-on-surface             */
+  --color-text-primary: #1d1b16; /* on-surface                     */
+  --color-text-secondary: #4a4739; /* on-surface-variant             */
+  --color-text-muted: #7b7768; /* outline-variant                */
+  --color-text-disabled: #c4c0b4; /* on-surface at 0.38 opacity     */
+  --color-text-inverse: #f5f0e7; /* inverse-on-surface             */
 
   /* ── MD3 Primary (Steel Blue) — cool contrast on warm kaya ──────────── */
-  --color-accent: #3B6D96;              /* primary (steel blue)           */
-  --color-accent-hover: #2E5878;        /* primary pressed                */
-  --color-accent-muted: #8DA3B4;        /* on-primary-container muted     */
-  --color-accent-container: #D6E6F0;    /* tonal container (badges/chips) */
-  --color-on-accent-container: #0E2D42; /* text on accent container       */
+  --color-accent: #3b6d96; /* primary (steel blue)           */
+  --color-accent-hover: #2e5878; /* primary pressed                */
+  --color-accent-muted: #8da3b4; /* on-primary-container muted     */
+  --color-accent-container: #d6e6f0; /* tonal container (badges/chips) */
+  --color-on-accent-container: #0e2d42; /* text on accent container       */
 
   /* ── MD3 Semantic Status Colors ─────────────────────────────────────── */
-  --color-success: #1B6D2D;             /* tertiary (green, on-container) */
-  --color-success-bg: #D4F5D8;          /* tertiary-container             */
-  --color-warning: #7C5800;             /* custom warning                 */
-  --color-warning-bg: #FFEFD0;          /* custom warning-container       */
-  --color-error: #BA1A1A;               /* error                          */
-  --color-error-bg: #FFDAD6;           /* error-container                */
-  --color-info: #0E7C7B;                /* custom info (teal)             */
-  --color-info-bg: #D4F0EF;             /* custom info-container          */
+  --color-success: #1b6d2d; /* tertiary (green, on-container) */
+  --color-success-bg: #d4f5d8; /* tertiary-container             */
+  --color-warning: #7c5800; /* custom warning                 */
+  --color-warning-bg: #ffefd0; /* custom warning-container       */
+  --color-error: #ba1a1a; /* error                          */
+  --color-error-bg: #ffdad6; /* error-container                */
+  --color-info: #0e7c7b; /* custom info (teal)             */
+  --color-info-bg: #d4f0ef; /* custom info-container          */
 
   /* Hint marker overlay */
   --color-hint: rgba(27, 109, 45, 0.35);
 
   /* ── MD3 Outline ────────────────────────────────────────────────────── */
-  --color-border: #CBC6B9;              /* outline-variant                */
+  --color-border: #cbc6b9; /* outline-variant                */
 
   /* Stone colors — unchanged */
   --color-stone-black: #1a1a1a;
@@ -63,34 +63,34 @@
   --color-stone-shadow: rgba(0, 0, 0, 0.32);
 
   /* Move markers */
-  --color-marker-last-move: #C4441D;    /* MD3 tertiary warm             */
-  --color-marker-correct: #1B6D2D;
-  --color-marker-wrong: #BA1A1A;
-  --color-marker-variation: #5856D6;
+  --color-marker-last-move: #c4441d; /* MD3 tertiary warm             */
+  --color-marker-correct: #1b6d2d;
+  --color-marker-wrong: #ba1a1a;
+  --color-marker-variation: #5856d6;
 
   /* ── MD3 Header ─────────────────────────────────────────────────────── */
-  --color-header-bg: #FFF9F3;           /* matches surface                */
+  --color-header-bg: #fff9f3; /* matches surface                */
   --color-header-border: rgba(29, 27, 22, 0.08);
 
   /* ── MD3 Panels & Cards (elevated surfaces with shadow) ─────────────── */
-  --color-panel-bg: #FFFCF8;            /* surface-container-lowest       */
-  --color-bg-panel: #FFFCF8;            /* alias: used by 29 components   */
+  --color-panel-bg: #fffcf8; /* surface-container-lowest       */
+  --color-bg-panel: #fffcf8; /* alias: used by 29 components   */
   --color-panel-border: rgba(29, 27, 22, 0.08); /* outline at 0.08       */
-  --color-card-bg: #FFFFFF;              /* surface-bright                 */
-  --color-card-border: transparent;      /* no border, elevation via shadow*/
+  --color-card-bg: #ffffff; /* surface-bright                 */
+  --color-card-border: transparent; /* no border, elevation via shadow*/
 
   /* ── MD3 Buttons ────────────────────────────────────────────────────── */
-  --color-button-primary-bg: #3B6D96;    /* primary (steel blue)          */
-  --color-button-primary-text: #FFFFFF;  /* on-primary                    */
+  --color-button-primary-bg: #3b6d96; /* primary (steel blue)          */
+  --color-button-primary-text: #ffffff; /* on-primary                    */
   --color-button-secondary-bg: transparent;
-  --color-button-secondary-text: #3B6D96; /* primary (steel blue)         */
-  --color-button-secondary-border: #3B6D96;
+  --color-button-secondary-text: #3b6d96; /* primary (steel blue)         */
+  --color-button-secondary-border: #3b6d96;
   --color-button-disabled-bg: rgba(29, 27, 22, 0.12);
   --color-button-disabled-text: rgba(29, 27, 22, 0.38);
 
   /* ── MD3 Focus Ring ─────────────────────────────────────────────────── */
-  --color-focus-ring: rgba(59, 109, 150, 0.60);  /* matches --color-accent */
-  --color-focus-ring-offset: #FFF9F3;
+  --color-focus-ring: rgba(59, 109, 150, 0.6); /* matches --color-accent */
+  --color-focus-ring-offset: #fff9f3;
 
   /* Difficulty level colors (primary/accent) */
   --color-level-novice: #4ade80;
@@ -133,26 +133,26 @@
   --color-level-expert-border: #8b5cf6;
 
   /* SkillLevelTabs active accent per level */
-  --color-level-novice-active: #2E7D32;
-  --color-level-beginner-active: #4CAF50;
-  --color-level-elementary-active: #43A047;
-  --color-level-intermediate-active: #FFC107;
-  --color-level-upper-intermediate-active: #FF9800;
-  --color-level-advanced-active: #FF9800;
-  --color-level-low-dan-active: #E91E63;
-  --color-level-high-dan-active: #F44336;
-  --color-level-expert-active: #673AB7;
+  --color-level-novice-active: #2e7d32;
+  --color-level-beginner-active: #4caf50;
+  --color-level-elementary-active: #43a047;
+  --color-level-intermediate-active: #ffc107;
+  --color-level-upper-intermediate-active: #ff9800;
+  --color-level-advanced-active: #ff9800;
+  --color-level-low-dan-active: #e91e63;
+  --color-level-high-dan-active: #f44336;
+  --color-level-expert-active: #673ab7;
 
   /* ChallengeCard level colors (distinct palette for progress bars) */
-  --color-challenge-novice: #8BC34A;
-  --color-challenge-beginner: #66BB6A;
-  --color-challenge-elementary: #4CAF50;
-  --color-challenge-intermediate: #FFC107;
-  --color-challenge-upper-intermediate: #FF9800;
-  --color-challenge-advanced: #FF5722;
-  --color-challenge-low-dan: #F44336;
-  --color-challenge-high-dan: #E91E63;
-  --color-challenge-expert: #9C27B0;
+  --color-challenge-novice: #8bc34a;
+  --color-challenge-beginner: #66bb6a;
+  --color-challenge-elementary: #4caf50;
+  --color-challenge-intermediate: #ffc107;
+  --color-challenge-upper-intermediate: #ff9800;
+  --color-challenge-advanced: #ff5722;
+  --color-challenge-low-dan: #f44336;
+  --color-challenge-high-dan: #e91e63;
+  --color-challenge-expert: #9c27b0;
 
   /* Mode/variant colors (Home tiles, modals) */
   --color-mode-daily-border: #fbbf24;
@@ -185,43 +185,43 @@
   --color-mode-learning-light: #ecfeff;
 
   /* Quality tier colors (signal-bars approach — neutral density ramp) */
-  --color-quality-filled: #A9A295;
-  --color-quality-unfilled: #E8E1D5;
+  --color-quality-filled: #a9a295;
+  --color-quality-unfilled: #e8e1d5;
 
   /* Semantic extended (MD3 tonal containers for badges/pills) */
-  --color-success-solid: #1B6D2D;
-  --color-success-bg-solid: #D4F5D8;
-  --color-success-text: #0A3818;
-  --color-success-border: #4CAF50;
-  --color-warning-text: #4E3800;
-  --color-warning-border: #E8A317;
+  --color-success-solid: #1b6d2d;
+  --color-success-bg-solid: #d4f5d8;
+  --color-success-text: #0a3818;
+  --color-success-border: #4caf50;
+  --color-warning-text: #4e3800;
+  --color-warning-border: #e8a317;
   --color-error-text: #690005;
-  --color-error-border: #FF5449;
-  --color-info-solid: #0E7C7B;
-  --color-info-bg-solid: #D4F0EF;
+  --color-error-border: #ff5449;
+  --color-info-solid: #0e7c7b;
+  --color-info-bg-solid: #d4f0ef;
   --color-info-text: #044747;
-  --color-info-border: #3AADA9;
+  --color-info-border: #3aada9;
 
   /* Neutral grays — MD3 neutral-variant (warm undertone) */
-  --color-neutral-50: #FEFCF5;
-  --color-neutral-100: #F5EDE2;
-  --color-neutral-200: #E8E1D5;
-  --color-neutral-300: #D2CBC0;
-  --color-neutral-400: #A9A295;
-  --color-neutral-500: #7B7768;
-  --color-neutral-600: #5A5647;
+  --color-neutral-50: #fefcf5;
+  --color-neutral-100: #f5ede2;
+  --color-neutral-200: #e8e1d5;
+  --color-neutral-300: #d2cbc0;
+  --color-neutral-400: #a9a295;
+  --color-neutral-500: #7b7768;
+  --color-neutral-600: #5a5647;
   --color-neutral-700: #434033;
-  --color-neutral-800: #2D2A20;
-  --color-neutral-900: #1D1B16;
+  --color-neutral-800: #2d2a20;
+  --color-neutral-900: #1d1b16;
 
   /* Streak — derives from accent via accent-container */
   /* (streak tokens removed — uses --color-accent-container) */
 
   /* Complexity indicator */
-  --color-complexity-simple: #4CAF50;
-  --color-complexity-moderate: #FF9800;
-  --color-complexity-complex: #F44336;
-  --color-complexity-very-complex: #9C27B0;
+  --color-complexity-simple: #4caf50;
+  --color-complexity-moderate: #ff9800;
+  --color-complexity-complex: #f44336;
+  --color-complexity-very-complex: #9c27b0;
 
   /* Solution tree node colors */
   --color-tree-correct: #22c55e;
@@ -238,24 +238,28 @@
   --spacing-3xl: 64px;
 
   /* ── MD3 Border Radius (container shape scale) ───────────────────────── */
-  --radius-sm: 8px;               /* extra-small shape                   */
-  --radius-md: 12px;              /* small shape                         */
-  --radius-lg: 16px;              /* medium shape                        */
-  --radius-xl: 28px;              /* large shape (FAB, dialog)           */
-  --radius-full: 9999px;          /* full shape (chips, pills)           */
+  --radius-sm: 8px; /* extra-small shape                   */
+  --radius-md: 12px; /* small shape                         */
+  --radius-lg: 16px; /* medium shape                        */
+  --radius-xl: 28px; /* large shape (FAB, dialog)           */
+  --radius-full: 9999px; /* full shape (chips, pills)           */
 
   /* ── MD3 Elevation Shadows (warm tinted for Kaya) ───────────────────── */
   --shadow-sm: 0 1px 2px rgba(29, 27, 22, 0.08), 0 1px 3px rgba(29, 27, 22, 0.06);
-  --shadow-md: 0 2px 6px rgba(29, 27, 22, 0.10), 0 1px 4px rgba(29, 27, 22, 0.08);
-  --shadow-lg: 0 4px 12px rgba(29, 27, 22, 0.08), 0 2px 6px rgba(29, 27, 22, 0.05);  /* UI-014: softer */
-  --shadow-xl: 0 8px 24px rgba(29, 27, 22, 0.10), 0 4px 8px rgba(29, 27, 22, 0.06);  /* UI-014: softer */
+  --shadow-md: 0 2px 6px rgba(29, 27, 22, 0.1), 0 1px 4px rgba(29, 27, 22, 0.08);
+  --shadow-lg:
+    0 4px 12px rgba(29, 27, 22, 0.08), 0 2px 6px rgba(29, 27, 22, 0.05); /* UI-014: softer */
+  --shadow-xl:
+    0 8px 24px rgba(29, 27, 22, 0.1), 0 4px 8px rgba(29, 27, 22, 0.06); /* UI-014: softer */
 
   /* Typography */
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-sans:
+    system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
   --font-display: 'Spline Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', Menlo, Monaco, 'Cascadia Mono',
-    'Segoe UI Mono', 'Roboto Mono', monospace;
+  --font-mono:
+    ui-monospace, 'SF Mono', Menlo, Monaco, 'Cascadia Mono', 'Segoe UI Mono', 'Roboto Mono',
+    monospace;
 
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
@@ -293,43 +297,43 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 @layer base {
-  [data-theme="dark"] {
+  [data-theme='dark'] {
     /* ── MD3 Dark Surface System (Warm Kaya) ────────────────────────────── */
-    --color-bg-primary: #161412;          /* surface                        */
-    --color-bg-secondary: #211F1B;        /* surface-container-low          */
-    --color-bg-tertiary: #2B2822;         /* surface-container              */
-    --color-bg-elevated: #363229;         /* surface-container-high         */
+    --color-bg-primary: #161412; /* surface                        */
+    --color-bg-secondary: #211f1b; /* surface-container-low          */
+    --color-bg-tertiary: #2b2822; /* surface-container              */
+    --color-bg-elevated: #363229; /* surface-container-high         */
     --color-bg-overlay: rgba(0, 0, 0, 0.7);
 
     /* ── MD3 Dark On-Surface Text ───────────────────────────────────────── */
-    --color-text-primary: #E8E2D6;        /* on-surface                     */
-    --color-text-secondary: #CBC5B4;      /* on-surface-variant             */
-    --color-text-muted: #9A9484;          /* outline-variant                */
-    --color-text-disabled: #504C42;       /* on-surface at 0.38             */
-    --color-text-inverse: #1D1B16;        /* inverse-on-surface             */
+    --color-text-primary: #e8e2d6; /* on-surface                     */
+    --color-text-secondary: #cbc5b4; /* on-surface-variant             */
+    --color-text-muted: #9a9484; /* outline-variant                */
+    --color-text-disabled: #504c42; /* on-surface at 0.38             */
+    --color-text-inverse: #1d1b16; /* inverse-on-surface             */
 
     /* ── MD3 Dark Primary (steel blue — brighter for dark bg) ────────────── */
-    --color-accent: #7EB1D0;             /* primary (light steel blue)     */
-    --color-accent-hover: #96C3DC;       /* primary pressed                */
-    --color-accent-muted: #5A7F96;       /* on-primary-container muted     */
-    --color-accent-container: #1D3848;   /* tonal container dark           */
-    --color-on-accent-container: #C4DBE8; /* text on accent container dark */
+    --color-accent: #7eb1d0; /* primary (light steel blue)     */
+    --color-accent-hover: #96c3dc; /* primary pressed                */
+    --color-accent-muted: #5a7f96; /* on-primary-container muted     */
+    --color-accent-container: #1d3848; /* tonal container dark           */
+    --color-on-accent-container: #c4dbe8; /* text on accent container dark */
 
     /* ── MD3 Dark Semantic ──────────────────────────────────────────────── */
-    --color-success: #7DD694;             /* tertiary dark                  */
-    --color-error: #FFB4AB;              /* error dark                     */
+    --color-success: #7dd694; /* tertiary dark                  */
+    --color-error: #ffb4ab; /* error dark                     */
     --color-hint: rgba(125, 214, 148, 0.35);
-    --color-border: #504C42;             /* outline-variant dark            */
+    --color-border: #504c42; /* outline-variant dark            */
 
     /* ── MD3 Dark Header ────────────────────────────────────────────────── */
     --color-header-bg: #161412;
     --color-header-border: rgba(232, 226, 214, 0.1);
 
     /* ── MD3 Dark Panels & Cards ────────────────────────────────────────── */
-    --color-panel-bg: #211F1B;
-    --color-bg-panel: #211F1B;            /* alias: used by 29 components   */
+    --color-panel-bg: #211f1b;
+    --color-bg-panel: #211f1b; /* alias: used by 29 components   */
     --color-panel-border: rgba(232, 226, 214, 0.08);
-    --color-card-bg: #2B2822;
+    --color-card-bg: #2b2822;
     --color-card-border: transparent;
 
     /* ── MD3 Dark Buttons ───────────────────────────────────────────────── */
@@ -339,35 +343,35 @@
     --color-focus-ring-offset: #161412;
 
     /* ── MD3 Dark Semantic Extended ──────────────────────────────────────── */
-    --color-success-solid: #7DD694;
+    --color-success-solid: #7dd694;
     --color-success-bg-solid: rgba(125, 214, 148, 0.15);
-    --color-success-text: #A8EBB8;
-    --color-success-border: #4CAF50;
+    --color-success-text: #a8ebb8;
+    --color-success-border: #4caf50;
     --color-warning-bg: rgba(232, 163, 23, 0.15);
-    --color-warning-text: #FFDEA0;
-    --color-warning-border: #E8A317;
-    --color-error-text: #FFB4AB;
-    --color-error-border: #FF5449;
-    --color-info-solid: #6AC8C5;
+    --color-warning-text: #ffdea0;
+    --color-warning-border: #e8a317;
+    --color-error-text: #ffb4ab;
+    --color-error-border: #ff5449;
+    --color-info-solid: #6ac8c5;
     --color-info-bg-solid: rgba(14, 124, 123, 0.15);
-    --color-info-text: #A8E8E7;
-    --color-info-border: #3AADA9;
+    --color-info-text: #a8e8e7;
+    --color-info-border: #3aada9;
 
     /* ── MD3 Dark Neutral Grays (inverted warm) ─────────────────────────── */
-    --color-neutral-50: #211F1B;
-    --color-neutral-100: #2B2822;
-    --color-neutral-200: #3A372E;
-    --color-neutral-300: #504C42;
-    --color-neutral-400: #9A9484;
-    --color-neutral-500: #CBC5B4;
-    --color-neutral-600: #E8E1D5;
-    --color-neutral-700: #F2ECE0;
-    --color-neutral-800: #F9F4EA;
-    --color-neutral-900: #FFFFFF;
+    --color-neutral-50: #211f1b;
+    --color-neutral-100: #2b2822;
+    --color-neutral-200: #3a372e;
+    --color-neutral-300: #504c42;
+    --color-neutral-400: #9a9484;
+    --color-neutral-500: #cbc5b4;
+    --color-neutral-600: #e8e1d5;
+    --color-neutral-700: #f2ece0;
+    --color-neutral-800: #f9f4ea;
+    --color-neutral-900: #ffffff;
 
     /* Quality (dark — neutral density) */
-    --color-quality-filled: #9A9484;
-    --color-quality-unfilled: #3A372E;
+    --color-quality-filled: #9a9484;
+    --color-quality-unfilled: #3a372e;
 
     /* Page mode colors — dark mode overrides (reduced saturation) */
     --color-mode-daily-border: #d97706;
@@ -410,15 +414,15 @@
   }
 
   /* T01: Dark mode board depth — darker edge bands and stronger shadow */
-  [data-theme="dark"] .goban-container {
+  [data-theme='dark'] .goban-container {
     box-shadow:
       0 5px 0 0 #4a4540,
       0 6px 0 1px #3d3935,
-      2px 8px 10px rgba(0,0,0,0.4),
-      0 3px 5px rgba(0,0,0,0.2);
+      2px 8px 10px rgba(0, 0, 0, 0.4),
+      0 3px 5px rgba(0, 0, 0, 0.2);
   }
-  [data-theme="dark"] .goban-container::before {
-    background: linear-gradient(to bottom, rgba(0,0,0,0.1), #6b5420 30%, #5a4518);
+  [data-theme='dark'] .goban-container::before {
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), #6b5420 30%, #5a4518);
   }
 }
 
@@ -429,7 +433,7 @@
  * ============================================================================ */
 
 @layer base {
-  [data-mode="daily"] {
+  [data-mode='daily'] {
     --color-accent: var(--color-mode-daily-text);
     --color-accent-border: var(--color-mode-daily-border);
     --color-accent-hover: color-mix(in oklch, var(--color-accent) 75%, black);
@@ -437,7 +441,7 @@
     --color-on-accent-container: var(--color-mode-daily-text);
     --color-focus-ring: color-mix(in srgb, var(--color-accent) 60%, transparent);
   }
-  [data-mode="rush"] {
+  [data-mode='rush'] {
     --color-accent: var(--color-mode-rush-text);
     --color-accent-border: var(--color-mode-rush-border);
     --color-accent-hover: color-mix(in oklch, var(--color-accent) 75%, black);
@@ -445,7 +449,7 @@
     --color-on-accent-container: var(--color-mode-rush-text);
     --color-focus-ring: color-mix(in srgb, var(--color-accent) 60%, transparent);
   }
-  [data-mode="collections"] {
+  [data-mode='collections'] {
     --color-accent: var(--color-mode-collections-text);
     --color-accent-border: var(--color-mode-collections-border);
     --color-accent-hover: color-mix(in oklch, var(--color-accent) 75%, black);
@@ -453,7 +457,7 @@
     --color-on-accent-container: var(--color-mode-collections-text);
     --color-focus-ring: color-mix(in srgb, var(--color-accent) 60%, transparent);
   }
-  [data-mode="training"] {
+  [data-mode='training'] {
     --color-accent: var(--color-mode-training-text);
     --color-accent-border: var(--color-mode-training-border);
     --color-accent-hover: color-mix(in oklch, var(--color-accent) 75%, black);
@@ -461,7 +465,7 @@
     --color-on-accent-container: var(--color-mode-training-text);
     --color-focus-ring: color-mix(in srgb, var(--color-accent) 60%, transparent);
   }
-  [data-mode="technique"] {
+  [data-mode='technique'] {
     --color-accent: var(--color-mode-technique-text);
     --color-accent-border: var(--color-mode-technique-border);
     --color-accent-hover: color-mix(in oklch, var(--color-accent) 75%, black);
@@ -469,7 +473,7 @@
     --color-on-accent-container: var(--color-mode-technique-text);
     --color-focus-ring: color-mix(in srgb, var(--color-accent) 60%, transparent);
   }
-  [data-mode="random"] {
+  [data-mode='random'] {
     --color-accent: var(--color-mode-random-text);
     --color-accent-border: var(--color-mode-random-border);
     --color-accent-hover: color-mix(in oklch, var(--color-accent) 75%, black);
@@ -477,7 +481,7 @@
     --color-on-accent-container: var(--color-mode-random-text);
     --color-focus-ring: color-mix(in srgb, var(--color-accent) 60%, transparent);
   }
-  [data-mode="learning"] {
+  [data-mode='learning'] {
     --color-accent: var(--color-mode-learning-text);
     --color-accent-border: var(--color-mode-learning-border);
     --color-accent-hover: color-mix(in oklch, var(--color-accent) 75%, black);
@@ -513,7 +517,9 @@
   }
 
   /* Instant taps on mobile — no 300ms delay (T058) */
-  button, [role="button"], a {
+  button,
+  [role='button'],
+  a {
     touch-action: manipulation;
   }
 
@@ -569,10 +575,10 @@
    * Band 2 (gray under-edge) is rendered via box-shadow since ::after can't
    * overflow hidden. The amber side-band uses ::before inside the container. */
   box-shadow:
-    0 5px 0 0 #c4b8a8,           /* Band 2: gray under-edge (visible below board) */
-    0 6px 0 1px #d6cfc5,          /* Band 2 highlight edge */
-    3px 10px 14px rgba(0,0,0,0.22), /* Elevation shadow */
-    0 4px 6px rgba(0,0,0,0.08);    /* Soft ambient shadow */
+    0 5px 0 0 #c4b8a8,
+    /* Band 2: gray under-edge (visible below board) */ 0 6px 0 1px #d6cfc5,
+    /* Band 2 highlight edge */ 3px 10px 14px rgba(0, 0, 0, 0.22),
+    /* Elevation shadow */ 0 4px 6px rgba(0, 0, 0, 0.08); /* Soft ambient shadow */
   border-radius: 12px;
 }
 
@@ -586,7 +592,7 @@
   left: 0;
   right: 0;
   height: 5px;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.05), #b8872e 30%, #9a7028);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.05), #b8872e 30%, #9a7028);
   border-radius: 0 0 12px 12px;
   pointer-events: none;
   z-index: 10;
@@ -640,22 +646,18 @@
   z-index: 3;
 }
 
-
-
-
-
-
-
 /* Route transition animation (T059) */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .route-fade-in {
   animation: fadeIn 150ms ease-out;
 }
-
-
 
 /* HomeTile hover effect (T073) */
 .home-tile:hover {
@@ -665,14 +667,26 @@
 
 /* ViewToggle bounce animation (Spec 132, Phase 12) */
 @keyframes bounce-icon {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.2); }
-  70% { transform: scale(0.95); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.2);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
-.animate-bounce-icon { animation: bounce-icon 250ms ease-out; }
+.animate-bounce-icon {
+  animation: bounce-icon 250ms ease-out;
+}
 @media (prefers-reduced-motion: reduce) {
-  .animate-bounce-icon { animation: none; }
+  .animate-bounce-icon {
+    animation: none;
+  }
 }
 
 /* HomeGrid responsive layout (T075) */
@@ -698,10 +712,6 @@
  *   - landscape-ish (min-aspect-ratio: 4/5)
  * Otherwise stacked: board on top, sidebar below.
  * ============================================================================ */
-
-
-
-
 
 /* ============================================================================
  * SolverView — 2-column puzzle layout (Spec 133)
@@ -765,7 +775,10 @@
   color: var(--color-accent);
   background: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg-primary));
   border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
-  transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease;
   cursor: pointer;
 }
 
@@ -796,8 +809,8 @@
 }
 
 /* Ensure goban's move tree canvas/svg fills its container */
-[data-testid="solution-tree-container"] canvas,
-[data-testid="solution-tree-container"] svg {
+[data-testid='solution-tree-container'] canvas,
+[data-testid='solution-tree-container'] svg {
   display: block;
   width: 100%;
   cursor: pointer;
@@ -860,10 +873,18 @@
 }
 
 /* ── FilterBar pill hover — subtle accent tint on inactive pills ── */
-[role="radiogroup"] > button:not([aria-checked="true"]):not(:disabled):hover,
-[role="group"] > button:not([aria-checked="true"]):not(:disabled):hover {
-  background-color: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg-elevated, #fff)) !important;
-  border-color: color-mix(in srgb, var(--color-accent) 40%, var(--color-border, #d4c9b8)) !important;
+[role='radiogroup'] > button:not([aria-checked='true']):not(:disabled):hover,
+[role='group'] > button:not([aria-checked='true']):not(:disabled):hover {
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent) 8%,
+    var(--color-bg-elevated, #fff)
+  ) !important;
+  border-color: color-mix(
+    in srgb,
+    var(--color-accent) 40%,
+    var(--color-border, #d4c9b8)
+  ) !important;
 }
 
 /* ── Action bar tooltip — CSS-only, accessible ── */
@@ -888,7 +909,7 @@
   opacity: 0;
   z-index: var(--z-tooltip, 1070);
   transition: opacity 150ms ease;
-  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,.15));
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.15));
 }
 
 @dark {
@@ -921,7 +942,11 @@
 
 /* ── Next puzzle CTA pulse animation ── */
 @keyframes pulse-cta {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.06); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
 }
-

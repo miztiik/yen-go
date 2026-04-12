@@ -131,10 +131,7 @@ export function positionsToSgf(positions: readonly BoardPosition[]): SgfCoord[] 
  * @param b - Second position (SGF coord or BoardPosition)
  * @returns Manhattan distance or -1 if invalid
  */
-export function distance(
-  a: SgfCoord | BoardPosition,
-  b: SgfCoord | BoardPosition
-): number {
+export function distance(a: SgfCoord | BoardPosition, b: SgfCoord | BoardPosition): number {
   const posA = typeof a === 'string' ? sgfToPosition(a) : a;
   const posB = typeof b === 'string' ? sgfToPosition(b) : b;
 
@@ -152,10 +149,7 @@ export function distance(
  * @param b - Second coordinate
  * @returns True if adjacent
  */
-export function areAdjacent(
-  a: SgfCoord | BoardPosition,
-  b: SgfCoord | BoardPosition
-): boolean {
+export function areAdjacent(a: SgfCoord | BoardPosition, b: SgfCoord | BoardPosition): boolean {
   const posA = typeof a === 'string' ? sgfToPosition(a) : a;
   const posB = typeof b === 'string' ? sgfToPosition(b) : b;
 
@@ -167,7 +161,7 @@ export function areAdjacent(
   const dy = Math.abs(posA.y - posB.y);
 
   // Adjacent = max 1 step in any direction
-  return dx <= 1 && dy <= 1 && (dx + dy > 0);
+  return dx <= 1 && dy <= 1 && dx + dy > 0;
 }
 
 /**
@@ -190,9 +184,9 @@ export function getNeighbors(
   const neighbors: BoardPosition[] = [];
   const directions = [
     { dx: 0, dy: -1 }, // up
-    { dx: 0, dy: 1 },  // down
+    { dx: 0, dy: 1 }, // down
     { dx: -1, dy: 0 }, // left
-    { dx: 1, dy: 0 },  // right
+    { dx: 1, dy: 0 }, // right
   ];
 
   for (const { dx, dy } of directions) {
@@ -214,10 +208,7 @@ export function getNeighbors(
  * @param boardSize - Board size (default 19)
  * @returns Array of adjacent SGF coordinates
  */
-export function getNeighborCoords(
-  coord: SgfCoord,
-  boardSize: number = 19
-): SgfCoord[] {
+export function getNeighborCoords(coord: SgfCoord, boardSize: number = 19): SgfCoord[] {
   const neighbors = getNeighbors(coord, boardSize);
   return positionsToSgf(neighbors);
 }

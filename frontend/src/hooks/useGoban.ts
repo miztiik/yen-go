@@ -17,23 +17,19 @@
  * @module useGoban
  */
 
-import { useEffect, useRef, useState, useMemo } from "preact/hooks";
-import type { RefObject } from "preact";
-import type {
-  GobanConfig,
-  SVGRendererGobanConfig,
-  CanvasRendererGobanConfig,
-} from "goban";
+import { useEffect, useRef, useState, useMemo } from 'preact/hooks';
+import type { RefObject } from 'preact';
+import type { GobanConfig, SVGRendererGobanConfig, CanvasRendererGobanConfig } from 'goban';
 
 // Runtime goban exports loaded via dynamic import for code splitting
-type SVGRendererCtor = typeof import("goban").SVGRenderer;
-type GobanCanvasCtor = typeof import("goban").GobanCanvas;
+type SVGRendererCtor = typeof import('goban').SVGRenderer;
+type GobanCanvasCtor = typeof import('goban').GobanCanvas;
 
-import { preprocessSgf } from "@lib/sgf-preprocessor";
-import { buildPuzzleConfig } from "@lib/puzzle-config";
-import { sgfToPuzzle } from "@lib/sgf-to-puzzle";
-import type { TransformSettings, RendererPreference } from "../types/goban";
-import { RENDERER_PREFERENCE_KEY } from "../types/goban";
+import { preprocessSgf } from '@lib/sgf-preprocessor';
+import { buildPuzzleConfig } from '@lib/puzzle-config';
+import { sgfToPuzzle } from '@lib/sgf-to-puzzle';
+import type { TransformSettings, RendererPreference } from '../types/goban';
+import { RENDERER_PREFERENCE_KEY } from '../types/goban';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -43,7 +39,7 @@ import { RENDERER_PREFERENCE_KEY } from "../types/goban";
 export type GobanInstance = InstanceType<SVGRendererCtor> | InstanceType<GobanCanvasCtor>;
 
 /** Active renderer type reported to consumers. */
-export type ActiveRenderer = "svg" | "canvas";
+export type ActiveRenderer = 'svg' | 'canvas';
 
 /** A goban message forwarded from the library to our sidebar UI. */
 export interface GobanMessage {
@@ -74,31 +70,33 @@ export interface UseGobanResult {
 function getRendererPreference(): RendererPreference {
   try {
     const stored = localStorage.getItem(RENDERER_PREFERENCE_KEY);
-    if (stored === "svg" || stored === "canvas" || stored === "auto") {
+    if (stored === 'svg' || stored === 'canvas' || stored === 'auto') {
       return stored;
     }
-  } catch { /* localStorage unavailable */ }
-  return "svg";
+  } catch {
+    /* localStorage unavailable */
+  }
+  return 'svg';
 }
 
 function createRenderer(
   config: GobanConfig,
   preference: RendererPreference,
   SvgCtor: SVGRendererCtor,
-  CanvasCtor: GobanCanvasCtor,
+  CanvasCtor: GobanCanvasCtor
 ): [GobanInstance, ActiveRenderer] {
-  if (preference === "canvas") {
-    return [new CanvasCtor(config as CanvasRendererGobanConfig), "canvas"];
+  if (preference === 'canvas') {
+    return [new CanvasCtor(config as CanvasRendererGobanConfig), 'canvas'];
   }
-  if (preference === "svg") {
-    return [new SvgCtor(config as SVGRendererGobanConfig), "svg"];
+  if (preference === 'svg') {
+    return [new SvgCtor(config as SVGRendererGobanConfig), 'svg'];
   }
   // "auto" -- try SVG first, fallback to Canvas
   try {
-    return [new SvgCtor(config as SVGRendererGobanConfig), "svg"];
+    return [new SvgCtor(config as SVGRendererGobanConfig), 'svg'];
   } catch {
-    console.warn("[useGoban] SVGRenderer failed, falling back to GobanCanvas");
-    return [new CanvasCtor(config as CanvasRendererGobanConfig), "canvas"];
+    console.warn('[useGoban] SVGRenderer failed, falling back to GobanCanvas');
+    return [new CanvasCtor(config as CanvasRendererGobanConfig), 'canvas'];
   }
 }
 
@@ -127,7 +125,7 @@ export function useGoban(
   treeRef?: RefObject<HTMLDivElement | null>,
   transforms?: TransformSettings,
   bounds?: { top: number; left: number; bottom: number; right: number },
-  labelPosition?: 'all' | 'none',
+  labelPosition?: 'all' | 'none'
 ): UseGobanResult {
   const gobanRef = useRef<GobanInstance | null>(null);
   const [activeRenderer, setActiveRenderer] = useState<ActiveRenderer | null>(null);
@@ -135,14 +133,8 @@ export function useGoban(
   const [boardMessage, setBoardMessage] = useState<GobanMessage | null>(null);
   const [gobanDiv, setGobanDiv] = useState<HTMLElement | null>(null);
 
-  const transformsKey = useMemo(
-    () => (transforms ? JSON.stringify(transforms) : ""),
-    [transforms],
-  );
-  const boundsKey = useMemo(
-    () => (bounds ? JSON.stringify(bounds) : ""),
-    [bounds],
-  );
+  const transformsKey = useMemo(() => (transforms ? JSON.stringify(transforms) : ''), [transforms]);
+  const boundsKey = useMemo(() => (bounds ? JSON.stringify(bounds) : ''), [bounds]);
 
   useEffect(() => {
     if (!rawSgf) return;
@@ -152,11 +144,11 @@ export function useGoban(
 
     // Create board container div (OGS pattern)
     // The goban library will create its own .Goban div inside this container
-    const boardEl = document.createElement("div");
-    boardEl.className = "goban-board-container";
+    const boardEl = document.createElement('div');
+    boardEl.className = 'goban-board-container';
 
     void (async () => {
-      const { SVGRenderer, GobanCanvas } = await import("goban");
+      const { SVGRenderer, GobanCanvas } = await import('goban');
       if (cancelled) return;
 
       // Pipeline: preprocessSgf (metadata extraction) → sgfToPuzzle → buildPuzzleConfig
@@ -166,8 +158,11 @@ export function useGoban(
       try {
         puzzle = sgfToPuzzle(preprocessed.cleanedSgf);
       } catch (err) {
-        console.error("[useGoban] sgfToPuzzle failed:", err);
-        if (!cancelled) { setIsReady(false); setActiveRenderer(null); }
+        console.error('[useGoban] sgfToPuzzle failed:', err);
+        if (!cancelled) {
+          setIsReady(false);
+          setActiveRenderer(null);
+        }
         return;
       }
       const puzzleConfig = buildPuzzleConfig(puzzle, {
@@ -181,14 +176,29 @@ export function useGoban(
       let renderer: ActiveRenderer;
 
       try {
-        [gobanInstance, renderer] = createRenderer(puzzleConfig, preference, SVGRenderer, GobanCanvas);
+        [gobanInstance, renderer] = createRenderer(
+          puzzleConfig,
+          preference,
+          SVGRenderer,
+          GobanCanvas
+        );
       } catch (err) {
-        console.error("[useGoban] Failed to create goban instance:", err);
-        if (!cancelled) { setIsReady(false); setActiveRenderer(null); }
+        console.error('[useGoban] Failed to create goban instance:', err);
+        if (!cancelled) {
+          setIsReady(false);
+          setActiveRenderer(null);
+        }
         return;
       }
 
-      if (cancelled) { try { gobanInstance.destroy(); } catch { /* noop */ } return; }
+      if (cancelled) {
+        try {
+          gobanInstance.destroy();
+        } catch {
+          /* noop */
+        }
+        return;
+      }
 
       // No post-construction monkey-patches needed with OGS-native format:
       // - engine.phase stays "play" (not "finished")
@@ -202,11 +212,17 @@ export function useGoban(
       setIsReady(true);
 
       // Forward goban messages to sidebar UI
-      gobanInstance.on("show-message" as never, (data: { formatted: string; message_id: string }) => {
-        setBoardMessage({ messageId: data.message_id ?? "unknown", text: data.formatted ?? "Invalid move" });
-        // T08: Increased from 4s to 6s for better readability
-        setTimeout(() => setBoardMessage(null), 6000);
-      });
+      gobanInstance.on(
+        'show-message' as never,
+        (data: { formatted: string; message_id: string }) => {
+          setBoardMessage({
+            messageId: data.message_id ?? 'unknown',
+            text: data.formatted ?? 'Invalid move',
+          });
+          // T08: Increased from 4s to 6s for better readability
+          setTimeout(() => setBoardMessage(null), 6000);
+        }
+      );
     })();
 
     return () => {
@@ -215,7 +231,11 @@ export function useGoban(
       setBoardMessage(null);
       setGobanDiv(null);
       if (gobanRef.current) {
-        try { gobanRef.current.destroy(); } catch { /* noop */ }
+        try {
+          gobanRef.current.destroy();
+        } catch {
+          /* noop */
+        }
         gobanRef.current = null;
       }
       setActiveRenderer(null);

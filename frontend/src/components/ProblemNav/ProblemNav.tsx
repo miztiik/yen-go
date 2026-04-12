@@ -81,10 +81,7 @@ export function ProblemNav({
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't capture if user is typing in an input
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
 
@@ -114,10 +111,10 @@ export function ProblemNav({
         onNavigate(index);
       }
     },
-    [currentIndex, onNavigate],
+    [currentIndex, onNavigate]
   );
 
-  const solvedCount = statuses.filter(s => s === 'solved').length;
+  const solvedCount = statuses.filter((s) => s === 'solved').length;
   const completionPct = totalProblems > 0 ? Math.round((solvedCount / totalProblems) * 100) : 0;
   // Always use numeric counter for consistency across filtered/unfiltered views.
   // Dots only for very small daily challenge sets (≤ 10).
@@ -139,7 +136,17 @@ export function ProblemNav({
           disabled={currentIndex === 0}
           aria-label="Previous problem"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
             <path d="M15 6l-6 6 6 6" />
           </svg>
         </button>
@@ -177,7 +184,17 @@ export function ProblemNav({
           disabled={currentIndex === totalProblems - 1}
           aria-label="Next problem"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
             <path d="M9 6l6 6-6 6" />
           </svg>
         </button>
@@ -185,15 +202,14 @@ export function ProblemNav({
 
       {/* Progress bar */}
       <div className="progress-bar-track" aria-hidden="true">
-        <div
-          className="progress-bar-fill"
-          style={{ width: `${completionPct}%` }}
-        />
+        <div className="progress-bar-fill" style={{ width: `${completionPct}%` }} />
       </div>
 
       {/* Bottom row: completion % + streak */}
       <div className="nav-footer">
-        <span className="completion-text">Solved: {solvedCount}/{totalProblems} ({completionPct}%)</span>
+        <span className="completion-text">
+          Solved: {solvedCount}/{totalProblems} ({completionPct}%)
+        </span>
         {currentStreak !== undefined && currentStreak >= 2 && (
           <span
             className="streak-badge"

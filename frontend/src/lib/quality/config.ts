@@ -53,36 +53,39 @@ export const QUALITY_DISPLAY = {
 export const QUALITIES: readonly QualityMeta[] = Object.entries(qualityJson.levels)
   .sort(([a], [b]) => Number(a) - Number(b))
   .map(([idStr, entry]) => {
-    const reqs = (entry as Record<string, unknown>).requirements as Record<string, unknown> | undefined;
+    const reqs = (entry as Record<string, unknown>).requirements as
+      | Record<string, unknown>
+      | undefined;
     return {
       id: Number(idStr),
       slug: entry.name,
       name: entry.display_label,
       stars: entry.stars,
       description: entry.description,
-      selectionWeight: (entry as Record<string, unknown>).selection_weight as number ?? 1,
+      selectionWeight: ((entry as Record<string, unknown>).selection_weight as number) ?? 1,
       requirements: {
         minRefutationCount: Number(reqs?.refutation_count_min ?? 0),
         requiresComments: Boolean(reqs?.min_comment_level),
       },
-      displayColor: (qualityJson.display.level_colors as Record<string, string>)[idStr] ?? '#9E9E9E',
+      displayColor:
+        (qualityJson.display.level_colors as Record<string, string>)[idStr] ?? '#9E9E9E',
     };
   });
 
 /** All valid quality slugs in ascending order. */
-export const QUALITY_SLUGS: readonly QualitySlug[] = QUALITIES.map(q => q.slug);
+export const QUALITY_SLUGS: readonly QualitySlug[] = QUALITIES.map((q) => q.slug);
 
 /** Total number of quality levels. */
 export const QUALITY_COUNT = QUALITIES.length;
 
 /** Quality ID → slug map. O(1) lookup. */
 export const QUALITY_ID_MAP: ReadonlyMap<number, QualitySlug> = new Map(
-  QUALITIES.map(q => [q.id, q.slug]),
+  QUALITIES.map((q) => [q.id, q.slug])
 );
 
 /** Slug → quality ID map. O(1) lookup. */
 export const QUALITY_SLUG_MAP: ReadonlyMap<QualitySlug, number> = new Map(
-  QUALITIES.map(q => [q.slug, q.id]),
+  QUALITIES.map((q) => [q.slug, q.id])
 );
 
 // ─── Functions ─────────────────────────────────────────────────────
@@ -136,7 +139,16 @@ export interface ComplexityMetrics {
 /** Puzzle quality level metadata derived from QUALITIES. */
 export const PUZZLE_QUALITY_INFO: Record<PuzzleQualityLevel, PuzzleQualityInfo> =
   Object.fromEntries(
-    QUALITIES.map(q => [q.id, { name: q.slug, displayLabel: q.name, stars: q.stars, description: q.description, color: q.displayColor }]),
+    QUALITIES.map((q) => [
+      q.id,
+      {
+        name: q.slug,
+        displayLabel: q.name,
+        stars: q.stars,
+        description: q.description,
+        color: q.displayColor,
+      },
+    ])
   ) as Record<PuzzleQualityLevel, PuzzleQualityInfo>;
 
 /** Default quality metrics (level 1 — Unverified, worst). */
@@ -168,7 +180,7 @@ export function parseQualityMetrics(value: string): QualityMetrics {
   return {
     level: (parseInt(parts.q || '1', 10) as PuzzleQualityLevel) || 1,
     refutationCount: parseInt(parts.rc || '0', 10),
-    commentLevel: (Math.min(parseInt(parts.hc || '0', 10), 2) as 0 | 1 | 2),
+    commentLevel: Math.min(parseInt(parts.hc || '0', 10), 2) as 0 | 1 | 2,
   };
 }
 

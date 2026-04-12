@@ -106,11 +106,7 @@ export function loadProgressRaw(): ProgressResult<UserProgress> {
     const parsed = JSON.parse(stored) as unknown;
 
     // Validate basic structure
-    if (
-      typeof parsed !== 'object' ||
-      parsed === null ||
-      !('version' in parsed)
-    ) {
+    if (typeof parsed !== 'object' || parsed === null || !('version' in parsed)) {
       // Invalid data, reset to initial
       const initial = createInitialProgress();
       return { success: true, data: initial };
@@ -272,9 +268,7 @@ export function loadDailyProgress(): ProgressResult<Record<string, DailyProgress
 /**
  * Save daily progress to localStorage
  */
-export function saveDailyProgress(
-  progress: Record<string, DailyProgress>
-): ProgressResult<void> {
+export function saveDailyProgress(progress: Record<string, DailyProgress>): ProgressResult<void> {
   if (!isStorageAvailable()) {
     return {
       success: false,

@@ -380,8 +380,7 @@
    HIGH DPI SCREENS
    ======================================== */
 
-@media (-webkit-min-device-pixel-ratio: 2),
-       (min-resolution: 192dpi) {
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   /* High-res specific styles if needed */
   .board-canvas {
     image-rendering: -webkit-optimize-contrast;

@@ -39,11 +39,11 @@
 .solution-tree-view {
   position: relative;
   flex: 1;
-  min-height: 0;  /* Important for flex child scrolling */
+  min-height: 0; /* Important for flex child scrolling */
 }
 
 .solution-tree-view:focus {
-  outline: none;  /* Focus handled by wrapper */
+  outline: none; /* Focus handled by wrapper */
 }
 
 .solution-tree-svg {
@@ -183,7 +183,7 @@
 }
 
 .tree-node-correctness.correct {
-  stroke: var(--correct-color, #4CAF50);
+  stroke: var(--correct-color, #4caf50);
 }
 
 .tree-node-correctness.wrong {
@@ -277,10 +277,10 @@
   --tree-bg: #fafafa;
   --border-color: #e5e7eb;
   --edge-color: #666666;
-  --primary-color: #00bcd4;  /* Cyan - Besogo selection */
-  --focus-color: #00acc1;    /* Darker cyan for focus */
-  --hover-color: #4dd0e1;    /* Lighter cyan for hover */
-  --correct-color: #4CAF50;
+  --primary-color: #00bcd4; /* Cyan - Besogo selection */
+  --focus-color: #00acc1; /* Darker cyan for focus */
+  --hover-color: #4dd0e1; /* Lighter cyan for hover */
+  --correct-color: #4caf50;
   --wrong-color: #f44336;
 
   /* Stones */

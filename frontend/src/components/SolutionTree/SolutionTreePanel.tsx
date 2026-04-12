@@ -138,7 +138,9 @@ export function SolutionTreePanel({
     // The tree auto-renders and auto-updates when engine.cur_move changes.
 
     // Trigger a tree redraw if needed
-    if (typeof (goban as unknown as { move_tree_redraw?: () => void }).move_tree_redraw === 'function') {
+    if (
+      typeof (goban as unknown as { move_tree_redraw?: () => void }).move_tree_redraw === 'function'
+    ) {
       (goban as unknown as { move_tree_redraw: () => void }).move_tree_redraw();
     }
   }, [gobanRef, isVisible]);
@@ -181,7 +183,9 @@ export function EmptyTreeState({ className }: { className?: string }): JSX.Eleme
       data-testid="tree-empty-state"
       role="status"
     >
-      <div style={styles.emptyIcon} aria-hidden="true">🌳</div>
+      <div style={styles.emptyIcon} aria-hidden="true">
+        🌳
+      </div>
       <div style={styles.emptyText}>No variations to explore</div>
       <div style={styles.emptySubtext}>This puzzle has a single solution path.</div>
     </div>
@@ -208,7 +212,9 @@ export function TreeErrorState({
       data-testid="tree-error-state"
       role="alert"
     >
-      <div style={styles.errorIcon} aria-hidden="true"><WarningIcon size={20} /></div>
+      <div style={styles.errorIcon} aria-hidden="true">
+        <WarningIcon size={20} />
+      </div>
       <div style={styles.errorText}>{message || 'Unable to display solution tree'}</div>
     </div>
   );

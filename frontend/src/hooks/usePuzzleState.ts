@@ -29,12 +29,12 @@ export type MoveOrderMode = 'strict' | 'flexible';
 
 /** Puzzle solve lifecycle status */
 export type PuzzleStatus =
-  | 'loading'   // Waiting for goban initialization
-  | 'solving'   // User actively solving
-  | 'correct'   // Just played a correct move (transient)
-  | 'wrong'     // Just played a wrong move
-  | 'complete'  // All moves played correctly
-  | 'review';   // Exploring solution tree
+  | 'loading' // Waiting for goban initialization
+  | 'solving' // User actively solving
+  | 'correct' // Just played a correct move (transient)
+  | 'wrong' // Just played a wrong move
+  | 'complete' // All moves played correctly
+  | 'review'; // Exploring solution tree
 
 /**
  * Reactive puzzle solve state.
@@ -335,8 +335,12 @@ export function usePuzzleState(
     let wrongFired = false;
     let correctFired = false;
 
-    const trackCorrect = (): void => { correctFired = true; };
-    const trackWrong = (): void => { wrongFired = true; };
+    const trackCorrect = (): void => {
+      correctFired = true;
+    };
+    const trackWrong = (): void => {
+      wrongFired = true;
+    };
 
     const onPuzzlePlace = (): void => {
       // Play stone placement sound immediately on every move
@@ -377,7 +381,10 @@ export function usePuzzleState(
                 let ancestor = curMove.parent;
                 let ancestorCorrect = false;
                 while (ancestor) {
-                  if (ancestor.correct_answer) { ancestorCorrect = true; break; }
+                  if (ancestor.correct_answer) {
+                    ancestorCorrect = true;
+                    break;
+                  }
                   ancestor = ancestor.parent;
                 }
                 if (ancestorCorrect) {
@@ -484,9 +491,7 @@ export function usePuzzleState(
   // -------------------------------------------------------------------------
   const isTerminal = state.status === 'complete' || state.status === 'wrong';
 
-  const elapsedMs = state.startedAt !== null
-    ? Date.now() - state.startedAt
-    : null;
+  const elapsedMs = state.startedAt !== null ? Date.now() - state.startedAt : null;
 
   return {
     state,

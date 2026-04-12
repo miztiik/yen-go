@@ -131,12 +131,7 @@ export function LockStatus({
   const label = isUnlocked ? 'Unlocked' : 'Locked';
 
   return (
-    <div
-      style={styles.container}
-      className={className}
-      role="status"
-      aria-label={label}
-    >
+    <div style={styles.container} className={className} role="status" aria-label={label}>
       <div style={styles.iconContainer}>
         {isUnlocked ? (
           <UnlockIcon size={sizeConfig.icon} color={color} />
@@ -145,9 +140,7 @@ export function LockStatus({
         )}
       </div>
       {showLabel && (
-        <span style={{ ...styles.label, fontSize: sizeConfig.fontSize, color }}>
-          {label}
-        </span>
+        <span style={{ ...styles.label, fontSize: sizeConfig.fontSize, color }}>{label}</span>
       )}
     </div>
   );

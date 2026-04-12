@@ -12,7 +12,7 @@
 }
 
 /* Filter buttons hover */
-.achievements-page [style*="filterButton"]:hover {
+.achievements-page [style*='filterButton']:hover {
   transform: translateY(-1px);
 }
 

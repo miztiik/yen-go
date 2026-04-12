@@ -86,10 +86,7 @@ export function createScoringState(): ScoringState {
  * Calculate time bonus based on solve time.
  * Faster solves get more bonus points.
  */
-export function calculateTimeBonus(
-  timeMs: number,
-  config: ScoringConfig = {}
-): number {
+export function calculateTimeBonus(timeMs: number, config: ScoringConfig = {}): number {
   const { maxTimeBonus, timeBonusThreshold } = {
     ...DEFAULT_SCORING_CONFIG,
     ...config,
@@ -100,7 +97,7 @@ export function calculateTimeBonus(
   }
 
   // Linear interpolation: faster = more points
-  const ratio = 1 - (timeMs / timeBonusThreshold);
+  const ratio = 1 - timeMs / timeBonusThreshold;
   return Math.round(maxTimeBonus * ratio);
 }
 
@@ -108,10 +105,7 @@ export function calculateTimeBonus(
  * Calculate streak bonus.
  * Bonus awarded at each streak milestone (3, 6, 9, etc.)
  */
-export function calculateStreakBonus(
-  streak: number,
-  config: ScoringConfig = {}
-): number {
+export function calculateStreakBonus(streak: number, config: ScoringConfig = {}): number {
   const { streakMilestone, streakBonusPoints } = {
     ...DEFAULT_SCORING_CONFIG,
     ...config,
@@ -241,13 +235,11 @@ export class RushScoring {
     isPerfect: boolean;
     averageTimeBonus: number;
   } {
-    const correctScores = this.state.puzzleScores.filter(s => s.basePoints > 0);
-    const skippedScores = this.state.puzzleScores.filter(s => s.skipPenalty < 0);
+    const correctScores = this.state.puzzleScores.filter((s) => s.basePoints > 0);
+    const skippedScores = this.state.puzzleScores.filter((s) => s.skipPenalty < 0);
 
     const totalTimeBonus = correctScores.reduce((sum, s) => sum + s.timeBonus, 0);
-    const averageTimeBonus = correctScores.length > 0
-      ? totalTimeBonus / correctScores.length
-      : 0;
+    const averageTimeBonus = correctScores.length > 0 ? totalTimeBonus / correctScores.length : 0;
 
     return {
       totalScore: this.state.totalScore,

@@ -108,7 +108,8 @@ const styles: Record<string, JSX.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '0.75rem 0.5rem',
-    background: 'linear-gradient(135deg, var(--color-success-bg-solid) 0%, var(--color-bg-elevated) 100%)',
+    background:
+      'linear-gradient(135deg, var(--color-success-bg-solid) 0%, var(--color-bg-elevated) 100%)',
     border: '1px solid var(--color-success-border)',
     borderRadius: '8px',
     cursor: 'pointer',
@@ -210,7 +211,8 @@ function HintIndicator({ count }: { count: number }): JSX.Element {
       title={`${count} hint${count > 1 ? 's' : ''} used`}
       aria-label={`${count} hint${count > 1 ? 's' : ''} used`}
     >
-      <HintIcon size={12} />{count}
+      <HintIcon size={12} />
+      {count}
     </span>
   );
 }

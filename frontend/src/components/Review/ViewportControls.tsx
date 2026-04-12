@@ -95,7 +95,7 @@ export function ViewportControls({
   // Calculate current crop percentage
   const cropPercentage = isFullBoard
     ? 100
-    : Math.round((width * height) / (boardSize * boardSize) * 100);
+    : Math.round(((width * height) / (boardSize * boardSize)) * 100);
 
   // Check if we can expand/shrink
   const canExpand = !isFullBoard;

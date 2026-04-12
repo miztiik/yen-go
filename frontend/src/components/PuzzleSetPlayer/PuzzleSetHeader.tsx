@@ -57,7 +57,8 @@ export function PuzzleSetHeader({
   testId = 'puzzle-set-header',
 }: PuzzleSetHeaderProps): VNode {
   // Progress: use explicit value or derive from index
-  const progressPct = progress ?? (totalPuzzles > 0 ? Math.round(((currentIndex + 1) / totalPuzzles) * 100) : 0);
+  const progressPct =
+    progress ?? (totalPuzzles > 0 ? Math.round(((currentIndex + 1) / totalPuzzles) * 100) : 0);
 
   return (
     <div data-testid={testId}>

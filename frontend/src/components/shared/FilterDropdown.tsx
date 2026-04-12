@@ -90,7 +90,7 @@ export const FilterDropdown: FunctionalComponent<FilterDropdownProps> = ({
   // Find selected option for trigger text (memoized)
   const selectedOption = useMemo(
     () => (selected ? findOption(groups, selected) : null),
-    [groups, selected],
+    [groups, selected]
   );
 
   // ── Escape key closes dropdown (Finding 6 — only attach when open) ──
@@ -129,13 +129,16 @@ export const FilterDropdown: FunctionalComponent<FilterDropdownProps> = ({
 
   // ── Keyboard navigation inside listbox ───────────────────────────
   // F5: Helper to check if item at given index is disabled (count=0)
-  const isItemDisabled = useCallback((idx: number): boolean => {
-    if (idx === 0) return false; // "All" is never disabled
-    const optId = allOptionIds[idx - 1];
-    if (!optId) return false;
-    const opt = findOption(groups, optId);
-    return opt?.count === 0;
-  }, [allOptionIds, groups]);
+  const isItemDisabled = useCallback(
+    (idx: number): boolean => {
+      if (idx === 0) return false; // "All" is never disabled
+      const optId = allOptionIds[idx - 1];
+      if (!optId) return false;
+      const opt = findOption(groups, optId);
+      return opt?.count === 0;
+    },
+    [allOptionIds, groups]
+  );
 
   const handleListboxKeyDown = useCallback(
     (e: JSX.TargetedKeyboardEvent<HTMLDivElement>) => {
@@ -213,7 +216,7 @@ export const FilterDropdown: FunctionalComponent<FilterDropdownProps> = ({
         }
       }
     },
-    [allOptionIds, onChange, groups, isItemDisabled],
+    [allOptionIds, onChange, groups, isItemDisabled]
   );
 
   // ── Scroll focused item into view ────────────────────────────────
@@ -242,7 +245,7 @@ export const FilterDropdown: FunctionalComponent<FilterDropdownProps> = ({
       setIsOpen(false);
       triggerRef.current?.focus();
     },
-    [onChange, groups],
+    [onChange, groups]
   );
 
   const triggerId = testId ? `${testId}-trigger` : undefined;
@@ -318,8 +321,12 @@ export const FilterDropdown: FunctionalComponent<FilterDropdownProps> = ({
             className="fixed z-[calc(var(--z-dropdown,50)_+_1)] w-64 overflow-y-auto rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-panel)] shadow-2xl focus:outline-none"
             style={{
               maxHeight: '400px',
-              top: triggerRef.current ? `${triggerRef.current.getBoundingClientRect().bottom + 8}px` : undefined,
-              left: triggerRef.current ? `${triggerRef.current.getBoundingClientRect().left}px` : undefined,
+              top: triggerRef.current
+                ? `${triggerRef.current.getBoundingClientRect().bottom + 8}px`
+                : undefined,
+              left: triggerRef.current
+                ? `${triggerRef.current.getBoundingClientRect().left}px`
+                : undefined,
             }}
             data-testid={testId ? `${testId}-panel` : undefined}
           >
@@ -336,7 +343,11 @@ export const FilterDropdown: FunctionalComponent<FilterDropdownProps> = ({
 
             {/* Categorized groups */}
             {groups.map((group) => (
-              <div key={group.label} role="group" aria-labelledby={`${listboxId}-group-${group.label.replace(/\s+/g, '-').toLowerCase()}`}>
+              <div
+                key={group.label}
+                role="group"
+                aria-labelledby={`${listboxId}-group-${group.label.replace(/\s+/g, '-').toLowerCase()}`}
+              >
                 {/* Category header — F6: visible to assistive technology */}
                 <div
                   id={`${listboxId}-group-${group.label.replace(/\s+/g, '-').toLowerCase()}`}
@@ -406,12 +417,12 @@ function DropdownItem({
       aria-selected={isSelected}
       aria-disabled={isDisabled || undefined}
       tabIndex={-1}
-      onClick={() => { if (!isDisabled) onClick(); }}
+      onClick={() => {
+        if (!isDisabled) onClick();
+      }}
       data-focus-index={focusIndex}
       className={`flex min-h-[44px] items-center justify-between px-4 py-2.5 text-sm transition-colors ${
-        isFocused
-          ? 'bg-[var(--color-bg-elevated)]'
-          : ''
+        isFocused ? 'bg-[var(--color-bg-elevated)]' : ''
       } ${isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
       style={{
         color: isDisabled
@@ -427,9 +438,7 @@ function DropdownItem({
         {isSelected && <CheckIcon size={14} />}
         {label}
       </span>
-      {count != null && (
-        <span className="text-xs text-[var(--color-text-muted)]">{count}</span>
-      )}
+      {count != null && <span className="text-xs text-[var(--color-text-muted)]">{count}</span>}
     </div>
   );
 }
@@ -452,7 +461,7 @@ function buildOptionIds(groups: readonly DropdownOptionGroup[]): string[] {
 /** Find an option by ID across all groups. */
 function findOption(
   groups: readonly DropdownOptionGroup[],
-  id: string,
+  id: string
 ): DropdownOption | undefined {
   for (const group of groups) {
     for (const opt of group.options) {

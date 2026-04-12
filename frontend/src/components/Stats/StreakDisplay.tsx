@@ -87,19 +87,14 @@ function formatStreakDays(count: number): string {
 /**
  * StreakDisplay component - shows streak information.
  */
-export function StreakDisplay({
-  streakData,
-  compact = false,
-}: StreakDisplayProps): JSX.Element {
+export function StreakDisplay({ streakData, compact = false }: StreakDisplayProps): JSX.Element {
   const { currentStreak, longestStreak } = streakData;
 
   const containerStyle = compact
     ? `${styles.container} ${styles.containerCompact}`
     : styles.container;
 
-  const fireStyle = compact
-    ? `${styles.fireIcon} ${styles.fireIconCompact}`
-    : styles.fireIcon;
+  const fireStyle = compact ? `${styles.fireIcon} ${styles.fireIconCompact}` : styles.fireIcon;
 
   const currentStyle = compact
     ? `${styles.currentStreak} ${styles.currentStreakCompact}`
@@ -109,7 +104,9 @@ export function StreakDisplay({
   if (currentStreak === 0 && longestStreak === 0) {
     return (
       <div class="streak-display" style={containerStyle}>
-        <span style={fireStyle}><FireIcon size={compact ? 20 : 28} /></span>
+        <span style={fireStyle}>
+          <FireIcon size={compact ? 20 : 28} />
+        </span>
         <div style={styles.content}>
           <p style={`${currentStyle} ${styles.noStreak}`}>No streak yet</p>
           <p style={styles.streakLabel}>Solve a puzzle to start your streak!</p>
@@ -120,7 +117,9 @@ export function StreakDisplay({
 
   return (
     <div class="streak-display" style={containerStyle}>
-      <span style={fireStyle}><FireIcon size={compact ? 20 : 28} /></span>
+      <span style={fireStyle}>
+        <FireIcon size={compact ? 20 : 28} />
+      </span>
       <div style={styles.content}>
         <p style={currentStyle}>{currentStreak}</p>
         <p style={styles.streakLabel}>

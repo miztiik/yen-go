@@ -11,12 +11,12 @@
 
 /** Achievement category for grouping */
 export type AchievementCategory =
-  | 'puzzles'    // Puzzle-solving milestones
-  | 'streaks'    // Daily streak achievements
-  | 'rush'       // Puzzle rush mode achievements
-  | 'mastery'    // Skill-based achievements
+  | 'puzzles' // Puzzle-solving milestones
+  | 'streaks' // Daily streak achievements
+  | 'rush' // Puzzle rush mode achievements
+  | 'mastery' // Skill-based achievements
   | 'collection' // Collection/completion achievements
-  | 'special';   // Special/hidden achievements
+  | 'special'; // Special/hidden achievements
 
 /** Achievement tier for rarity/difficulty */
 export type AchievementTier = 'bronze' | 'silver' | 'gold' | 'platinum';
@@ -24,34 +24,34 @@ export type AchievementTier = 'bronze' | 'silver' | 'gold' | 'platinum';
 /** Unique achievement identifier */
 export type AchievementId =
   // Puzzle milestones
-  | 'first_puzzle'      // Solve first puzzle
-  | 'ten_puzzles'       // Solve 10 puzzles
-  | 'fifty_puzzles'     // Solve 50 puzzles
-  | 'hundred_puzzles'   // Solve 100 puzzles
-  | 'five_hundred'      // Solve 500 puzzles
-  | 'thousand_puzzles'  // Solve 1000 puzzles
+  | 'first_puzzle' // Solve first puzzle
+  | 'ten_puzzles' // Solve 10 puzzles
+  | 'fifty_puzzles' // Solve 50 puzzles
+  | 'hundred_puzzles' // Solve 100 puzzles
+  | 'five_hundred' // Solve 500 puzzles
+  | 'thousand_puzzles' // Solve 1000 puzzles
   // Streak achievements
-  | 'streak_7'          // 7-day streak
-  | 'streak_30'         // 30-day streak
-  | 'streak_100'        // 100-day streak
-  | 'streak_365'        // 365-day streak (year!)
+  | 'streak_7' // 7-day streak
+  | 'streak_30' // 30-day streak
+  | 'streak_100' // 100-day streak
+  | 'streak_365' // 365-day streak (year!)
   // Skill achievements
-  | 'perfect_ten'       // 10 perfect solves (no hints, first attempt)
-  | 'no_hints_master'   // 50 puzzles without hints
-  | 'speed_demon'       // Solve puzzle in under 10 seconds
-  | 'quick_thinker'     // Solve 5 puzzles in under 30 seconds each
+  | 'perfect_ten' // 10 perfect solves (no hints, first attempt)
+  | 'no_hints_master' // 50 puzzles without hints
+  | 'speed_demon' // Solve puzzle in under 10 seconds
+  | 'quick_thinker' // Solve 5 puzzles in under 30 seconds each
   // Rush mode achievements
-  | 'rush_beginner'     // Complete first rush session
-  | 'rush_10'           // Score 10+ in rush mode
-  | 'rush_20'           // Score 20+ in rush mode
-  | 'rush_50'           // Score 50+ in rush mode
+  | 'rush_beginner' // Complete first rush session
+  | 'rush_10' // Score 10+ in rush mode
+  | 'rush_20' // Score 20+ in rush mode
+  | 'rush_50' // Score 50+ in rush mode
   // Collection achievements
-  | 'level_complete'    // Complete all puzzles in a level
+  | 'level_complete' // Complete all puzzles in a level
   | 'difficulty_master' // Complete 50 advanced puzzles
   | 'beginner_graduate' // Complete 100 beginner puzzles
   // Special achievements
-  | 'comeback_kid'      // Break and restart a streak
-  | 'dedicated';        // Play 7 days in a row without missing
+  | 'comeback_kid' // Break and restart a streak
+  | 'dedicated'; // Play 7 days in a row without missing
 
 /** Static definition of an achievement (immutable) */
 export interface AchievementDefinition {
@@ -333,7 +333,9 @@ export function getAchievementDefinition(id: AchievementId): AchievementDefiniti
 /**
  * Get all achievements in a category
  */
-export function getAchievementsByCategory(category: AchievementCategory): readonly AchievementDefinition[] {
+export function getAchievementsByCategory(
+  category: AchievementCategory
+): readonly AchievementDefinition[] {
   return ACHIEVEMENT_DEFINITIONS.filter((def) => def.category === category);
 }
 
@@ -369,7 +371,7 @@ export function combineWithProgress(
   const currentValue = progress?.currentValue ?? 0;
   const unlockedAt = progress?.unlockedAt ?? null;
   const isUnlocked = unlockedAt !== null || currentValue >= definition.target;
-  
+
   return {
     ...definition,
     currentValue,
@@ -407,7 +409,9 @@ export function getTierDisplayName(tier: AchievementTier): string {
 /**
  * Sort achievements by unlock status, then tier, then name
  */
-export function sortAchievements(achievements: readonly AchievementWithProgress[]): AchievementWithProgress[] {
+export function sortAchievements(
+  achievements: readonly AchievementWithProgress[]
+): AchievementWithProgress[] {
   const tierOrder: Record<AchievementTier, number> = {
     platinum: 0,
     gold: 1,

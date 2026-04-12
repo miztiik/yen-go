@@ -105,9 +105,7 @@ const SECTIONS: CollectionSection[] = [
 /**
  * Calculate mastery level from progress data using accuracy-based calculation.
  */
-function getLocalMastery(
-  progress: CollectionProgressSummary | undefined,
-): MasteryLevel {
+function getLocalMastery(progress: CollectionProgressSummary | undefined): MasteryLevel {
   if (!progress) return 'new';
   return getMasteryFromProgress({
     completed: progress.completedCount,
@@ -120,7 +118,7 @@ function getLocalMastery(
  */
 function getCollectionsForSection(
   catalog: CollectionCatalog,
-  section: CollectionSection,
+  section: CollectionSection
 ): CuratedCollection[] {
   const result: CuratedCollection[] = [];
   for (const t of section.types) {
@@ -134,12 +132,8 @@ function getCollectionsForSection(
  * Filter out collections with puzzleCount < MIN_PUZZLE_COUNT (when they have data).
  * Collections without data (coming soon) are also hidden — they can't meet the threshold.
  */
-function applyMinPuzzleFilter(
-  collections: readonly CuratedCollection[],
-): CuratedCollection[] {
-  return collections.filter(
-    (c) => c.hasData && c.puzzleCount >= MIN_PUZZLE_COUNT,
-  );
+function applyMinPuzzleFilter(collections: readonly CuratedCollection[]): CuratedCollection[] {
+  return collections.filter((c) => c.hasData && c.puzzleCount >= MIN_PUZZLE_COUNT);
 }
 
 /**
@@ -172,7 +166,7 @@ function sortByTierAndCount(collections: CuratedCollection[]): CuratedCollection
  */
 function prepareSectionCollections(
   catalog: CollectionCatalog,
-  section: CollectionSection,
+  section: CollectionSection
 ): CuratedCollection[] {
   const raw = getCollectionsForSection(catalog, section);
   const filtered = applyMinPuzzleFilter(raw);
@@ -223,11 +217,15 @@ function CollectionCard({
     <div role="listitem">
       <PuzzleCollectionCard
         title={collection.name}
-        subtitle={collection.curator !== 'Curated' && collection.curator !== 'Community' && collection.curator !== 'System'
-          ? `by ${collection.curator}`
-          : collection.description.length > 80
-            ? collection.description.slice(0, 77) + '...'
-            : collection.description}
+        subtitle={
+          collection.curator !== 'Curated' &&
+          collection.curator !== 'Community' &&
+          collection.curator !== 'System'
+            ? `by ${collection.curator}`
+            : collection.description.length > 80
+              ? collection.description.slice(0, 77) + '...'
+              : collection.description
+        }
         {...optionalProps}
         onClick={onClick}
         disabled={!collection.hasData}
@@ -267,7 +265,7 @@ function CollectionTypeSection({
         (c) =>
           c.name.toLowerCase().includes(lower) ||
           c.description.toLowerCase().includes(lower) ||
-          c.curator.toLowerCase().includes(lower),
+          c.curator.toLowerCase().includes(lower)
       );
     }
   }, [collections, debouncedSectionSearch, section.types]);
@@ -294,9 +292,7 @@ function CollectionTypeSection({
               ({filteredCollections.length})
             </span>
           </h2>
-          <p className="m-0 mt-0.5 text-sm text-[var(--color-text-muted)]">
-            {section.subtitle}
-          </p>
+          <p className="m-0 mt-0.5 text-sm text-[var(--color-text-muted)]">{section.subtitle}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {/* In-section search */}
@@ -345,12 +341,12 @@ function CollectionTypeSection({
         aria-label={section.title}
       >
         {displayItems.map((c) => (
-            <CollectionCard
-              key={c.slug}
-              collection={c}
-              progress={progressMap[c.slug]}
-              onClick={() => onCollectionClick(c.slug)}
-            />
+          <CollectionCard
+            key={c.slug}
+            collection={c}
+            progress={progressMap[c.slug]}
+            onClick={() => onCollectionClick(c.slug)}
+          />
         ))}
       </div>
       {isSearching && filteredCollections.length === 0 && (
@@ -430,7 +426,7 @@ export function CollectionsBrowsePage({
     (slug: string) => {
       onNavigateToCollection(slug);
     },
-    [onNavigateToCollection],
+    [onNavigateToCollection]
   );
 
   // Stats
@@ -498,7 +494,16 @@ export function CollectionsBrowsePage({
                   className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer border-none bg-transparent p-0 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
                   aria-label="Clear search"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    aria-hidden="true"
+                  >
                     <line x1="18" y1="6" x2="6" y2="18" />
                     <line x1="6" y1="6" x2="18" y2="18" />
                   </svg>
@@ -525,7 +530,8 @@ export function CollectionsBrowsePage({
             searchResults && searchResults.length > 0 ? (
               <div>
                 <p className="mb-4 text-sm text-[var(--color-text-muted)]">
-                  {searchResults.length} collection{searchResults.length !== 1 ? 's' : ''} matching &ldquo;{debouncedSearch}&rdquo;
+                  {searchResults.length} collection{searchResults.length !== 1 ? 's' : ''} matching
+                  &ldquo;{debouncedSearch}&rdquo;
                 </p>
                 <div
                   className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
@@ -583,15 +589,16 @@ export function CollectionsBrowsePage({
               )}
 
               {/* Type-based sections */}
-              {catalog && SECTIONS.map((section) => (
-                <CollectionTypeSection
-                  key={section.id}
-                  section={section}
-                  collections={prepareSectionCollections(catalog, section)}
-                  progressMap={progressMap}
-                  onCollectionClick={handleCollectionClick}
-                />
-              ))}
+              {catalog &&
+                SECTIONS.map((section) => (
+                  <CollectionTypeSection
+                    key={section.id}
+                    section={section}
+                    collections={prepareSectionCollections(catalog, section)}
+                    progressMap={progressMap}
+                    onCollectionClick={handleCollectionClick}
+                  />
+                ))}
             </div>
           )}
         </div>

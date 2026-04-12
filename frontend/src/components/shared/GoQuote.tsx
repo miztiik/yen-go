@@ -53,7 +53,7 @@ export function GoQuote({
       case 'random':
         return getRandomQuote();
       case 'date':
-        return getQuoteByDate(date ?? new Date().toISOString().split('T')[0] as string);
+        return getQuoteByDate(date ?? (new Date().toISOString().split('T')[0] as string));
       case 'daily':
       default:
         return getTodayQuote();
@@ -64,9 +64,13 @@ export function GoQuote({
 
   return (
     <div class={`go-quote text-center p-4 italic ${className}`}>
-      <p className={`${classes.text} leading-relaxed text-[var(--color-neutral-600)] m-0`}>"{quote.text}"</p>
+      <p className={`${classes.text} leading-relaxed text-[var(--color-neutral-600)] m-0`}>
+        "{quote.text}"
+      </p>
       {showAuthor && (
-        <p className={`${classes.author} text-[var(--color-neutral-500)] mt-2 not-italic`}>— {quote.author}</p>
+        <p className={`${classes.author} text-[var(--color-neutral-500)] mt-2 not-italic`}>
+          — {quote.author}
+        </p>
       )}
     </div>
   );
@@ -96,8 +100,12 @@ export function EmptyState({
   action,
 }: EmptyStateProps): JSX.Element {
   return (
-    <div class={`empty-state flex flex-col items-center justify-center p-8 min-h-[200px] text-center ${className}`}>
-      {message && <p className="text-lg text-[var(--color-neutral-800)] mb-4 font-medium">{message}</p>}
+    <div
+      class={`empty-state flex flex-col items-center justify-center p-8 min-h-[200px] text-center ${className}`}
+    >
+      {message && (
+        <p className="text-lg text-[var(--color-neutral-800)] mb-4 font-medium">{message}</p>
+      )}
       <GoQuote mode={quoteMode} size="md" showAuthor={false} />
       {action && (
         <button

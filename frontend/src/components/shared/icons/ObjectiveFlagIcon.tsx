@@ -29,7 +29,11 @@ export function ObjectiveFlagIcon({
       className={className}
       aria-hidden="true"
     >
-      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" fill={color} fillOpacity="0.15" />
+      <path
+        d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"
+        fill={color}
+        fillOpacity="0.15"
+      />
       <line x1="4" y1="22" x2="4" y2="3" />
     </svg>
   );

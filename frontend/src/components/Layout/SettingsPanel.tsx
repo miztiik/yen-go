@@ -31,13 +31,9 @@ function Toggle({ label, checked, onChange, description }: ToggleProps): VNode {
   return (
     <div className="flex items-center justify-between py-3">
       <div className="flex flex-col">
-        <span className="text-sm font-medium text-[var(--color-text-primary)]">
-          {label}
-        </span>
+        <span className="text-sm font-medium text-[var(--color-text-primary)]">{label}</span>
         {description && (
-          <span className="text-xs text-[var(--color-text-muted)]">
-            {description}
-          </span>
+          <span className="text-xs text-[var(--color-text-muted)]">{description}</span>
         )}
       </div>
       <button
@@ -76,10 +72,7 @@ export interface SettingsPanelProps {
  * - Theme: light/dark toggle
  * - Sound: on/off toggle
  */
-export function SettingsPanel({
-  isOpen = true,
-  onClose,
-}: SettingsPanelProps): VNode | null {
+export function SettingsPanel({ isOpen = true, onClose }: SettingsPanelProps): VNode | null {
   const { settings, updateSettings } = useSettings();
 
   if (!isOpen) return null;
@@ -92,9 +85,7 @@ export function SettingsPanel({
     >
       {/* Header */}
       <div className="flex items-center justify-between pb-3">
-        <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
-          Settings
-        </h2>
+        <h2 className="text-base font-semibold text-[var(--color-text-primary)]">Settings</h2>
         {onClose && (
           <button
             type="button"

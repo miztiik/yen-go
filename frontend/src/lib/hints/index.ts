@@ -31,7 +31,4 @@ export {
 } from './sgf-mapper';
 
 // Token resolution for transform-aware hints
-export {
-  resolveHintTokens,
-  hasTokens,
-} from './token-resolver';
+export { resolveHintTokens, hasTokens } from './token-resolver';

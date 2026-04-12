@@ -13,11 +13,7 @@
  */
 
 import type { SolutionNode } from '../../types/puzzle-internal';
-import type {
-  VisualTreeNode,
-  TreeLayoutResult,
-  TreeNodeLayout,
-} from '../../types/tree';
+import type { VisualTreeNode, TreeLayoutResult, TreeNodeLayout } from '../../types/tree';
 
 // ============================================================================
 // Constants (matching Besogo)
@@ -159,10 +155,7 @@ export interface BranchPath {
  * Key insight: Paths are built from leaf to root as recursion unwinds,
  * using relative SVG commands (h, v, l) for connected lines.
  */
-export function buildBranchPaths(
-  layout: TreeLayoutResult,
-  currentNodeId: string
-): BranchPath[] {
+export function buildBranchPaths(layout: TreeLayoutResult, currentNodeId: string): BranchPath[] {
   const paths: BranchPath[] = [];
 
   // Get ancestors of current node for highlighting
@@ -201,15 +194,14 @@ export function buildBranchPaths(
       const child = node.children[i];
       const prevChild = node.children[i - 1];
       if (!child || !prevChild) continue;
-      
+
       const prevChildY = prevChild.layout.y;
       const childPath = buildPaths(child);
       const fullPath =
         childPath + extendPathWithPrev(node.layout, child.layout, nextOpen, prevChildY);
 
       // Check if this branch contains current node
-      const isCurrentPath =
-        currentAncestors.has(node.id) && currentAncestors.has(child.id);
+      const isCurrentPath = currentAncestors.has(node.id) && currentAncestors.has(child.id);
 
       paths.push({ d: fullPath, isCurrentPath });
     }
@@ -237,11 +229,7 @@ export function buildBranchPaths(
  * Create path segment from child back to parent.
  * Port of Besogo's extendPath function.
  */
-function extendPath(
-  parent: TreeNodeLayout,
-  child: TreeNodeLayout,
-  _nextOpen: number[]
-): string {
+function extendPath(parent: TreeNodeLayout, child: TreeNodeLayout, _nextOpen: number[]): string {
   const dy = parent.y - child.y; // How many rows up
 
   if (dy === 0) {
@@ -323,10 +311,7 @@ export function collectAllNodes(root: VisualTreeNode): VisualTreeNode[] {
 /**
  * Get path from root to a specific node (IDs).
  */
-export function getPathToNode(
-  nodeMap: Map<string, VisualTreeNode>,
-  nodeId: string
-): string[] {
+export function getPathToNode(nodeMap: Map<string, VisualTreeNode>, nodeId: string): string[] {
   const node = nodeMap.get(nodeId);
   if (!node) return [];
 

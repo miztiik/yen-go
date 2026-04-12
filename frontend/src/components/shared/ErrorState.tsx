@@ -38,7 +38,17 @@ export interface ErrorStateProps {
 export const ErrorState: FunctionalComponent<ErrorStateProps> = ({
   message,
   icon = (
-    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--color-warning, #f59e0b)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width="36"
+      height="36"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="var(--color-warning, #f59e0b)"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.999L13.732 4.001c-.77-1.333-2.694-1.333-3.464 0L3.34 16.001C2.57 17.334 3.532 19 5.072 19z" />
     </svg>
   ),
@@ -61,9 +71,7 @@ export const ErrorState: FunctionalComponent<ErrorStateProps> = ({
       </div>
 
       {/* Message */}
-      <p className="m-0 max-w-[400px] text-base text-[var(--color-text-primary)]">
-        {message}
-      </p>
+      <p className="m-0 max-w-[400px] text-base text-[var(--color-text-primary)]">{message}</p>
 
       {/* Actions */}
       {(onRetry || onGoBack) && (

@@ -39,7 +39,7 @@ export interface TrainingLevelCardProps {
 }
 
 /** Levels that show a DAN badge — derived from config (ID >= 210 = dan levels) */
-const DAN_LEVELS = new Set<string>(LEVELS.filter(l => l.id >= 210).map(l => l.slug));
+const DAN_LEVELS = new Set<string>(LEVELS.filter((l) => l.id >= 210).map((l) => l.slug));
 
 /** Expert level gets special dark treatment — last level in config */
 const isExpert = (slug: string): boolean => slug === LEVELS[LEVELS.length - 1]!.slug;
@@ -116,7 +116,9 @@ function GridCard({
             <span
               className="ml-auto rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider"
               style={{
-                backgroundColor: expert ? `color-mix(in srgb, ${colors.primary} 20%, transparent)` : `color-mix(in srgb, ${colors.primary} 15%, transparent)`,
+                backgroundColor: expert
+                  ? `color-mix(in srgb, ${colors.primary} 20%, transparent)`
+                  : `color-mix(in srgb, ${colors.primary} 15%, transparent)`,
                 color: expert ? colors.primary : colors.primary,
               }}
             >
@@ -167,15 +169,9 @@ function GridCard({
             }`}
           >
             <span>
-              {pct >= 100
-                ? 'Completed'
-                : progress.completed > 0
-                  ? 'In progress'
-                  : 'Ready to begin'}
+              {pct >= 100 ? 'Completed' : progress.completed > 0 ? 'In progress' : 'Ready to begin'}
             </span>
-            <span style={{ color: expert ? colors.primary : colors.primary }}>
-              {pct}%
-            </span>
+            <span style={{ color: expert ? colors.primary : colors.primary }}>{pct}%</span>
           </div>
         </div>
       </div>
@@ -234,7 +230,9 @@ function ListCard({
           <span
             className="ml-1.5 rounded-full px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider"
             style={{
-              backgroundColor: expert ? `color-mix(in srgb, ${colors.primary} 20%, transparent)` : `color-mix(in srgb, ${colors.primary} 15%, transparent)`,
+              backgroundColor: expert
+                ? `color-mix(in srgb, ${colors.primary} 20%, transparent)`
+                : `color-mix(in srgb, ${colors.primary} 15%, transparent)`,
               color: expert ? colors.primary : colors.primary,
             }}
           >

@@ -57,9 +57,7 @@ export interface BootErrorProps {
  */
 export function BootError({ message, onRetry }: BootErrorProps): JSX.Element {
   return (
-    <div
-      className="flex flex-col items-center justify-center min-h-screen bg-[var(--color-bg-primary)] p-[var(--spacing-lg)]"
-    >
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[var(--color-bg-primary)] p-[var(--spacing-lg)]">
       <YenGoLogo size={48} />
       <p
         className="mt-[var(--spacing-md)] text-[var(--color-error)] text-[var(--font-size-base)] text-center max-w-md"

@@ -35,11 +35,12 @@ export interface PuzzleCarouselProps {
   size?: 'sm' | 'md' | 'lg' | undefined;
 }
 
-const sizeConfig: Record<'sm' | 'md' | 'lg', { diameter: number; gap: number; fontSize: string }> = {
-  sm: { diameter: 24, gap: 4, fontSize: '0.625rem' },
-  md: { diameter: 32, gap: 6, fontSize: '0.75rem' },
-  lg: { diameter: 40, gap: 8, fontSize: '0.875rem' },
-};
+const sizeConfig: Record<'sm' | 'md' | 'lg', { diameter: number; gap: number; fontSize: string }> =
+  {
+    sm: { diameter: 24, gap: 4, fontSize: '0.625rem' },
+    md: { diameter: 32, gap: 6, fontSize: '0.75rem' },
+    lg: { diameter: 40, gap: 8, fontSize: '0.875rem' },
+  };
 
 /**
  * Get indicator style based on status
@@ -136,7 +137,7 @@ export function PuzzleCarousel({
       const currentWidth = current.offsetWidth;
 
       // Center the current indicator
-      const scrollLeft = currentLeft - (containerWidth / 2) + (currentWidth / 2);
+      const scrollLeft = currentLeft - containerWidth / 2 + currentWidth / 2;
       if (typeof container.scrollTo === 'function') {
         container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
       } else {
@@ -157,12 +158,7 @@ export function PuzzleCarousel({
   };
 
   return (
-    <div
-      ref={containerRef}
-      style={containerStyle}
-      role="navigation"
-      aria-label="Puzzle navigation"
-    >
+    <div ref={containerRef} style={containerStyle} role="navigation" aria-label="Puzzle navigation">
       {puzzles.map((puzzle, i) => {
         const isCurrent = i === currentIndex;
         return (
@@ -231,12 +227,8 @@ export function ProgressSummaryBar({
       <span style={statStyle}>
         <strong>{currentNumber}</strong> / {total}
       </span>
-      <span style={{ ...statStyle, color: 'var(--color-success-solid)' }}>
-        ✓ {correct}
-      </span>
-      <span style={{ ...statStyle, color: 'var(--color-error)' }}>
-        ✗ {incorrect}
-      </span>
+      <span style={{ ...statStyle, color: 'var(--color-success-solid)' }}>✓ {correct}</span>
+      <span style={{ ...statStyle, color: 'var(--color-error)' }}>✗ {incorrect}</span>
     </div>
   );
 }

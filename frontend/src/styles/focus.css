@@ -44,7 +44,7 @@
 
 button:focus-visible,
 .btn:focus-visible,
-[role="button"]:focus-visible {
+[role='button']:focus-visible {
   outline: 2px solid var(--color-focus-ring, #3b82f6);
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
@@ -53,7 +53,7 @@ button:focus-visible,
 /* Primary button focus */
 .btn-primary:focus-visible {
   outline-color: var(--color-focus-ring, #3b82f6);
-  box-shadow: 
+  box-shadow:
     0 0 0 2px var(--color-bg-primary, #1a1a2e),
     0 0 0 4px var(--color-focus-ring, #3b82f6);
 }
@@ -61,7 +61,7 @@ button:focus-visible,
 /* Secondary button focus */
 .btn-secondary:focus-visible {
   outline-color: var(--color-focus-ring, #3b82f6);
-  box-shadow: 
+  box-shadow:
     0 0 0 2px var(--color-bg-primary, #1a1a2e),
     0 0 0 4px var(--color-focus-ring, #3b82f6);
 }
@@ -102,14 +102,14 @@ textarea:focus-visible,
 select:focus-visible {
   outline: none;
   border-color: var(--color-focus-ring, #3b82f6);
-  box-shadow: 
+  box-shadow:
     0 0 0 1px var(--color-focus-ring, #3b82f6),
     0 0 0 4px rgba(59, 130, 246, 0.2);
 }
 
 /* Checkbox and radio focus */
-input[type="checkbox"]:focus-visible,
-input[type="radio"]:focus-visible {
+input[type='checkbox']:focus-visible,
+input[type='radio']:focus-visible {
   outline: 2px solid var(--color-focus-ring, #3b82f6);
   outline-offset: 2px;
 }
@@ -123,15 +123,15 @@ input[type="radio"]:focus-visible {
 }
 
 /* Range slider focus */
-input[type="range"]:focus-visible {
+input[type='range']:focus-visible {
   outline: none;
 }
 
-input[type="range"]:focus-visible::-webkit-slider-thumb {
+input[type='range']:focus-visible::-webkit-slider-thumb {
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5);
 }
 
-input[type="range"]:focus-visible::-moz-range-thumb {
+input[type='range']:focus-visible::-moz-range-thumb {
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5);
 }
 
@@ -163,7 +163,7 @@ canvas:focus-visible {
 .card-clickable:focus-visible {
   outline: 2px solid var(--color-focus-ring, #3b82f6);
   outline-offset: 2px;
-  box-shadow: 
+  box-shadow:
     0 0 0 4px rgba(59, 130, 246, 0.2),
     0 4px 12px rgba(0, 0, 0, 0.2);
 }
@@ -187,22 +187,22 @@ canvas:focus-visible {
 
 /* Tab button focus */
 .tab:focus-visible,
-[role="tab"]:focus-visible {
+[role='tab']:focus-visible {
   outline: 2px solid var(--color-focus-ring, #3b82f6);
   outline-offset: -2px;
   z-index: 1;
 }
 
 /* Tab panel focus */
-[role="tabpanel"]:focus-visible {
+[role='tabpanel']:focus-visible {
   outline: 2px solid var(--color-focus-ring, #3b82f6);
   outline-offset: 4px;
 }
 
 /* Menu item focus */
-[role="menuitem"]:focus-visible,
-[role="menuitemradio"]:focus-visible,
-[role="menuitemcheckbox"]:focus-visible {
+[role='menuitem']:focus-visible,
+[role='menuitemradio']:focus-visible,
+[role='menuitemcheckbox']:focus-visible {
   outline: none;
   background-color: rgba(59, 130, 246, 0.2);
 }
@@ -212,7 +212,7 @@ canvas:focus-visible {
    ======================================== */
 
 /* Dialog focus */
-[role="dialog"]:focus-visible,
+[role='dialog']:focus-visible,
 .modal-content:focus-visible {
   outline: 2px solid var(--color-focus-ring, #3b82f6);
   outline-offset: 4px;
@@ -231,14 +231,14 @@ canvas:focus-visible {
 
 /* Focus ring offset for dark backgrounds */
 .focus-ring-offset-dark:focus-visible {
-  box-shadow: 
+  box-shadow:
     0 0 0 2px var(--color-bg-primary, #1a1a2e),
     0 0 0 4px var(--color-focus-ring, #3b82f6);
 }
 
 /* Focus ring for light backgrounds */
 .focus-ring-offset-light:focus-visible {
-  box-shadow: 
+  box-shadow:
     0 0 0 2px white,
     0 0 0 4px var(--color-focus-ring, #3b82f6);
 }

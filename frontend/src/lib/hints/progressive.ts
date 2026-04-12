@@ -45,5 +45,3 @@ export const DEFAULT_HINT_STATE: HintState = {
   highlightRegion: null,
   canAdvance: true,
 };
-
-

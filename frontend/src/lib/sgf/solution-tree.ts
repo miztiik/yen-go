@@ -48,10 +48,10 @@ export function buildSolutionTree(root: SGFNode, sideToMove: 'B' | 'W'): Solutio
   // Create a virtual root node to hold all first-move variations
   // This ensures consistent structure whether there's 1 or many first moves
   const virtualRoot: SolutionNode = {
-    move: '',  // Virtual root has no move
+    move: '', // Virtual root has no move
     player: sideToMove,
     isCorrect: true,
-    isUserMove: false,  // Virtual root is not a user move
+    isUserMove: false, // Virtual root is not a user move
     children: [],
   };
 
@@ -160,37 +160,30 @@ function isWrongMoveComment(comment: string | undefined): boolean {
   if (!comment) {
     return false;
   }
-  
+
   const lowerComment = comment.toLowerCase();
-  
+
   // Check for common wrong move indicators (case-insensitive)
-  const wrongIndicators = [
-    'wrong',
-    'incorrect',
-    'failure',
-    'fails',
-    'bad',
-    'mistake',
-  ];
-  
+  const wrongIndicators = ['wrong', 'incorrect', 'failure', 'fails', 'bad', 'mistake'];
+
   for (const indicator of wrongIndicators) {
     if (lowerComment.includes(indicator)) {
       return true;
     }
   }
-  
+
   // Check for Chinese/Japanese wrong move indicators
   // 失敗 (shippai) = failure
   // 错 (cuò) = wrong
   // 不正解 (fuseikai) = incorrect answer
   const cjkWrongIndicators = ['失敗', '错', '錯', '不正解', '失败'];
-  
+
   for (const indicator of cjkWrongIndicators) {
     if (comment.includes(indicator)) {
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -394,8 +387,8 @@ export function createWrongMoveNode(move: string, player: 'B' | 'W'): SolutionNo
     move,
     player,
     isCorrect: false,
-    isUserMove: true,  // Wrong moves are always user moves
-    children: [],  // Dead-end - no continuations
+    isUserMove: true, // Wrong moves are always user moves
+    children: [], // Dead-end - no continuations
   };
 }
 

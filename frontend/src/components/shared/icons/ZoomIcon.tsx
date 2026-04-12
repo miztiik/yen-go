@@ -8,7 +8,17 @@ interface IconProps {
 /** Expand/maximize icon — OGS-style outward diagonal arrows (T04) */
 export function ZoomIcon({ size = 16, className }: IconProps): JSX.Element {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
       {/* Top-left arrow */}
       <line x1="9" y1="9" x2="3" y2="3" />
       <polyline points="3 8 3 3 8 3" />

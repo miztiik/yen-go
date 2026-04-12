@@ -19,11 +19,7 @@
  */
 
 import type { SolutionNode } from '../../types/puzzle-internal';
-import type {
-  VisualTreeNode,
-  TreeLayoutResult,
-  TreeNodeLayout,
-} from '../../types/tree';
+import type { VisualTreeNode, TreeLayoutResult, TreeNodeLayout } from '../../types/tree';
 import { GRID_SIZE, GRID_OFFSET, TREE_PADDING } from './constants';
 import { sgfToDisplayCoord, calculateViewBox } from './svg-utils';
 
@@ -39,10 +35,7 @@ import { sgfToDisplayCoord, calculateViewBox } from './svg-utils';
  * @param boardSize - Board size for coordinate display (default 19)
  * @returns TreeLayoutResult with positioned nodes and metadata
  */
-export function computeTreeLayout(
-  tree: SolutionNode,
-  boardSize = 19
-): TreeLayoutResult {
+export function computeTreeLayout(tree: SolutionNode, boardSize = 19): TreeLayoutResult {
   const nodeMap = new Map<string, VisualTreeNode>();
   let maxY = 0;
 
@@ -100,14 +93,7 @@ export function computeTreeLayout(
       // For subsequent children, use next available Y (variations)
       const childY = i === 0 ? nextY : nextY + 1;
 
-      const result = buildLayout(
-        child,
-        depth + 1,
-        childY,
-        visualNode,
-        moveNumber + 1,
-        childId
-      );
+      const result = buildLayout(child, depth + 1, childY, visualNode, moveNumber + 1, childId);
 
       visualNode.children.push(result.visualNode);
       nextY = Math.max(nextY, result.nextY);
@@ -194,10 +180,7 @@ function getMaxDepth(node: VisualTreeNode): number {
  * @param nodeId - ID to find
  * @returns VisualTreeNode or undefined
  */
-export function findNodeById(
-  layout: TreeLayoutResult,
-  nodeId: string
-): VisualTreeNode | undefined {
+export function findNodeById(layout: TreeLayoutResult, nodeId: string): VisualTreeNode | undefined {
   return layout.nodeMap.get(nodeId);
 }
 
@@ -209,10 +192,7 @@ export function findNodeById(
  * @param nodeId - Target node ID
  * @returns Array of node IDs (empty if node not found)
  */
-export function computePathToNode(
-  layout: TreeLayoutResult,
-  nodeId: string
-): string[] {
+export function computePathToNode(layout: TreeLayoutResult, nodeId: string): string[] {
   const node = findNodeById(layout, nodeId);
   if (!node) {
     return [];
@@ -279,9 +259,7 @@ export function getNodeDepth(node: VisualTreeNode): number {
  * @param root - Root visual node
  * @returns Array of [parent, child] pairs
  */
-export function collectEdges(
-  root: VisualTreeNode
-): Array<[VisualTreeNode, VisualTreeNode]> {
+export function collectEdges(root: VisualTreeNode): Array<[VisualTreeNode, VisualTreeNode]> {
   const edges: Array<[VisualTreeNode, VisualTreeNode]> = [];
 
   function collect(node: VisualTreeNode): void {

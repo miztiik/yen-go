@@ -209,9 +209,7 @@ export function Success({
           🎉 Correct!
         </h2>
 
-        {puzzleTitle && (
-          <p style={subtitleStyle}>{puzzleTitle}</p>
-        )}
+        {puzzleTitle && <p style={subtitleStyle}>{puzzleTitle}</p>}
 
         <div style={starsContainerStyle} aria-label={`${stars} out of 3 stars`}>
           {[1, 2, 3].map((n) => (
@@ -219,7 +217,10 @@ export function Success({
               key={n}
               style={{
                 color: n <= stars ? '#ffc107' : '#e0e0e0',
-                animation: n <= stars && animating ? `starPop 0.3s ease-out ${n * 0.1}s backwards` : undefined,
+                animation:
+                  n <= stars && animating
+                    ? `starPop 0.3s ease-out ${n * 0.1}s backwards`
+                    : undefined,
               }}
             >
               ★
@@ -325,11 +326,7 @@ export function Success({
 /**
  * Compact success indicator (inline use)
  */
-export function SuccessIndicator({
-  className = '',
-}: {
-  className?: string;
-}): JSX.Element {
+export function SuccessIndicator({ className = '' }: { className?: string }): JSX.Element {
   return (
     <span
       className={`success-indicator ${className}`}
@@ -354,14 +351,14 @@ export function SuccessIndicator({
  */
 function getEncouragingMessage(wrongAttempts: number, _hintsUsed?: number): string {
   const messages = [
-    "That allows the opponent to escape—try again!",
-    "Good attempt! The key is finding the vital point.",
+    'That allows the opponent to escape—try again!',
+    'Good attempt! The key is finding the vital point.',
     "Keep going! Focus on the opponent's weaknesses.",
-    "Almost there! Think about what happens after your move.",
+    'Almost there! Think about what happens after your move.',
     "Try reading ahead a few moves—you've got this!",
-    "The solution requires a clever sequence. Keep exploring!",
+    'The solution requires a clever sequence. Keep exploring!',
   ];
-  
+
   // Pick a message based on wrong attempts to give varied feedback
   const index = wrongAttempts % messages.length;
   // Safe: modulo ensures index is always in bounds
@@ -472,9 +469,7 @@ export function Failure({
           Not quite...
         </h2>
 
-        {puzzleTitle && (
-          <p style={{ ...messageStyle, marginBottom: '8px' }}>{puzzleTitle}</p>
-        )}
+        {puzzleTitle && <p style={{ ...messageStyle, marginBottom: '8px' }}>{puzzleTitle}</p>}
 
         {/* Encouraging feedback (T3.6) */}
         <p style={encouragingStyle}>
@@ -483,7 +478,9 @@ export function Failure({
 
         <p style={messageStyle}>
           You made {result.wrongAttempts} wrong attempts.
-          {result.hintsUsed ? ` Used ${result.hintsUsed} hint${result.hintsUsed > 1 ? 's' : ''}.` : ''}
+          {result.hintsUsed
+            ? ` Used ${result.hintsUsed} hint${result.hintsUsed > 1 ? 's' : ''}.`
+            : ''}
         </p>
 
         <div style={buttonsStyle}>

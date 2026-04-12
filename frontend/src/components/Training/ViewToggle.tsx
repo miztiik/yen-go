@@ -37,7 +37,7 @@ export const ViewToggle: FunctionalComponent<ViewToggleProps> = ({
       onChange(mode);
       setTimeout(() => setBouncing(null), 250);
     },
-    [value, onChange],
+    [value, onChange]
   );
 
   return (
@@ -76,7 +76,14 @@ interface ToggleButtonProps {
   label: string;
 }
 
-function ToggleButton({ mode, active, bouncing, onClick, icon, label }: ToggleButtonProps): JSX.Element {
+function ToggleButton({
+  mode,
+  active,
+  bouncing,
+  onClick,
+  icon,
+  label,
+}: ToggleButtonProps): JSX.Element {
   return (
     <button
       type="button"
@@ -90,9 +97,7 @@ function ToggleButton({ mode, active, bouncing, onClick, icon, label }: ToggleBu
           : 'bg-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)]'
       }`}
     >
-      <span className={bouncing ? 'animate-bounce-icon' : ''}>
-        {icon}
-      </span>
+      <span className={bouncing ? 'animate-bounce-icon' : ''}>{icon}</span>
     </button>
   );
 }

@@ -14,10 +14,7 @@
 
 import type { FunctionalComponent } from 'preact';
 import { useState, useEffect, useMemo, useCallback } from 'preact/hooks';
-import {
-  SKILL_LEVELS,
-  type SkillLevel,
-} from '@/models/collection';
+import { SKILL_LEVELS, type SkillLevel } from '@/models/collection';
 import { FIRST_LEVEL } from '@/lib/levels/level-defaults';
 import { getLevelCategory } from '@/lib/levels/categories';
 import { PageLayout } from '@/components/Layout/PageLayout';
@@ -34,7 +31,14 @@ import { useCanonicalUrl } from '@/hooks/useCanonicalUrl';
 import { useBrowseParams } from '@/hooks/useBrowseParams';
 import { init as initDb } from '@/services/sqliteService';
 import { getLevelCounts, getTagCounts, getFilterCounts } from '@/services/puzzleQueryService';
-import { getOrderedTagCategories, getTagsByCategory, tagIdToSlug, getTagMeta, levelIdToSlug, levelSlugToId } from '@/services/configService';
+import {
+  getOrderedTagCategories,
+  getTagsByCategory,
+  tagIdToSlug,
+  getTagMeta,
+  levelIdToSlug,
+  levelSlugToId,
+} from '@/services/configService';
 
 // ============================================================================
 // Types
@@ -92,7 +96,7 @@ function loadTrainingProgress(): TrainingProgress {
  */
 function getLocalMastery(
   levelProgress: { completed: number; total: number; accuracy?: number } | undefined,
-  snapshotTotal: number,
+  snapshotTotal: number
 ): MasteryLevel {
   if (!levelProgress || snapshotTotal === 0) return 'new';
   return getMasteryFromProgress({
@@ -111,7 +115,10 @@ export const TrainingSelectionPage: FunctionalComponent<TrainingSelectionPagePro
   onNavigateHome,
   onNavigateRandom,
 }) => {
-  const [progress, setProgress] = useState<TrainingProgress>({ byLevel: {}, unlockedLevels: [FIRST_LEVEL] });
+  const [progress, setProgress] = useState<TrainingProgress>({
+    byLevel: {},
+    unlockedLevels: [FIRST_LEVEL],
+  });
   const { params: browseParams, setParam } = useBrowseParams({ cat: 'all' });
   const categoryFilter = browseParams.cat;
 
@@ -135,19 +142,25 @@ export const TrainingSelectionPage: FunctionalComponent<TrainingSelectionPagePro
   // Bridge filter state for the existing template code
   const filterState = {
     tagId: filterTagIds.length === 1 ? filterTagIds[0]! : null,
-    tagOptionGroups: getOrderedTagCategories().map(cat => ({
+    tagOptionGroups: getOrderedTagCategories().map((cat) => ({
       label: cat.label,
-      options: getTagsByCategory(cat.key).map(t => ({
-        id: String(t.id), label: t.name,
+      options: getTagsByCategory(cat.key).map((t) => ({
+        id: String(t.id),
+        label: t.name,
       })),
     })),
     setTagFromOption: (id: string | null) => {
-      if (id === null || id === '') { setFilters({ t: [] }); return; }
-      const n = Number(id); if (!Number.isNaN(n)) setFilters({ t: [n] });
+      if (id === null || id === '') {
+        setFilters({ t: [] });
+        return;
+      }
+      const n = Number(id);
+      if (!Number.isNaN(n)) setFilters({ t: [n] });
     },
     setTag: (id: number | null) => setFilters({ t: id === null ? [] : [id] }),
     selectedTagSlug: filterTagIds.length === 1 ? tagIdToSlug(filterTagIds[0]!) : null,
-    selectedTagLabel: filterTagIds.length === 1 ? (getTagMeta(tagIdToSlug(filterTagIds[0]!))?.name ?? null) : null,
+    selectedTagLabel:
+      filterTagIds.length === 1 ? (getTagMeta(tagIdToSlug(filterTagIds[0]!))?.name ?? null) : null,
     hasActiveFilters: filterTagIds.length > 0,
     clearAll: clearFilters,
   };
@@ -168,16 +181,17 @@ export const TrainingSelectionPage: FunctionalComponent<TrainingSelectionPagePro
     return map;
   }, [levelCounts]);
 
-
-
   // Filter levels by category
   const filteredLevels = useMemo(() => {
-    let levels = categoryFilter === 'all' ? SKILL_LEVELS : SKILL_LEVELS.filter((level) => getLevelCategory(level.slug) === categoryFilter);
+    let levels =
+      categoryFilter === 'all'
+        ? SKILL_LEVELS
+        : SKILL_LEVELS.filter((level) => getLevelCategory(level.slug) === categoryFilter);
 
     // WP8 §8.3: When a tag is selected, filter out levels with 0 matching puzzles
     if (dbReady && filterState.tagId !== null) {
       const filtered = getFilterCounts({ tagIds: [filterState.tagId] });
-      levels = levels.filter(level => {
+      levels = levels.filter((level) => {
         const id = levelSlugToId(level.slug);
         if (id === undefined) return false;
         return (filtered.levels[id] ?? 0) > 0;
@@ -193,7 +207,7 @@ export const TrainingSelectionPage: FunctionalComponent<TrainingSelectionPagePro
   // Calculate stats
   const statsData = useMemo(() => {
     const completedLevels = Object.entries(progress.byLevel).filter(
-      ([, p]) => p.total > 0 && p.completed >= p.total,
+      ([, p]) => p.total > 0 && p.completed >= p.total
     ).length;
     return [
       { label: 'Levels', value: SKILL_LEVELS.length },
@@ -201,18 +215,18 @@ export const TrainingSelectionPage: FunctionalComponent<TrainingSelectionPagePro
     ];
   }, [progress]);
 
-  const handleFilterChange = useCallback((id: string) => {
-    setParam('cat', id);
-  }, [setParam]);
+  const handleFilterChange = useCallback(
+    (id: string) => {
+      setParam('cat', id);
+    },
+    [setParam]
+  );
 
   return (
     <PageLayout variant="single-column" mode="training">
       <PageLayout.Content>
         {/* ---- Header (Layer 1) — Matches Technique Focus layout ---- */}
-        <div
-          className="px-4 pb-4 pt-4"
-          style={{ backgroundColor: ACCENT.light }}
-        >
+        <div className="px-4 pb-4 pt-4" style={{ backgroundColor: ACCENT.light }}>
           <div className="mx-auto max-w-5xl">
             {/* Back button — left-aligned like Technique/Collections */}
             <button
@@ -221,7 +235,17 @@ export const TrainingSelectionPage: FunctionalComponent<TrainingSelectionPagePro
               className="mb-3 inline-flex cursor-pointer items-center gap-1 rounded-lg border-none bg-transparent px-2 py-1.5 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]"
               aria-label="Go back home"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 <path d="M15 18l-6-6 6-6" />
               </svg>
               Back
@@ -241,10 +265,16 @@ export const TrainingSelectionPage: FunctionalComponent<TrainingSelectionPagePro
                 <GraduationCapIcon size={36} />
               </div>
               <div>
-                <h1 className="m-0 text-[var(--color-text-primary)]" style={{ fontSize: '1.75rem', fontWeight: 800, lineHeight: 1.2 }}>
+                <h1
+                  className="m-0 text-[var(--color-text-primary)]"
+                  style={{ fontSize: '1.75rem', fontWeight: 800, lineHeight: 1.2 }}
+                >
                   Training
                 </h1>
-                <p className="m-0 mt-1 text-sm text-[var(--color-text-muted)]" style={{ fontWeight: 500 }}>
+                <p
+                  className="m-0 mt-1 text-sm text-[var(--color-text-muted)]"
+                  style={{ fontWeight: 500 }}
+                >
                   Level-based progression — master at your own pace
                 </p>
               </div>
@@ -276,7 +306,6 @@ export const TrainingSelectionPage: FunctionalComponent<TrainingSelectionPagePro
         >
           <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-2">
             <div className="flex flex-wrap items-center gap-2">
-
               <FilterBar
                 label="Filter by difficulty"
                 options={CATEGORY_OPTIONS}
@@ -306,7 +335,6 @@ export const TrainingSelectionPage: FunctionalComponent<TrainingSelectionPagePro
                 />
               )}
             </div>
-
           </div>
         </div>
 
@@ -361,7 +389,17 @@ export const TrainingSelectionPage: FunctionalComponent<TrainingSelectionPagePro
                 }}
                 data-testid="training-random-challenge"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <polyline points="16 3 21 3 21 8" />
                   <line x1="4" y1="20" x2="21" y2="3" />
                   <polyline points="21 16 21 21 16 21" />

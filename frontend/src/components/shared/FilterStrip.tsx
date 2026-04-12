@@ -158,10 +158,7 @@ export const FilterStrip: FunctionalComponent<FilterStripProps> = ({
 
           {/* Clear all — visible only when 2+ filters active (UX Expert #4) */}
           {activeFilterCount >= 2 && onClearAll && (
-            <ClearAllFiltersButton
-              onClear={onClearAll}
-              testId={`${testId}-clear-all`}
-            />
+            <ClearAllFiltersButton onClear={onClearAll} testId={`${testId}-clear-all`} />
           )}
 
           {trailing}

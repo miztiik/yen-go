@@ -1,8 +1,8 @@
 /**
  * QualityFilter component for filtering puzzles by quality level.
- * 
+ *
  * Provides a dropdown/toggle interface for selecting minimum quality level.
- * 
+ *
  * @module components/QualityFilter
  */
 
@@ -12,7 +12,12 @@ import { PuzzleQualityLevel, PUZZLE_QUALITY_INFO } from '@/lib/quality/config';
 /**
  * Filter options for puzzle quality level selection
  */
-export type QualityFilterOption = 'all' | 'premium-high' | 'standard-plus' | 'verified' | PuzzleQualityLevel;
+export type QualityFilterOption =
+  | 'all'
+  | 'premium-high'
+  | 'standard-plus'
+  | 'verified'
+  | PuzzleQualityLevel;
 
 /**
  * Props for QualityFilter component
@@ -78,7 +83,7 @@ export const StarDisplay: FunctionalComponent<{ tier: PuzzleQualityLevel; size?:
 }) => {
   const info = PUZZLE_QUALITY_INFO[tier];
   const starCount = info?.stars || 3;
-  
+
   return (
     <span className="quality-stars" style={{ display: 'inline-flex', gap: '1px' }}>
       {Array.from({ length: 5 }, (_, i) => (
@@ -99,9 +104,9 @@ export const StarDisplay: FunctionalComponent<{ tier: PuzzleQualityLevel; size?:
 
 /**
  * QualityFilter component
- * 
+ *
  * Renders a dropdown for selecting quality level filter.
- * 
+ *
  * Usage:
  * ```tsx
  * <QualityFilter
@@ -125,14 +130,14 @@ export const QualityFilter: FunctionalComponent<QualityFilterProps> = ({
 
   // Calculate counts for each option if levelCounts provided
   // Scale: 1=worst (Unverified), 5=best (Premium)
-  const getOptionCount = (option: typeof FILTER_OPTIONS[number]): number | null => {
+  const getOptionCount = (option: (typeof FILTER_OPTIONS)[number]): number | null => {
     if (!levelCounts) return null;
-    
+
     if (option.minLevel === null) {
       // "All" - sum all levels
       return Object.values(levelCounts).reduce((a, b) => a + b, 0);
     }
-    
+
     // Sum levels from minLevel to 5 (best)
     let count = 0;
     for (let t = option.minLevel; t <= 5; t++) {
@@ -144,12 +149,7 @@ export const QualityFilter: FunctionalComponent<QualityFilterProps> = ({
   if (compact) {
     return (
       <div className={`quality-filter quality-filter--compact ${className}`}>
-        <select
-          value={value}
-          onChange={handleChange}
-          aria-label={label}
-          title={label}
-        >
+        <select value={value} onChange={handleChange} aria-label={label} title={label}>
           {FILTER_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
@@ -164,18 +164,15 @@ export const QualityFilter: FunctionalComponent<QualityFilterProps> = ({
     <div className={`quality-filter ${className}`}>
       <label className="quality-filter__label">
         {label}
-        <select
-          value={value}
-          onChange={handleChange}
-          className="quality-filter__select"
-        >
+        <select value={value} onChange={handleChange} className="quality-filter__select">
           {FILTER_OPTIONS.map((opt) => {
             const count = getOptionCount(opt);
             const countStr = count !== null ? ` (${count})` : '';
-            
+
             return (
               <option key={opt.value} value={opt.value} title={opt.description}>
-                {opt.label}{countStr}
+                {opt.label}
+                {countStr}
               </option>
             );
           })}
@@ -188,14 +185,14 @@ export const QualityFilter: FunctionalComponent<QualityFilterProps> = ({
 /**
  * Filter puzzles by quality level
  * Scale: 1=worst (Unverified), 5=best (Premium)
- * 
+ *
  * @param puzzles - Array of puzzles with qualityLevel field
  * @param filter - Selected filter option
  * @returns Filtered array of puzzles
  */
 export function filterByQuality<T extends { qualityLevel?: number }>(
   puzzles: T[],
-  filter: QualityFilterOption,
+  filter: QualityFilterOption
 ): T[] {
   if (filter === 'all') {
     return puzzles;
@@ -216,7 +213,7 @@ export function filterByQuality<T extends { qualityLevel?: number }>(
 
 /**
  * Get the minimum level for a filter option
- * 
+ *
  * @param filter - Filter option
  * @returns Minimum quality level, or null for "all"
  */

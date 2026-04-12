@@ -8,11 +8,7 @@
  */
 
 import type { StreakData } from '../models/progress';
-import {
-  getStreakData,
-  updateStreakData,
-  type ProgressResult,
-} from './progressTracker';
+import { getStreakData, updateStreakData, type ProgressResult } from './progressTracker';
 
 /** Streak milestones for achievements */
 export const STREAK_MILESTONES = [3, 7, 14, 30, 60, 100, 365] as const;
@@ -28,7 +24,7 @@ export interface StreakUpdateResult {
 
 /**
  * Get today's date in YYYY-MM-DD format using UTC timezone
- * 
+ *
  * Using UTC ensures consistent streak tracking across all timezones
  * and prevents issues with daylight saving time transitions.
  */
@@ -82,17 +78,13 @@ export function checkMilestones(
   streak: number,
   previousStreak: number
 ): readonly StreakMilestone[] {
-  return STREAK_MILESTONES.filter(
-    (milestone) => streak >= milestone && previousStreak < milestone
-  );
+  return STREAK_MILESTONES.filter((milestone) => streak >= milestone && previousStreak < milestone);
 }
 
 /**
  * Helper to create error result from updateStreakData failure
  */
-function createErrorResult(
-  result: ProgressResult<unknown>
-): ProgressResult<StreakUpdateResult> {
+function createErrorResult(result: ProgressResult<unknown>): ProgressResult<StreakUpdateResult> {
   return {
     success: false,
     error: result.error ?? 'save_failed',
@@ -109,13 +101,10 @@ function createErrorResult(
  * - If played today, no change
  * - If more than 1 day since last play, reset streak to 1
  */
-export function recordPlay(
-  today: string = getUTCDateString()
-): ProgressResult<StreakUpdateResult> {
+export function recordPlay(today: string = getUTCDateString()): ProgressResult<StreakUpdateResult> {
   const streakData = getStreakData();
 
   const { lastPlayedDate, currentStreak, longestStreak, streakStartDate } = streakData;
-
 
   // First time playing
   if (lastPlayedDate === null) {
@@ -223,8 +212,7 @@ export function isStreakAtRisk(today: string = getLocalDateString()): boolean {
 
   // Not played today and played yesterday means at risk
   return (
-    !isToday(streakData.lastPlayedDate, today) &&
-    isYesterday(streakData.lastPlayedDate, today)
+    !isToday(streakData.lastPlayedDate, today) && isYesterday(streakData.lastPlayedDate, today)
   );
 }
 
@@ -238,10 +226,7 @@ export function isStreakActive(today: string = getLocalDateString()): boolean {
     return false;
   }
 
-  return (
-    isToday(streakData.lastPlayedDate, today) ||
-    isYesterday(streakData.lastPlayedDate, today)
-  );
+  return isToday(streakData.lastPlayedDate, today) || isYesterday(streakData.lastPlayedDate, today);
 }
 
 /**
@@ -279,8 +264,7 @@ export function getStreakStats(today: string = getLocalDateString()): StreakStat
   const isAtRisk = isStreakAtRisk(today);
 
   // If streak is broken (not active and not at risk), current streak is 0
-  const effectiveStreak =
-    isActive || isAtRisk ? streakData.currentStreak : 0;
+  const effectiveStreak = isActive || isAtRisk ? streakData.currentStreak : 0;
 
   return {
     currentStreak: effectiveStreak,

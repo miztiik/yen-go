@@ -9,11 +9,7 @@ interface IconProps {
 /**
  * 3-line list icon for view toggle (list mode).
  */
-export function ListIcon({
-  size = 24,
-  color = 'currentColor',
-  className,
-}: IconProps): JSX.Element {
+export function ListIcon({ size = 24, color = 'currentColor', className }: IconProps): JSX.Element {
   return (
     <svg
       width={size}

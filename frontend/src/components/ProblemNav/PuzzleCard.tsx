@@ -29,7 +29,12 @@ export interface PuzzleCardProps {
  * - Current card emphasis
  * - Click to navigate
  */
-export function PuzzleCard({ number, status, onClick, isCurrent = false }: PuzzleCardProps): JSX.Element {
+export function PuzzleCard({
+  number,
+  status,
+  onClick,
+  isCurrent = false,
+}: PuzzleCardProps): JSX.Element {
   const getStatusSymbol = (s: PuzzleCardStatus): string => {
     switch (s) {
       case 'correct':
@@ -68,8 +73,12 @@ export function PuzzleCard({ number, status, onClick, isCurrent = false }: Puzzl
       aria-current={isCurrent ? 'true' : undefined}
       tabIndex={isCurrent ? 0 : -1}
     >
-      <div className="card-number" aria-hidden="true">{number}</div>
-      <div className="card-status" aria-hidden="true">{getStatusSymbol(status)}</div>
+      <div className="card-number" aria-hidden="true">
+        {number}
+      </div>
+      <div className="card-status" aria-hidden="true">
+        {getStatusSymbol(status)}
+      </div>
     </button>
   );
 }

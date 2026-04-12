@@ -63,26 +63,33 @@ export function DailyChallengeCard({
 
   if (isLoading) {
     return (
-      <div class={`daily-challenge-card bg-[--color-bg-panel] rounded-xl p-5 shadow-md border border-[--color-neutral-200] transition-all cursor-pointer ${className}`}>
-        <div className="flex justify-center items-center min-h-[120px] text-[--color-text-muted]">Loading today's challenge...</div>
+      <div
+        class={`daily-challenge-card bg-[--color-bg-panel] rounded-xl p-5 shadow-md border border-[--color-neutral-200] transition-all cursor-pointer ${className}`}
+      >
+        <div className="flex justify-center items-center min-h-[120px] text-[--color-text-muted]">
+          Loading today's challenge...
+        </div>
       </div>
     );
   }
 
   if (!isAvailable || !challenge) {
     return (
-      <div class={`daily-challenge-card bg-[--color-bg-panel] rounded-xl p-5 shadow-md border border-[--color-neutral-200] transition-all cursor-pointer ${className}`}>
+      <div
+        class={`daily-challenge-card bg-[--color-bg-panel] rounded-xl p-5 shadow-md border border-[--color-neutral-200] transition-all cursor-pointer ${className}`}
+      >
         <div className="text-center p-6 text-[--color-text-muted]">
-          <p className="text-xl font-semibold text-[--color-text-primary] m-0 mb-1">Daily Challenge</p>
+          <p className="text-xl font-semibold text-[--color-text-primary] m-0 mb-1">
+            Daily Challenge
+          </p>
           <p>Coming soon! Check back later.</p>
         </div>
       </div>
     );
   }
 
-  const progressPercent = challenge.puzzleCount > 0
-    ? Math.round((completedCount / challenge.puzzleCount) * 100)
-    : 0;
+  const progressPercent =
+    challenge.puzzleCount > 0 ? Math.round((completedCount / challenge.puzzleCount) * 100) : 0;
 
   const isComplete = completedCount >= challenge.puzzleCount;
 
@@ -96,8 +103,12 @@ export function DailyChallengeCard({
       {/* Header */}
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-xl font-semibold text-[--color-text-primary] m-0 mb-1">Daily Challenge</h3>
-          <p className="text-sm text-[--color-text-muted] m-0">{formatDisplayDate(challenge.date)}</p>
+          <h3 className="text-xl font-semibold text-[--color-text-primary] m-0 mb-1">
+            Daily Challenge
+          </h3>
+          <p className="text-sm text-[--color-text-muted] m-0">
+            {formatDisplayDate(challenge.date)}
+          </p>
         </div>
         {challenge.isToday && (
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[--color-success] bg-[--color-success-bg] px-2.5 py-1 rounded-xl">
@@ -114,19 +125,30 @@ export function DailyChallengeCard({
       {/* Stats */}
       <div className="flex gap-4 mb-4">
         <div className="flex flex-col gap-0.5">
-          <span className="text-2xl font-semibold text-[--color-text-primary]">{challenge.puzzleCount}</span>
-          <span className="text-xs text-[--color-text-muted] uppercase tracking-wider">Puzzles</span>
+          <span className="text-2xl font-semibold text-[--color-text-primary]">
+            {challenge.puzzleCount}
+          </span>
+          <span className="text-xs text-[--color-text-muted] uppercase tracking-wider">
+            Puzzles
+          </span>
         </div>
         <div className="flex flex-col gap-0.5">
-          <span className="text-2xl font-semibold text-[--color-text-primary]">{completedCount}</span>
-          <span className="text-xs text-[--color-text-muted] uppercase tracking-wider">Completed</span>
+          <span className="text-2xl font-semibold text-[--color-text-primary]">
+            {completedCount}
+          </span>
+          <span className="text-xs text-[--color-text-muted] uppercase tracking-wider">
+            Completed
+          </span>
         </div>
       </div>
 
       {/* Progress */}
       {completedCount > 0 && (
         <div className="h-1 bg-[--color-neutral-200] rounded-sm mt-3 overflow-hidden">
-          <div className="h-full bg-[--color-success-solid] rounded-sm transition-[width] duration-300 ease-in-out" style={{ width: `${progressPercent}%` }} />
+          <div
+            className="h-full bg-[--color-success-solid] rounded-sm transition-[width] duration-300 ease-in-out"
+            style={{ width: `${progressPercent}%` }}
+          />
         </div>
       )}
 

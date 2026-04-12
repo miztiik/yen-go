@@ -77,17 +77,9 @@ export interface UseTreeKeyboardResult {
  * );
  * ```
  */
-export function useTreeKeyboard(
-  options: UseTreeKeyboardOptions
-): UseTreeKeyboardResult {
-  const { 
-    layout, 
-    currentNode, 
-    onNavigate, 
-    onSelect,
-    enabled = true 
-  } = options;
-  
+export function useTreeKeyboard(options: UseTreeKeyboardOptions): UseTreeKeyboardResult {
+  const { layout, currentNode, onNavigate, onSelect, enabled = true } = options;
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   /**
@@ -113,52 +105,46 @@ export function useTreeKeyboard(
    * Find next node in depth-first order (down the tree)
    * Prefers first child, then next sibling, then parent's next sibling
    */
-  const findNextDepthFirst = useCallback(
-    (node: VisualTreeNode): VisualTreeNode | undefined => {
-      // First, try first child
-      if (node.children.length > 0) {
-        return node.children[0];
-      }
+  const findNextDepthFirst = useCallback((node: VisualTreeNode): VisualTreeNode | undefined => {
+    // First, try first child
+    if (node.children.length > 0) {
+      return node.children[0];
+    }
 
-      // Then, try next sibling
-      const nextSibling = findNextSibling(node);
-      if (nextSibling) {
-        return nextSibling;
-      }
+    // Then, try next sibling
+    const nextSibling = findNextSibling(node);
+    if (nextSibling) {
+      return nextSibling;
+    }
 
-      // Finally, go up and try parent's next sibling
-      let current: VisualTreeNode | null = node.parent;
-      while (current) {
-        const parentNextSibling = findNextSibling(current);
-        if (parentNextSibling) {
-          return parentNextSibling;
-        }
-        current = current.parent;
+    // Finally, go up and try parent's next sibling
+    let current: VisualTreeNode | null = node.parent;
+    while (current) {
+      const parentNextSibling = findNextSibling(current);
+      if (parentNextSibling) {
+        return parentNextSibling;
       }
+      current = current.parent;
+    }
 
-      return undefined;
-    },
-    []
-  );
+    return undefined;
+  }, []);
 
   /**
    * Find previous node in depth-first order (up the tree)
    * Goes to previous sibling's last descendant, or parent
    */
-  const findPrevDepthFirst = useCallback(
-    (node: VisualTreeNode): VisualTreeNode | undefined => {
-      // Try previous sibling
-      const prevSibling = findPrevSibling(node);
-      if (prevSibling) {
-        // Go to the last node in that sibling's subtree
-        return findLastMainLineNode(prevSibling);
-      }
+  const findPrevDepthFirst = useCallback((node: VisualTreeNode): VisualTreeNode | undefined => {
+    // Try previous sibling
+    const prevSibling = findPrevSibling(node);
+    if (prevSibling) {
+      // Go to the last node in that sibling's subtree
+      return findLastMainLineNode(prevSibling);
+    }
 
-      // Otherwise, go to parent
-      return node.parent ?? undefined;
-    },
-    []
-  );
+    // Otherwise, go to parent
+    return node.parent ?? undefined;
+  }, []);
 
   /**
    * Main keyboard event handler

@@ -83,8 +83,7 @@ function updateStatistics(
         solved: newSolved,
         totalTimeMs: newTotalTime,
         avgTimeMs: Math.round(newTotalTime / newSolved),
-        perfectSolves:
-          diffStats.perfectSolves + (completion.perfectSolve ? 1 : 0),
+        perfectSolves: diffStats.perfectSolves + (completion.perfectSolve ? 1 : 0),
       },
     },
   };
@@ -153,9 +152,7 @@ export function isPuzzleCompleted(puzzleId: string): boolean {
 /**
  * Get completion data for a puzzle
  */
-export function getPuzzleCompletion(
-  puzzleId: string
-): PuzzleCompletion | undefined {
+export function getPuzzleCompletion(puzzleId: string): PuzzleCompletion | undefined {
   const result = loadProgress();
   if (!result.success || !result.data) {
     return undefined;
@@ -235,9 +232,7 @@ export function getStreakData(): StreakData {
 /**
  * Update streak data
  */
-export function updateStreakData(
-  streakData: StreakData
-): ProgressResult<UserProgress> {
+export function updateStreakData(streakData: StreakData): ProgressResult<UserProgress> {
   const loadResult = loadProgress();
   if (!loadResult.success || !loadResult.data) {
     return loadResult;
@@ -309,10 +304,7 @@ export function addAchievement(
 /**
  * Update rush mode high score
  */
-export function updateRushHighScore(
-  score: number,
-  duration: number
-): ProgressResult<UserProgress> {
+export function updateRushHighScore(score: number, duration: number): ProgressResult<UserProgress> {
   const loadResult = loadProgress();
   if (!loadResult.success || !loadResult.data) {
     return loadResult;
@@ -399,7 +391,7 @@ export function recordRushScore(
 
   const progress = loadResult.data;
   const currentScores = [...progress.statistics.rushHighScores];
-  
+
   // Find current high score for this duration
   const existingIndex = currentScores.findIndex((s) => s.duration === duration);
   const currentHighForDuration = existingIndex >= 0 ? currentScores[existingIndex]!.score : 0;
@@ -550,7 +542,7 @@ export function updateCollectionProgress(
 
   allProgress[collectionId] = updated;
   const saveResult = saveCollectionProgress(allProgress);
-  
+
   if (!saveResult.success) {
     return failureResult(saveResult.error, saveResult.message);
   }
@@ -610,7 +602,7 @@ export function recordCollectionPuzzleCompletion(
 
   allProgress[collectionId] = updated;
   const saveResult = saveCollectionProgress(allProgress);
-  
+
   if (!saveResult.success) {
     return failureResult(saveResult.error, saveResult.message);
   }
@@ -642,9 +634,10 @@ export function getAllCollectionProgress(): ProgressResult<CollectionProgressSum
     status: getCollectionStatus(progress),
     completedCount: progress.completed.length,
     totalPuzzles: progress.totalPuzzles,
-    percentComplete: progress.totalPuzzles > 0
-      ? Math.round((progress.completed.length / progress.totalPuzzles) * 100)
-      : 0,
+    percentComplete:
+      progress.totalPuzzles > 0
+        ? Math.round((progress.completed.length / progress.totalPuzzles) * 100)
+        : 0,
     lastActivity: progress.lastActivity,
   }));
 
@@ -694,7 +687,7 @@ export function updateDailyProgress(
 
   allProgress[date] = updated;
   const saveResult = saveDailyProgress(allProgress);
-  
+
   if (!saveResult.success) {
     return failureResult(saveResult.error, saveResult.message);
   }
@@ -767,7 +760,7 @@ export function recordDailyPuzzleCompletion(
 
   allProgress[date] = updated;
   const saveResult = saveDailyProgress(allProgress);
-  
+
   if (!saveResult.success) {
     return failureResult(saveResult.error, saveResult.message);
   }

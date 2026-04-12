@@ -21,8 +21,8 @@ export const SessionProgressSidebar: FunctionalComponent<SessionProgressSidebarP
   strikesCount,
   maxStrikes,
 }) => {
-  const correctCount = results.filter(r => r.success && !r.skipped).length;
-  const failedCount = results.filter(r => !r.success && !r.skipped).length;
+  const correctCount = results.filter((r) => r.success && !r.skipped).length;
+  const failedCount = results.filter((r) => !r.success && !r.skipped).length;
 
   return (
     <div className="flex flex-col w-[280px] bg-[--color-neutral-50] border-l border-[--color-neutral-200] h-full">
@@ -39,10 +39,7 @@ export const SessionProgressSidebar: FunctionalComponent<SessionProgressSidebarP
         {/* Strikes */}
         <div className="flex justify-center gap-2 mb-3">
           {Array.from({ length: maxStrikes }).map((_, i) => (
-            <span
-              key={i}
-              className={`text-xl ${i < strikesCount ? 'opacity-100' : 'opacity-30'}`}
-            >
+            <span key={i} className={`text-xl ${i < strikesCount ? 'opacity-100' : 'opacity-30'}`}>
               ❌
             </span>
           ))}
@@ -51,21 +48,15 @@ export const SessionProgressSidebar: FunctionalComponent<SessionProgressSidebarP
         {/* Quick stats */}
         <div className="grid grid-cols-3 gap-2 text-xs text-center">
           <div>
-            <div className="font-semibold text-[--color-mode-rush-border]">
-              {correctCount}
-            </div>
+            <div className="font-semibold text-[--color-mode-rush-border]">{correctCount}</div>
             <div className="text-[--color-neutral-400]">Correct</div>
           </div>
           <div>
-            <div className="font-semibold text-[--color-error]">
-              {failedCount}
-            </div>
+            <div className="font-semibold text-[--color-error]">{failedCount}</div>
             <div className="text-[--color-neutral-400]">Wrong</div>
           </div>
           <div>
-            <div className="font-semibold text-[--color-neutral-500]">
-              {skipsRemaining}
-            </div>
+            <div className="font-semibold text-[--color-neutral-500]">{skipsRemaining}</div>
             <div className="text-[--color-neutral-400]">Skips</div>
           </div>
         </div>
@@ -85,11 +76,7 @@ export const SessionProgressSidebar: FunctionalComponent<SessionProgressSidebarP
         ) : (
           <div className="flex flex-col gap-1.5">
             {[...results].reverse().map((result) => (
-              <PuzzleCard
-                key={result.id}
-                result={result}
-                isCompact={results.length > 10}
-              />
+              <PuzzleCard key={result.id} result={result} isCompact={results.length > 10} />
             ))}
           </div>
         )}
@@ -100,10 +87,11 @@ export const SessionProgressSidebar: FunctionalComponent<SessionProgressSidebarP
         <div className="px-4 py-3 border-t border-[--color-neutral-200] bg-[--color-bg-panel] flex justify-between text-xs text-[--color-neutral-500]">
           <span>{results.length} puzzles</span>
           <span>
-            {correctCount > 0 && (() => {
-              const acc = Math.round((correctCount / results.length) * 100);
-              return <span className={getAccuracyColorClass(acc)}>{acc}% accuracy</span>;
-            })()}
+            {correctCount > 0 &&
+              (() => {
+                const acc = Math.round((correctCount / results.length) * 100);
+                return <span className={getAccuracyColorClass(acc)}>{acc}% accuracy</span>;
+              })()}
           </span>
         </div>
       )}

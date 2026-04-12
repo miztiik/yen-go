@@ -186,15 +186,15 @@ const styles: Record<string, JSX.CSSProperties> = {
  * Derived from config/puzzle-levels.json via Vite JSON import.
  */
 const LEVEL_COLORS: Record<LevelSlug, string> = {
-  novice: 'var(--color-challenge-novice)',           // Bright green (30-20k)
-  beginner: 'var(--color-challenge-beginner)',         // Green (19-15k)
-  elementary: 'var(--color-challenge-elementary)',       // Darker green (14-10k)
-  intermediate: 'var(--color-challenge-intermediate)',     // Yellow (9-5k)
+  novice: 'var(--color-challenge-novice)', // Bright green (30-20k)
+  beginner: 'var(--color-challenge-beginner)', // Green (19-15k)
+  elementary: 'var(--color-challenge-elementary)', // Darker green (14-10k)
+  intermediate: 'var(--color-challenge-intermediate)', // Yellow (9-5k)
   'upper-intermediate': 'var(--color-challenge-upper-intermediate)', // Orange (4-1k)
-  advanced: 'var(--color-challenge-advanced)',         // Deep orange (1-3d)
-  'low-dan': 'var(--color-challenge-low-dan)',        // Red (4-6d)
-  'high-dan': 'var(--color-challenge-high-dan)',       // Pink (7d+)
-  expert: 'var(--color-challenge-expert)',           // Purple (Pro)
+  advanced: 'var(--color-challenge-advanced)', // Deep orange (1-3d)
+  'low-dan': 'var(--color-challenge-low-dan)', // Red (4-6d)
+  'high-dan': 'var(--color-challenge-high-dan)', // Pink (7d+)
+  expert: 'var(--color-challenge-expert)', // Purple (Pro)
 };
 
 /**
@@ -279,7 +279,8 @@ export function ChallengeCard({
             key={level}
             style={{
               ...styles.levelDot,
-              background: data.puzzlesByLevel[level] > 0 ? LEVEL_COLORS[level] : 'var(--color-border)',
+              background:
+                data.puzzlesByLevel[level] > 0 ? LEVEL_COLORS[level] : 'var(--color-border)',
             }}
             title={`${level}: ${data.puzzlesByLevel[level]} puzzles`}
           />

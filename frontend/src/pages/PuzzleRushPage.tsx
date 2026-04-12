@@ -59,7 +59,12 @@ export const PuzzleRushPage: FunctionalComponent<PuzzleRushPageProps> = ({
   const [countdownValue, setCountdownValue] = useState(3);
 
   // Rush session hook — preserved, only rendering changes
-  const { state: rushState, actions, isGameOver, timeDisplay } = useRushSession({
+  const {
+    state: rushState,
+    actions,
+    isGameOver,
+    timeDisplay,
+  } = useRushSession({
     duration: selectedDuration,
     startingLives: 3,
     pointsPerPuzzle: 100,
@@ -68,7 +73,7 @@ export const PuzzleRushPage: FunctionalComponent<PuzzleRushPageProps> = ({
   // Loader for PuzzleSetPlayer (memoized on level/tag)
   const loader = useMemo(
     () => new RushPuzzleLoader(selectedLevelId ?? null, selectedTagId ?? null),
-    [selectedLevelId, selectedTagId],
+    [selectedLevelId, selectedTagId]
   );
 
   // Countdown before game start
@@ -113,78 +118,110 @@ export const PuzzleRushPage: FunctionalComponent<PuzzleRushPageProps> = ({
   }, [actions, rushState.score, selectedDuration]);
 
   // Bridge useRushSession to PSP onPuzzleComplete (T24)
-  const handlePuzzleComplete = useCallback((_puzzleId: string, isCorrect: boolean) => {
-    if (isCorrect) {
-      actions.recordCorrect();
-    } else {
-      actions.recordWrong();
-    }
-  }, [actions]);
+  const handlePuzzleComplete = useCallback(
+    (_puzzleId: string, isCorrect: boolean) => {
+      if (isCorrect) {
+        actions.recordCorrect();
+      } else {
+        actions.recordWrong();
+      }
+    },
+    [actions]
+  );
 
   // Calculate accuracy
   const totalAttempts = rushState.puzzlesSolved + rushState.puzzlesFailed;
-  const accuracy = totalAttempts > 0
-    ? Math.round((rushState.puzzlesSolved / totalAttempts) * 100)
-    : 0;
+  const accuracy =
+    totalAttempts > 0 ? Math.round((rushState.puzzlesSolved / totalAttempts) * 100) : 0;
 
   // Rush header: RushOverlay HUD (timer, lives, score, controls)
-  const renderHeader = useCallback((_info: HeaderInfo): JSX.Element => (
-    <RushOverlay
-      timeDisplay={timeDisplay}
-      timeRemaining={rushState.timeRemaining}
-      totalDuration={selectedDuration}
-      lives={rushState.lives}
-      maxLives={rushState.maxLives}
-      score={rushState.score}
-      streak={rushState.currentStreak}
-      isGameOver={isGameOver}
-      onSkip={handleSkip}
-      onQuit={handleQuit}
-      skipDisabled={rushState.lives <= 1}
-    />
-  ), [timeDisplay, rushState, selectedDuration, isGameOver, handleSkip, handleQuit]);
+  const renderHeader = useCallback(
+    (_info: HeaderInfo): JSX.Element => (
+      <RushOverlay
+        timeDisplay={timeDisplay}
+        timeRemaining={rushState.timeRemaining}
+        totalDuration={selectedDuration}
+        lives={rushState.lives}
+        maxLives={rushState.maxLives}
+        score={rushState.score}
+        streak={rushState.currentStreak}
+        isGameOver={isGameOver}
+        onSkip={handleSkip}
+        onQuit={handleQuit}
+        skipDisabled={rushState.lives <= 1}
+      />
+    ),
+    [timeDisplay, rushState, selectedDuration, isGameOver, handleSkip, handleQuit]
+  );
 
   // Rush summary: finished screen
-  const renderSummary = useCallback((): JSX.Element => (
-    <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-6">
-      <div className="w-full max-w-[400px] rounded-xl bg-[var(--color-bg-elevated)] p-8 text-center shadow-lg" data-testid="rush-result">
-        <h2 className="mb-2 mt-0 text-2xl">Game Over!</h2>
-        <p className="mb-6 mt-0 text-[var(--color-text-muted)]">
-          {rushState.lives === 0 ? 'Out of lives!' : "Time's up!"}
-        </p>
-        <div className="mb-2 text-[64px] font-bold text-[var(--color-accent)]" data-testid="final-score">
-          {rushState.score}
-        </div>
-        <p className="mb-6 mt-0 text-[var(--color-text-muted)]">points</p>
-        <div className="my-6 grid grid-cols-2 gap-4 rounded-lg bg-[var(--color-bg-secondary)] p-4">
-          <div>
-            <div className="text-2xl font-semibold">{rushState.puzzlesSolved}</div>
-            <div className="text-xs text-[var(--color-text-muted)]">Solved</div>
+  const renderSummary = useCallback(
+    (): JSX.Element => (
+      <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-6">
+        <div
+          className="w-full max-w-[400px] rounded-xl bg-[var(--color-bg-elevated)] p-8 text-center shadow-lg"
+          data-testid="rush-result"
+        >
+          <h2 className="mb-2 mt-0 text-2xl">Game Over!</h2>
+          <p className="mb-6 mt-0 text-[var(--color-text-muted)]">
+            {rushState.lives === 0 ? 'Out of lives!' : "Time's up!"}
+          </p>
+          <div
+            className="mb-2 text-[64px] font-bold text-[var(--color-accent)]"
+            data-testid="final-score"
+          >
+            {rushState.score}
           </div>
-          <div>
-            <div className={`text-2xl font-semibold ${getAccuracyColorClass(accuracy)}`}>{accuracy}%</div>
-            <div className="text-xs text-[var(--color-text-muted)]">Accuracy</div>
+          <p className="mb-6 mt-0 text-[var(--color-text-muted)]">points</p>
+          <div className="my-6 grid grid-cols-2 gap-4 rounded-lg bg-[var(--color-bg-secondary)] p-4">
+            <div>
+              <div className="text-2xl font-semibold">{rushState.puzzlesSolved}</div>
+              <div className="text-xs text-[var(--color-text-muted)]">Solved</div>
+            </div>
+            <div>
+              <div className={`text-2xl font-semibold ${getAccuracyColorClass(accuracy)}`}>
+                {accuracy}%
+              </div>
+              <div className="text-xs text-[var(--color-text-muted)]">Accuracy</div>
+            </div>
           </div>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="secondary" onClick={onNavigateHome} style={{ flex: 1 }} data-testid="home-button">
-            Go Home
-          </Button>
-          <Button variant="primary" onClick={onNewRush} style={{ flex: 1 }} data-testid="play-again-button">
-            <FireIcon size={16} className="inline" /> Play Again
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              onClick={onNavigateHome}
+              style={{ flex: 1 }}
+              data-testid="home-button"
+            >
+              Go Home
+            </Button>
+            <Button
+              variant="primary"
+              onClick={onNewRush}
+              style={{ flex: 1 }}
+              data-testid="play-again-button"
+            >
+              <FireIcon size={16} className="inline" /> Play Again
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
-  ), [rushState, accuracy, onNavigateHome, onNewRush]);
+    ),
+    [rushState, accuracy, onNavigateHome, onNewRush]
+  );
 
   return (
     <PageLayout variant="single-column" mode="rush">
-      <div className="relative flex min-h-[calc(100vh-3.5rem)] flex-col" data-testid={testId ?? 'puzzle-rush-page'}>
+      <div
+        className="relative flex min-h-[calc(100vh-3.5rem)] flex-col"
+        data-testid={testId ?? 'puzzle-rush-page'}
+      >
         {/* Countdown Screen (T25) */}
         {pageState === 'countdown' && (
           <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-6">
-            <div className="text-[96px] font-bold leading-none text-[var(--color-accent)]" data-testid="countdown-value">
+            <div
+              className="text-[96px] font-bold leading-none text-[var(--color-accent)]"
+              data-testid="countdown-value"
+            >
               {countdownValue}
             </div>
             <p className="text-[var(--color-text-muted)]">Get ready!</p>

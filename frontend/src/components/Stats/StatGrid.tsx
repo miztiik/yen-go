@@ -41,16 +41,8 @@ const styles = {
 /**
  * StatGrid component - grid layout for statistics.
  */
-export function StatGrid({
-  children,
-  columns = 2,
-  gap = 'medium',
-}: StatGridProps): JSX.Element {
-  const style = [
-    styles.grid,
-    styles.columns[columns],
-    styles.gap[gap],
-  ].join(' ');
+export function StatGrid({ children, columns = 2, gap = 'medium' }: StatGridProps): JSX.Element {
+  const style = [styles.grid, styles.columns[columns], styles.gap[gap]].join(' ');
 
   return (
     <div class="stat-grid" style={style}>

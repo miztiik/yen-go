@@ -19,7 +19,10 @@ export type SkillLevel = LevelSlug;
 
 /** Skill level metadata derived from config */
 const SKILL_LEVELS = Object.fromEntries(
-  LEVELS.map((lvl) => [lvl.slug, { name: lvl.name, rankRange: `${lvl.rankRange.min}-${lvl.rankRange.max}` }])
+  LEVELS.map((lvl) => [
+    lvl.slug,
+    { name: lvl.name, rankRange: `${lvl.rankRange.min}-${lvl.rankRange.max}` },
+  ])
 ) as Record<LevelSlug, { name: string; rankRange: string }>;
 
 /**
@@ -44,15 +47,51 @@ export interface SkillLevelTabsProps {
  * Level colors for visual differentiation (9 levels)
  */
 const LEVEL_COLORS: Record<LevelSlug, { bg: string; text: string; active: string }> = {
-  'novice': { bg: 'var(--color-level-novice-bg)', text: 'var(--color-level-novice-text)', active: 'var(--color-level-novice-active)' },
-  'beginner': { bg: 'var(--color-level-beginner-bg)', text: 'var(--color-level-beginner-text)', active: 'var(--color-level-beginner-active)' },
-  'elementary': { bg: 'var(--color-level-elementary-bg)', text: 'var(--color-level-elementary-text)', active: 'var(--color-level-elementary-active)' },
-  'intermediate': { bg: 'var(--color-level-intermediate-bg)', text: 'var(--color-level-intermediate-text)', active: 'var(--color-level-intermediate-active)' },
-  'upper-intermediate': { bg: 'var(--color-level-upper-intermediate-bg)', text: 'var(--color-level-upper-intermediate-text)', active: 'var(--color-level-upper-intermediate-active)' },
-  'advanced': { bg: 'var(--color-level-advanced-bg)', text: 'var(--color-level-advanced-text)', active: 'var(--color-level-advanced-active)' },
-  'low-dan': { bg: 'var(--color-level-low-dan-bg)', text: 'var(--color-level-low-dan-text)', active: 'var(--color-level-low-dan-active)' },
-  'high-dan': { bg: 'var(--color-level-high-dan-bg)', text: 'var(--color-level-high-dan-text)', active: 'var(--color-level-high-dan-active)' },
-  'expert': { bg: 'var(--color-level-expert-bg)', text: 'var(--color-level-expert-text)', active: 'var(--color-level-expert-active)' },
+  novice: {
+    bg: 'var(--color-level-novice-bg)',
+    text: 'var(--color-level-novice-text)',
+    active: 'var(--color-level-novice-active)',
+  },
+  beginner: {
+    bg: 'var(--color-level-beginner-bg)',
+    text: 'var(--color-level-beginner-text)',
+    active: 'var(--color-level-beginner-active)',
+  },
+  elementary: {
+    bg: 'var(--color-level-elementary-bg)',
+    text: 'var(--color-level-elementary-text)',
+    active: 'var(--color-level-elementary-active)',
+  },
+  intermediate: {
+    bg: 'var(--color-level-intermediate-bg)',
+    text: 'var(--color-level-intermediate-text)',
+    active: 'var(--color-level-intermediate-active)',
+  },
+  'upper-intermediate': {
+    bg: 'var(--color-level-upper-intermediate-bg)',
+    text: 'var(--color-level-upper-intermediate-text)',
+    active: 'var(--color-level-upper-intermediate-active)',
+  },
+  advanced: {
+    bg: 'var(--color-level-advanced-bg)',
+    text: 'var(--color-level-advanced-text)',
+    active: 'var(--color-level-advanced-active)',
+  },
+  'low-dan': {
+    bg: 'var(--color-level-low-dan-bg)',
+    text: 'var(--color-level-low-dan-text)',
+    active: 'var(--color-level-low-dan-active)',
+  },
+  'high-dan': {
+    bg: 'var(--color-level-high-dan-bg)',
+    text: 'var(--color-level-high-dan-text)',
+    active: 'var(--color-level-high-dan-active)',
+  },
+  expert: {
+    bg: 'var(--color-level-expert-bg)',
+    text: 'var(--color-level-expert-text)',
+    active: 'var(--color-level-expert-active)',
+  },
 };
 
 /**
@@ -166,7 +205,8 @@ function Tab({
   const levelInfo = SKILL_LEVELS[level];
   const levelMeta = LEVELS.find((l) => l.slug === level);
   const colors = LEVEL_COLORS[level];
-  const isComplete = puzzleCount !== undefined && actualCompletedCount >= puzzleCount && puzzleCount > 0;
+  const isComplete =
+    puzzleCount !== undefined && actualCompletedCount >= puzzleCount && puzzleCount > 0;
 
   const tabStyle: JSX.CSSProperties = {
     ...(compact ? styles.tabCompact : styles.tab),
@@ -186,7 +226,11 @@ function Tab({
 
   const badgeStyle: JSX.CSSProperties = {
     ...(compact ? styles.badgeCompact : styles.badge),
-    background: isComplete ? 'var(--color-success-solid)' : isSelected ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.05)',
+    background: isComplete
+      ? 'var(--color-success-solid)'
+      : isSelected
+        ? 'rgba(0,0,0,0.08)'
+        : 'rgba(0,0,0,0.05)',
     color: isComplete ? 'white' : isSelected ? colors.text : 'var(--color-text-muted)',
   };
 

@@ -69,25 +69,30 @@ export const DayStrip: FunctionalComponent<DayStripProps> = ({
             className={`
               relative flex min-w-[3rem] cursor-pointer flex-col items-center gap-0.5 rounded-xl
               border-2 px-2 py-1.5 text-center transition-all duration-200
-              ${isSelected
-                ? 'border-[var(--color-accent-border,var(--color-mode-daily-border))] bg-[var(--color-accent-container,var(--color-mode-daily-bg))] shadow-sm'
-                : 'border-transparent bg-[var(--color-bg-panel)] hover:bg-[var(--color-bg-secondary)]'
+              ${
+                isSelected
+                  ? 'border-[var(--color-accent-border,var(--color-mode-daily-border))] bg-[var(--color-accent-container,var(--color-mode-daily-bg))] shadow-sm'
+                  : 'border-transparent bg-[var(--color-bg-panel)] hover:bg-[var(--color-bg-secondary)]'
               }
               ${isDisabled ? 'cursor-not-allowed opacity-40' : ''}
             `}
           >
-            <span className={`text-[10px] font-medium uppercase leading-none ${
-              isSelected
-                ? 'text-[var(--color-on-accent-container,var(--color-mode-daily-text))]'
-                : 'text-[var(--color-text-muted)]'
-            }`}>
+            <span
+              className={`text-[10px] font-medium uppercase leading-none ${
+                isSelected
+                  ? 'text-[var(--color-on-accent-container,var(--color-mode-daily-text))]'
+                  : 'text-[var(--color-text-muted)]'
+              }`}
+            >
               {day.weekday}
             </span>
-            <span className={`text-base font-bold leading-none ${
-              isSelected
-                ? 'text-[var(--color-on-accent-container,var(--color-mode-daily-text))]'
-                : 'text-[var(--color-text-primary)]'
-            }`}>
+            <span
+              className={`text-base font-bold leading-none ${
+                isSelected
+                  ? 'text-[var(--color-on-accent-container,var(--color-mode-daily-text))]'
+                  : 'text-[var(--color-text-primary)]'
+              }`}
+            >
               {day.day}
             </span>
 
@@ -105,7 +110,9 @@ export const DayStrip: FunctionalComponent<DayStripProps> = ({
             {day.isToday && !day.completed && (
               <span
                 className="absolute -bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full"
-                style={{ backgroundColor: 'var(--color-accent-border, var(--color-mode-daily-border))' }}
+                style={{
+                  backgroundColor: 'var(--color-accent-border, var(--color-mode-daily-border))',
+                }}
                 aria-hidden="true"
               />
             )}
@@ -132,7 +139,7 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
 export function buildDayInfos(
   count: number = 7,
   availableDates: ReadonlySet<string>,
-  completedDates: ReadonlySet<string>,
+  completedDates: ReadonlySet<string>
 ): DayInfo[] {
   const today = new Date();
   const todayStr = formatDateStr(today);

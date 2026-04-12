@@ -95,9 +95,7 @@ const SECTIONS: CollectionSection[] = [
 /**
  * Calculate mastery level from progress data using accuracy-based calculation.
  */
-function getLocalMastery(
-  progress: CollectionProgressSummary | undefined,
-): MasteryLevel {
+function getLocalMastery(progress: CollectionProgressSummary | undefined): MasteryLevel {
   if (!progress) return 'new';
   // CollectionProgressSummary doesn't have accuracy field yet,
   // so we pass completed/total and let getMasteryFromProgress use default 100%
@@ -140,11 +138,15 @@ function CollectionCard({
     <div role="listitem">
       <PuzzleCollectionCard
         title={collection.name}
-        subtitle={collection.curator !== 'Curated' && collection.curator !== 'Community' && collection.curator !== 'System'
-          ? `by ${collection.curator}`
-          : collection.description.length > 80
-            ? collection.description.slice(0, 77) + '...'
-            : collection.description}
+        subtitle={
+          collection.curator !== 'Curated' &&
+          collection.curator !== 'Community' &&
+          collection.curator !== 'System'
+            ? `by ${collection.curator}`
+            : collection.description.length > 80
+              ? collection.description.slice(0, 77) + '...'
+              : collection.description
+        }
         {...optionalProps}
         onClick={onClick}
         disabled={!collection.hasData}
@@ -171,9 +173,7 @@ function CollectionTypeSection({
   if (collections.length === 0) return null;
 
   const limit = section.initialLimit;
-  const displayItems = limit > 0 && !expanded
-    ? collections.slice(0, limit)
-    : collections;
+  const displayItems = limit > 0 && !expanded ? collections.slice(0, limit) : collections;
   const hasMore = limit > 0 && collections.length > limit;
 
   return (
@@ -185,9 +185,7 @@ function CollectionTypeSection({
             ({collections.length})
           </span>
         </h2>
-        <p className="m-0 mt-0.5 text-sm text-[var(--color-text-muted)]">
-          {section.subtitle}
-        </p>
+        <p className="m-0 mt-0.5 text-sm text-[var(--color-text-muted)]">{section.subtitle}</p>
       </div>
       <div
         className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
@@ -195,12 +193,12 @@ function CollectionTypeSection({
         aria-label={section.title}
       >
         {displayItems.map((c) => (
-            <CollectionCard
-              key={c.slug}
-              collection={c}
-              progress={progressMap[c.slug]}
-              onClick={() => onCollectionClick(c.slug)}
-            />
+          <CollectionCard
+            key={c.slug}
+            collection={c}
+            progress={progressMap[c.slug]}
+            onClick={() => onCollectionClick(c.slug)}
+          />
         ))}
       </div>
       {hasMore && !expanded && (
@@ -294,7 +292,7 @@ export function CollectionsPage({
     (slug: string) => {
       onNavigateToCollection(slug);
     },
-    [onNavigateToCollection],
+    [onNavigateToCollection]
   );
 
   // Stats
@@ -362,7 +360,16 @@ export function CollectionsPage({
                   className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer border-none bg-transparent p-0 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
                   aria-label="Clear search"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    aria-hidden="true"
+                  >
                     <line x1="18" y1="6" x2="6" y2="18" />
                     <line x1="6" y1="6" x2="18" y2="18" />
                   </svg>
@@ -389,7 +396,8 @@ export function CollectionsPage({
             searchResults && searchResults.length > 0 ? (
               <div>
                 <p className="mb-4 text-sm text-[var(--color-text-muted)]">
-                  {searchResults.length} collection{searchResults.length !== 1 ? 's' : ''} matching &ldquo;{debouncedSearch}&rdquo;
+                  {searchResults.length} collection{searchResults.length !== 1 ? 's' : ''} matching
+                  &ldquo;{debouncedSearch}&rdquo;
                 </p>
                 <div
                   className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"

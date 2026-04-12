@@ -51,14 +51,8 @@ export function Results({
   return (
     <div className={`rush-results ${className}`}>
       <div className="rush-results__header">
-        <h2 className="rush-results__title">
-          {timedOut ? "Time's Up!" : 'Rush Complete!'}
-        </h2>
-        {isPerfect && (
-          <div className="rush-results__perfect-badge">
-            ✨ Perfect Run! ✨
-          </div>
-        )}
+        <h2 className="rush-results__title">{timedOut ? "Time's Up!" : 'Rush Complete!'}</h2>
+        {isPerfect && <div className="rush-results__perfect-badge">✨ Perfect Run! ✨</div>}
       </div>
 
       <div className="rush-results__rank">
@@ -94,9 +88,7 @@ export function Results({
         </div>
         <div className="rush-results__stat">
           <span className="rush-results__stat-label">Time Used</span>
-          <span className="rush-results__stat-value">
-            {formatDetailedTime(totalTimeMs)}
-          </span>
+          <span className="rush-results__stat-value">{formatDetailedTime(totalTimeMs)}</span>
         </div>
         {skippedCount > 0 && (
           <div className="rush-results__stat rush-results__stat--negative">

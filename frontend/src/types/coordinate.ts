@@ -91,8 +91,8 @@ export function sgfToCoord(sgf: string): Coord {
 
   // Besogo: charToNum returns charCodeAt(0) - 'a'.charCodeAt(0) + 1
   // Which equals charCodeAt(0) - 97 + 1 = charCodeAt(0) - 96
-  const x = sgf.charCodeAt(0) - 96;  // 'a'(97) - 96 = 1
-  const y = sgf.charCodeAt(1) - 96;  // 'a'(97) - 96 = 1
+  const x = sgf.charCodeAt(0) - 96; // 'a'(97) - 96 = 1
+  const y = sgf.charCodeAt(1) - 96; // 'a'(97) - 96 = 1
 
   // Valid range for 1-indexed: 1 to 19 (for standard boards)
   if (x < 1 || x > 19 || y < 1 || y > 19) {
@@ -117,8 +117,8 @@ export function sgfToCoord(sgf: string): Coord {
  */
 export function coordToDisplay(c: Coord, boardSize = 19): string {
   const LETTERS = 'ABCDEFGHJKLMNOPQRST'; // No 'I'
-  const col = LETTERS[c.x - 1] ?? '?';  // x=1 → index 0 → 'A'
-  const row = boardSize - c.y + 1;  // y=1 (top) → row=size, y=size (bottom) → row=1
+  const col = LETTERS[c.x - 1] ?? '?'; // x=1 → index 0 → 'A'
+  const row = boardSize - c.y + 1; // y=1 (top) → row=size, y=size (bottom) → row=1
   return `${col}${row}`;
 }
 
@@ -149,8 +149,8 @@ export function displayToCoord(display: string, boardSize = 19): Coord {
     throw new Error(`Invalid row: ${rowStr}`);
   }
 
-  const x = colIndex + 1;  // 1-indexed
-  const y = boardSize - row + 1;  // Convert from display row to y
+  const x = colIndex + 1; // 1-indexed
+  const y = boardSize - row + 1; // Convert from display row to y
   return { x, y };
 }
 
@@ -188,7 +188,7 @@ export function isValidXY(x: number, y: number, boardSize = 19): boolean {
  * coordToLinear({ x: 1, y: 2 }, 19) // 1   (first column, second row)
  */
 export function coordToLinear(c: Coord, sizeY: number): number {
-  return (c.x - 1) * sizeY + (c.y - 1);  // Besogo fromXY exact pattern
+  return (c.x - 1) * sizeY + (c.y - 1); // Besogo fromXY exact pattern
 }
 
 /**
@@ -203,9 +203,9 @@ export function getAdjacentCoords(c: Coord, boardSize = 19): Coord[] {
 
   const directions = [
     { x: 0, y: -1 }, // up
-    { x: 0, y: 1 },  // down
+    { x: 0, y: 1 }, // down
     { x: -1, y: 0 }, // left
-    { x: 1, y: 0 },  // right
+    { x: 1, y: 0 }, // right
   ];
 
   for (const dir of directions) {

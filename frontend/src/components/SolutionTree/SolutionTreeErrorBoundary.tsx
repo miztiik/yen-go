@@ -38,10 +38,10 @@ interface ErrorBoundaryState {
 
 /**
  * Error boundary component for Solution Tree.
- * 
+ *
  * Catches render errors in the tree component and displays
  * a user-friendly fallback UI instead of crashing the app.
- * 
+ *
  * @example
  * ```tsx
  * <SolutionTreeErrorBoundary>
@@ -71,7 +71,7 @@ export class SolutionTreeErrorBoundary extends Component<
   componentDidCatch(error: Error, errorInfo: { componentStack: string }): void {
     console.error('[SolutionTree] Render error:', error);
     console.error('[SolutionTree] Component stack:', errorInfo.componentStack);
-    
+
     this.props.onError?.(error, errorInfo.componentStack);
   }
 
@@ -91,22 +91,20 @@ export class SolutionTreeErrorBoundary extends Component<
 
       // Default fallback UI
       return (
-        <div 
+        <div
           className="solution-tree-error"
           role="alert"
           aria-live="polite"
           data-testid="solution-tree-error"
         >
-          <div className="error-icon" aria-hidden="true"><WarningIcon size={20} /></div>
+          <div className="error-icon" aria-hidden="true">
+            <WarningIcon size={20} />
+          </div>
           <h3 className="error-title">Unable to display solution tree</h3>
           <p className="error-message">
             {this.state.error?.message || 'An unexpected error occurred while rendering the tree.'}
           </p>
-          <button
-            type="button"
-            className="error-retry-button"
-            onClick={this.handleRetry}
-          >
+          <button type="button" className="error-retry-button" onClick={this.handleRetry}>
             Try Again
           </button>
         </div>
@@ -119,18 +117,20 @@ export class SolutionTreeErrorBoundary extends Component<
 
 /**
  * Default fallback component for empty or invalid trees.
- * 
+ *
  * FR-003 edge case: "Empty puzzle" for trees with only root node.
  */
 export function EmptyTreeFallback(): JSX.Element {
   return (
-    <div 
+    <div
       className="solution-tree-empty"
       role="status"
       aria-label="Empty puzzle"
       data-testid="solution-tree-empty"
     >
-      <div className="empty-icon" aria-hidden="true">📋</div>
+      <div className="empty-icon" aria-hidden="true">
+        📋
+      </div>
       <p className="empty-message">Empty puzzle - no moves to display</p>
     </div>
   );
@@ -141,7 +141,7 @@ export function EmptyTreeFallback(): JSX.Element {
  */
 export function TreeLoadingSkeleton(): JSX.Element {
   return (
-    <div 
+    <div
       className="solution-tree-loading"
       role="status"
       aria-label="Loading solution tree"

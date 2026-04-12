@@ -14,7 +14,11 @@
 
 import type { VNode, JSX } from 'preact';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'preact/hooks';
-import type { PuzzleSetLoader, LoaderStatus, StreamingPuzzleSetLoader } from '../../services/puzzleLoaders';
+import type {
+  PuzzleSetLoader,
+  LoaderStatus,
+  StreamingPuzzleSetLoader,
+} from '../../services/puzzleLoaders';
 import type { PageMode } from '../../types/page-mode';
 import { SolverView } from '../Solver/SolverView';
 import { GoTipDisplay } from '../Loading/GoTipDisplay';
@@ -165,19 +169,22 @@ export function PuzzleSetPlayer({
       if (cancelled) return;
       setLoaderStatus(loader.getStatus());
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [loader]);
 
   // P1-1: Hydrate completedIndexes from pre-existing progress (e.g. collection
   // progress in localStorage). Runs after loader becomes ready so entry IDs can
   // be mapped to indexes. Merges with any session completions.
   useEffect(() => {
-    if (loaderStatus !== 'ready' || !initialCompletedIds || initialCompletedIds.length === 0) return;
+    if (loaderStatus !== 'ready' || !initialCompletedIds || initialCompletedIds.length === 0)
+      return;
 
     const hydrated = mapIdsToIndexes(loader, initialCompletedIds);
 
     if (hydrated.size > 0) {
-      setCompletedIndexes(prev => {
+      setCompletedIndexes((prev) => {
         if (prev.size === 0) return hydrated;
         const merged = new Set(prev);
         for (const idx of hydrated) merged.add(idx);
@@ -219,12 +226,15 @@ export function PuzzleSetPlayer({
       setIsLoadingSgf(false);
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [loaderStatus, currentIndex, loader, sgfRetryCount]);
 
   // Streaming loader detection: RC-7 — totalPuzzles starts at first batch size,
   // incremented by loadMore(). For non-streaming loaders this is a no-op.
-  const isStreaming = 'hasMore' in loader && typeof (loader as StreamingPuzzleSetLoader).hasMore === 'function';
+  const isStreaming =
+    'hasMore' in loader && typeof (loader as StreamingPuzzleSetLoader).hasMore === 'function';
 
   // Streaming: proactively load more puzzles when nearing the end of loaded set
   useEffect(() => {
@@ -248,7 +258,7 @@ export function PuzzleSetPlayer({
   const handleNext = useCallback(() => {
     cancelCountdownRef.current();
     if (currentIndex < totalPuzzles - 1) {
-      setCurrentIndex(i => i + 1);
+      setCurrentIndex((i) => i + 1);
     } else if (allComplete) {
       onAllComplete?.();
     }
@@ -256,7 +266,8 @@ export function PuzzleSetPlayer({
 
   // Auto-advance hook — starts countdown after correct solve, fires handleNext
   // RC-6: autoAdvanceEnabled prop overrides global setting without mutating it
-  const effectiveAutoAdvance = autoAdvanceEnabled !== undefined ? autoAdvanceEnabled : appSettings.autoAdvance;
+  const effectiveAutoAdvance =
+    autoAdvanceEnabled !== undefined ? autoAdvanceEnabled : appSettings.autoAdvance;
   const {
     startCountdown,
     cancelCountdown,
@@ -273,42 +284,53 @@ export function PuzzleSetPlayer({
   cancelCountdownRef.current = cancelCountdown;
 
   // Puzzle complete handler
-  const handleComplete = useCallback((isCorrect: boolean) => {
-    setCompletedIndexes(prev => {
-      const next = new Set(prev);
-      next.add(currentIndex);
-      return next;
-    });
-
-    // Track failures for red dot display
-    if (!isCorrect) {
-      setFailedIndexes(prev => {
+  const handleComplete = useCallback(
+    (isCorrect: boolean) => {
+      setCompletedIndexes((prev) => {
         const next = new Set(prev);
         next.add(currentIndex);
         return next;
       });
-    }
 
-    // Notify parent with puzzle ID and result
-    const entry = loader.getEntry(currentIndex);
-    const puzzleId = entry?.id ?? `puzzle-${currentIndex}`;
-    onPuzzleComplete?.(puzzleId, isCorrect);
-
-    // Auto-advance on correct solve
-    if (isCorrect) {
-      if (failOnWrong) {
-        // Rush/blitz mode: advance immediately (same delay as wrong answers)
-        // since useAutoAdvance is disabled in this mode.
-        setTimeout(() => {
-          if (currentIndex < totalPuzzles - 1) {
-            setCurrentIndex(i => i + 1);
-          }
-        }, failOnWrongDelayMs);
-      } else {
-        startCountdown();
+      // Track failures for red dot display
+      if (!isCorrect) {
+        setFailedIndexes((prev) => {
+          const next = new Set(prev);
+          next.add(currentIndex);
+          return next;
+        });
       }
-    }
-  }, [currentIndex, loader, onPuzzleComplete, startCountdown, failOnWrong, failOnWrongDelayMs, totalPuzzles]);
+
+      // Notify parent with puzzle ID and result
+      const entry = loader.getEntry(currentIndex);
+      const puzzleId = entry?.id ?? `puzzle-${currentIndex}`;
+      onPuzzleComplete?.(puzzleId, isCorrect);
+
+      // Auto-advance on correct solve
+      if (isCorrect) {
+        if (failOnWrong) {
+          // Rush/blitz mode: advance immediately (same delay as wrong answers)
+          // since useAutoAdvance is disabled in this mode.
+          setTimeout(() => {
+            if (currentIndex < totalPuzzles - 1) {
+              setCurrentIndex((i) => i + 1);
+            }
+          }, failOnWrongDelayMs);
+        } else {
+          startCountdown();
+        }
+      }
+    },
+    [
+      currentIndex,
+      loader,
+      onPuzzleComplete,
+      startCountdown,
+      failOnWrong,
+      failOnWrongDelayMs,
+      totalPuzzles,
+    ]
+  );
 
   // Timed blitz: wrong answer → mark failed + auto-advance
   const handleFail = useCallback(() => {
@@ -318,40 +340,50 @@ export function PuzzleSetPlayer({
     // Brief delay so the user sees the wrong flash, then advance
     setTimeout(() => {
       if (currentIndex < totalPuzzles - 1) {
-        setCurrentIndex(i => i + 1);
+        setCurrentIndex((i) => i + 1);
       }
     }, failOnWrongDelayMs);
-  }, [failOnWrong, currentIndex, completedIndexes, handleComplete, totalPuzzles, failOnWrongDelayMs]);
+  }, [
+    failOnWrong,
+    currentIndex,
+    completedIndexes,
+    handleComplete,
+    totalPuzzles,
+    failOnWrongDelayMs,
+  ]);
 
   // Skip puzzle (move to next, skipping failed SGF)
   const handleSkip = useCallback(() => {
     cancelCountdownRef.current();
     if (currentIndex < totalPuzzles - 1) {
-      setCurrentIndex(i => i + 1);
+      setCurrentIndex((i) => i + 1);
     }
   }, [currentIndex, totalPuzzles]);
 
   // Select specific puzzle (from navigation)
-  const handleSelect = useCallback((index: number) => {
-    cancelCountdownRef.current();
-    if (index >= 0 && index < totalPuzzles) {
-      setCurrentIndex(index);
-    }
-  }, [totalPuzzles]);
+  const handleSelect = useCallback(
+    (index: number) => {
+      cancelCountdownRef.current();
+      if (index >= 0 && index < totalPuzzles) {
+        setCurrentIndex(index);
+      }
+    },
+    [totalPuzzles]
+  );
 
   // Retry loading current puzzle SGF (not skip)
   const handleRetrySgf = useCallback(() => {
     setSgfError(null);
     setCurrentSgf(null);
     // Re-trigger the SGF loading effect by incrementing retry counter
-    setSgfRetryCount(c => c + 1);
+    setSgfRetryCount((c) => c + 1);
   }, []);
 
   // Previous puzzle (UI-034/UI-039)
   const handlePrev = useCallback(() => {
     cancelCountdownRef.current();
     if (currentIndex > 0) {
-      setCurrentIndex(i => i - 1);
+      setCurrentIndex((i) => i - 1);
     }
   }, [currentIndex]);
 
@@ -438,12 +470,12 @@ export function PuzzleSetPlayer({
       ? 'No puzzles available for this technique yet.'
       : 'No puzzles available in this collection yet.';
     return (
-      <div className={`flex min-h-[50vh] flex-col items-center justify-center gap-6 p-6 ${className}`}>
+      <div
+        className={`flex min-h-[50vh] flex-col items-center justify-center gap-6 p-6 ${className}`}
+      >
         <GoTipDisplay level={FALLBACK_LEVEL} tips={[]} />
         <div className="text-center">
-          <p className="mb-4 text-lg text-[var(--color-text-muted)]">
-            {emptyMessage}
-          </p>
+          <p className="mb-4 text-lg text-[var(--color-text-muted)]">{emptyMessage}</p>
           <a
             href={browseHref}
             className="inline-block rounded-full bg-[var(--color-accent)] px-6 py-2 text-sm text-white transition-colors hover:opacity-90"
@@ -454,7 +486,7 @@ export function PuzzleSetPlayer({
             Or try one of these levels:
           </p>
           <div className="flex flex-wrap justify-center gap-2">
-            {getCategoryLevels('beginner').map(level => (
+            {getCategoryLevels('beginner').map((level) => (
               <a
                 key={level}
                 href={`${import.meta.env.BASE_URL}training/${level}`}
@@ -500,7 +532,10 @@ export function PuzzleSetPlayer({
 
   // ── Normal puzzle-solving state ──
   return (
-    <div className={`flex min-h-[calc(100vh-3.5rem)] md:max-h-[calc(100vh-3.5rem)] md:overflow-hidden flex-col bg-[var(--color-bg-primary)] ${className}`} {...(mode ? { 'data-mode': mode } : {})}>
+    <div
+      className={`flex min-h-[calc(100vh-3.5rem)] md:max-h-[calc(100vh-3.5rem)] md:overflow-hidden flex-col bg-[var(--color-bg-primary)] ${className}`}
+      {...(mode ? { 'data-mode': mode } : {})}
+    >
       {/* Header */}
       {renderHeader?.({
         name: entryMeta?.level ?? 'Puzzles',
@@ -509,7 +544,8 @@ export function PuzzleSetPlayer({
         completedCount: completedIndexes.size,
         ...(onBack && { onBack }),
         // P1-2: Only offer skip-to-unsolved when there are unsolved puzzles
-        ...(!allComplete && completedIndexes.size > 0 && { onSkipToUnsolved: handleSkipToUnsolved }),
+        ...(!allComplete &&
+          completedIndexes.size > 0 && { onSkipToUnsolved: handleSkipToUnsolved }),
       })}
 
       {/* Navigation */}
@@ -540,19 +576,26 @@ export function PuzzleSetPlayer({
         )}
 
         {currentSgf && !isLoadingSgf && (
-            <SolverView
-              key={entryMeta?.id ?? currentIndex}
-              sgf={currentSgf}
-              {...(entryMeta?.level && { level: entryMeta.level })}
-              {...(entryMeta?.id != null && { puzzleId: entryMeta.id })}
-              onComplete={handleComplete}
-              {...(failOnWrong && { onFail: handleFail })}
-              onNext={handleNext}
-              onPrev={currentIndex > 0 ? handlePrev : undefined}
-              onSkip={handleSkip}
-              {...(isCountingDown && { autoAdvanceCountdown: { remainingMs, totalMs: autoAdvanceTotalMs, onCancel: cancelCountdown } })}
-              minimal={minimal}
-              puzzleNav={totalPuzzles > 1 ? (
+          <SolverView
+            key={entryMeta?.id ?? currentIndex}
+            sgf={currentSgf}
+            {...(entryMeta?.level && { level: entryMeta.level })}
+            {...(entryMeta?.id != null && { puzzleId: entryMeta.id })}
+            onComplete={handleComplete}
+            {...(failOnWrong && { onFail: handleFail })}
+            onNext={handleNext}
+            onPrev={currentIndex > 0 ? handlePrev : undefined}
+            onSkip={handleSkip}
+            {...(isCountingDown && {
+              autoAdvanceCountdown: {
+                remainingMs,
+                totalMs: autoAdvanceTotalMs,
+                onCancel: cancelCountdown,
+              },
+            })}
+            minimal={minimal}
+            puzzleNav={
+              totalPuzzles > 1 ? (
                 <ProblemNav
                   totalProblems={totalPuzzles}
                   currentIndex={currentIndex}
@@ -562,11 +605,14 @@ export function PuzzleSetPlayer({
                   onNext={handleNext}
                   currentStreak={currentStreak}
                 />
-              ) : undefined}
-              puzzleCounter={
-                <span className="inline-flex items-center gap-1 px-3.5 py-1 rounded-full bg-[var(--color-bg-secondary)] text-xs font-bold text-[var(--color-text-secondary)] tracking-wide">{currentIndex + 1} / {totalPuzzles}</span>
-              }
-            />
+              ) : undefined
+            }
+            puzzleCounter={
+              <span className="inline-flex items-center gap-1 px-3.5 py-1 rounded-full bg-[var(--color-bg-secondary)] text-xs font-bold text-[var(--color-text-secondary)] tracking-wide">
+                {currentIndex + 1} / {totalPuzzles}
+              </span>
+            }
+          />
         )}
       </div>
     </div>

@@ -79,10 +79,7 @@ const styles: Record<string, JSX.CSSProperties> = {
  * Comments are stored in the SGF C[] property and provide pedagogical feedback.
  * Also displays the current move coordinate (e.g., "B: D4") when available.
  */
-export function CommentPanel({
-  gobanRef,
-  className,
-}: CommentPanelProps): JSX.Element {
+export function CommentPanel({ gobanRef, className }: CommentPanelProps): JSX.Element {
   const [comment, setComment] = useState<string>('');
   const [moveCoord, setMoveCoord] = useState<string>('');
 

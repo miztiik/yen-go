@@ -51,7 +51,9 @@ export const ActiveFilterChip: FunctionalComponent<ActiveFilterChipProps> = ({
       data-testid={testId}
     >
       <span>{label}</span>
-      <span aria-hidden="true" className="ml-0.5 text-xs leading-none">×</span>
+      <span aria-hidden="true" className="ml-0.5 text-xs leading-none">
+        ×
+      </span>
     </button>
   );
 };

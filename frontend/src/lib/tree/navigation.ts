@@ -26,9 +26,7 @@ import type { VisualTreeNode } from '../../types/tree';
  * @param node - Current node
  * @returns Next sibling or undefined if last/no siblings
  */
-export function findNextSibling(
-  node: VisualTreeNode
-): VisualTreeNode | undefined {
+export function findNextSibling(node: VisualTreeNode): VisualTreeNode | undefined {
   if (!node.parent) {
     return undefined;
   }
@@ -49,9 +47,7 @@ export function findNextSibling(
  * @param node - Current node
  * @returns Previous sibling or undefined if first/no siblings
  */
-export function findPrevSibling(
-  node: VisualTreeNode
-): VisualTreeNode | undefined {
+export function findPrevSibling(node: VisualTreeNode): VisualTreeNode | undefined {
   if (!node.parent) {
     return undefined;
   }
@@ -77,9 +73,7 @@ export function findPrevSibling(
  * @param node - Current node
  * @returns Branch point ancestor or root if none found
  */
-export function findBranchPoint(
-  node: VisualTreeNode
-): VisualTreeNode | undefined {
+export function findBranchPoint(node: VisualTreeNode): VisualTreeNode | undefined {
   let current = node.parent;
 
   while (current) {
@@ -184,10 +178,7 @@ export function findRoot(node: VisualTreeNode): VisualTreeNode {
  * @param path - Array of child indices (e.g., [0, 1, 0] = first, second, first)
  * @returns Node at path or undefined if path is invalid
  */
-export function findNodeByPath(
-  root: VisualTreeNode,
-  path: number[]
-): VisualTreeNode | undefined {
+export function findNodeByPath(root: VisualTreeNode, path: number[]): VisualTreeNode | undefined {
   let current: VisualTreeNode = root;
 
   for (const index of path) {

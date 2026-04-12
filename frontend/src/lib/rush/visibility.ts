@@ -163,11 +163,10 @@ export class VisibilityHandler {
   private handleVisible(): void {
     if (this.state.isVisible) return;
 
-    const hiddenDuration = this.state.hiddenAt
-      ? Date.now() - this.state.hiddenAt
-      : 0;
+    const hiddenDuration = this.state.hiddenAt ? Date.now() - this.state.hiddenAt : 0;
 
-    const shouldForfeit = hiddenDuration >= (this.config.forfeitThreshold || DEFAULT_FORFEIT_THRESHOLD);
+    const shouldForfeit =
+      hiddenDuration >= (this.config.forfeitThreshold || DEFAULT_FORFEIT_THRESHOLD);
 
     this.state = {
       ...this.state,

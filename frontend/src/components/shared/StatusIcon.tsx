@@ -120,11 +120,7 @@ export const StrikeIndicator: FunctionalComponent<StrikeIndicatorProps> = ({
       aria-label={`${current} of ${max} strikes`}
     >
       {strikes.map((isActive, index) => (
-        <span
-          key={index}
-          style={strikeStyle(isActive)}
-          aria-hidden="true"
-        >
+        <span key={index} style={strikeStyle(isActive)} aria-hidden="true">
           {isActive ? '✕' : '○'}
         </span>
       ))}

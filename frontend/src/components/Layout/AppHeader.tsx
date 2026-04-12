@@ -1,10 +1,10 @@
 /**
  * App Header Component
- * 
+ *
  * Global header for all pages:
  * - Left: Yen-Go logo and app name
  * - Right: Streak display, gear (settings), user profile
- * 
+ *
  * Spec 127: US2, FR-001 — consistent header across all pages.
  * Tailwind utility classes only, no CSS file.
  */
@@ -31,12 +31,12 @@ export interface AppHeaderProps {
  * App Header — consistent header across all pages.
  * Height: 56px. Uses Tailwind classes only.
  */
-export function AppHeader({ 
+export function AppHeader({
   showStreak = true,
   streak = 0,
   compact = false,
   rightContent,
-  onClickProfile 
+  onClickProfile,
 }: AppHeaderProps) {
   return (
     <header
@@ -63,11 +63,9 @@ export function AppHeader({
       {/* Right: Streak + Gear + Profile */}
       <div className="flex items-center gap-3">
         {rightContent}
-        
-        {showStreak && streak > 0 && (
-          <StreakBadge streak={streak} />
-        )}
-        
+
+        {showStreak && streak > 0 && <StreakBadge streak={streak} />}
+
         <SettingsGear />
         <UserProfile {...(onClickProfile ? { onClick: onClickProfile } : {})} />
       </div>

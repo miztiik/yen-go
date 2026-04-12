@@ -1,11 +1,11 @@
 /**
  * Yen-Go Logo Component
- * 
+ *
  * SVG logo representing the Yen-Go brand - a Go stone with subtle gradient.
  * Used in header (32px), splash screen (48px), and as favicon (16px).
- * 
+ *
  * Spec 127 US11: References shared SVG source (public/icon.svg).
- * The inline SVG is kept for fast rendering without an extra network request, 
+ * The inline SVG is kept for fast rendering without an extra network request,
  * but the shared SVG file is the canonical branding source.
  */
 
@@ -24,11 +24,11 @@ export interface YenGoLogoProps {
  * Yen-Go Logo - A stylized Go stone representing the app brand.
  * Canonical source: public/icon.svg
  */
-export function YenGoLogo({ 
-  size = 32, 
+export function YenGoLogo({
+  size = 32,
   className = '',
   iconOnly: _iconOnly = true,
-  ariaLabel = 'yen·go'
+  ariaLabel = 'yen·go',
 }: YenGoLogoProps) {
   return (
     <svg
@@ -42,7 +42,7 @@ export function YenGoLogo({
       aria-label={ariaLabel}
     >
       <title>{ariaLabel}</title>
-      
+
       <defs>
         <radialGradient id="stoneGradient" cx="35%" cy="30%" r="60%" fx="35%" fy="30%">
           <stop offset="0%" stopColor="#4a4a4a" />
@@ -57,7 +57,7 @@ export function YenGoLogo({
           <feDropShadow dx="1" dy="2" stdDeviation="2" floodOpacity="0.3" />
         </filter>
       </defs>
-      
+
       <circle cx="24" cy="24" r="20" fill="url(#stoneGradient)" filter="url(#stoneShadow)" />
       <circle cx="24" cy="24" r="20" fill="url(#highlightGradient)" />
       <circle cx="16" cy="16" r="4" fill="rgba(255,255,255,0.15)" />
@@ -69,18 +69,19 @@ export function YenGoLogo({
  * Logo with text variant - Used in header when space permits.
  * Branding: "yen·go" — lowercase, serif font, middle dot (U+00B7) with accent color.
  */
-export function YenGoLogoWithText({ 
+export function YenGoLogoWithText({
   size = 32,
-  className = '' 
-}: { size?: number; className?: string }) {
+  className = '',
+}: {
+  size?: number;
+  className?: string;
+}) {
   return (
-    <div 
-      className={`flex items-center gap-2 ${className}`}
-    >
+    <div className={`flex items-center gap-2 ${className}`}>
       <YenGoLogo size={size} />
-      <span 
+      <span
         className="lowercase tracking-wide font-light text-[var(--color-text-primary)]"
-        style={{ 
+        style={{
           fontSize: `${size * 0.75}px`,
           fontFamily: '"Cormorant Garamond", "Playfair Display", Georgia, serif',
         }}

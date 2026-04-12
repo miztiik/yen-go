@@ -65,7 +65,7 @@ const FILTER_DIMENSION_KEYS = ['l', 't', 'c', 'q'] as const;
  */
 function mergeFilters(
   current: CanonicalFilters,
-  update: Partial<CanonicalFilters>,
+  update: Partial<CanonicalFilters>
 ): CanonicalFilters {
   const merged: Record<string, readonly number[] | 'all' | 'any' | undefined> = {};
 
@@ -120,7 +120,7 @@ function mergeFilters(
 function buildSearchString(
   filters: CanonicalFilters,
   offset: number | undefined,
-  id: string | undefined,
+  id: string | undefined
 ): string {
   // Start from the current URL to preserve unmanaged params (RC-3).
   const current = new URLSearchParams(window.location.search);
@@ -219,14 +219,12 @@ function countActiveDimensions(filters: CanonicalFilters): number {
 export function useCanonicalUrl(): UseCanonicalUrlResult {
   // ---- initial parse from URL ----
   const [filters, setFiltersState] = useState<CanonicalFilters>(() =>
-    parseCanonicalFilters(window.location.search),
+    parseCanonicalFilters(window.location.search)
   );
   const [offset, setOffsetState] = useState<number | undefined>(() =>
-    parseOffset(window.location.search),
+    parseOffset(window.location.search)
   );
-  const [id, setIdState] = useState<string | undefined>(() =>
-    parseId(window.location.search),
-  );
+  const [id, setIdState] = useState<string | undefined>(() => parseId(window.location.search));
 
   // F2 fix: refs for latest values — prevents stale closures in setters
   const filtersRef = useRef(filters);
@@ -248,7 +246,7 @@ export function useCanonicalUrl(): UseCanonicalUrlResult {
     (
       nextFilters: CanonicalFilters,
       nextOffset: number | undefined,
-      nextId: string | undefined,
+      nextId: string | undefined
     ): void => {
       const search = buildSearchString(nextFilters, nextOffset, nextId);
 
@@ -262,7 +260,7 @@ export function useCanonicalUrl(): UseCanonicalUrlResult {
 
       window.history.replaceState(window.history.state, '', url);
     },
-    [],
+    []
   );
 
   // ---- setters ----
@@ -282,7 +280,7 @@ export function useCanonicalUrl(): UseCanonicalUrlResult {
         return next;
       });
     },
-    [writeToUrl],
+    [writeToUrl]
   );
 
   /**
@@ -293,7 +291,7 @@ export function useCanonicalUrl(): UseCanonicalUrlResult {
       setOffsetState(nextOffset);
       writeToUrl(filtersRef.current, nextOffset, idRef.current);
     },
-    [writeToUrl],
+    [writeToUrl]
   );
 
   /**
@@ -304,7 +302,7 @@ export function useCanonicalUrl(): UseCanonicalUrlResult {
       setIdState(nextId);
       writeToUrl(filtersRef.current, offsetRef.current, nextId);
     },
-    [writeToUrl],
+    [writeToUrl]
   );
 
   /**
@@ -326,16 +324,10 @@ export function useCanonicalUrl(): UseCanonicalUrlResult {
   // ---- derived values ----
 
   /** True when at least one numeric filter dimension has values. */
-  const hasActiveFilters = useMemo(
-    () => countActiveDimensions(filters) > 0,
-    [filters],
-  );
+  const hasActiveFilters = useMemo(() => countActiveDimensions(filters) > 0, [filters]);
 
   /** Number of numeric filter dimensions that have values. */
-  const activeFilterCount = useMemo(
-    () => countActiveDimensions(filters),
-    [filters],
-  );
+  const activeFilterCount = useMemo(() => countActiveDimensions(filters), [filters]);
 
   return {
     filters,

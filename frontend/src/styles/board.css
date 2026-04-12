@@ -67,7 +67,10 @@
   border-radius: 50%;
   box-shadow: 0 0 8px rgba(0, 122, 255, 0.3);
   transform: translate(-50%, -50%);
-  transition: opacity 0.15s ease, top 0.1s ease, left 0.1s ease;
+  transition:
+    opacity 0.15s ease,
+    top 0.1s ease,
+    left 0.1s ease;
   z-index: 10;
 }
 
@@ -81,9 +84,23 @@
 
 /* Shake animation for incorrect moves */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
-  20%, 40%, 60%, 80% { transform: translateX(2px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(2px);
+  }
 }
 
 .board-container.shake {
@@ -96,7 +113,7 @@
     max-width: 100%;
     padding: var(--spacing-xs, 0.25rem);
   }
-  
+
   /* Increase touch area on small screens */
   .board-container.interactive {
     min-width: 280px;
@@ -130,7 +147,7 @@
     outline-width: 3px;
     outline-color: CanvasText;
   }
-  
+
   .board-focus-indicator {
     border-color: CanvasText;
     border-width: 4px;
@@ -142,7 +159,7 @@
   .board-focus-indicator {
     transition: none;
   }
-  
+
   .board-container.shake {
     animation: none;
   }
@@ -154,7 +171,7 @@
     max-width: 100%;
     page-break-inside: avoid;
   }
-  
+
   .board-focus-indicator {
     display: none;
   }
