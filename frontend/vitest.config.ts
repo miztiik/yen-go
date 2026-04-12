@@ -53,12 +53,15 @@ export default defineConfig({
     reporters: ['verbose'],
     
     // Performance
-    pool: 'forks',
+    pool: 'threads',
     poolOptions: {
-      forks: {
-        singleFork: false,  // Enable test file isolation (changed from true)
+      threads: {
+        singleThread: false,
       },
     },
+
+    // Force teardown even if async operations are pending (prevents hang)
+    teardownTimeout: 5000,
     
     // Mock cleanup settings (ensure test isolation)
     restoreMocks: true,

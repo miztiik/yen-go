@@ -83,8 +83,8 @@ describe('Boot-to-Solve Integration', () => {
   beforeEach(() => {
     _resetBootForTesting();
 
-    // Mock fetch to serve config files
-    global.fetch = vi.fn(async (url: string | URL) => {
+    // Mock fetch to serve config files via vi.stubGlobal
+    vi.stubGlobal('fetch', vi.fn(async (url: string | URL) => {
       const urlStr = typeof url === 'string' ? url : url.toString();
 
       if (urlStr.includes('puzzle-levels.json')) {

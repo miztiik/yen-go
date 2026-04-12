@@ -18,9 +18,9 @@ import {
   type DailyChallengeMode,
 } from '../../src/services/dailyChallengeService';
 
-// Mock fetch
+// Mock fetch via vi.stubGlobal so setup.ts afterEach can restore it
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+vi.stubGlobal('fetch', mockFetch);
 
 // Mock localStorage
 const localStorageMock = (() => {

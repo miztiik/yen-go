@@ -7,9 +7,9 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-// Mock fetch globally
+// Mock fetch globally via vi.stubGlobal so setup.ts afterEach can restore it
 const mockFetch = vi.fn();
-globalThis.fetch = mockFetch;
+vi.stubGlobal('fetch', mockFetch);
 
 // Mock document for rendering
 Object.defineProperty(globalThis, 'document', {

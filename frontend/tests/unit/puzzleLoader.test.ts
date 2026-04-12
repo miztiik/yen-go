@@ -16,9 +16,9 @@ import {
 import type { LevelManifest, LevelData } from '@models/level';
 import type { Puzzle } from '@models/puzzle';
 
-// Mock global fetch
+// Mock fetch via vi.stubGlobal so setup.ts afterEach can restore it
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+vi.stubGlobal('fetch', mockFetch);
 
 describe('PuzzleLoader Service', () => {
   const mockManifest: LevelManifest = {
