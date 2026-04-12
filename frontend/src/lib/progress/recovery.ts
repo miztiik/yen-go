@@ -37,7 +37,7 @@ export interface RecoveryResult {
  */
 export function safeJsonParse(json: string): Record<string, unknown> | null {
   try {
-    const parsed = JSON.parse(json);
+    const parsed: unknown = JSON.parse(json);
     if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
       return parsed as Record<string, unknown>;
     }
@@ -62,7 +62,7 @@ export function recoverProgress(rawData: string | null): RecoveryResult {
   const warnings: string[] = [];
 
   // No data - create fresh
-  if (!rawData) {
+  if (rawData === null || rawData === '') {
     return {
       success: true,
       progress: createDefaultProgress(),

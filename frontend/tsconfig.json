@@ -41,14 +41,12 @@
   },
   "include": ["src"],
   "exclude": [
-    "src/pages/PuzzleView/**",
     "src/pages/HomePage.tsx",
     "src/pages/PuzzleSolvePage.tsx",
     "src/pages/StatsPage.tsx",
     "src/pages/AchievementsPage.tsx",
     "src/pages/ReviewPage.tsx",
     "src/components/ChallengeList/**",
-    "src/components/Level/PuzzleGrid.tsx",
     "src/hooks/usePaginatedPuzzles.ts",
     "src/lib/puzzle/pagination.ts"
   ],

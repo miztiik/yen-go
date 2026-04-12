@@ -371,7 +371,7 @@ export class PuzzleLoader {
 
     // Side to move
     if (puzzle.side !== 'B' && puzzle.side !== 'W') {
-      errors.push(`Invalid side: ${puzzle.side}`);
+      errors.push(`Invalid side: ${String(puzzle.side)}`);
     }
 
     // Region validation

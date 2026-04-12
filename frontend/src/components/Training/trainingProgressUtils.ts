@@ -34,7 +34,7 @@ export function saveTrainingProgress(
   try {
     const stored = localStorage.getItem(TRAINING_PROGRESS_KEY);
     const progress: TrainingProgress = stored
-      ? JSON.parse(stored)
+      ? (JSON.parse(stored) as TrainingProgress)
       : { byLevel: {}, unlockedLevels: [FIRST_LEVEL], updatedAt: new Date().toISOString() };
 
     // Update level progress
@@ -65,7 +65,7 @@ export function saveTrainingProgress(
 export function getTrainingProgress(): TrainingProgress | null {
   try {
     const stored = localStorage.getItem(TRAINING_PROGRESS_KEY);
-    return stored ? JSON.parse(stored) : null;
+    return stored ? (JSON.parse(stored) as TrainingProgress) : null;
   } catch (err) {
     console.error('Error loading training progress:', err);
     return null;

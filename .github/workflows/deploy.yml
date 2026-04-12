@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: "Deploy: Publish to GitHub Pages"
 
 on:
   push:
@@ -6,7 +6,6 @@ on:
       - main
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN
 permissions:
   contents: read
   pages: write
@@ -19,75 +18,19 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20'
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install dependencies
-        run: |
-          cd frontend
-          npm ci
-
-      - name: Build frontend
-        run: |
-          cd frontend
-          npm run build
-        env:
-          NODE_ENV: production
-
-      - name: Copy puzzle collections to build output
-        run: |
-          cp -r yengo-puzzle-collections frontend/dist/yengo-puzzle-collections
-          cp -r config frontend/dist/config
-          # Remove backend-only files not needed by the frontend
-          rm -f frontend/dist/yengo-puzzle-collections/yengo-content.db
-          rm -rf frontend/dist/yengo-puzzle-collections/.puzzle-inventory-state
-          rm -f frontend/dist/yengo-puzzle-collections/.batch-state.json
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: frontend/dist
-
   deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
-    needs: build
-    outputs:
-      page_url: ${{ steps.deployment.outputs.page_url }}
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+    name: Build & Deploy
+    uses: ./.github/workflows/_deploy-pages.yml
 
   notify-deploy:
-    name: Notify Deployment
+    name: Post Deployment Commit Status
     runs-on: ubuntu-latest
     needs: deploy
     if: success()
-    
+
     steps:
       - name: Create deployment status
         uses: actions/github-script@v7

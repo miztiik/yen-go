@@ -93,10 +93,10 @@ export function DailyChallengeModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    const loadData = async (): Promise<void> => {
+    const loadData = (): void => {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
 
-      const result = await getTodaysChallenge();
+      const result = getTodaysChallenge();
       
       if (!result.success || !result.data) {
         setState(prev => ({
@@ -128,7 +128,7 @@ export function DailyChallengeModal({
       }));
     };
 
-    void loadData();
+    loadData();
   }, [isOpen]);
 
   const handleModeSelect = useCallback((mode: DailyChallengeMode): void => {

@@ -313,7 +313,7 @@ async function networkFirstWithOfflineFallback(
  * Message event - handle messages from main thread.
  */
 self.addEventListener('message', (event: ExtendableMessageEvent) => {
-  const { type, payload } = event.data || {};
+  const { type, payload } = (event.data || {}) as { type?: string; payload?: { urls?: string[] } };
   
   switch (type) {
     case 'SKIP_WAITING':
@@ -323,11 +323,12 @@ self.addEventListener('message', (event: ExtendableMessageEvent) => {
     case 'CACHE_PUZZLES':
       // Pre-cache specific puzzle files
       if (payload?.urls && Array.isArray(payload.urls)) {
+        const urlsToCache = payload.urls;
         event.waitUntil(
           (async () => {
             const cache = await caches.open(PUZZLE_CACHE);
             await Promise.all(
-              payload.urls.map(async (url: string) => {
+              urlsToCache.map(async (url: string) => {
                 try {
                   const response = await fetch(url);
                   if (response.ok) {
@@ -366,10 +367,9 @@ self.addEventListener('message', (event: ExtendableMessageEvent) => {
 self.addEventListener('sync', ((event: SyncEvent) => {
   if (event.tag === 'sync-progress') {
     event.waitUntil(
-      (async () => {
+      Promise.resolve().then(() => {
         console.log('[SW] Syncing progress data');
-        // Future: sync progress to server when online
-      })()
+      })
     );
   }
 }) as EventListener);

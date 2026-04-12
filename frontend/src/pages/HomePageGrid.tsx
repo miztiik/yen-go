@@ -133,7 +133,7 @@ export function HomePageGrid({
       }
 
       // Load daily challenge info
-      const dailyResult = await getTodaysChallenge();
+      const dailyResult = getTodaysChallenge();
       if (dailyResult.success && dailyResult.data) {
         const puzzles = dailyResult.data.standard?.puzzles ?? [];
         setState(prev => ({

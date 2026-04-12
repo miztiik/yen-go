@@ -43,7 +43,7 @@ export function sanitizeString(str: string, maxLength: number = 1000): string {
   return str
     .trim()
     .slice(0, maxLength)
-    .replace(/[\x00-\x1F\x7F]/g, ''); // Remove control characters
+    .replace(/[\x00-\x1F\x7F]/g, ''); // eslint-disable-line no-control-regex
 }
 
 /**
@@ -191,7 +191,7 @@ export function sanitizeFilename(filename: string): string {
   }
 
   return filename
-    .replace(/[<>:"/\\|?*\x00-\x1F]/g, '') // Remove dangerous chars
+    .replace(/[<>:"/\\|?*\x00-\x1F]/g, '') // eslint-disable-line no-control-regex
     .replace(/^\.+/, '') // Remove leading dots
     .slice(0, 255); // Max filename length
 }

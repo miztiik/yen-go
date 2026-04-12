@@ -71,7 +71,7 @@ export function getStone(board: readonly (readonly Stone[])[], coord: Coordinate
 export function createEmptyBoard(size: BoardSize): Stone[][] {
   const grid: Stone[][] = [];
   for (let y = 0; y <= size; y++) {
-    grid[y] = new Array(size + 1).fill(EMPTY);
+    grid[y] = new Array<Stone>(size + 1).fill(EMPTY);
   }
   return grid;
 }

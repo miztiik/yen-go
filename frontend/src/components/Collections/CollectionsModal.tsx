@@ -136,7 +136,7 @@ export function CollectionsModal({
       <div style={contentStyle}>
         <CollectionFilter
           filter={filter}
-          onFilterChange={handleFilterChange}
+          onFilterChange={(f) => { void handleFilterChange(f); }}
         />
 
         <div style={listContainerStyle}>

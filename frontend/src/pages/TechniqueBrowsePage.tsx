@@ -120,7 +120,7 @@ export const TechniqueBrowsePage: FunctionalComponent<TechniqueBrowsePageProps> 
     try {
       const stored = localStorage.getItem(TECHNIQUE_PROGRESS_KEY);
       if (stored) {
-        const progress: TechniqueProgress = JSON.parse(stored);
+        const progress = JSON.parse(stored) as TechniqueProgress;
         setStats(progress.byTechnique);
       }
     } catch (err) {
@@ -469,7 +469,7 @@ export function saveTechniqueStats(
   try {
     const stored = localStorage.getItem(TECHNIQUE_PROGRESS_KEY);
     const progress: TechniqueProgress = stored
-      ? JSON.parse(stored)
+      ? JSON.parse(stored) as TechniqueProgress
       : { byTechnique: {}, updatedAt: new Date().toISOString() };
 
     const existing = progress.byTechnique[techniqueId];
@@ -503,7 +503,7 @@ export function getTechniqueStats(): Readonly<Record<string, TechniqueStats>> {
   try {
     const stored = localStorage.getItem(TECHNIQUE_PROGRESS_KEY);
     if (stored) {
-      const progress: TechniqueProgress = JSON.parse(stored);
+      const progress = JSON.parse(stored) as TechniqueProgress;
       return progress.byTechnique;
     }
   } catch (err) {

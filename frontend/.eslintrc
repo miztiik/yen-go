@@ -27,5 +27,17 @@
     "@typescript-eslint/strict-boolean-expressions": "warn",
     "no-console": ["warn", { "allow": ["warn", "error"] }]
   },
-  "ignorePatterns": ["dist", "node_modules", "*.config.ts"]
+  "ignorePatterns": [
+    "dist",
+    "node_modules",
+    "*.config.ts",
+    "src/pages/HomePage.tsx",
+    "src/pages/PuzzleSolvePage.tsx",
+    "src/pages/StatsPage.tsx",
+    "src/pages/AchievementsPage.tsx",
+    "src/pages/ReviewPage.tsx",
+    "src/components/ChallengeList/**",
+    "src/hooks/usePaginatedPuzzles.ts",
+    "src/lib/puzzle/pagination.ts"
+  ]
 }

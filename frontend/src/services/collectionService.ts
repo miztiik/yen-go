@@ -775,23 +775,26 @@ export function estimateUserLevel(): SkillLevel {
       return DEFAULT_USER_LEVEL;
     }
 
-    const progress = JSON.parse(stored);
-    
+    const progress = JSON.parse(stored) as {
+      stats?: { totalAttempted?: number; totalCorrect?: number };
+      currentLevel?: string;
+    };
+
     // Calculate overall accuracy
     let totalAttempted = 0;
     let totalCorrect = 0;
-    
+
     // Aggregate stats from all completed puzzles
     if (progress.stats) {
       totalAttempted = progress.stats.totalAttempted ?? 0;
       totalCorrect = progress.stats.totalCorrect ?? 0;
     }
-    
+
     // If no significant history, return default
     if (totalAttempted < 10) {
       return DEFAULT_USER_LEVEL;
     }
-    
+
     const accuracy = totalCorrect / totalAttempted;
     const currentLevel = progress.currentLevel ?? DEFAULT_USER_LEVEL;
     const currentIndex = SKILL_LEVELS.findIndex(l => l.slug === currentLevel);
@@ -800,14 +803,14 @@ export function estimateUserLevel(): SkillLevel {
     if (accuracy > 0.7 && totalAttempted >= 20 && currentIndex < SKILL_LEVELS.length - 1) {
       // Player is doing well, suggest next level
       const nextLevel = SKILL_LEVELS[currentIndex + 1];
-      return nextLevel ? nextLevel.slug : currentLevel as SkillLevel;
+      return nextLevel ? nextLevel.slug : currentLevel;
     } else if (accuracy < 0.4 && totalAttempted >= 10 && currentIndex > 0) {
       // Player is struggling, suggest previous level
       const prevLevel = SKILL_LEVELS[currentIndex - 1];
-      return prevLevel ? prevLevel.slug : currentLevel as SkillLevel;
+      return prevLevel ? prevLevel.slug : currentLevel;
     }
-    
-    return currentLevel as SkillLevel;
+
+    return currentLevel;
   } catch (err) {
     console.error('Error estimating user level:', err);
     return DEFAULT_USER_LEVEL;

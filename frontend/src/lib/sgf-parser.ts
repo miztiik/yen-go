@@ -343,7 +343,7 @@ function extractGameInfo(root: SGFNode): GameInfo {
     if (isValidPlayer(props.PL)) {
       sideToMove = props.PL;
     } else {
-      throw new SGFParseErrorImpl(`Invalid player: ${props.PL}`);
+      throw new SGFParseErrorImpl(`Invalid player: ${String(props.PL)}`);
     }
   }
 

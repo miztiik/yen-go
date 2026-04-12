@@ -51,8 +51,6 @@ export function ChallengeTimer({
     }, 200);
 
     return () => clearInterval(interval);
-    // Only restart interval when pause state changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPaused]);
 
   const totalSeconds = Math.ceil(remainingMs / 1000);

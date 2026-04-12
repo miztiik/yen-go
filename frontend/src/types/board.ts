@@ -141,7 +141,7 @@ export interface Coordinate {
 export function createEmptyGrid(size: number): BoardGrid {
   const grid: BoardGrid = [];
   for (let y = 0; y <= size; y++) {
-    grid[y] = new Array(size + 1).fill(EMPTY);
+    grid[y] = new Array<Stone>(size + 1).fill(EMPTY);
   }
   return grid;
 }

@@ -35,8 +35,8 @@ export function EditionPicker({
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {editions.map((edition) => {
-          const attrs = JSON.parse(edition.attrs || '{}');
-          const label = attrs.label || edition.name;
+          const attrs = JSON.parse(edition.attrs || '{}') as Record<string, unknown>;
+          const label = typeof attrs.label === 'string' ? attrs.label : edition.name;
           return (
             <button
               key={edition.collection_id}

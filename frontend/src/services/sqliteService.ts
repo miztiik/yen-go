@@ -34,7 +34,7 @@ export async function init(): Promise<void> {
     // Store current DB version for future update checks (non-blocking)
     void fetch(DB_VERSION_PATH)
       .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
+      .then((data: { db_version?: string } | null) => {
         if (data?.db_version) {
           localStorage.setItem(DB_VERSION_KEY, data.db_version);
         }

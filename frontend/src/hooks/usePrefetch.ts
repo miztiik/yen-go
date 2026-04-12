@@ -67,9 +67,9 @@ export function usePrefetch(): UsePrefetchResult {
       .then((sgf) => {
         cacheRef.current.set(path, sgf);
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         // Silent fallback — prefetch failures are non-critical (FR-087)
-        if (err.name !== 'AbortError') {
+        if (err instanceof Error && err.name !== 'AbortError') {
           console.debug('[usePrefetch] Failed to prefetch:', path, err.message);
         }
       });

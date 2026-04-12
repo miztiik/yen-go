@@ -276,7 +276,7 @@ export function validateSolutionStructure(
   }
 
   for (let i = 0; i < solutions.length; i++) {
-    const line = solutions[i];
+    const line = solutions[i] as unknown;
 
     if (!Array.isArray(line)) {
       errors.push(`Solution line ${i} must be an array`);
@@ -289,7 +289,7 @@ export function validateSolutionStructure(
     }
 
     for (let j = 0; j < line.length; j++) {
-      const move = line[j];
+      const move = (line as unknown[])[j];
 
       if (typeof move !== 'string') {
         errors.push(`Solution line ${i} move ${j} must be a string`);
@@ -297,7 +297,7 @@ export function validateSolutionStructure(
       }
 
       if (!isValidSgfCoord(move)) {
-        errors.push(`Solution line ${i} move ${j} is not a valid SGF coordinate: ${move}`);
+        errors.push(`Solution line ${i} move ${j} is not a valid SGF coordinate: ${String(move)}`);
       }
     }
   }

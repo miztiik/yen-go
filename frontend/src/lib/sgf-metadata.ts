@@ -348,7 +348,7 @@ export function extractMetadataFromTree(
   let contentType: 'curated' | 'practice' | 'training' = 'practice';
   if (rawMeta) {
     try {
-      const meta = JSON.parse(rawMeta);
+      const meta = JSON.parse(rawMeta) as Record<string, unknown>;
       if (typeof meta.ct === 'number') {
         const slug = contentTypeIdToSlug(meta.ct);
         if (slug) contentType = slug;

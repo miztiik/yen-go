@@ -125,7 +125,7 @@ export async function getNextRushPuzzle(
       id: puzzleId,
       path: entry.path,
       level: puzzleLevel,
-      tags: 'tags' in entry && Array.isArray(entry.tags) ? [...entry.tags] : [],
+      tags: 'tags' in entry && Array.isArray(entry.tags) ? [...(entry.tags as readonly string[])] : [],
     };
   } catch (error) {
     console.error('[PuzzleRush] Error fetching puzzle:', error);

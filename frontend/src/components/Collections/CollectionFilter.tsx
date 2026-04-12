@@ -36,7 +36,7 @@ export function CollectionFilter({
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleLevelChange = useCallback(
-    (level: SkillLevel | 'all') => {
+    (level: SkillLevel) => {
       if (level === 'all') {
         onFilterChange({
           ...filter,

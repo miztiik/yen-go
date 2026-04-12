@@ -158,7 +158,7 @@ export const RandomPage: FunctionalComponent<RandomPageProps> = ({
   }, [depthPreset, setFilters]);
 
   // Derive selected level slug from filterState for display
-  const selectedLevelSlug: SkillLevel | 'any' = filterState.selectedLevelSlug
+  const selectedLevelSlug: string = filterState.selectedLevelSlug
     ? (filterState.selectedLevelSlug)
     : 'any';
 

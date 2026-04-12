@@ -1,0 +1,72 @@
+name: _Build and Deploy to GitHub Pages
+
+on:
+  workflow_call:
+    outputs:
+      page_url:
+        description: 'The deployed GitHub Pages URL'
+        value: ${{ jobs.build-and-deploy.outputs.page_url }}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build-and-deploy:
+    name: Build Frontend & Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Bundle puzzle collections into build output
+        run: |
+          cp -r yengo-puzzle-collections frontend/dist/yengo-puzzle-collections
+          cp -r config frontend/dist/config
+          # Remove backend-only files not needed by the frontend
+          rm -f frontend/dist/yengo-puzzle-collections/yengo-content.db
+          rm -rf frontend/dist/yengo-puzzle-collections/.puzzle-inventory-state
+          rm -f frontend/dist/yengo-puzzle-collections/.batch-state.json
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload build artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

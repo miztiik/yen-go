@@ -84,12 +84,14 @@ function loadSettings(): AppSettings {
   try {
     const stored = localStorage.getItem(SETTINGS_KEY);
     if (stored) {
-      const parsed = JSON.parse(stored);
+      const parsed = JSON.parse(stored) as Record<string, unknown>;
       return {
         ...DEFAULT_SETTINGS,
-        ...parsed,
-        theme: validateTheme(parsed?.theme),
-        autoAdvanceDelay: validateDelay(parsed?.autoAdvanceDelay),
+        theme: validateTheme(parsed.theme),
+        autoAdvanceDelay: validateDelay(parsed.autoAdvanceDelay),
+        soundEnabled: typeof parsed.soundEnabled === 'boolean' ? parsed.soundEnabled : DEFAULT_SETTINGS.soundEnabled,
+        coordinateLabels: typeof parsed.coordinateLabels === 'boolean' ? parsed.coordinateLabels : DEFAULT_SETTINGS.coordinateLabels,
+        autoAdvance: typeof parsed.autoAdvance === 'boolean' ? parsed.autoAdvance : DEFAULT_SETTINGS.autoAdvance,
       };
     }
   } catch {

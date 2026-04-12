@@ -110,12 +110,12 @@ export function useHints(
 
     // If it's an array, use directly (from YH metadata)
     if (Array.isArray(puzzleOrHints)) {
-      return puzzleOrHints.slice(0, MAX_HINT_TIERS);
+      return (puzzleOrHints as readonly string[]).slice(0, MAX_HINT_TIERS);
     }
 
     // If it's a Puzzle object, extract hint
     const puzzle = puzzleOrHints as Puzzle;
-    if (!puzzle.hint) return [];
+    if (puzzle.hint === undefined || puzzle.hint === '') return [];
     return [puzzle.hint];
   }, [puzzleOrHints, enabled]);
 

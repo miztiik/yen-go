@@ -1,4 +1,4 @@
-name: CI
+name: "CI: Frontend Quality Gate"
 
 on:
   push:
@@ -10,8 +10,8 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  frontend:
-    name: Frontend Tests & Lint
+  quality:
+    name: Typecheck, Lint, Format & Test
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -43,9 +43,9 @@ jobs:
         run: npm run test:coverage
 
   build:
-    name: Build Frontend
+    name: Build Verification
     runs-on: ubuntu-latest
-    needs: [frontend]
+    needs: [quality]
     defaults:
       run:
         working-directory: frontend

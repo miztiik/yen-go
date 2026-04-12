@@ -386,7 +386,24 @@ export function restorePuzzleState(
   initialBoard: PuzzleBoard
 ): HistoryState | null {
   try {
-    const data = JSON.parse(json);
+    interface SerializedEntry {
+      turn: number;
+      playerMove: SgfCoord;
+      opponentMove?: SgfCoord;
+      playerCaptures: SgfCoord[];
+      opponentCaptures: SgfCoord[];
+      wasCorrect: boolean;
+      timestamp: number;
+    }
+    interface SerializedHistory {
+      puzzleId: string;
+      entries: SerializedEntry[];
+      currentIndex?: number;
+      startTime?: number;
+      totalAttempts?: number;
+    }
+
+    const data = JSON.parse(json) as SerializedHistory;
 
     if (!data.puzzleId || !Array.isArray(data.entries)) {
       return null;
@@ -394,24 +411,21 @@ export function restorePuzzleState(
 
     return {
       puzzleId: data.puzzleId,
-      entries: data.entries.map((e: {
-        turn: number;
-        playerMove: SgfCoord;
-        opponentMove?: SgfCoord;
-        playerCaptures: SgfCoord[];
-        opponentCaptures: SgfCoord[];
-        wasCorrect: boolean;
-        timestamp: number;
-      }) => ({
-        turn: e.turn,
-        playerMove: e.playerMove,
-        opponentMove: e.opponentMove,
-        playerCaptures: e.playerCaptures || [],
-        opponentCaptures: e.opponentCaptures || [],
-        boardStateBefore: initialBoard, // Simplified; would need reconstruction
-        wasCorrect: e.wasCorrect,
-        timestamp: e.timestamp,
-      })),
+      entries: data.entries.map((e) => {
+        const entry: HistoryEntry = {
+          turn: e.turn,
+          playerMove: e.playerMove,
+          playerCaptures: e.playerCaptures || [],
+          opponentCaptures: e.opponentCaptures || [],
+          boardStateBefore: initialBoard,
+          wasCorrect: e.wasCorrect,
+          timestamp: e.timestamp,
+        };
+        if (e.opponentMove !== undefined) {
+          entry.opponentMove = e.opponentMove;
+        }
+        return entry;
+      }),
       currentIndex: data.currentIndex ?? -1,
       initialBoard,
       startTime: data.startTime ?? Date.now(),

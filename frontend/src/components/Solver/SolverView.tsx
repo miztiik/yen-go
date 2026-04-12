@@ -369,11 +369,11 @@ export function SolverView({
 
       // Apply combined circles to the board
       try {
-        const setCircles = (goban as unknown as {
+        const gobanWithCircles = goban as unknown as {
           setColoredCircles?(circles: CircleEntry[], dont_draw?: boolean): void;
-        }).setColoredCircles;
-        if (typeof setCircles === 'function') {
-          setCircles.call(goban, circles);
+        };
+        if (typeof gobanWithCircles.setColoredCircles === 'function') {
+          gobanWithCircles.setColoredCircles(circles);
         }
       } catch { /* setColoredCircles not available in this goban version */ }
     };
@@ -393,11 +393,11 @@ export function SolverView({
       }).off('update', onUpdate);
       // Clear all circles on cleanup
       try {
-        const setCircles = (goban as unknown as {
+        const gobanWithCircles = goban as unknown as {
           setColoredCircles?(circles?: unknown[], dont_draw?: boolean): void;
-        }).setColoredCircles;
-        if (typeof setCircles === 'function') {
-          setCircles.call(goban, []);
+        };
+        if (typeof gobanWithCircles.setColoredCircles === 'function') {
+          gobanWithCircles.setColoredCircles([]);
         }
       } catch { /* noop */ }
     };
