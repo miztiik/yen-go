@@ -132,51 +132,43 @@ describe('PuzzleRushPage', () => {
     expect(screen.getByTestId('custom-rush')).toBeTruthy();
   });
 
-  it('P5: finished state renders "Game Over!" heading', async () => {
+  it('P5: finished state renders "Game Over!" heading', () => {
     hookReturn = { ...hookReturn, isGameOver: true };
     render(<PuzzleRushPage {...createProps()} />);
 
-    // Advance past countdown: 3 × 1s ticks
-    for (let i = 0; i < 3; i++) {
-      await act(async () => { vi.advanceTimersByTime(1000); });
-    }
+    // Advance past countdown: 3 × 1s ticks (synchronous act to avoid deadlock)
+    act(() => { vi.advanceTimersByTime(3000); });
 
     expect(screen.getByText('Game Over!')).toBeTruthy();
   });
 
-  it('P6: finished state renders final score display', async () => {
+  it('P6: finished state renders final score display', () => {
     hookReturn = { ...hookReturn, isGameOver: true, state: { ...defaultRushState, score: 750 } };
     render(<PuzzleRushPage {...createProps()} />);
 
-    for (let i = 0; i < 3; i++) {
-      await act(async () => { vi.advanceTimersByTime(1000); });
-    }
+    act(() => { vi.advanceTimersByTime(3000); });
 
     expect(screen.getByTestId('final-score')).toBeTruthy();
     expect(screen.getByText('750')).toBeTruthy();
   });
 
-  it('P7: finished state Play Again button calls onNewRush', async () => {
+  it('P7: finished state Play Again button calls onNewRush', () => {
     const onNewRush = vi.fn();
     hookReturn = { ...hookReturn, isGameOver: true };
     render(<PuzzleRushPage {...createProps({ onNewRush })} />);
 
-    for (let i = 0; i < 3; i++) {
-      await act(async () => { vi.advanceTimersByTime(1000); });
-    }
+    act(() => { vi.advanceTimersByTime(3000); });
 
     fireEvent.click(screen.getByTestId('play-again-button'));
     expect(onNewRush).toHaveBeenCalledOnce();
   });
 
-  it('P8: finished state Go Home button calls onNavigateHome', async () => {
+  it('P8: finished state Go Home button calls onNavigateHome', () => {
     const onNavigateHome = vi.fn();
     hookReturn = { ...hookReturn, isGameOver: true };
     render(<PuzzleRushPage {...createProps({ onNavigateHome })} />);
 
-    for (let i = 0; i < 3; i++) {
-      await act(async () => { vi.advanceTimersByTime(1000); });
-    }
+    act(() => { vi.advanceTimersByTime(3000); });
 
     fireEvent.click(screen.getByTestId('home-button'));
     expect(onNavigateHome).toHaveBeenCalledOnce();

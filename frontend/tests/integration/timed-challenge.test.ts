@@ -282,14 +282,16 @@ describe('Timed Challenge', () => {
       const config: TimedChallengeConfig = { duration: 3, date: '2026-01-25' };
       const manager = createTimedChallenge(config);
       await manager.initialize();
-      
+
       // Before start
       expect(manager.getTimeRemaining()).toBe(180); // 3 minutes
 
       manager.start();
-      
+
       // After start, time should be decreasing
       expect(manager.getTimeRemaining()).toBeLessThanOrEqual(180);
+
+      manager.stop(); // Clean up real timer to prevent hang
     });
 
     it('should move to next puzzle on solve', async () => {
@@ -315,11 +317,13 @@ describe('Timed Challenge', () => {
       manager.start();
 
       expect(manager.getState().currentIndex).toBe(0);
-      
+
       await manager.markSolvedAndNext();
-      
+
       expect(manager.getState().currentIndex).toBe(1);
       expect(manager.getState().solvedCount).toBe(1);
+
+      manager.stop(); // Clean up real timer to prevent hang
     });
 
     it('should handle queue exhaustion', async () => {
@@ -350,6 +354,8 @@ describe('Timed Challenge', () => {
       
       expect(next).toBeNull();
       expect(manager.getState().currentPuzzle).toBeNull();
+
+      manager.stop(); // Clean up real timer to prevent hang
     });
 
     it('should return results on stop', async () => {

@@ -5,7 +5,7 @@
  * Spec 131: FR-023
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/preact';
+import { render, screen, act } from '@testing-library/preact';
 import { GoTipDisplay, type GoTip } from '../../src/components/Loading/GoTipDisplay';
 
 const SAMPLE_TIPS: GoTip[] = [
@@ -22,17 +22,17 @@ describe('GoTipDisplay', () => {
     vi.useRealTimers();
   });
 
-  it('fades out when dataReady is true (no minimum timer blocking)', async () => {
+  it('fades out when dataReady is true (no minimum timer blocking)', () => {
     vi.useFakeTimers();
     const { rerender } = render(
       <GoTipDisplay tips={SAMPLE_TIPS} level="beginner" dataReady={false} />,
     );
 
     // Advance microtasks so useEffect fires
-    await vi.advanceTimersByTimeAsync(0);
+    act(() => { vi.advanceTimersByTime(0); });
 
     rerender(<GoTipDisplay tips={SAMPLE_TIPS} level="beginner" dataReady={true} />);
-    await vi.advanceTimersByTimeAsync(0);
+    act(() => { vi.advanceTimersByTime(0); });
 
     // After dataReady, the container should have opacity 0 (fading out)
     const tipEl = screen.getByText(/Capture the cutting stones/);

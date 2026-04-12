@@ -53,15 +53,15 @@ export default defineConfig({
     reporters: ['verbose'],
     
     // Performance
-    pool: 'threads',
+    pool: 'forks',
     poolOptions: {
-      threads: {
-        singleThread: false,
+      forks: {
+        singleFork: false,
       },
     },
 
     // Force teardown even if async operations are pending (prevents hang)
-    teardownTimeout: 5000,
+    teardownTimeout: 3000,
     
     // Mock cleanup settings (ensure test isolation)
     restoreMocks: true,
