@@ -96,7 +96,7 @@ def sgf_to_puzzle_entry(
     batch_hint: str | None = None,
     source: str = "",
 ) -> PuzzleEntry | None:
-    """Convert an SGF content string to a PuzzleEntry for DB-1.
+    """Convert an SGF content string to a PuzzleEntry for yengo-search.db.
 
     Re-parses the SGF to extract level, tags, collections, and complexity
     metadata. Returns None if parsing fails or level cannot be resolved.
@@ -106,7 +106,7 @@ def sgf_to_puzzle_entry(
         content_hash: The puzzle's content hash (filename stem).
         id_maps: Loaded IdMaps for numeric ID resolution.
         output_root: Output directory for batch lookup. If None, batch defaults to "0001".
-        batch_hint: Pre-resolved batch from DB-2. Skips filesystem scan when provided.
+        batch_hint: Pre-resolved batch from yengo-content.db. Skips filesystem scan when provided.
 
     Returns:
         PuzzleEntry or None if metadata cannot be resolved.
@@ -141,7 +141,7 @@ def sgf_to_puzzle_entry(
     quality_level = parse_quality_level(game.yengo_props.quality) or 0
     ac_level = parse_ac_level(game.yengo_props.quality)
 
-    # Determine batch: prefer batch_hint (from DB-2), then filesystem scan
+    # Determine batch: prefer batch_hint (from yengo-content.db), then filesystem scan
     batch = "0001"
     if batch_hint:
         batch = batch_hint
@@ -153,7 +153,7 @@ def sgf_to_puzzle_entry(
                     batch = batch_dir.name
                     break
 
-    # Read content_type from YM pipeline metadata (RC-3: wire ct to DB-1)
+    # Read content_type from YM pipeline metadata (RC-3: wire ct to yengo-search.db)
     from backend.puzzle_manager.core.content_classifier import get_content_type_id
     from backend.puzzle_manager.core.trace_utils import parse_pipeline_meta_extended
     meta = parse_pipeline_meta_extended(game.yengo_props.pipeline_meta)
