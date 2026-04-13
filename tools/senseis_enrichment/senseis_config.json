@@ -1,0 +1,27 @@
+{
+  "collection_slug": "xuanxuan-qijing",
+  "senseis_base_url": "https://senseis.xmp.net",
+  "index_page": "/?XuanxuanQijingProblems",
+  "problem_count": 347,
+  "problem_page_pattern": "/?XuanxuanQijingProblem{N}",
+  "solution_page_pattern": "/?XuanxuanQijingProblem{N}%2FSolution",
+  "local_dir": "external-sources/kisvadim-goproblems/TSUMEGO CLASSIC - Xuan Xuan Qi Jing",
+  "enriched_dir_suffix": "-enriched",
+  "local_filename_pattern": "{N:04d}.sgf",
+  "board_size": 19,
+  "aliases": {
+    "4": "RTGProblem27",
+    "5": "GokyoShumyoSection1Problem75",
+    "28": "RTGProblem38",
+    "48": "HikaruProblem4",
+    "69": "RTGProblem4",
+    "112": "SnapbackProblem17",
+    "165": "HikaruProblem5",
+    "175": "OD1PMay22Problem",
+    "206": "UnderTheStonesProblem9",
+    "269": "UnderTheStonesProblem8"
+  },
+  "rate_limit_seconds": 3.0,
+  "rate_limit_jitter": 1.0,
+  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+}
