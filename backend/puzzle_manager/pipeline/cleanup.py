@@ -146,7 +146,7 @@ def clear_index_state(output_dir: Path, dry_run: bool = False) -> bool:
             logger.debug(f"Deleted: {rel_path(db_version_file)}")
         cleaned = True
 
-    # Remove yengo-content.db (DB-2) if present
+    # Remove yengo-content.db if present
     content_db_file = output_dir / "yengo-content.db"
     if content_db_file.exists():
         if dry_run:
