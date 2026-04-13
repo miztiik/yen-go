@@ -190,7 +190,7 @@ def reconcile_inventory(
 
 
 def rebuild_search_db_from_disk(output_dir: Path | None = None) -> int:
-    """Rebuild search database (DB-1) by scanning published SGF files on disk.
+    """Rebuild yengo-search.db by scanning published SGF files on disk.
 
     Scans all .sgf files, re-parses metadata, and rebuilds yengo-search.db.
     Also rebuilds yengo-content.db to ensure consistency.
@@ -255,7 +255,7 @@ def rebuild_search_db_from_disk(output_dir: Path | None = None) -> int:
                 category=col.get("type"),
             ))
 
-    # Rebuild DB-1 via atomic swap (Issue 2)
+    # Rebuild yengo-search.db via atomic swap (Issue 2)
     db_path = output_dir / "yengo-search.db"
     version_path = output_dir / "db-version.json"
     tmp_db_path = db_path.with_suffix('.db.tmp')
@@ -293,7 +293,7 @@ def rebuild_search_db_from_disk(output_dir: Path | None = None) -> int:
     )
     os.replace(str(tmp_version_path), str(version_path))
 
-    # Rebuild DB-2
+    # Rebuild yengo-content.db
     content_db_path = output_dir / "yengo-content.db"
     if content_db_path.exists():
         content_db_path.unlink()
