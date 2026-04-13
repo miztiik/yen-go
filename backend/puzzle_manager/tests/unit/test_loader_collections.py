@@ -41,7 +41,7 @@ class TestLoadCollections:
     def test_load_collections_all_have_tier(self, loader: ConfigLoader) -> None:
         """Every collection entry must have a tier field."""
         data = loader.load_collections()
-        valid_tiers = {"editorial", "premier", "curated", "community"}
+        valid_tiers = {"editorial", "premier", "curated", "community", "reference"}
         for coll in data["collections"]:
             assert "tier" in coll, f"Collection '{coll['slug']}' missing tier field"
             assert coll["tier"] in valid_tiers, (

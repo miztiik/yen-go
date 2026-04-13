@@ -56,26 +56,26 @@ class TestRebuildSearchDbFromDisk:
     """Tests for rebuild_search_db_from_disk()."""
 
     def test_rebuilds_both_databases(self, sample_output_dir):
-        """Rebuilds DB-1 and DB-2 from SGF files on disk."""
+        """Rebuilds yengo-search.db and yengo-content.db from SGF files on disk."""
         from backend.puzzle_manager.inventory.reconcile import rebuild_search_db_from_disk
 
         count = rebuild_search_db_from_disk(sample_output_dir)
         assert count == 2
 
-        # Verify DB-1 exists and has correct count
-        db1_path = sample_output_dir / "yengo-search.db"
-        assert db1_path.exists()
-        conn = sqlite3.connect(str(db1_path))
+        # Verify yengo-search.db exists and has correct count
+        search_db_path = sample_output_dir / "yengo-search.db"
+        assert search_db_path.exists()
+        conn = sqlite3.connect(str(search_db_path))
         try:
             row = conn.execute("SELECT COUNT(*) FROM puzzles").fetchone()
             assert row[0] == 2
         finally:
             conn.close()
 
-        # Verify DB-2 exists and has correct count
-        db2_path = sample_output_dir / "yengo-content.db"
-        assert db2_path.exists()
-        conn = sqlite3.connect(str(db2_path))
+        # Verify yengo-content.db exists and has correct count
+        content_db_path = sample_output_dir / "yengo-content.db"
+        assert content_db_path.exists()
+        conn = sqlite3.connect(str(content_db_path))
         try:
             row = conn.execute("SELECT COUNT(*) FROM sgf_files").fetchone()
             assert row[0] == 2
@@ -101,15 +101,15 @@ class TestRebuildSearchDbFromDisk:
         """Rebuilds over existing DB files."""
         from backend.puzzle_manager.inventory.reconcile import rebuild_search_db_from_disk
 
-        # Create stale DB-1 with wrong data
-        db1_path = sample_output_dir / "yengo-search.db"
-        db1_path.write_text("stale data")
+        # Create stale yengo-search.db with wrong data
+        search_db_path = sample_output_dir / "yengo-search.db"
+        search_db_path.write_text("stale data")
 
         count = rebuild_search_db_from_disk(sample_output_dir)
         assert count == 2
 
         # Verify it's a valid SQLite DB now
-        conn = sqlite3.connect(str(db1_path))
+        conn = sqlite3.connect(str(search_db_path))
         try:
             row = conn.execute("SELECT COUNT(*) FROM puzzles").fetchone()
             assert row[0] == 2

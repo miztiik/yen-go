@@ -631,6 +631,26 @@ class TestLocalProgress:
                          if "Processing file:" in r.message and r.levelno == logging.DEBUG]
         assert len(debug_messages) >= 1
 
+    def test_configure_log_uses_safe_posix_path(self, adapter, local_collection, caplog):
+        """Test that configure log does not expose absolute local path."""
+        adapter.configure({
+            "path": str(local_collection),
+            "validate": False,
+        })
+
+        with caplog.at_level(logging.INFO):
+            adapter.configure({
+                "path": str(local_collection),
+                "validate": False,
+            })
+
+        configure_logs = [r for r in caplog.records if "Local adapter configured:" in r.message]
+        assert configure_logs, "Expected Local adapter configuration log message"
+
+        message = configure_logs[-1].message
+        assert str(local_collection) not in message
+        assert " from " in message
+
 
 # =============================================================================
 # Edge Cases

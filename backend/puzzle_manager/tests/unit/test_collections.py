@@ -416,12 +416,12 @@ class TestCollectionsConfig:
                 f"Invalid slug format: {c['slug']}"
 
     def test_valid_types(self, collections_data: dict) -> None:
-        valid_types = {"author", "reference", "graded", "technique", "system"}
+        valid_types = {"author", "authored", "book", "reference", "graded", "technique", "system"}
         for c in collections_data["collections"]:
             assert c["type"] in valid_types, f"Invalid type '{c['type']}' for {c['slug']}"
 
     def test_valid_ordering(self, collections_data: dict) -> None:
-        valid_orderings = {"source", "difficulty", "manual"}
+        valid_orderings = {"source", "difficulty", "manual", "sequential"}
         for c in collections_data["collections"]:
             assert c["ordering"] in valid_orderings, f"Invalid ordering '{c['ordering']}' for {c['slug']}"
 

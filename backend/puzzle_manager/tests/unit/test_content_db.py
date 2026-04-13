@@ -1,4 +1,4 @@
-"""Tests for backend.puzzle_manager.core.content_db — DB-2 content database."""
+"""Tests for backend.puzzle_manager.core.content_db — yengo-content.db."""
 
 from __future__ import annotations
 
@@ -6,14 +6,18 @@ import sqlite3
 from pathlib import Path
 
 from backend.puzzle_manager.core.content_db import (
+    FINGERPRINT_VERSION,
     backfill_batch_column,
     build_content_db,
     canonical_position_hash,
+    compute_solution_fingerprint,
     delete_entries,
     extract_position_data,
     read_all_entries,
     vacuum_orphans,
 )
+from backend.puzzle_manager.core.primitives import Color, Point
+from backend.puzzle_manager.core.sgf_parser import SolutionNode, parse_sgf
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -289,7 +293,7 @@ class TestVacuumOrphans:
 
 
 class TestBatchColumn:
-    """Tests for batch column in DB-2 (RC-3)."""
+    """Tests for batch column in yengo-content.db (RC-3)."""
 
     def test_batch_stored_and_retrieved(self, tmp_path: Path) -> None:
         """batch column round-trips through build → read."""
@@ -374,3 +378,161 @@ class TestBatchColumn:
         assert hashes["h2"] == "0001"
         # Old row should have NULL batch
         assert hashes["h1"] is None
+
+
+# ---------------------------------------------------------------------------
+# Solution fingerprint
+# ---------------------------------------------------------------------------
+
+# Linear puzzle: ;B[ds];W[cs];B[ar] (all correct)
+_LINEAR_SGF = (
+    "(;SZ[19]FF[4]GM[1]PL[B]"
+    "AB[bq][cq][dq][eq][fq][br][fr]"
+    "AW[bp][cp][dp][cr][er][hr][bs]"
+    ";B[ds];W[cs];B[ar];W[ap];B[es];W[ao];B[dr])"
+)
+
+# Same moves, different comment
+_LINEAR_SGF_COMMENT = (
+    "(;SZ[19]FF[4]GM[1]PL[B]C[Different comment]"
+    "AB[bq][cq][dq][eq][fq][br][fr]"
+    "AW[bp][cp][dp][cr][er][hr][bs]"
+    ";B[ds];W[cs];B[ar];W[ap];B[es];W[ao];B[dr])"
+)
+
+# Branched puzzle: two first moves (B[ds] correct, B[ab] wrong)
+_BRANCHED_SGF = (
+    "(;SZ[19]FF[4]GM[1]PL[B]"
+    "AB[bq][cq][dq][eq][fq][br][fr]"
+    "AW[bp][cp][dp][cr][er][hr][bs]"
+    "(;B[ds]C[Correct!];W[cs];B[ar])"
+    "(;B[ab]C[Wrong!]))"
+)
+
+# Same branches as _BRANCHED_SGF but reversed order in SGF text
+_BRANCHED_SGF_REVERSED = (
+    "(;SZ[19]FF[4]GM[1]PL[B]"
+    "AB[bq][cq][dq][eq][fq][br][fr]"
+    "AW[bp][cp][dp][cr][er][hr][bs]"
+    "(;B[ab]C[Wrong!])"
+    "(;B[ds]C[Correct!];W[cs];B[ar]))"
+)
+
+# Different solution (same position as _LINEAR_SGF but different first move)
+_DIFFERENT_SOLUTION_SGF = (
+    "(;SZ[19]FF[4]GM[1]PL[B]"
+    "AB[bq][cq][dq][eq][fq][br][fr]"
+    "AW[bp][cp][dp][cr][er][hr][bs]"
+    ";B[ar];W[cs];B[ds])"
+)
+
+
+class TestSolutionFingerprint:
+    """Tests for compute_solution_fingerprint()."""
+
+    def test_deterministic(self) -> None:
+        """Same tree → same fingerprint."""
+        game = parse_sgf(_LINEAR_SGF)
+        fp1 = compute_solution_fingerprint(game.solution_tree)
+        fp2 = compute_solution_fingerprint(game.solution_tree)
+        assert fp1 == fp2
+        assert len(fp1) == 16
+
+    def test_comment_insensitive(self) -> None:
+        """Same moves, different comments → same fingerprint."""
+        game1 = parse_sgf(_LINEAR_SGF)
+        game2 = parse_sgf(_LINEAR_SGF_COMMENT)
+        fp1 = compute_solution_fingerprint(game1.solution_tree)
+        fp2 = compute_solution_fingerprint(game2.solution_tree)
+        assert fp1 == fp2
+
+    def test_branch_order_insensitive(self) -> None:
+        """Branches in different SGF order → same fingerprint."""
+        game1 = parse_sgf(_BRANCHED_SGF)
+        game2 = parse_sgf(_BRANCHED_SGF_REVERSED)
+        fp1 = compute_solution_fingerprint(game1.solution_tree)
+        fp2 = compute_solution_fingerprint(game2.solution_tree)
+        assert fp1 == fp2
+
+    def test_different_solutions_differ(self) -> None:
+        """Same position, different move sequences → different fingerprint."""
+        game1 = parse_sgf(_LINEAR_SGF)
+        game2 = parse_sgf(_DIFFERENT_SOLUTION_SGF)
+        fp1 = compute_solution_fingerprint(game1.solution_tree)
+        fp2 = compute_solution_fingerprint(game2.solution_tree)
+        assert fp1 != fp2
+
+    def test_correct_vs_wrong_differs(self) -> None:
+        """Same move but different correctness marking → different fingerprint."""
+        correct_node = SolutionNode(
+            move=Point.from_sgf("ds"),
+            color=Color.BLACK,
+            is_correct=True,
+        )
+        wrong_node = SolutionNode(
+            move=Point.from_sgf("ds"),
+            color=Color.BLACK,
+            is_correct=False,
+        )
+        root_correct = SolutionNode(children=[correct_node])
+        root_wrong = SolutionNode(children=[wrong_node])
+        fp1 = compute_solution_fingerprint(root_correct)
+        fp2 = compute_solution_fingerprint(root_wrong)
+        assert fp1 != fp2
+
+    def test_empty_tree(self) -> None:
+        """Empty solution tree → deterministic fingerprint (empty string hash)."""
+        root = SolutionNode()
+        fp = compute_solution_fingerprint(root)
+        assert len(fp) == 16
+
+
+class TestFingerprintInContentDb:
+    """Tests for fingerprint columns in yengo-content.db."""
+
+    def test_schema_has_fingerprint_columns(self, tmp_path: Path) -> None:
+        db_path = tmp_path / "test.db"
+        build_content_db({"abc123": _LINEAR_SGF}, db_path)
+
+        conn = sqlite3.connect(str(db_path))
+        try:
+            cols = {row[1] for row in conn.execute("PRAGMA table_info(sgf_files)")}
+            assert "solution_fingerprint" in cols
+            assert "fingerprint_version" in cols
+
+            # Compound index exists
+            indexes = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='index'"
+            ).fetchall()
+            index_names = [i[0] for i in indexes]
+            assert "idx_sgf_pos_sol" in index_names
+        finally:
+            conn.close()
+
+    def test_fingerprint_stored(self, tmp_path: Path) -> None:
+        db_path = tmp_path / "test.db"
+        build_content_db({"abc123": _LINEAR_SGF}, db_path)
+
+        conn = sqlite3.connect(str(db_path))
+        try:
+            row = conn.execute(
+                "SELECT solution_fingerprint, fingerprint_version "
+                "FROM sgf_files WHERE content_hash = ?",
+                ("abc123",),
+            ).fetchone()
+            assert row is not None
+            assert row[0] is not None
+            assert len(row[0]) == 16
+            assert row[1] == FINGERPRINT_VERSION
+        finally:
+            conn.close()
+
+    def test_fingerprint_in_read_all_entries(self, tmp_path: Path) -> None:
+        db_path = tmp_path / "test.db"
+        build_content_db({"abc123": _LINEAR_SGF}, db_path)
+
+        entries = read_all_entries(db_path)
+        assert len(entries) == 1
+        assert "solution_fingerprint" in entries[0]
+        assert "fingerprint_version" in entries[0]
+        assert entries[0]["fingerprint_version"] == FINGERPRINT_VERSION
