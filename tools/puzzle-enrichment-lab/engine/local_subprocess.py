@@ -46,22 +46,29 @@ class LocalEngine:
             logger.warning("Engine already running")
             return
 
-        # P2.2: Fail fast if binary or model doesn't exist
+        # P2.2: Resolve relative paths to absolute before spawning subprocess
+        # (subprocess cwd may differ from the caller's cwd, breaking relative paths)
         from pathlib import Path
-        katago = Path(self.config.katago_path)
+        katago = Path(self.config.katago_path).resolve()
         if not katago.exists():
             raise FileNotFoundError(
                 f"KataGo binary not found: {katago}. "
                 "Download from https://github.com/lightvector/KataGo/releases"
             )
+        self.config.katago_path = str(katago)
         if self.config.model_path:
-            model = Path(self.config.model_path)
+            model = Path(self.config.model_path).resolve()
             if not model.exists():
                 raise FileNotFoundError(
                     f"KataGo model file not found: {model}. "
                     "Run scripts/download_models.py or download from "
                     "https://katagotraining.org/networks/"
                 )
+            self.config.model_path = str(model)
+        if self.config.config_path:
+            config = Path(self.config.config_path).resolve()
+            if config.exists():
+                self.config.config_path = str(config)
 
         cmd = [self.config.katago_path, "analysis"]
         if self.config.model_path:
