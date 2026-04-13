@@ -75,7 +75,7 @@ All puzzle indexes are served as a single **SQLite database** (`yengo-search.db`
 | `yengo-content.db` | Backend only | SGF content + canonical position hash for dedup |
 | `db-version.json` | Both | Version pointer with puzzle count and timestamp |
 
-### DB-1 Schema (Ships to Browser)
+### yengo-search.db Schema (Ships to Browser)
 
 | Table | Purpose |
 |-------|---------|
