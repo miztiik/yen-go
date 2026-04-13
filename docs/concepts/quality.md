@@ -34,7 +34,7 @@ YQ[q:3;rc:2;hc:1;ac:1;qk:4]
 
 ### Fields
 
-| Field | Name             | Description                          | Values                                                       | Writer         | DB-1 Column    |
+| Field | Name             | Description                          | Values                                                       | Writer         | Search DB Column |
 | ----- | ---------------- | ------------------------------------ | ------------------------------------------------------------ | -------------- | -------------- |
 | `q`   | Quality Level    | Overall quality rating               | 1-5 (5=best)                                                 | Both           | `quality`      |
 | `rc`  | Refutation Count | Number of wrong-move branches        | 0+                                                           | Both           | —              |
@@ -42,7 +42,7 @@ YQ[q:3;rc:2;hc:1;ac:1;qk:4]
 | `ac`  | AI Correctness   | AI pipeline processing level         | 0-3 (see below)                                              | Both           | `puzzles.ac`   |
 | `qk`  | Quality-Knowledge | Composite puzzle quality score      | 0-5 integer (see [Signal Formulas](../architecture/tools/katago-enrichment.md#signal-formulas)) | Enrichment lab only | **Not indexed** |
 
-> **Design decision**: `qk` is written to SGF by the enrichment lab but intentionally NOT indexed in DB-1. The signal is a diagnostic quality score used for enrichment validation and calibration. Frontend filtering uses `quality` (q field) for user-facing quality selection. The `qk` score remains available in the SGF for offline analysis and future indexing if needed.
+> **Design decision**: `qk` is written to SGF by the enrichment lab but intentionally NOT indexed in `yengo-search.db`. The signal is a diagnostic quality score used for enrichment validation and calibration. Frontend filtering uses `quality` (q field) for user-facing quality selection. The `qk` score remains available in the SGF for offline analysis and future indexing if needed.
 
 ### AI Correctness (AC) Levels
 
@@ -165,7 +165,7 @@ YX[d:5;r:13;s:24;u:1;w:3;a:2;b:4;t:35]
 
 ### YX Fields
 
-| Field | Name                 | Description                                 | Values                 | Writer              | DB-1 Column         |
+| Field | Name                 | Description                                 | Values                 | Writer              | Search DB Column    |
 | ----- | -------------------- | ------------------------------------------- | ---------------------- | ------------------- | ------------------- |
 | `d`   | Depth                | Moves in main correct line                  | 0+                     | Both                | `cx_depth`          |
 | `r`   | Reading              | Total nodes in solution tree (all branches) | 1+                     | Both                | `cx_refutations`    |
@@ -176,7 +176,7 @@ YX[d:5;r:13;s:24;u:1;w:3;a:2;b:4;t:35]
 | `b`   | Branch count         | Total solution tree branches                | 0+ (optional)          | Enrichment lab only | **Not indexed**     |
 | `t`   | Trap density %       | Percentage of plausible wrong moves         | 0-100 (optional)       | Enrichment lab only | **Not indexed**     |
 
-> **Design decision**: DB-1's `parse_yx()` in `db_builder.py` only unpacks the first 4 fields (d, r, s, u). The extended fields (w, a, b, t) are enrichment-lab-only additions that provide richer complexity data in the SGF file but are not needed for frontend search/filtering. The core 4 fields are sufficient for the browser's puzzle selection queries. Extended fields remain available in the raw SGF for offline analysis, calibration, and future DB-1 schema evolution.
+> **Design decision**: `yengo-search.db`'s `parse_yx()` in `db_builder.py` only unpacks the first 4 fields (d, r, s, u). The extended fields (w, a, b, t) are enrichment-lab-only additions that provide richer complexity data in the SGF file but are not needed for frontend search/filtering. The core 4 fields are sufficient for the browser's puzzle selection queries. Extended fields remain available in the raw SGF for offline analysis, calibration, and future search DB schema evolution.
 
 ### How Each Field Is Computed
 

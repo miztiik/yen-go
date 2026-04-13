@@ -6,7 +6,7 @@
 > - [How-To: Create Adapter](../../how-to/backend/create-adapter.md) — Adapter development guide
 > - [Architecture: Adapters](../../architecture/backend/adapters.md) — Adapter design patterns
 
-**Last Updated**: 2026-02-03
+**Last Updated**: 2026-04-12
 
 ---
 
@@ -224,13 +224,7 @@ Use different `id` values for separate checkpoints:
 
 ## Implementation Notes
 
-- **ID Generation**: Content-based SHA256 hash (16 chars) ensures deduplication
+- **ID Generation**: Adapter `puzzle_id` uses content-based SHA256 (16 chars) for stable ingest filenames
+- **Pipeline dedup rule**: Ingest duplicate detection is position-hash based (`SZ`, `AB`, `AW`, `PL`), not raw SGF-content based
 - **Deterministic Order**: Alphabetical by folder, then by filename
 - **Constitution Compliance**: Build-time only, no runtime backend
-
----
-
-## Related Adapters
-
-- [SanderlandAdapter](./sanderland.md) — Similar folder/checkpoint pattern for Sanderland collection
-- [OGS Adapter](./ogs.md) — API-based adapter with pagination

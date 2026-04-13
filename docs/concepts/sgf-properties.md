@@ -118,7 +118,7 @@ Complexity metrics measuring puzzle difficulty.
 | Example (backend)  | `YX[d:5;r:13;s:24;u:1]`                       |
 | Example (enrichment lab) | `YX[d:5;r:13;s:24;u:1;w:3;a:2;b:4;t:35]` |
 
-| Field | Description          | Values                 | Writer              | DB-1 Column      |
+| Field | Description          | Values                 | Writer              | Search DB Column |
 | ----- | -------------------- | ---------------------- | ------------------- | ---------------- |
 | `d`   | Solution depth       | 0+ moves               | Both                | `cx_depth`       |
 | `r`   | Reading count        | 1+ nodes               | Both                | `cx_refutations` |

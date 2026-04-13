@@ -6,7 +6,7 @@
 > - [Architecture: Adapters](../../architecture/backend/adapters.md) — Design patterns
 > - [Concepts: Puzzle Validation](../../concepts/puzzle-validation.md) — Centralized validation rules
 
-**Last Updated**: 2026-03-09
+**Last Updated**: 2026-04-12
 
 Quick reference for all available puzzle adapters.
 
@@ -38,9 +38,7 @@ Validation rules (configurable per-source):
 
 | Adapter                     | Type        | Resume | Validation | Status | Config Docs                |
 | --------------------------- | ----------- | ------ | ---------- | ------ | -------------------------- |
-| [sanderland](sanderland.md) | GitHub      | ✓      | ✓          | Active | [Reference](sanderland.md) |
 | [kisvadim](kisvadim.md)     | File System | ✗      | ✗          | Active | [Reference](kisvadim.md)   |
-| [travisgk](travisgk.md)     | File System | ✗      | ✗          | Active | [Reference](travisgk.md)   |
 | [local](local.md)           | File System | ✓      | ✓          | Active | [Reference](local.md)      |
 
 ---

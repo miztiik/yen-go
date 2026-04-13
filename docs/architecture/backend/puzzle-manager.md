@@ -111,7 +111,7 @@ backend/puzzle_manager/
 │
 ├── daily/               # Daily challenge generation
 │   ├── _helpers.py      # Shared helpers: seeding, tag/level lookups, config-driven rotation
-│   ├── db_writer.py     # inject_daily_schedule(), prune_daily_window() — write daily rows to DB-1
+│   ├── db_writer.py     # inject_daily_schedule(), prune_daily_window() — write daily rows to yengo-search.db
 │   ├── generator.py     # Main DailyGenerator (writes via db_writer)
 │   ├── standard.py      # Standard daily (30 puzzles, config-driven levels)
 │   ├── timed.py         # Timed challenge sets

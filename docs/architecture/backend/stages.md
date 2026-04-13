@@ -101,7 +101,7 @@ The hint system generates **pedagogical hints** designed by a 1P professional Go
 **Operations**:
 
 1. **SGF Output** — Write enriched SGF files to flat batch directories
-2. **Database Build** — Build yengo-search.db (DB-1) and yengo-content.db (DB-2) via db_builder/content_db
+2. **Database Build** — Build yengo-search.db and yengo-content.db via db_builder/content_db
 3. **Daily** — Create daily challenge sets
 4. **Inventory** — Update puzzle collection statistics
 
@@ -116,8 +116,8 @@ python -m backend.puzzle_manager run --stage publish
 ```
 yengo-puzzle-collections/
 ├── sgf/{NNNN}/{content_hash}.sgf
-├── yengo-search.db          # DB-1: search/metadata + daily schedule (~500 KB)
-├── yengo-content.db         # DB-2: SGF content + dedup (backend only)
+├── yengo-search.db          # Search/metadata + daily schedule (~500 KB)
+├── yengo-content.db         # SGF content + dedup (backend only)
 ├── db-version.json           # Version pointer
 ```
 

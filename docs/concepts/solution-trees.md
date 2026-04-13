@@ -3,10 +3,10 @@
 > **See also**:
 >
 > - [How-To: Create Adapter](../how-to/backend/create-adapter.md) — Handling move alternation
-> - [Reference: Sanderland Adapter](../reference/adapters/sanderland.md) — Miai handling example
+> - [Concepts: SQLite Index Architecture](./sqlite-index-architecture.md) — Position-hash dedup context
 > - [Architecture: SGF Parsing](../architecture/backend/sgf-parsing.md) — Parser design
 
-**Last Updated**: 2026-02-05
+**Last Updated**: 2026-04-12
 
 Understanding how Go puzzle solutions are represented as tree structures in SGF format.
 

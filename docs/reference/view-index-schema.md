@@ -6,12 +6,12 @@
 
 ## Overview
 
-All puzzle indexes are served as a SQLite database (`yengo-search.db`, DB-1) loaded into the browser via sql.js WASM. The backend produces two databases:
+All puzzle indexes are served as a SQLite database (`yengo-search.db`) loaded into the browser via sql.js WASM. The backend produces two databases:
 
 | Database | Scope | Purpose |
 |----------|-------|---------|
-| `yengo-search.db` (DB-1) | Frontend (browser) | Search/metadata index, ~500 KB for 9K puzzles |
-| `yengo-content.db` (DB-2) | Backend only | SGF content + canonical position hash for dedup |
+| `yengo-search.db` | Frontend (browser) | Search/metadata index, ~500 KB for 9K puzzles |
+| `yengo-content.db` | Backend only | SGF content + canonical position hash for dedup |
 
 Version tracking is via `db-version.json`:
 
@@ -26,7 +26,7 @@ Version tracking is via `db-version.json`:
 
 ---
 
-## DB-1 Schema (Ships to Browser)
+## yengo-search.db Schema (Ships to Browser)
 
 ### `puzzles` Table
 

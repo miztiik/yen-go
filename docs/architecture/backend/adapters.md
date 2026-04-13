@@ -5,7 +5,7 @@
 > - [How-To: Create Adapter](../../how-to/backend/create-adapter.md) — Step-by-step guide
 > - [Reference: Adapter Configs](../../reference/adapters/) — Per-adapter configuration
 
-**Last Updated**: 2026-03-09
+**Last Updated**: 2026-04-12
 
 Adapters fetch puzzles from various sources into the pipeline.
 
@@ -222,7 +222,7 @@ Understanding how puzzle IDs flow through the pipeline is critical for adapter d
 │ 2. Generates content_hash = SHA256(enriched_content)[:16]                    │
 │ 3. Updates GN property: GN[YENGO-{content_hash}]                             │
 │ 4. Injects YI[run_id] for traceability                                       │
-│ 5. Saves: yengo-puzzle-collections/sgf/{level}/.../batch-NNN/{content_hash}.sgf │
+│ 5. Saves: yengo-puzzle-collections/sgf/{batch}/{content_hash}.sgf            │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -238,8 +238,10 @@ GN:       GN[YENGO-765f38a5196edb79]
 This is critical for:
 
 - **Rollback**: Can locate file by GN property
-- **Deduplication**: Content hash prevents duplicates
+- **Publish identity**: Content hash maps GN and filename
 - **Frontend**: Can construct URL from GN value
+
+Ingest duplicate detection is separate and position-hash based (`SZ`, `AB`, `AW`, `PL`) with source-aware bypass for cross-source matches.
 
 ### Adapter Responsibility
 

@@ -286,7 +286,7 @@ python -m backend.puzzle_manager publish-log search --source sanderland
 
 ### daily
 
-Generate daily puzzle challenges. Output is written as rows in the `daily_schedule` and `daily_puzzles` tables inside `yengo-search.db` (DB-1).
+Generate daily puzzle challenges. Output is written as rows in the `daily_schedule` and `daily_puzzles` tables inside `yengo-search.db`.
 
 ```bash
 # Generate for today

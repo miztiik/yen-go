@@ -1,6 +1,6 @@
 # SQLite Index Architecture
 
-**Last Updated**: 2026-03-20
+**Last Updated**: 2026-04-13
 
 This document defines the canonical terminology and architecture for the SQLite-based puzzle index system.
 
@@ -12,8 +12,8 @@ All puzzle metadata is served as a single SQLite database (`yengo-search.db`) lo
 
 | Term | Definition | Example |
 | --- | --- | --- |
-| **DB-1 (Search DB)** | The frontend-facing SQLite database containing puzzle metadata, tags, collections, and complexity. Ships to the browser. | `yengo-search.db` |
-| **DB-2 (Content DB)** | Backend-only SQLite database storing SGF content and canonical position hashes for deduplication. | `yengo-content.db` |
+| **Search DB** | The frontend-facing SQLite database containing puzzle metadata, tags, collections, and complexity. Ships to the browser. | `yengo-search.db` |
+| **Content DB** | Backend-only SQLite database storing SGF content and canonical position hashes for deduplication. | `yengo-content.db` |
 | **db-version.json** | Version pointer file with puzzle count, timestamp, and schema version. Used by both frontend and backend. | `{"db_version": "20260313-a26defbf", "puzzle_count": 50}` |
 | **content_hash** | 16-character hex SHA256 hash of puzzle content. Serves as puzzle identity (matches GN property and filename). | `765f38a5196edb79` |
 | **batch** | Directory bucket for SGF files (e.g., "0001"). Combined with content_hash for path reconstruction. | `0001` |
@@ -22,7 +22,39 @@ All puzzle metadata is served as a single SQLite database (`yengo-search.db`) lo
 | **collection_id** | Numeric ID for collections. Maps to collection slugs via `config/collections.json`. | `6` (cho-elementary) |
 | **FTS5** | SQLite Full-Text Search extension used for collection name/slug search. | `collections_fts` table |
 
-## Database Schema (DB-1)
+## Duplicate Detection Semantics (Ingest)
+
+> **Canonical reference**: See [Duplicate Detection & Hashing](dedup-hashing.md) for the full three-hash system, algorithms, worked examples, decision matrix, and collision event logging.
+
+Duplicate detection runs during ingest against `yengo-content.db` using a
+two-phase check:
+
+1. **Position hash gate** — `canonical_position_hash()` computes
+   `SHA256("SZ{n}:B[sorted_ab]:W[sorted_aw]:PL[player]")[:16]` from board setup
+   only (stones + size + player to move). No solution tree, comments, or metadata.
+
+2. **Solution fingerprint comparison** — when a position collision is found from
+   the same source, `compute_solution_fingerprint()` compares the moves-only
+   serialization of the solution tree (comment/whitespace insensitive, branch-order
+   insensitive). Same fingerprint → reject as true duplicate. Different fingerprint
+   → allow as variant.
+
+### Decision Summary
+
+| Position | Source | Fingerprint | Result |
+|---|---|---|---|
+| NO MATCH | — | — | Allow |
+| MATCH | Different | — | Allow (cross-source bypass) |
+| MATCH | Same | MATCH | Reject (true duplicate) |
+| MATCH | Same | DIFFER | Allow (variant preserved) |
+
+### Content Hash (Publish Identity)
+
+A separate `content_hash` — `SHA256(full_sgf_text)[:16]` — is computed at publish
+and used for filenames (`{hash}.sgf`) and the `GN[YENGO-{hash}]` property. This is
+not involved in dedup; it is purely for published puzzle identity.
+
+## Database Schema (yengo-search.db)
 
 ### `puzzles` Table
 
@@ -167,7 +199,7 @@ Example: `content_hash = "765f38a5196edb79"`, `batch = "0001"` → `sgf/0001/765
 
 ## Incremental Publish
 
-Each pipeline run reads `yengo-content.db` (DB-2) for existing entries, merges with new entries, and rebuilds `yengo-search.db` (DB-1). The `db-version.json` file is updated atomically with version, puzzle count, and timestamp. Rollback and reconcile operations also rebuild DB-1 from remaining DB-2 entries. Use `vacuum-db` CLI command for maintenance.
+Each pipeline run reads `yengo-content.db` for existing entries, merges with new entries, and rebuilds `yengo-search.db`. The `db-version.json` file is updated atomically with version, puzzle count, and timestamp. Rollback and reconcile operations also rebuild `yengo-search.db` from remaining `yengo-content.db` entries. Use `vacuum-db` CLI command for maintenance.
 
 ### Atomic File Writes
 
@@ -192,7 +224,7 @@ The frontend stores the current `db_version` in `localStorage` on init. A `check
 | --- | --- | --- |
 | Snapshot | DB version (`db-version.json`) | Single version pointer instead of snapshot directories |
 | Shard (query shard) | SQL query | Replaced by SQL WHERE/JOIN clauses |
-| Manifest | DB-1 schema | Table structure replaces manifest.json |
+| Manifest | yengo-search.db schema | Table structure replaces manifest.json |
 | Shard meta | SQL COUNT/aggregation | Counts computed via SQL, not pre-computed meta files |
 | Active snapshot pointer | `db-version.json` | Version tracking via JSON, not directory pointers |
 | Query planner (frontend) | `puzzleQueryService` | SQL queries via sql.js |

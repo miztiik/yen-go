@@ -6,90 +6,125 @@
 > - [How-To: Create Adapter](./create-adapter.md) — Adapter development
 > - [Architecture: Adapter Design](../../architecture/backend/adapter-design-standards.md) — Adapter patterns
 
-**Last Updated**: 2026-03-24
-
-> ⚠️ **FUTURE FEATURE** - This guide describes planned functionality not yet implemented.
+**Last Updated**: 2026-07-11
 
 ---
 
 ## Overview
 
-PDF-to-SGF import enables importing Go/Baduk tsumego puzzles from PDF books by:
-1. Extracting page images from PDF files
-2. Detecting Go board images on each page
-3. Using computer vision to recognize stone positions
-4. Matching problems with their solutions
-5. Converting recognized positions to SGF format
+The `tools/pdf_to_sgf` tool imports Go/Baduk tsumego puzzles from PDF books by:
+
+1. Extracting page images from PDF files (embedded or rendered)
+2. Detecting Go board regions on each page via connected-component analysis
+3. Recognizing stone positions with OpenCV (grid voting + multi-blur classification)
+4. Matching problems with their answer-key solutions via Jaccard similarity
+5. Generating SGF files with initial stones and solution moves
+
+**Requirements**: Python 3.11+, OpenCV (`cv2`), PyMuPDF (`fitz`), Pillow, NumPy.
 
 ---
 
-## When Implemented
+## Quick Start
 
-### Usage (Planned)
+### Preview PDF structure
 
 ```bash
-# Import single PDF
-yengo-pm pdf-import --url https://example.com/book.pdf
+# See how many boards are detected per page
+python -m tools.pdf_to_sgf preview --pdf path/to/book.pdf
 
-# Import local file
-yengo-pm pdf-import --file ./books/cho-elementary.pdf
-
-# Batch import from manifest
-yengo-pm pdf-import --manifest ./books/manifest.json
+# Limit to specific pages
+python -m tools.pdf_to_sgf preview --pdf path/to/book.pdf --pages 3-5
 ```
 
-### Architecture (Planned)
+### Extract and recognize boards
 
+```bash
+# Extract boards, show grid/stone counts, save crops
+python -m tools.pdf_to_sgf extract --pdf book.pdf --output-dir ./crops/
+
+# Use PDF preset for scanned/low-contrast images
+python -m tools.pdf_to_sgf extract --pdf book.pdf --preset pdf
+
+# Verbose output (prints full board grids)
+python -m tools.pdf_to_sgf extract --pdf book.pdf -v
 ```
+
+### Convert to SGF
+
+```bash
+# Problem PDF + answer key PDF → matched SGF files
+python -m tools.pdf_to_sgf convert \
+  --pdf problems.pdf \
+  --key answers.pdf \
+  --output-dir ./sgf_output/
+
+# Problem PDF only (no solution tree)
+python -m tools.pdf_to_sgf convert \
+  --pdf problems.pdf \
+  --output-dir ./sgf_output/
+
+# Limit to a page range
+python -m tools.pdf_to_sgf convert \
+  --pdf problems.pdf \
+  --key answers.pdf \
+  --output-dir ./sgf_output/ \
+  --pages 3-10
+```
+
+---
+
+## Architecture
+
+```text
 PDF → Extract Pages → Detect Boards → Recognize Stones → Match Solutions → Generate SGF
+         (fitz)       (OpenCV CC)     (image_to_board)    (Jaccard sim)     (SGFBuilder)
 ```
 
-**8-Stage Pipeline**:
-1. **PDF Fetch** - Download or read local PDF
-2. **Page Extract** - Convert pages to 200 DPI images
-3. **Board Detect** - Find Go board regions using OpenCV
-4. **Stone Recognize** - Detect black/white stones
-5. **OCR/ID** - Extract problem numbers
-6. **Problem-Solution Match** - Pair problems with solutions
-7. **SGF Generate** - Create valid SGF files
-8. **Publish** - Send to puzzle pipeline
+### Modules
+
+| Module              | Purpose                                       |
+| ------------------- | --------------------------------------------- |
+| `pdf_extractor.py`  | PDF → page images (embedded preferred, render fallback) |
+| `board_detector.py` | Page image → board region crops (binarize + CC analysis) |
+| `problem_matcher.py` | Problem-answer matching + solution extraction |
+| `__main__.py`       | CLI tool: `extract`, `convert`, `preview`     |
+
+### Recognition Presets
+
+| Preset    | When to use                                  |
+| --------- | -------------------------------------------- |
+| `default` | Computer-generated PDFs (clean lines)        |
+| `pdf`     | Scanned or low-contrast PDFs (CLAHE enabled) |
+| `scan`    | Physical book scans with uneven lighting     |
 
 ---
 
-## Technical Requirements
+## How Problem-Answer Matching Works
 
-### Libraries (Planned)
+1. All boards from the problem PDF and answer-key PDF are detected and recognized
+2. Stone positions are extracted as sets of `(row, col)` coordinates
+3. Each answer board is matched to the problem board with the highest Jaccard similarity
+4. Solution moves = stones in answer that aren't in the problem
+5. Fallback: if similarity matching fails but board counts are equal, boards are paired by order
 
-| Component | Library | Purpose |
-|-----------|---------|---------|
-| PDF to Images | pdf2image (poppler) | Extract page images |
-| Board Detection | skolchin/gbr + OpenCV | Find board regions |
-| Stone Recognition | gbr + Hough Circles | Detect stone positions |
-| OCR | pytesseract | Read problem numbers |
-| SGF Generation | sgfmill | Create SGF files |
-
-### Accuracy Targets
-
-- Stone recognition: >95% on computer-rendered images
-- Stone recognition: >85% on scanned books
-- Problem-solution matching: >90% when numbering visible
-- Valid SGF output: 80% pass validation without manual correction
+**Minimum similarity threshold**: 0.3 (configurable in code).
 
 ---
 
-## Related Specs
+## Limitations
 
-- [spec-009](../../specs/009-pdf-to-sgf-import/spec.md) - Full specification
-- This is a "Category C" source (high effort) per the External Resources Import spec
+- Grid detection depends on visible grid lines; heavily obscured boards may fail
+- Stone color classification can struggle with unusual PDF rendering
+- Digit detection (for numbered solution moves) is available but not yet integrated into move ordering
+- Partial boards (corner-only diagrams) are supported but may not cover the full 19×19 range
 
 ---
 
-## Current Alternatives
+## Testing
 
-Until PDF import is implemented, use these alternatives:
+```bash
+# Run all PDF pipeline tests
+pytest tools/pdf_to_sgf/tests/ -q --no-header --tb=short
+```
 
-1. **Pre-converted Collections** - Use sources like `travisgk/tsumego-pdf` which have already extracted PDFs
-2. **Manual Conversion** - Use EidoGo or similar to manually create SGF from PDF images
-3. **JSON Sources** - Import from `sanderland/tsumego` which provides JSON format
-
-See [reference/puzzle-sources.md](../reference/puzzle-sources.md) for available pre-converted sources.
+Tests require sample PDFs in `tools/pdf_to_sgf/_test_samples/`. These are not tracked in git. The test suite skips gracefully if samples are absent.

@@ -56,7 +56,7 @@ The CTA at the bottom identifies your weakest techniques and launches a targeted
 
 ## Data Sources
 
-All data comes from existing localStorage progress records cross-referenced with the SQLite puzzle index (DB-1). No new data collection, no network requests beyond initial DB load.
+All data comes from existing localStorage progress records cross-referenced with the SQLite puzzle index (`yengo-search.db`). No new data collection, no network requests beyond initial DB load.
 
 > **See also**:
 >

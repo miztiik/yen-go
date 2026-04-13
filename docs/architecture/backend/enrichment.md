@@ -199,7 +199,7 @@ Quality score factors: depth, refutation count, teaching comments, source qualit
 **Configuration**: [`config/content-types.json`](../../../config/content-types.json)  
 **Schema**: [`config/schemas/content-types.schema.json`](../../../config/schemas/content-types.schema.json)
 
-Content type classifies puzzles into three categories stored in the `content_type` column of DB-1.
+Content type classifies puzzles into three categories stored in the `content_type` column of `yengo-search.db`.
 All parameters — type IDs, thresholds, teaching patterns — are loaded from `config/content-types.json` (single source of truth, no hardcoded fallbacks).
 
 | Value | Slug | Description | Signal |
@@ -225,7 +225,7 @@ The classifier uses **fail-fast loading** — if `config/content-types.json` is 
 
 ### Pipeline Wiring
 
-Content-type classification is implemented in the **analyze** stage via `classify_content_type()`. The result is stored in the `YM` pipeline metadata property as `ct` (e.g., `YM[{"t":"...","ct":1}]`). During **publish**, the `ct` value is read from `YM` and written to DB-1's `content_type` column. If no `ct` is present in `YM`, the default is `practice` (loaded from config).
+Content-type classification is implemented in the **analyze** stage via `classify_content_type()`. The result is stored in the `YM` pipeline metadata property as `ct` (e.g., `YM[{"t":"...","ct":1}]`). During **publish**, the `ct` value is read from `YM` and written to `yengo-search.db`'s `content_type` column. If no `ct` is present in `YM`, the default is `practice` (loaded from config).
 
 > **See also**:
 >

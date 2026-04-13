@@ -71,7 +71,7 @@ yengo-puzzle-collections/
 └── db-version.json
 ```
 
-Daily generation writes schedule and puzzle rows directly into `yengo-search.db` (DB-1). CI commits `yengo-search.db` + `db-version.json`.
+Daily generation writes schedule and puzzle rows directly into `yengo-search.db`. CI commits `yengo-search.db` + `db-version.json`.
 
 ### Manual Trigger
 

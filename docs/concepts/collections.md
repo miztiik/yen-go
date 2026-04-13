@@ -259,7 +259,7 @@ YL[ko-problems,tesuji-training]
 
 ## Database Indexes
 
-Collection data is stored in the `puzzle_collections` table of `yengo-search.db` (DB-1). Each row links a `content_hash` to a `collection_id` with an optional `sequence_number`. See [Numeric ID Scheme](numeric-id-scheme.md) for how IDs map to slugs.
+Collection data is stored in the `puzzle_collections` table of `yengo-search.db`. Each row links a `content_hash` to a `collection_id` with an optional `sequence_number`. See [Numeric ID Scheme](numeric-id-scheme.md) for how IDs map to slugs.
 
 ### Query Example
 

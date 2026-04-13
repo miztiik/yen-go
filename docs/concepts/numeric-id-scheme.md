@@ -92,8 +92,8 @@ Downstream code works with decoded domain types only — numeric IDs never leak 
 
 ## Backend ID Resolution
 
-- **`backend/puzzle_manager/core/id_maps.py`**: The `IdMaps` class loads ID mappings from config files at pipeline startup. Used by the publish stage to write numeric IDs into DB-1 entries and by enrichment to assign numeric IDs during classification. Methods: `level_slug_to_id()`, `tag_slug_to_id()`, `collection_slug_to_id()` and reverse lookups.
-- **Database keys**: DB-1 (`yengo-search.db`) uses numeric IDs in all tables (`level_id`, `tag_id`, `collection_id`). DB-2 (`yengo-content.db`) uses `content_hash` as primary key with a `batch` column for path reconstruction.
+- **`backend/puzzle_manager/core/id_maps.py`**: The `IdMaps` class loads ID mappings from config files at pipeline startup. Used by the publish stage to write numeric IDs into `yengo-search.db` entries and by enrichment to assign numeric IDs during classification. Methods: `level_slug_to_id()`, `tag_slug_to_id()`, `collection_slug_to_id()` and reverse lookups.
+- **Database keys**: `yengo-search.db` uses numeric IDs in all tables (`level_id`, `tag_id`, `collection_id`). `yengo-content.db` uses `content_hash` as primary key with a `batch` column for path reconstruction.
 
 ## Database Query Layer
 

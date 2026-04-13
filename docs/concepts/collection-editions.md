@@ -1,6 +1,6 @@
 # Collection Editions
 
-**Last Updated**: 2026-03-30
+**Last Updated**: 2026-04-13
 
 ---
 
@@ -8,9 +8,14 @@
 
 Two problems occur when multiple sources contribute puzzles to the same collection:
 
-### Problem 1: Content Loss at Ingest
+### Problem 1: Same-Source Variant Loss at Ingest (Resolved)
 
-The dedup checker rejects any puzzle whose board position already exists in the content database — even from a different source with richer annotations. The second source's version is silently discarded.
+Ingest dedup now uses a two-phase check: position hash gate followed by solution
+fingerprint comparison. Same-source puzzles with the same board position but
+**different solution trees** are allowed through as variants. Only true duplicates
+(same position + same source + same fingerprint) are rejected.
+
+> **See also**: [Duplicate Detection & Hashing](dedup-hashing.md) — full algorithm, decision matrix, and collision event logging.
 
 ### Problem 2: Interleaved Ordering at Publish
 
@@ -37,7 +42,9 @@ Collections with 2+ distinct sources get edition sub-collections.
 
 ### Cross-Source Dedup Bypass
 
-`_check_dedup()` in `ingest.py` now accepts a `source_id` kwarg. Same-source duplicates are still rejected, but cross-source duplicates (same position, different source) are allowed through.
+`_check_dedup()` in `ingest.py` uses source-aware, fingerprint-aware dedup. Same-source true duplicates (same position + same fingerprint) are rejected. Same-source variants (different fingerprint) and cross-source duplicates are allowed through.
+
+> **See also**: [Duplicate Detection & Hashing](dedup-hashing.md) — complete decision matrix.
 
 ## Edition Sub-Collections in `yengo-search.db`
 
@@ -82,6 +89,7 @@ Edition sub-collections are hidden from browse/search queries via `json_extract(
 - **Legacy entries**: Pre-existing entries without `collection_slug` (NULL) are excluded from collision detection.
 
 > **See also**:
+>
 > - [SQLite Index Architecture](sqlite-index-architecture.md) — Edition rows in collections table
 > - [How-To: CLI Reference](../how-to/backend/cli-reference.md) — Pipeline commands
 > - [Architecture: Pipeline](../architecture/backend/pipeline.md) — 3-stage pipeline

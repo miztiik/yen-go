@@ -190,12 +190,12 @@ Rolls back a specific pipeline run, removing its published puzzles from disk and
 
 ### Database-Based Rebuild
 
-Rollback deletes rolled-back entries from `yengo-content.db` (DB-2), then rebuilds `yengo-search.db` (DB-1) from remaining DB-2 entries. The `vacuum-db` CLI command can be used to clean orphaned entries and rebuild the search index.
+Rollback deletes rolled-back entries from `yengo-content.db`, then rebuilds `yengo-search.db` from remaining content DB entries. The `vacuum-db` CLI command can be used to clean orphaned entries and rebuild the search index.
 
 The rebuild is O(total_entries) but runs infrequently and is simple/correct:
 
-1. Delete rolled-back entries from `yengo-content.db` (DB-2)
-2. Rebuild `yengo-search.db` (DB-1) from remaining DB-2 entries
+1. Delete rolled-back entries from `yengo-content.db`
+2. Rebuild `yengo-search.db` from remaining content DB entries
 3. Update `db-version.json` atomically
 
 If all puzzles are deleted, `db-version.json` is updated to reflect zero puzzles.

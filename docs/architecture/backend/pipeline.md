@@ -180,7 +180,7 @@ to reduce data loss window on crash. Configurable via `BatchConfig.flush_interva
 
 1. **Orphan Recovery** — Recover entries from crashed previous run (automatic, O(1) detect)
 2. **SGF Output** — Write enriched SGF files to batch directories (write-ahead logged)
-3. **Database Build** — Incrementally build SQLite databases: merge existing DB-2 entries with new entries to rebuild `yengo-search.db` (DB-1), and append new SGF content to `yengo-content.db` (DB-2) via `db_builder` and `content_db`
+3. **Database Build** — Incrementally build SQLite databases: merge existing content DB entries with new entries to rebuild `yengo-search.db`, and append new SGF content to `yengo-content.db` via `db_builder` and `content_db`
 4. **Daily** — Create daily challenge sets
 5. **Inventory** — Update puzzle collection statistics (single-lock read-modify-write)
 
@@ -199,8 +199,8 @@ yengo-puzzle-collections/
 │   ├── {NNNN}/                       # Flat batch dirs (no level nesting)
 │   │   └── {content_hash}.sgf
 │   └── ...
-├── yengo-search.db                   # DB-1: Search/metadata index (~500 KB)
-├── yengo-content.db                  # DB-2: SGF content + canonical position hash
+├── yengo-search.db                   # Search/metadata index (~500 KB)
+├── yengo-content.db                  # SGF content + canonical position hash
 ├── db-version.json                   # Version pointer (puzzle count, timestamp)
 └── views/
     └── daily/{YYYY}/{MM}/            # Daily challenges
@@ -226,8 +226,8 @@ staging/analyzed/             yengo-puzzle-collections/
 └── {level}/             ──▶  ├── sgf/
     └── *.json                │   └── {NNNN}/
                               │       └── *.sgf
-                              ├── yengo-search.db (DB-1)
-                              ├── yengo-content.db (DB-2)
+                              ├── yengo-search.db
+                              ├── yengo-content.db
                               ├── db-version.json
                               └── .puzzle-inventory-state/
                                   ├── inventory.json
@@ -328,7 +328,7 @@ PL[B]
 ;B[cb];W[da];B[db];W[ea])
 ```
 
-**SQLite Database** (search index, DB-1 schema):
+**SQLite Database** (search index, yengo-search.db schema):
 
 | Table | Purpose |
 |-------|---------|

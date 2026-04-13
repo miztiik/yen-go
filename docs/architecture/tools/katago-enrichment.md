@@ -787,18 +787,18 @@ Two algorithmic gates run BEFORE each `engine.query()` call in `_build_tree_recu
 > - [Concepts: Teaching Comments](../../concepts/teaching-comments.md) — full template reference
 > - Initiative: `TODO/initiatives/20260315-2000-feature-refutation-quality/30-plan.md` §PI-10
 
-### D74: Signal Persistence & DB-1 Indexing Strategy (2026-03-24)
+### D74: Signal Persistence & Search DB Indexing Strategy (2026-03-24)
 
-**Context:** The enrichment lab computes 14 analysis signals per puzzle. A deliberate architectural decision governs which signals persist to SGF, which reach DB-1, and which remain diagnostic-only.
+**Context:** The enrichment lab computes 14 analysis signals per puzzle. A deliberate architectural decision governs which signals persist to SGF, which reach `yengo-search.db`, and which remain diagnostic-only.
 
-**Principle: SGF is the canonical rich record; DB-1 is a lightweight search index.**
+**Principle: SGF is the canonical rich record; `yengo-search.db` is a lightweight search index.**
 
 #### Signal Persistence Tiers
 
 | Tier | Flow | Signals | Rationale |
 |------|------|---------|-----------|
-| **Tier 1: SGF → DB-1** | Signal → SGF property → `parse_yx()`/`parse_yq()` → DB column | `ac_level` (YQ ac → `puzzles.ac`), `depth` (YX d → `cx_depth`), `reading` (YX r → `cx_refutations`), `stones` (YX s → `cx_solution_len`), `unique` (YX u → `cx_unique_resp`) | Needed for frontend search queries (filter by difficulty, complexity, AC level) |
-| **Tier 2: SGF only** | Signal → SGF property (not indexed in DB-1) | `trap_density` (YX t), `wrong_count` (YX w), `avg_refutation_depth` (YX a), `branch_count` (YX b), `qk` (YQ qk), `seki_detected` (via YT tag), `ko_type` (via YK from backend) | Available in raw SGF for offline analysis, calibration, and future indexing. Not needed for current frontend queries. |
+| **Tier 1: SGF → search DB** | Signal → SGF property → `parse_yx()`/`parse_yq()` → DB column | `ac_level` (YQ ac → `puzzles.ac`), `depth` (YX d → `cx_depth`), `reading` (YX r → `cx_refutations`), `stones` (YX s → `cx_solution_len`), `unique` (YX u → `cx_unique_resp`) | Needed for frontend search queries (filter by difficulty, complexity, AC level) |
+| **Tier 2: SGF only** | Signal → SGF property (not indexed in search DB) | `trap_density` (YX t), `wrong_count` (YX w), `avg_refutation_depth` (YX a), `branch_count` (YX b), `qk` (YQ qk), `seki_detected` (via YT tag), `ko_type` (via YK from backend) | Available in raw SGF for offline analysis, calibration, and future indexing. Not needed for current frontend queries. |
 | **Tier 3: Composite** | Raw value baked into composite score, raw lost | `policy_entropy` (10% of qk), `correct_move_rank` (20% of qk) | Individual raw values are noisy; the composite `qk` preserves the pedagogically relevant signal. |
 | **Tier 4: Diagnostic** | On model only, never reaches SGF | `goal`, `goal_confidence`, `enrichment_quality_level`, `human_solution_confidence`, `ai_solution_validated` | Internal pipeline state for stage flow control and logging. Not useful for puzzle consumers. |
 | **Tier 5: Effect-only** | Struct discarded, boolean effect flows to ac_level | `TreeCompletenessMetrics` | `is_complete()` determines ac=2 vs ac=1. The struct's per-field data is not independently useful in SGF. |
@@ -810,7 +810,7 @@ Two algorithmic gates run BEFORE each `engine.query()` call in `_build_tree_recu
 | Backend pipeline | `q:N;rc:N;hc:N;ac:N` | `YQ[q:3;rc:2;hc:1;ac:0]` |
 | Enrichment lab | `q:N;rc:N;hc:N;ac:N;qk:N` | `YQ[q:3;rc:2;hc:1;ac:1;qk:4]` |
 
-Backend's `parse_ac_level()` ignores unknown trailing fields, so `qk` is forward-compatible. DB-1 does not index `qk`.
+Backend's `parse_ac_level()` ignores unknown trailing fields, so `qk` is forward-compatible. `yengo-search.db` does not index `qk`.
 
 #### YX Format Divergence
 
@@ -819,13 +819,13 @@ Backend's `parse_ac_level()` ignores unknown trailing fields, so `qk` is forward
 | Backend pipeline (`compute_complexity_metrics()`) | `d:N;r:N;s:N;u:N` | 4 core fields |
 | Enrichment lab (`_build_yx()` in `sgf_enricher.py`) | `d:N;r:N;s:N;u:N;w:N;a:N;b:N;t:N` | 4 core + 4 extended |
 
-DB-1's `parse_yx()` in `db_builder.py` splits on `;` and unpacks positionally: index 0→d, 1→r, 2→s, 3→u. Extended fields at indices 4-7 are silently ignored. This is intentional — extending `parse_yx()` to index w/a/b/t would require a DB schema migration and is deferred until frontend needs justify it.
+`yengo-search.db`'s `parse_yx()` in `db_builder.py` splits on `;` and unpacks positionally: index 0→d, 1→r, 2→s, 3→u. Extended fields at indices 4-7 are silently ignored. This is intentional — extending `parse_yx()` to index w/a/b/t would require a DB schema migration and is deferred until frontend needs justify it.
 
 **Decision**: Keep the current format divergence. Both writers produce valid, parseable YQ/YX. The enrichment lab extends the format additively. Consumers that don't understand extended fields safely ignore them. No schema migration needed.
 
 > **See also:**
 >
-> - [Concepts: Quality](../../concepts/quality.md) — YQ/YX field definitions and DB-1 column mapping
+> - [Concepts: Quality](../../concepts/quality.md) — YQ/YX field definitions and search DB column mapping
 > - [Concepts: SGF Properties](../../concepts/sgf-properties.md) — Canonical property reference
 
 ---

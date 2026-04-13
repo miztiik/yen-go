@@ -91,12 +91,12 @@ yengo-puzzle-collections/
 │   ├── 0001/
 │   │   └── {hash}.sgf
 │   └── 0002/
-├── yengo-search.db               # DB-1: Frontend search + daily schedule index
-├── yengo-content.db              # DB-2: Backend content + dedup
+├── yengo-search.db               # Frontend search + daily schedule index
+├── yengo-content.db              # Backend content + dedup
 └── db-version.json               # Version pointer
 ```
 
-Each pipeline publish reads existing entries from `yengo-content.db` (DB-2), merges with new entries, and rebuilds `yengo-search.db` (DB-1). The `db-version.json` file is updated atomically with version, puzzle count, and timestamp. Rollback and reconcile operations also trigger DB-1 rebuild from remaining DB-2 entries.
+Each pipeline publish reads existing entries from `yengo-content.db`, merges with new entries, and rebuilds `yengo-search.db`. The `db-version.json` file is updated atomically with version, puzzle count, and timestamp. Rollback and reconcile operations also trigger a search DB rebuild from remaining content DB entries.
 
 See [SGF Architecture](backend/sgf.md) for format details.
 
