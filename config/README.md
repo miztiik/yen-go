@@ -75,8 +75,8 @@ All config files use **`MAJOR.MINOR`** (2-segment) versioning:
 |`source-quality.schema.json`|`source-quality.json`|
 |`puzzle-validation.schema.json`|`puzzle-validation.json`|
 |`go-tips.schema.json`|`go-tips.json`|
-|`db-search.schema.json`|`yengo-search.db` (DB-1) — frontend SQLite search index table definitions|
-|`db-content.schema.json`|`yengo-content.db` (DB-2) — backend-only content/dedup store table definitions|
+|`db-search.schema.json`|`yengo-search.db` — frontend SQLite search index table definitions|
+|`db-content.schema.json`|`yengo-content.db` — backend-only content/dedup store table definitions|
 |`sgf-properties.schema.json`|YenGo custom SGF properties (authoritative)|
 |`sgf-naming.schema.json`|SGF filename conventions|
 |`puzzle-collection-inventory-schema.json`|`.puzzle-inventory-state/` runtime data|

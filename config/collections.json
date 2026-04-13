@@ -6,6 +6,24 @@
   "last_updated": "2026-04-05",
   "changelog": [
     {
+      "version": "5.6",
+      "date": "2026-04-06",
+      "author": "claude",
+      "changes": "Kaku Kyushin enrichment: added kaku-kyushin-200-tsumego (ID 186) and kaku-kyushin-fighting-strength (ID 187). 351 puzzles total. Fixed cn-en-dictionary 'diagram' translations."
+    },
+    {
+      "version": "5.5",
+      "date": "2026-04-06",
+      "author": "claude",
+      "changes": "Lee Changho enrichment: updated lee-changho-tesuji (ID 45) description with 735 puzzles across 6 volumes. Corrected file count from 311 to 735."
+    },
+    {
+      "version": "5.4",
+      "date": "2026-04-06",
+      "author": "claude",
+      "changes": "Sakata Eio enrichment: added sakata-eio-tesuji (ID 185). 110 tesuji problems across 9 technique chapters."
+    },
+    {
       "version": "5.3",
       "date": "2026-04-05",
       "author": "claude",
@@ -1073,7 +1091,7 @@
     {
       "slug": "lee-changho-tesuji",
       "name": "Lee Changho Tesuji",
-      "description": "Fundamental tesuji problems selected by Lee Changho, emphasizing solid reading and proper technique.",
+      "description": "735 tesuji problems across 6 volumes from the Lee Changho Exquisite Go Tesuji series (李昌镐精讲围棋手筋). Covers fighting, capturing, connecting, splitting, net tactics, life and death, attack, endgame, and more.",
       "curator": "Lee Changho",
       "source": "mixed",
       "type": "author",
@@ -3541,8 +3559,7 @@
       "ordering": "source",
       "tier": "editorial",
       "aliases": [
-        "百万人の詰碁",
-        "tsumego for the millions"
+        "百万人の詰碁"
       ],
       "id": 167
     },
@@ -3798,6 +3815,42 @@
         "手筋大事典"
       ],
       "id": 183
+    },
+    {
+      "slug": "sakata-eio-tesuji",
+      "name": "Sakata Eio Tesuji",
+      "description": "110 tesuji problems by Sakata Eio, organized by technique: hane, sagari, tsuke, oki, kiri, kosumi, kake, tobi, and warikomi.",
+      "curator": "Sakata Eio",
+      "source": "kisvadim-goproblems",
+      "type": "technique",
+      "ordering": "source",
+      "tier": "premier",
+      "aliases": [],
+      "id": 185
+    },
+    {
+      "slug": "kaku-kyushin-200-tsumego",
+      "name": "Kaku Kyushin: 200 Tsumego Problems",
+      "description": "200 tsumego problems by Kaku Kyushin 6p. Flat collection covering a range of life-and-death positions.",
+      "curator": "Kaku Kyushin",
+      "source": "kisvadim-goproblems",
+      "type": "authored",
+      "ordering": "sequential",
+      "tier": "reference",
+      "aliases": [],
+      "id": 186
+    },
+    {
+      "slug": "kaku-kyushin-fighting-strength",
+      "name": "Kaku Kyushin: Increase Your Fighting Strength Ten-fold with Kyushin's Tsumego",
+      "description": "151 tsumego problems by Kaku Kyushin 6p (MYCOM 2006, supervised by Rin Kaiho and O Rissei). Three difficulty classes: C-class (kyu), B-class (dan), A-class (high-dan).",
+      "curator": "Kaku Kyushin",
+      "source": "kisvadim-goproblems",
+      "type": "authored",
+      "ordering": "sequential",
+      "tier": "reference",
+      "aliases": [],
+      "id": 187
     }
   ]
 }

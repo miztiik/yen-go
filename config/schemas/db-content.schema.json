@@ -1,6 +1,6 @@
 {
-  "$comment": "DB-2 schema descriptor for yengo-content.db — backend-only SQLite content store. Source of truth: backend/puzzle_manager/core/content_db.py (_SCHEMA_SQL). Last Updated: 2026-03-14",
-  "title": "yengo-content.db (DB-2) Schema",
+  "$comment": "Schema descriptor for yengo-content.db — backend-only SQLite content store. Source of truth: backend/puzzle_manager/core/content_db.py (_SCHEMA_SQL). Last Updated: 2026-03-14",
+  "title": "yengo-content.db Schema",
   "description": "Backend-only SQLite content store. Holds full SGF text, canonical position hashes for deduplication, and board setup data. Never shipped to browser. Used by the publish stage for incremental builds and dedup detection.",
   "database": "yengo-content.db",
   "scope": "backend",
@@ -9,7 +9,7 @@
       "name": "sgf_files",
       "description": "One row per ingested puzzle. Stores full SGF content and extracted position data for deduplication. The canonical position_hash allows detecting puzzles with identical board setups regardless of source filename or SGF metadata differences.",
       "columns": [
-        { "name": "content_hash",  "type": "TEXT",    "constraints": ["PRIMARY KEY"],             "description": "16-char lowercase hex. SHA-256(sgf_content)[:16]. Matches GN property, SGF filename, and DB-1 puzzles.content_hash." },
+        { "name": "content_hash",  "type": "TEXT",    "constraints": ["PRIMARY KEY"],             "description": "16-char lowercase hex. SHA-256(sgf_content)[:16]. Matches GN property, SGF filename, and yengo-search.db puzzles.content_hash." },,
         { "name": "sgf_content",   "type": "TEXT",    "constraints": ["NOT NULL"],                "description": "Full canonical SGF text as written to yengo-puzzle-collections/sgf/{batch}/{content_hash}.sgf." },
         { "name": "position_hash", "type": "TEXT",    "constraints": [],                          "description": "16-char hex derived from canonical board setup: SHA-256('SZ{n}:B[sorted_ab]:W[sorted_aw]:PL[B|W]')[:16]. NULL if extraction failed. Used for duplicate detection across sources." },
         { "name": "board_size",    "type": "INTEGER", "constraints": ["NOT NULL", "DEFAULT 19"],  "description": "SGF SZ property value. Almost always 19." },
@@ -33,7 +33,7 @@
     "function": "backend.puzzle_manager.core.content_db.canonical_position_hash"
   },
   "see_also": [
-    { "path": "config/schemas/db-search.schema.json", "description": "DB-1 (yengo-search.db) schema — the frontend search index shipped to browser." },
+    { "path": "config/schemas/db-search.schema.json", "description": "yengo-search.db schema — the frontend search index shipped to browser." },
     { "path": "docs/concepts/sqlite-index-architecture.md", "description": "Full architecture narrative, incremental publish flow, and rollback/reconcile operations." },
     { "path": "backend/puzzle_manager/core/content_db.py", "description": "Python implementation: schema DDL, canonical_position_hash(), extract_position_data()." }
   ]
