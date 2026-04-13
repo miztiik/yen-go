@@ -80,14 +80,14 @@
 | Path | Purpose |
 |------|---------|
 | `services/sqliteService.ts` | `init()` fetches yengo-search.db → sql.js WASM, `query<T>()` executes SQL |
-| `services/puzzleQueryService.ts` | SQL queries against DB-1: `getPuzzlesByLevel()`, `getPuzzlesFiltered()`, `getEditionCollections()`, `PuzzleRow`; all collection queries filter `parent_id IS NULL` |
+| `services/puzzleQueryService.ts` | SQL queries against yengo-search.db: `getPuzzlesByLevel()`, `getPuzzlesFiltered()`, `getEditionCollections()`, `PuzzleRow`; all collection queries filter `parent_id IS NULL` |
 | `services/entryDecoder.ts` | `DecodedEntry` type, `decodePuzzleRow()`, `expandPath()` |
 | `services/puzzleLoader.ts` | `fetchSGFContent()` from CDN, `loadPuzzleFromPath()` → `InternalPuzzle` |
 | `services/puzzleLoaders.ts` | `PuzzleSetLoader` interface + `StreamingPuzzleSetLoader`, 5 loaders: `CollectionPuzzleLoader`, `TrainingPuzzleLoader`, `DailyPuzzleLoader`, `RushPuzzleLoader`, `RandomPuzzleLoader` |
 | `services/puzzleAdapter.ts` | `adaptToPagesPuzzle()` — InternalPuzzle → display Puzzle. **`adaptToLegacyPuzzle` removed** |
 | `services/configService.ts` | ID↔slug resolution for levels, tags, quality. Re-exports from `lib/` configs |
 | `services/solutionVerifier.ts` | `verifyMove()` — validates player moves against precomputed SolutionNode tree |
-| `services/collectionService.ts` | Collection metadata queries against DB-1 |
+| `services/collectionService.ts` | Collection metadata queries against yengo-search.db |
 | `services/dailyChallengeService.ts` | Daily challenge loading from `daily_schedule`/`daily_puzzles` tables |
 | `services/dailyQueryService.ts` | SQL queries for daily challenge data |
 | `services/puzzleGameState.ts` | Puzzle solving state machine |
