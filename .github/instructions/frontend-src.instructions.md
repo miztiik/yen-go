@@ -24,6 +24,6 @@ To regenerate from scratch after large changes, use the prompt at `.github/promp
 - DB: `sqliteService.initDb()` fetches `yengo-search.db` → sql.js WASM → in-memory SQL
 - Puzzle load path: `DecodedEntry` → `puzzleLoader.loadPuzzle()` → `sgfToPuzzle()` → `Goban`
 - Goban creates own DOM; `GobanContainer.tsx` mounts it — never pass ref to Goban
-- No writes to DB-1 from browser — SQLite is read-only in frontend
+- No writes to yengo-search.db from browser — SQLite is read-only in frontend
 - All user data: `localStorage` only (via `services/progress/storageOperations.ts`)
 - Tests: `cd frontend && npx vitest run --no-coverage`

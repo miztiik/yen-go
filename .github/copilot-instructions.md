@@ -319,7 +319,7 @@ See `docs/concepts/sqlite-index-architecture.md` for terminology and `docs/conce
 
 ### Daily Challenge Format (v2.2)
 
-Daily challenges are stored in the `daily_schedule` and `daily_puzzles` tables inside `yengo-search.db` (DB-1). No JSON files are written.
+Daily challenges are stored in the `daily_schedule` and `daily_puzzles` tables inside `yengo-search.db`. No JSON files are written.
 
 - **Tables**: `daily_schedule` (one row per date) + `daily_puzzles` (puzzle-per-date-section rows)
 - **Sections**: `standard`, `timed`, `by_tag`
