@@ -28,7 +28,7 @@
 | `paths.py` | `get_output_dir()`, `get_pm_staging_dir()`, `get_pm_state_dir()`, etc. — all path resolution |
 | `exceptions.py` | `PuzzleManagerError`, `SGFParseError`, `AdapterNotFoundError`, `ValidationError` |
 | `publish_log.py` | `PublishLogWriter` / `PublishLogReader` — JSONL append log for rollback |
-| `rollback.py` | `RollbackManager` — remove runs/puzzles from DB-2, rebuild DB-1 |
+| `rollback.py` | `RollbackManager` — remove runs/puzzles from yengo-content.db, rebuild yengo-search.db |
 | `audit.py` | `write_audit_entry()` — append-only audit trail |
 | `core/sgf_builder.py` | `SGFBuilder` — construct SGF from primitives with YenGo properties |
 | `core/sgf_parser.py` | `parse_sgf()` → `SGFGame` + `SolutionNode` tree + `YenGoProperties` |
@@ -59,8 +59,8 @@
 | `core/http.py` | `HttpClient` — SSRF-protected HTTP with retry, rate-limit, backoff |
 | `core/schema.py` | `get_yengo_sgf_version() -> int` — reads from `config/schemas/` |
 | `core/id_maps.py` | `IdMaps` — numeric ID ↔ slug resolution (tags, levels, collections) |
-| `core/db_builder.py` | `build_search_db()` — builds `yengo-search.db` (DB-1) |
-| `core/content_db.py` | `build_content_db()` — builds `yengo-content.db` (DB-2); `_extract_collection_slug()` parses YL[]; `_ensure_collection_slug_column()` migration |
+| `core/db_builder.py` | `build_search_db()` — builds `yengo-search.db` |
+| `core/content_db.py` | `build_content_db()` — builds `yengo-content.db`; `_extract_collection_slug()` parses YL[]; `_ensure_collection_slug_column()` migration |
 | `core/edition_detection.py` | `create_editions(entries, collections, db_path)` — detect multi-source collections, create edition sub-collections; called by publish + rollback |
 | `core/db_models.py` | `PuzzleEntry` (has `source: str`), `CollectionMeta`, `DbVersionInfo` dataclasses |
 | `core/batch_writer.py` | `BatchWriter` — sharded SGF output (sgf/{batch}/) with ≤100 files/dir |
@@ -85,7 +85,7 @@
 | `config/loader.py` | `ConfigLoader` — load `sources.json`, `config/*.json`, `get_active_adapter()` |
 | `inventory/manager.py` | `InventoryManager` — load/rebuild/reconcile `inventory.json` |
 | `daily/generator.py` | `DailyGenerator` — select puzzles by level/tag, write via db_writer |
-| `daily/db_writer.py` | `inject_daily_schedule()`, `prune_daily_window()` — write daily rows to DB-1 |
+| `daily/db_writer.py` | `inject_daily_schedule()`, `prune_daily_window()` — write daily rows to yengo-search.db |
 | `state/manager.py` | `StateManager` — create/load/save run state JSON |
 
 ---
@@ -97,7 +97,7 @@
 | `SGFGame` | `root_properties: dict`, `solution: SolutionNode \| None`, `yengo: YenGoProperties` | Parsed puzzle in memory |
 | `YenGoProperties` | `puzzle_id`, `schema_version`, `level_slug`, `tags`, `hints`, `quality`, `complexity`, `collection`, `ko_context`, `move_order`, `corner`, `refutations`, `pipeline_meta` | All YenGo custom SGF properties |
 | `SolutionNode` | `move: str`, `color: str`, `is_correct: bool`, `comment: str`, `children: list[SolutionNode]` | One node in solution tree |
-| `PuzzleEntry` | `content_hash`, `batch`, `level_id`, `quality`, `content_type`, `cx_depth`, `cx_refutations`, `cx_solution_len`, `cx_unique_resp`, `ac` | DB-1 row for one puzzle |
+| `PuzzleEntry` | `content_hash`, `batch`, `level_id`, `quality`, `content_type`, `cx_depth`, `cx_refutations`, `cx_solution_len`, `cx_unique_resp`, `ac` | yengo-search.db row for one puzzle |
 | `FetchResult` | `puzzle_id: str`, `sgf_text: str`, `source_metadata: dict` | Adapter output for one puzzle |
 | `StageContext` | `config: PipelineConfig`, `adapter: BaseAdapter`, `source_name: str`, `run_id: str`, `staging_dir: Path`, `output_dir: Path` | Shared context threaded through pipeline |
 | `PublishLogEntry` | `run_id`, `puzzle_id (content_hash)`, `source`, `batch`, `timestamp`, `action (publish/rollback)` | Append-only audit trail entry |
@@ -148,8 +148,8 @@ sources.json → get_adapter(name) → BaseAdapter.fetch_all()
   │  • generate_content_hash(sgf_text) → content_hash (16 hex)
   │  • game.yengo.puzzle_id = f"YENGO-{content_hash}" → GN property
   │  • BatchWriter.write(content_hash, sgf_text) → yengo-puzzle-collections/sgf/{batch}/{hash}.sgf
-  │  • Insert PuzzleEntry into DB-2 (yengo-content.db)
-  │  • Rebuild DB-1 (yengo-search.db) from all DB-2 entries
+  │  • Insert PuzzleEntry into yengo-content.db
+  │  • Rebuild yengo-search.db from all content DB entries
   │  • PublishLogWriter.append(entry) → publish-log.jsonl
   │  • atomic_write_json(db-version.json)
   │
@@ -173,14 +173,14 @@ OUTPUT: yengo-puzzle-collections/sgf/{NNNN}/{hash}.sgf
 | `tenacity` | Retry logic in `HttpClient` |
 | `pydantic` | `models/config.py` and all config loading |
 | `argparse` (stdlib) | CLI (`cli.py`) |
-| `sqlite3` (stdlib) | DB-1 and DB-2 builds |
+| `sqlite3` (stdlib) | yengo-search.db and yengo-content.db builds |
 
 ---
 
 ## 6. Known Gotchas
 
 - **Adapter GN rule**: Adapters set `puzzle_id` (any format). Publish stage computes content hash and overwrites GN. An adapter setting `GN[YENGO-...]` will have it overwritten.
-- **Incremental publish**: DB-1 is always rebuilt from all DB-2 entries. Never partially modify DB-1 directly.
+- **Incremental publish**: yengo-search.db is always rebuilt from all yengo-content.db entries. Never partially modify yengo-search.db directly.
 - **`content_hash` == filename == GN suffix**: All three must match. `naming.py:generate_content_hash()` is the single source of truth.
 - **`trace_id` != `puzzle_id`**: `trace_id` is per-puzzle pipeline-run identifier (in `YM[t=...]`). `puzzle_id` is the stable content hash (in `GN`). Use `trace_id` for debugging; use `puzzle_id` for identity.
 - **Checkpoint coupling**: `AdapterCheckpoint.is_done()` uses `puzzle_id` from the adapter, not the content hash. If an adapter changes its puzzle_id format, existing checkpoints won't be recognized.

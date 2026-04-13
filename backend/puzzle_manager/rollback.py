@@ -156,16 +156,16 @@ class RollbackManager:
             if sgf_dir.exists():
                 remove_empty_directories(sgf_dir)
 
-            # 2. Clean DB-2: remove rolled-back entries from content database
+            # 2. Clean yengo-content.db: remove rolled-back entries
             rolled_back_hashes = [
                 e.puzzle_id for e in entries if e.puzzle_id
             ]
             content_db_path = self.output_dir / "yengo-content.db"
             if rolled_back_hashes and content_db_path.exists():
-                db2_deleted = delete_entries(content_db_path, rolled_back_hashes)
-                logger.info("Cleaned %d entries from content DB", db2_deleted)
+                content_deleted = delete_entries(content_db_path, rolled_back_hashes)
+                logger.info("Cleaned %d entries from content DB", content_deleted)
 
-            # 3. Rebuild DB-1: regenerate search database from remaining DB-2 entries
+            # 3. Rebuild yengo-search.db from remaining yengo-content.db entries
             self._rebuild_search_db()
             result.index_rebuilt = True
 
@@ -189,7 +189,7 @@ class RollbackManager:
         return result
 
     def _rebuild_search_db(self) -> None:
-        """Rebuild search database (DB-1) from content database (DB-2) after rollback."""
+        """Rebuild yengo-search.db from yengo-content.db after rollback."""
         try:
             import json
             import os
@@ -206,9 +206,9 @@ class RollbackManager:
             db_path = self.output_dir / "yengo-search.db"
             version_path = self.output_dir / "db-version.json"
 
-            db2_rows = read_all_entries(content_db_path)
-            if not db2_rows:
-                # No entries remain — remove DB-1
+            content_rows = read_all_entries(content_db_path)
+            if not content_rows:
+                # No entries remain — remove search DB
                 if db_path.exists():
                     db_path.unlink()
                 if version_path.exists():
@@ -218,7 +218,7 @@ class RollbackManager:
 
             id_maps = IdMaps.load()
             entries: list[PuzzleEntry] = []
-            for row in db2_rows:
+            for row in content_rows:
                 try:
                     sgf_content = row["sgf_content"]
                     if not sgf_content:
@@ -232,7 +232,7 @@ class RollbackManager:
                     if entry is not None:
                         entries.append(entry)
                 except Exception as e:
-                    logger.debug("Failed to convert DB-2 entry %s: %s", row.get("content_hash", "?"), e)
+                    logger.debug("Failed to convert content DB entry %s: %s", row.get("content_hash", "?"), e)
 
             # Load collections from config
             from backend.puzzle_manager.paths import get_global_config_dir

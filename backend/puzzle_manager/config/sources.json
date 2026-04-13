@@ -1,5 +1,5 @@
 {
-  "active_adapter": "sanderland",
+  "active_adapter": "local",
   "sources": [
     {
       "id": "local-imports",
@@ -28,24 +28,17 @@
       }
     },
     {
-      "id": "sanderland",
-      "name": "sanderland",
-      "adapter": "sanderland",
+      "id": "t-hero",
+      "name": "t-hero",
+      "adapter": "local",
       "config": {
-        "path": "external-sources/sanderland",
+        "path": "external-sources/t-hero/sgf",
         "exclude_folders": [
-          "1a-tsumego-beginner",
-          "1b-tsumego-intermediate",
-          "1c-tsumego-advanced",
-          "1d-hashimoto-utaro-tsumego",
-          "2a-tesuji",
-          "2b-lee-changho-tesuji",
-          "2c-great-tesuji-encyclopedia"
+          "1a-tsumego-beginner"
         ],
         "include_folders": [
-          "1a-tsumego-beginner",
-          "2a-tesuji",
-          "2c-great-tesuji-encyclopedia"
+          "batch-001",
+          "batch-002"
         ]
       }
     },
@@ -55,19 +48,6 @@
       "adapter": "kisvadim",
       "config": {
         "path": "external-sources/kisvadim-goproblems"
-      }
-    },
-    {
-      "id": "travisgk",
-      "name": "TravisGK Go Problems",
-      "adapter": "travisgk",
-      "config": {
-        "base_url": "https://raw.githubusercontent.com/travisgk/go-problems/main",
-        "categories": [
-          "life-death",
-          "tesuji",
-          "joseki"
-        ]
       }
     },
     {
@@ -93,6 +73,21 @@
           "batch-001"
         ],
         "exclude_folders": [],
+        "move_processed_to": null
+      }
+    },
+    {
+      "id": "harada-tsumego",
+      "name": "Minoru Harada",
+      "adapter": "local",
+      "config": {
+        "path": "external-sources/authors/Minoru Harada/sgf",
+        "include_folders": [
+          "batch-001"
+        ],
+        "exclude_folders": [],
+        "resume": true,
+        "validate": true,
         "move_processed_to": null
       }
     }
