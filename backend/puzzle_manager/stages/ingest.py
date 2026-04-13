@@ -10,12 +10,18 @@ for end-to-end observability across pipeline stages.
 import logging
 import sqlite3
 import time
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from backend.puzzle_manager.adapters._base import FetchResult
 from backend.puzzle_manager.adapters._registry import create_adapter
 from backend.puzzle_manager.config.loader import ConfigLoader
-from backend.puzzle_manager.core.content_db import canonical_position_hash, extract_position_data
+from backend.puzzle_manager.core.content_db import (
+    FINGERPRINT_VERSION,
+    canonical_position_hash,
+    compute_solution_fingerprint,
+    extract_position_data,
+)
 from backend.puzzle_manager.core.sgf_builder import SGFBuilder
 from backend.puzzle_manager.core.sgf_parser import parse_sgf
 from backend.puzzle_manager.core.trace_utils import generate_trace_id
@@ -24,6 +30,19 @@ from backend.puzzle_manager.pm_logging import DETAIL, create_trace_logger, to_re
 from backend.puzzle_manager.stages.protocol import StageContext, StageResult
 
 logger = logging.getLogger("ingest")
+
+
+@dataclass
+class DedupResult:
+    """Result of dedup check with collision detail for logging."""
+
+    is_duplicate: bool
+    existing_hash: str | None = None
+    position_hash: str = ""
+    event_type: str = ""
+    solution_fingerprint: str = ""
+    existing_fingerprint: str | None = None
+    existing_source: str | None = None
 
 
 class IngestStage:
@@ -120,30 +139,54 @@ class IngestStage:
                 # Fetch puzzles
                 for result in adapter.fetch(batch_size=batch_size):
                     if result.is_success:
-                        # Dedup check against content DB (DB-2)
+                        # Dedup check against content DB (yengo-content.db)
                         if dedup_conn is not None and result.sgf_content:
-                            dup_hash = self._check_dedup(dedup_conn, result.sgf_content, source_id=source.id)
-                            if dup_hash is not None:
-                                failed += 1
-                                pos_data = extract_position_data(result.sgf_content)
-                                p_hash = canonical_position_hash(
-                                    pos_data["board_size"],  # type: ignore[arg-type]
-                                    pos_data["black_stones"],  # type: ignore[arg-type]
-                                    pos_data["white_stones"],  # type: ignore[arg-type]
-                                    pos_data["first_player"],  # type: ignore[arg-type]
+                            # Compute solution fingerprint for the incoming puzzle
+                            sol_fp = ""
+                            try:
+                                game = parse_sgf(result.sgf_content)
+                                sol_fp = compute_solution_fingerprint(game.solution_tree)
+                            except Exception:
+                                logger.debug("Could not compute solution fingerprint for %s", result.puzzle_id)
+
+                            dedup_result = self._check_dedup(
+                                dedup_conn,
+                                result.sgf_content,
+                                source_id=source.id,
+                                solution_fingerprint=sol_fp,
+                            )
+
+                            # Log all position collisions (not no_collision — too noisy)
+                            if dedup_result.event_type != "no_collision":
+                                logger.info(
+                                    "Dedup %s: puzzle=%s position_hash=%s existing=%s",
+                                    dedup_result.event_type, result.puzzle_id,
+                                    dedup_result.position_hash, dedup_result.existing_hash,
+                                    extra={
+                                        "action": "dedup_collision",
+                                        "event_type": dedup_result.event_type,
+                                        "puzzle_id": result.puzzle_id,
+                                        "position_hash": dedup_result.position_hash,
+                                        "solution_fingerprint": dedup_result.solution_fingerprint,
+                                        "existing_hash": dedup_result.existing_hash,
+                                        "existing_fingerprint": dedup_result.existing_fingerprint,
+                                        "existing_source": dedup_result.existing_source,
+                                        "source_id": source.id,
+                                    },
                                 )
+                                rejection_reasons[dedup_result.event_type] = (
+                                    rejection_reasons.get(dedup_result.event_type, 0) + 1
+                                )
+
+                            if dedup_result.is_duplicate:
+                                failed += 1
                                 dup_error = (
-                                    f"duplicate_of:{dup_hash} "
-                                    f"position_hash:{p_hash}"
+                                    f"duplicate_of:{dedup_result.existing_hash} "
+                                    f"position_hash:{dedup_result.position_hash}"
                                 )
                                 errors.append(
                                     f"{result.puzzle_id}: {dup_error}"
                                 )
-                                logger.warning(
-                                    "Duplicate rejected: %s — position_hash=%s matches existing puzzle %s",
-                                    result.puzzle_id, p_hash, dup_hash,
-                                )
-                                rejection_reasons["duplicate_position"] = rejection_reasons.get("duplicate_position", 0) + 1
                                 # Write duplicate SGF to failed directory for audit trail
                                 if result.sgf_content:
                                     dup_failed_path = failed_dir / f"dup_{result.puzzle_id}.sgf"
@@ -259,12 +302,21 @@ class IngestStage:
         )
 
     @staticmethod
-    def _check_dedup(conn: sqlite3.Connection, sgf_content: str, *, source_id: str) -> str | None:
+    def _check_dedup(
+        conn: sqlite3.Connection,
+        sgf_content: str,
+        *,
+        source_id: str,
+        solution_fingerprint: str,
+        fingerprint_version: int = FINGERPRINT_VERSION,
+    ) -> DedupResult:
         """Check if a puzzle's position already exists in the content DB.
 
-        Returns the existing content_hash if a same-source duplicate is found,
-        else None. Cross-source duplicates (same position, different source) are
-        allowed through to support collection editions.
+        Uses a two-phase check:
+        1. Position hash collision gate (board setup identity)
+        2. Solution fingerprint comparison when same-source collision found
+
+        Returns a DedupResult with event_type for structured logging.
         """
         pos = extract_position_data(sgf_content)
         p_hash = canonical_position_hash(
@@ -273,17 +325,59 @@ class IngestStage:
             pos["white_stones"],  # type: ignore[arg-type]
             pos["first_player"],  # type: ignore[arg-type]
         )
+
         rows = conn.execute(
-            "SELECT content_hash, source FROM sgf_files WHERE position_hash = ?",
+            "SELECT content_hash, source, solution_fingerprint, fingerprint_version "
+            "FROM sgf_files WHERE position_hash = ?",
             (p_hash,),
         ).fetchall()
+
         if not rows:
-            return None
-        for existing_hash, existing_source in rows:
-            if existing_source == source_id:
-                return existing_hash  # Same source duplicate → reject
-        # All matches are from different sources → allow through
-        return None
+            return DedupResult(
+                is_duplicate=False,
+                position_hash=p_hash,
+                event_type="no_collision",
+                solution_fingerprint=solution_fingerprint,
+            )
+
+        for existing_hash, existing_source, existing_fp, existing_fv in rows:
+            if existing_source != source_id:
+                continue  # Cross-source → skip (allow)
+            # Same source + same position → check fingerprint
+            if existing_fv != fingerprint_version:
+                continue  # Version mismatch → treat as non-match (allow)
+            if existing_fp == solution_fingerprint:
+                return DedupResult(
+                    is_duplicate=True,
+                    existing_hash=existing_hash,
+                    position_hash=p_hash,
+                    event_type="true_duplicate",
+                    solution_fingerprint=solution_fingerprint,
+                    existing_fingerprint=existing_fp,
+                    existing_source=existing_source,
+                )
+
+        # Position collision(s) found but no true duplicate
+        has_cross_source = any(s != source_id for _, s, _, _ in rows)
+        has_same_source = any(s == source_id for _, s, _, _ in rows)
+
+        if has_same_source:
+            # Same source but different fingerprint → variant
+            event_type = "variant_allowed"
+        elif has_cross_source:
+            event_type = "cross_source_allowed"
+        else:
+            event_type = "variant_allowed"
+
+        return DedupResult(
+            is_duplicate=False,
+            position_hash=p_hash,
+            event_type=event_type,
+            solution_fingerprint=solution_fingerprint,
+            existing_hash=rows[0][0],
+            existing_fingerprint=rows[0][2],
+            existing_source=rows[0][1],
+        )
 
     def _process_puzzle(
         self,

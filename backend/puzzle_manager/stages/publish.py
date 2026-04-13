@@ -153,7 +153,7 @@ class PublishStage:
 
         # Track new PuzzleEntry objects for database building
         new_entries: list[PuzzleEntry] = []
-        # Track SGF content for content database (DB-2)
+        # Track SGF content for yengo-content.db
         sgf_content_map: dict[str, str] = {}
         # Source-provided collection sequences from YL :CHAPTER/POSITION (v14)
         source_collection_sequences: dict[tuple[str, int], tuple[str, int]] = {}
@@ -297,7 +297,7 @@ class PublishStage:
                         source_collection_sequences[(content_hash, col_id)] = (chapter, position)
                 complexity = parse_yx(game.yengo_props.complexity)
 
-                # Read content_type from YM pipeline metadata (RC-3: wire ct to DB-1)
+                # Read content_type from YM pipeline metadata (RC-3: wire ct to yengo-search.db)
                 from backend.puzzle_manager.core.content_classifier import get_content_type_id
                 from backend.puzzle_manager.core.trace_utils import parse_pipeline_meta_extended
                 pipeline_meta = parse_pipeline_meta_extended(game.yengo_props.pipeline_meta)
@@ -322,7 +322,7 @@ class PublishStage:
                 )
                 new_entries.append(entry)
 
-                # Track SGF content for DB-2 (content database)
+                # Track SGF content for yengo-content.db
                 sgf_content_map[content_hash] = content
 
                 # Slug-based counters for inventory
@@ -415,7 +415,7 @@ class PublishStage:
                 source_collection_sequences=source_collection_sequences,
             )
 
-            # Build content database (DB-2) for dedup support
+            # Build content database (yengo-content.db) for dedup support
             if sgf_content_map:
                 build_content_db(
                     sgf_files=sgf_content_map,
@@ -540,7 +540,7 @@ class PublishStage:
         output_root: Path,
         source_collection_sequences: dict[tuple[str, int], tuple[str, int]] | None = None,
     ) -> None:
-        """Build SQLite search database from DB-2 entries + new entries.
+        """Build SQLite search database from yengo-content.db entries + new entries.
 
         Reads all existing entries from yengo-content.db, re-parses SGF
         to extract metadata, merges with current run's new_entries (dedup
@@ -556,10 +556,10 @@ class PublishStage:
         # Build set of new content_hashes for fast dedup
         new_hashes = {e.content_hash for e in new_entries}
 
-        # Read existing entries from DB-2 and convert to PuzzleEntry
+        # Read existing entries from yengo-content.db and convert to PuzzleEntry
         existing_entries: list[PuzzleEntry] = []
-        db2_rows = read_all_entries(content_db_path)
-        for row in db2_rows:
+        content_rows = read_all_entries(content_db_path)
+        for row in content_rows:
             ch = row["content_hash"]
             if ch in new_hashes:
                 continue  # Current run's entry takes precedence
@@ -575,7 +575,7 @@ class PublishStage:
                 if entry is not None:
                     existing_entries.append(entry)
             except Exception as e:
-                logger.debug("Failed to convert DB-2 entry %s: %s", ch, e)
+                logger.debug("Failed to convert content DB entry %s: %s", ch, e)
 
         all_entries = existing_entries + new_entries
         all_entries.sort(key=lambda e: e.content_hash)
