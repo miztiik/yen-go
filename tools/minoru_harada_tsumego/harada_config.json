@@ -1,0 +1,33 @@
+{
+  "collection_name": "Weekly Tsumego by Minoru Harada",
+  "collection_slug": "harada-tsumego",
+  "description": "Tsumego - Life and Death Problems of Go by Minoru Harada (1996-2020). Weekly problems with elementary + intermediate levels, archived from Wayback Machine.",
+  "author": "Minoru Harada",
+
+  "wayback_base": "https://web.archive.org/web",
+  "original_base": "http://www.hitachi.co.jp/Sp/tsumego",
+  "index_url": "https://www.hitachi.co.jp/Sp/tsumego/past/index-e.html",
+  "index_wayback_timestamp": "20230319095212",
+
+  "year_range": [1996, 2020],
+  "year_page_pattern": "{year}-e.html",
+  "estimated_total_problems": 1183,
+
+  "levels": ["elementary", "intermediate"],
+  "image_types": {
+    "problem": {"elementary": "{NNN}ep.gif", "intermediate": "{NNN}mp.gif"},
+    "answer_correct": {"elementary": "{NNN}ea0.gif", "intermediate": "{NNN}ma0.gif"},
+    "answer_wrong": {"elementary": "{NNN}ew{V}.gif", "intermediate": "{NNN}mw{V}.gif"}
+  },
+
+  "rate_limit_seconds": 0.5,
+  "rate_limit_jitter": 0.5,
+  "request_timeout": 30,
+  "max_retries": 3,
+  "user_agent": "Mozilla/5.0 (compatible; YenGo-HistoricalPreservation/1.0)",
+
+  "working_dir": "tools/minoru_harada_tsumego/_working",
+  "page_cache_dir": "_page_cache",
+  "image_dir": "_images",
+  "catalog_filename": "catalog.json"
+}
