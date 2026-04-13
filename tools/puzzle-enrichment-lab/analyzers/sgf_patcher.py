@@ -14,22 +14,22 @@ Status-aware behavior:
               still write engine-derived properties (YR, YX)
   - REJECTED → return original SGF unchanged
 
-Uses sgfmill for SGF parsing and property manipulation — no regex for
-SGF property extraction or replacement.
+Uses core/sgf_parser.py (KaTrain-derived) for SGF parsing and property
+manipulation — no regex for SGF property extraction or replacement.
 """
 
 from __future__ import annotations
 
 import logging
 
-from sgfmill import sgf as sgfmill_sgf
-
 try:
+    from core.sgf_parser import SGF as CoreSGF
     from models.ai_analysis_result import AiAnalysisResult
 
     from analyzers.sgf_parser import extract_solution_tree_moves, parse_sgf
     from analyzers.validate_correct_move import ValidationStatus
 except ImportError:
+    from ..core.sgf_parser import SGF as CoreSGF
     from ..analyzers.sgf_parser import extract_solution_tree_moves, parse_sgf
     from ..analyzers.validate_correct_move import ValidationStatus
     from ..models.ai_analysis_result import AiAnalysisResult
@@ -148,37 +148,33 @@ def _build_yx(result: AiAnalysisResult, solution_moves: list[str]) -> str:
 def _apply_patches(sgf_text: str, patches: dict[str, str]) -> str:
     """Apply property patches to SGF string at the root node level.
 
-    Uses sgfmill to parse, modify root properties, then re-serialize.
+    Uses core/sgf_parser.py to parse, modify root properties, then re-serialize.
     This ensures correct SGF grammar handling without regex.
     """
     try:
-        game = sgfmill_sgf.Sgf_game.from_bytes(sgf_text.encode("utf-8"))
+        root = CoreSGF.parse_sgf(sgf_text)
     except Exception as e:
         logger.error("Failed to parse SGF for patching: %s", e)
         return sgf_text
 
-    root = game.get_root()
-
     for prop_key, prop_value in patches.items():
-        # sgfmill set_raw takes bytes
-        root.set_raw(prop_key, prop_value.encode("latin-1"))
+        root.set_property(prop_key, prop_value)
 
-    return game.serialise().decode("latin-1")
+    return root.sgf()
 
 
 def _insert_property(sgf_text: str, key: str, value: str) -> str:
     """Insert a new property into the SGF root node.
 
-    Uses sgfmill to parse, set the property, then re-serialize.
+    Uses core/sgf_parser.py to parse, set the property, then re-serialize.
     Kept as a separate function for API compatibility, but delegates
-    to sgfmill just like _apply_patches.
+    to core/sgf_parser just like _apply_patches.
     """
     try:
-        game = sgfmill_sgf.Sgf_game.from_bytes(sgf_text.encode("utf-8"))
+        root = CoreSGF.parse_sgf(sgf_text)
     except Exception as e:
         logger.warning("Could not parse SGF for property insertion %s: %s", key, e)
         return sgf_text
 
-    root = game.get_root()
-    root.set_raw(key, value.encode("latin-1"))
-    return game.serialise().decode("latin-1")
+    root.set_property(key, value)
+    return root.sgf()

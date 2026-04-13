@@ -1,7 +1,7 @@
 """Minimal SGF parser — extracts position, correct move, and solution tree.
 
-Uses sgfmill (proper SGF grammar parser) internally, exposing a simplified
-SgfNode tree interface for the enrichment pipeline.
+Uses core/sgf_parser.py (KaTrain-derived, pure-Python) internally, exposing
+a simplified SgfNode tree interface for the enrichment pipeline.
 
 Consciously duplicated from backend/puzzle_manager for isolation.
 This parser handles the subset of SGF needed for tsumego analysis.
@@ -14,11 +14,11 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from sgfmill import sgf as sgfmill_sgf
-
 try:
+    from core.sgf_parser import SGF as CoreSGF
     from models.position import Color, Position, Stone
 except ImportError:
+    from ..core.sgf_parser import SGF as CoreSGF
     from ..models.position import Color, Position, Stone
 
 # Import shared correctness inference from tools/core/sgf_correctness.py
@@ -66,8 +66,8 @@ class SgfNode:
 def parse_sgf(sgf_text: str) -> SgfNode:
     """Parse an SGF string into a tree of SgfNode objects.
 
-    Uses sgfmill as the underlying parser for proper SGF grammar handling.
-    Converts the sgfmill tree into our SgfNode tree for a consistent
+    Uses core/sgf_parser.py (KaTrain-derived) as the underlying parser.
+    Converts the core SGFNode tree into our SgfNode tree for a consistent
     interface across the enrichment pipeline.
 
     Handles nested variations: (;B[cd](;W[dc])(;W[dd]))
@@ -77,12 +77,11 @@ def parse_sgf(sgf_text: str) -> SgfNode:
         raise ValueError("Empty SGF string")
 
     try:
-        game = sgfmill_sgf.Sgf_game.from_bytes(sgf_text.encode("utf-8"))
+        core_root = CoreSGF.parse_sgf(sgf_text)
     except Exception as e:
         raise ValueError(f"SGF parse error: {e}") from e
 
-    sgfmill_root = game.get_root()
-    return _convert_sgfmill_node(sgfmill_root)
+    return _convert_core_node(core_root)
 
 
 def extract_position(
@@ -357,34 +356,20 @@ def compose_enriched_sgf(
     return "(" + _compose_node(root, refutation_branches, is_root=True) + ")"
 
 
-# ── Internal parsing (sgfmill-based) ──
+# ── Internal parsing (core/sgf_parser-based) ──
 
 
-def _convert_sgfmill_node(sgfmill_node) -> SgfNode:
-    """Recursively convert an sgfmill Tree_node to our SgfNode."""
-    props = _extract_sgfmill_properties(sgfmill_node)
+def _convert_core_node(core_node) -> SgfNode:
+    """Recursively convert a core SGFNode to our SgfNode."""
+    props = dict(core_node.properties)
     node = SgfNode(properties=props)
 
-    for i in range(len(sgfmill_node)):
-        child_node = _convert_sgfmill_node(sgfmill_node[i])
+    for child in core_node.children:
+        child_node = _convert_core_node(child)
         child_node.parent = node
         node.children.append(child_node)
 
     return node
-
-
-def _extract_sgfmill_properties(sgfmill_node) -> dict[str, list[str]]:
-    """Extract all properties from an sgfmill node as a string dict.
-
-    sgfmill returns property identifiers as strings and raw values as bytes.
-    We decode values with latin-1 for lossless roundtrip (SGF is ASCII-based
-    but may contain arbitrary byte sequences in comments).
-    """
-    props: dict[str, list[str]] = {}
-    for prop_id in sgfmill_node.properties():
-        raw_values = sgfmill_node.get_raw_list(prop_id)
-        props[prop_id] = [v.decode("latin-1") for v in raw_values]
-    return props
 
 
 # ── Internal composition ──
