@@ -13,7 +13,7 @@ Removed ~4,700 lines of dead code across 11 files:
 - 1 stale copy: `gui/bridge.py`
 
 ### Phase B: Pipeline Stabilization
-- Added missing `sgfmill>=1.1.1` to `requirements.txt`
+- Migrated SGF handling from `sgfmill` to native `core/sgf_parser.py` (KaTrain-derived)
 - Upgraded `teaching_signals` payload to v2 (added `context` section with technique_tags, difficulty, goal)
 - Replaced deprecated `classify_techniques()` fallback with `result.technique_tags = []`
 - Deleted ~330 lines of deprecated heuristic classifiers from `technique_classifier.py`

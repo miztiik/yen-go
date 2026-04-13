@@ -36,18 +36,23 @@ The GUI visualizes the enrichment pipeline in real-time: board updates, analysis
 
 ## CLI Usage
 
-### Enrich a Single Puzzle
+All commands below assume you are in the `tools/puzzle-enrichment-lab/` directory:
 
 ```bash
 cd tools/puzzle-enrichment-lab
-
-python cli.py enrich \
-  --sgf /path/to/puzzle.sgf \
-  --output /path/to/result.json \
-  --katago /path/to/katago
 ```
 
-**Output:** A JSON file containing validation status, refutation moves, and difficulty rating.
+### Enrich a Single Puzzle
+
+```bash
+python cli.py enrich \
+  --sgf tests/fixtures/evaluation/cho-elementary/prob0193.sgf \
+  --output .lab-runtime/outputs/result.json \
+  --katago katago/katago.exe
+```
+
+**Input:** SGF file path via `--sgf`.
+**Output:** A JSON file at `--output` containing validation status, refutation moves, difficulty rating, technique tags, teaching signals, and hints.
 
 ### Apply Enrichment to SGF
 
@@ -55,9 +60,9 @@ After enrichment, apply the results back to the SGF:
 
 ```bash
 python cli.py apply \
-  --sgf /path/to/puzzle.sgf \
-  --result /path/to/result.json \
-  --output /path/to/enriched.sgf
+  --sgf tests/fixtures/evaluation/cho-elementary/prob0193.sgf \
+  --result .lab-runtime/outputs/result.json \
+  --output .lab-runtime/outputs/enriched.sgf
 ```
 
 ### Validate Only (No Output File)
@@ -66,8 +71,8 @@ Quick validation without writing results — useful for scripting:
 
 ```bash
 python cli.py validate \
-  --sgf /path/to/puzzle.sgf \
-  --katago /path/to/katago
+  --sgf tests/fixtures/evaluation/cho-elementary/prob0193.sgf \
+  --katago katago/katago.exe
 ```
 
 **Exit codes:**
@@ -82,9 +87,9 @@ Enrich all SGF files in a directory:
 
 ```bash
 python cli.py batch \
-  --input-dir /path/to/sgf_directory \
-  --output-dir /path/to/output_directory \
-  --katago /path/to/katago
+  --input-dir tests/fixtures/evaluation/cho-elementary/ \
+  --output-dir .lab-runtime/outputs/cho-elementary/ \
+  --katago katago/katago.exe
 ```
 
 **Optional flags (all subcommands):**
@@ -102,18 +107,52 @@ python cli.py batch \
 ### Example: Full Workflow
 
 ```bash
-# 1. Enrich a puzzle
+cd tools/puzzle-enrichment-lab
+
+# 1. Enrich a puzzle (KataGo analysis → JSON)
 python cli.py enrich \
-  --sgf tests/fixtures/simple_life_death.sgf \
-  --output output/result.json \
+  --sgf tests/fixtures/evaluation/cho-elementary/prob0193.sgf \
+  --output .lab-runtime/outputs/prob0193_result.json \
   --katago katago/katago.exe
 
-# 2. Apply enrichment to create final SGF
+# 2. (Optional) Apply enrichment to create final SGF with YT/YH/YQ/YR tags
 python cli.py apply \
-  --sgf tests/fixtures/simple_life_death.sgf \
-  --result output/result.json \
-  --output output/enriched.sgf
+  --sgf tests/fixtures/evaluation/cho-elementary/prob0193.sgf \
+  --result .lab-runtime/outputs/prob0193_result.json \
+  --output .lab-runtime/outputs/prob0193_enriched.sgf
+
+# Or do steps 1+2 in one shot with --emit-sgf:
+python cli.py enrich \
+  --sgf tests/fixtures/evaluation/cho-elementary/prob0193.sgf \
+  --output .lab-runtime/outputs/prob0193_result.json \
+  --katago katago/katago.exe \
+  --emit-sgf .lab-runtime/outputs/prob0193_enriched.sgf
 ```
+
+### Example: End-to-End with LLM Teaching (Phase 2)
+
+After KataGo enrichment, chain the [LLM Teaching Agent](../llm-teaching-agent/) to generate
+human-quality teaching comments from the enrichment signals:
+
+```bash
+# 3. Generate teaching comments via LLM (requires API key)
+python ../llm-teaching-agent/teach.py \
+  --input .lab-runtime/outputs/prob0193_result.json \
+  --output .lab-runtime/outputs/prob0193_teaching.json \
+  --persona cho_chikun
+
+# 4. Merge LLM comments back into enrichment JSON
+python ../llm-teaching-agent/merge.py \
+  --enrichment .lab-runtime/outputs/prob0193_result.json \
+  --teaching .lab-runtime/outputs/prob0193_teaching.json
+
+# Preview prompts without calling the API (--dry-run):
+python ../llm-teaching-agent/teach.py \
+  --input .lab-runtime/outputs/prob0193_result.json \
+  --dry-run --persona lee_sedol
+```
+
+See [`../llm-teaching-agent/PLAN.md`](../llm-teaching-agent/PLAN.md) for LLM agent details.
 
 ### Quick Reference: Copy-Paste Examples
 
