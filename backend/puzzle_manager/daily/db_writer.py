@@ -44,7 +44,7 @@ def inject_daily_schedule(
     db_path: Path,
     challenges: list[DailyChallenge],
 ) -> int:
-    """Write daily schedule and puzzle rows to DB-1.
+    """Write daily schedule and puzzle rows to yengo-search.db.
 
     Uses INSERT OR REPLACE for idempotent writes. Safe to call
     from both publish post-step and CLI daily command.
