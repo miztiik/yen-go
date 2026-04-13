@@ -189,6 +189,8 @@ TOOL_OUTPUT_DIRS: Final[dict[str, str]] = {
     "goproblems": "external-sources/goproblems",  # Alias
     "blacktoplay": "external-sources/blacktoplay",
     "btp": "external-sources/blacktoplay",  # Alias
+    "harada-tsumego": "tools/minoru_harada_tsumego/_working",
+    "harada": "tools/minoru_harada_tsumego/_working",  # Alias
 }
 
 

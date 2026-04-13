@@ -17,6 +17,9 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Final
 
+# GTP column letters: A-H, J-T (I is skipped per GTP convention)
+_GTP_COLUMNS = "ABCDEFGHJKLMNOPQRST"
+
 
 class Color(str, Enum):
     """Stone color."""
@@ -81,6 +84,36 @@ class Point:
     def to_sgf(self) -> str:
         """Convert to SGF coordinate string."""
         return chr(ord("a") + self.x) + chr(ord("a") + self.y)
+
+    @classmethod
+    def from_gtp(cls, gtp: str, board_size: int = 19) -> Point:
+        """Create Point from GTP coordinate string (e.g., 'D4', 'Q16').
+
+        GTP uses column letters A-T (skipping I) and row numbers 1-19
+        where row 1 is at the bottom.
+        """
+        gtp = gtp.strip().upper()
+        if len(gtp) < 2:
+            raise ValueError(f"Invalid GTP coordinate: {gtp!r}")
+        col_letter = gtp[0]
+        row_str = gtp[1:]
+        if col_letter not in _GTP_COLUMNS:
+            raise ValueError(f"Invalid GTP column letter: {col_letter!r}")
+        x = _GTP_COLUMNS.index(col_letter)
+        try:
+            row = int(row_str)
+        except ValueError:
+            raise ValueError(f"Invalid GTP row number: {row_str!r}") from None
+        if row < 1 or row > board_size:
+            raise ValueError(f"GTP row {row} out of range for board size {board_size}")
+        y = board_size - row
+        return cls(x, y)
+
+    def to_gtp(self, board_size: int = 19) -> str:
+        """Convert to GTP coordinate string."""
+        col_letter = _GTP_COLUMNS[self.x]
+        row = board_size - self.y
+        return f"{col_letter}{row}"
 
     def __str__(self) -> str:
         return self.to_sgf()
