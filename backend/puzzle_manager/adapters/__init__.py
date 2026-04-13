@@ -22,12 +22,11 @@ from backend.puzzle_manager.adapters._registry import (
     list_adapters,
     register_adapter,
 )
-from backend.puzzle_manager.adapters.kisvadim import KisvadimAdapter
 
 # Import all adapter implementations to register them
 from backend.puzzle_manager.adapters.local import LocalAdapter
 from backend.puzzle_manager.adapters.sanderland import SanderlandAdapter
-from backend.puzzle_manager.adapters.travisgk import TravisGKAdapter
+
 
 __all__ = [
     # Protocols
@@ -42,7 +41,5 @@ __all__ = [
     "create_adapter",
     # Adapter implementations
     "LocalAdapter",
-    "SanderlandAdapter",
-    "TravisGKAdapter",
-    "KisvadimAdapter",
+    "SanderlandAdapter"
 ]

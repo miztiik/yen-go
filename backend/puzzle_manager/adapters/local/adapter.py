@@ -117,11 +117,36 @@ class LocalAdapter:
         # Log configuration
         folders_to_process = self._get_folders_to_process()
         folder_names = [f.name for f in folders_to_process]
-        logger.info(f"Local adapter configured: {len(folder_names)} folders to process from {self._path}")
+        logger.info(
+            "Local adapter configured: %s folders to process from %s",
+            len(folder_names),
+            self._format_log_path(self._path),
+        )
         if self._include_folders:
             logger.debug(f"Include folders: {self._include_folders}")
         if self._exclude_folders:
             logger.debug(f"Exclude folders: {self._exclude_folders}")
+
+    def _format_log_path(self, path: Path | None) -> str:
+        """Format a path for logging without exposing absolute full paths.
+
+        Returns a project-relative POSIX path when available, otherwise a
+        redacted POSIX tail path prefixed with ``.../``.
+        """
+        if path is None:
+            return "<unset>"
+
+        path_obj = Path(path)
+        formatted = rel_path(path_obj)
+
+        # rel_path falls back to absolute POSIX paths for external locations.
+        # Redact those by logging only a short tail segment.
+        if path_obj.is_absolute() and formatted == path_obj.as_posix():
+            tail_parts = [p for p in path_obj.parts if p and p != path_obj.anchor][-3:]
+            tail = "/".join(tail_parts) if tail_parts else path_obj.name
+            return f".../{tail}" if tail else "..."
+
+        return formatted
 
     def _compute_config_signature(self) -> str:
         """Compute a signature of the folder filtering config.
@@ -253,7 +278,7 @@ class LocalAdapter:
             return
 
         if not self._path.exists():
-            yield FetchResult.failed("", f"Path does not exist: {self._path}")
+            yield FetchResult.failed("", f"Path does not exist: {self._format_log_path(self._path)}")
             return
 
         # Get folders to process
@@ -354,7 +379,7 @@ class LocalAdapter:
                         return
 
                     # Log file details at DEBUG level
-                    logger.debug(f"Processing file: {rel_path(sgf_path)}")
+                    logger.debug(f"Processing file: {self._format_log_path(sgf_path)}")
 
                     try:
                         content = sgf_path.read_text(encoding="utf-8")
@@ -378,7 +403,7 @@ class LocalAdapter:
                                     files_since_checkpoint = 0
                                 yield FetchResult.failed(
                                     puzzle_id=puzzle_id,
-                                    error=f"SGF parse error: {sgf_path}",
+                                    error=f"SGF parse error: {self._format_log_path(sgf_path)}",
                                 )
                                 continue
 
@@ -431,7 +456,8 @@ class LocalAdapter:
                         if files_since_checkpoint >= checkpoint_interval:
                             self._save_checkpoint(state)
                             files_since_checkpoint = 0
-                        yield FetchResult.failed(str(sgf_path), f"Encoding error: {e}")
+                        safe_path = self._format_log_path(sgf_path)
+                        yield FetchResult.failed(safe_path, f"Encoding error: {e}")
                     except OSError as e:
                         state["total_failed"] = int(state["total_failed"]) + 1
                         state["files_completed"] = file_idx + 1
@@ -439,7 +465,8 @@ class LocalAdapter:
                         if files_since_checkpoint >= checkpoint_interval:
                             self._save_checkpoint(state)
                             files_since_checkpoint = 0
-                        yield FetchResult.failed(str(sgf_path), f"File I/O error: {e}")
+                        safe_path = self._format_log_path(sgf_path)
+                        yield FetchResult.failed(safe_path, f"File I/O error: {e}")
                     except ValueError as e:
                         state["total_failed"] = int(state["total_failed"]) + 1
                         state["files_completed"] = file_idx + 1
@@ -447,7 +474,8 @@ class LocalAdapter:
                         if files_since_checkpoint >= checkpoint_interval:
                             self._save_checkpoint(state)
                             files_since_checkpoint = 0
-                        yield FetchResult.failed(str(sgf_path), f"Data error: {e}")
+                        safe_path = self._format_log_path(sgf_path)
+                        yield FetchResult.failed(safe_path, f"Data error: {e}")
 
             # All files processed - clear checkpoint and log summary
             completed_all = True
@@ -499,7 +527,11 @@ class LocalAdapter:
             counter += 1
 
         shutil.move(str(source), str(dest))
-        logger.debug(f"Moved processed file: {source} -> {dest}")
+        logger.debug(
+            "Moved processed file: %s -> %s",
+            self._format_log_path(source),
+            self._format_log_path(dest),
+        )
 
     def supports_resume(self) -> bool:
         """Whether adapter supports resuming from checkpoint."""
