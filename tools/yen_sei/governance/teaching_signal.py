@@ -7,6 +7,7 @@ All thresholds come from CurationConfig — this module only computes raw signal
 
 from __future__ import annotations
 
+import re
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
@@ -14,8 +15,24 @@ from tools.core.english_score import score_english
 from tools.core.go_teaching_constants import EXPLANATION_KEYWORDS, GO_TECHNIQUE_PATTERN
 from tools.core.sgf_parser import SgfNode, SgfTree, parse_sgf
 from tools.core.text_cleaner import strip_cjk, strip_html, strip_urls
+from tools.yen_sei.data_paths import to_posix_rel
 
 from .config_loader import CurationConfig
+
+# AI-enrichment detection: YQ[q:_;rc:_;hc:_;ac:N] where ac>0 means the puzzle
+# was processed by an automated/LLM enrichment tool. We must NOT train on those.
+_YQ_PROP_RE = re.compile(r"YQ\[([^\]]*)\]")
+_YQ_AC_RE = re.compile(r"ac:(\d+)")
+# AI-comment signature heuristics. Older OpenAI-template puzzles tend to
+# emit prose with these tells. Each match increments ai_signature_hits.
+_AI_SIGNATURE_PATTERNS = [
+    re.compile(r"\bthe correct move is\b", re.IGNORECASE),
+    re.compile(r"\bthe optimal (?:sequence|move)\b", re.IGNORECASE),
+    re.compile(r"\bblack to play and (?:live|kill|win)\b", re.IGNORECASE),
+    re.compile(r"\bas an ai\b", re.IGNORECASE),
+    re.compile(r"\(B \d+-\d+\)\s*[\u2192>-]+\s*\(W \d+-\d+\)"),  # coordinate dump
+    re.compile(r"\bin this puzzle,?\s+the (?:goal|objective|task)\b", re.IGNORECASE),
+]
 
 
 @dataclass
@@ -52,6 +69,12 @@ class TeachingSignals:
     stopword_hits_per_100_chars: float = 0.0
     english_word_ratio: float = 0.0  # 0..1, primary tier signal
     is_english: bool = False
+
+    # AI-enrichment provenance (Schema v15 YQ property + heuristic).
+    # ac: 0=untouched, 1=enriched, 2=ai_solved, 3=verified.
+    # ai_signature_hits: count of AI-comment template phrases found in prose.
+    yq_ac: int = 0
+    ai_signature_hits: int = 0
 
     # Hard-gate failure list (empty = passes all gates)
     gate_failures: list[str] = field(default_factory=list)
@@ -151,7 +174,7 @@ def extract_signals(sgf_path: Path, source: str, cfg: CurationConfig) -> Teachin
     """Parse one SGF and compute all teaching signals."""
     signals = TeachingSignals(
         source=source,
-        file_path=str(sgf_path).replace("\\", "/"),
+        file_path=to_posix_rel(sgf_path),
         original_stem=sgf_path.stem,
     )
 
@@ -161,6 +184,15 @@ def extract_signals(sgf_path: Path, source: str, cfg: CurationConfig) -> Teachin
     except Exception as e:
         signals.gate_failures.append(f"unreadable:{type(e).__name__}")
         return signals
+
+    # AI-enrichment detection (cheap, runs before sgfmill parse).
+    yq_match = _YQ_PROP_RE.search(raw)
+    if yq_match:
+        ac_match = _YQ_AC_RE.search(yq_match.group(1))
+        if ac_match:
+            signals.yq_ac = int(ac_match.group(1))
+    if signals.yq_ac > 0:
+        signals.gate_failures.append("ai_enriched")
 
     # Cheap structural gates BEFORE invoking sgfmill (which is slow on
     # pathological deep trees from game records). Do these first.
@@ -244,6 +276,15 @@ def extract_signals(sgf_path: Path, source: str, cfg: CurationConfig) -> Teachin
         signals.refutation_phrase_count = sum(
             combined_lower.count(p) for p in pf.refutation_phrases
         )
+
+    # AI-comment signature heuristic (fires on ac==0 puzzles whose authors
+    # nonetheless used templated prose). Counts once per pattern occurrence.
+    if combined:
+        signals.ai_signature_hits = sum(
+            len(p.findall(combined)) for p in _AI_SIGNATURE_PATTERNS
+        )
+        if signals.ai_signature_hits >= 2:
+            signals.gate_failures.append("ai_signature_prose")
 
     # teachable_content gate: structural OR prose path.
     has_tree_branches = signals.variation_count >= g.min_variations

@@ -23,6 +23,7 @@ from collections import Counter
 from pathlib import Path
 
 from tools.yen_sei.config import SOURCES_DIR
+from tools.yen_sei.data_paths import from_posix_rel, resolve_latest, to_posix_rel
 from tools.yen_sei.governance.config_loader import load_config
 from tools.yen_sei.stages.qualify import QUALIFICATION_JSONL
 from tools.yen_sei.telemetry.logger import set_context, setup_logger
@@ -56,7 +57,11 @@ def run_ingest(
     """
     set_context(stage="ingest")
     cfg = load_config(config_path)
-    qual_path = Path(qualification_jsonl) if qualification_jsonl else QUALIFICATION_JSONL
+    if qualification_jsonl:
+        qual_path = Path(qualification_jsonl)
+    else:
+        latest = resolve_latest("qualification", "jsonl")
+        qual_path = latest if latest else QUALIFICATION_JSONL
 
     if not qual_path.exists():
         logger.error("Qualification file not found: %s. Run 'yen-sei qualify' first.", qual_path)
@@ -105,7 +110,8 @@ def run_ingest(
 
     with MANIFEST_PATH.open("w", encoding="utf-8") as manifest:
         for row in selected:
-            src_path = Path(row["file_path"])
+            # `file_path` is POSIX-relative-to-repo-root (or absolute legacy).
+            src_path = from_posix_rel(row["file_path"])
             if not src_path.exists():
                 skipped_missing += 1
                 continue
@@ -133,13 +139,15 @@ def run_ingest(
                 "tier": tier,
                 "source": source,
                 "original_stem": stem,
-                "source_path": str(src_path),
+                "source_path": to_posix_rel(src_path),
                 "curation_run_id": row.get("curation_run_id", ""),
                 "english_word_ratio": row.get("english_word_ratio"),
                 "correct_explanation_chars": row.get("correct_explanation_chars"),
                 "wrong_explanation_chars": row.get("wrong_explanation_chars"),
                 "explanation_node_count": row.get("explanation_node_count"),
                 "techniques_found": row.get("techniques_found", []),
+                "yq_ac": row.get("yq_ac", 0),
+                "ai_signature_hits": row.get("ai_signature_hits", 0),
             }) + "\n")
 
     total = sum(copied.values())

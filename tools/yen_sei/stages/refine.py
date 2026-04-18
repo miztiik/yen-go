@@ -128,7 +128,14 @@ def _extract_hints(record: RawExtract) -> list[str]:
 
 
 def _build_user_prompt(record: RawExtract) -> str:
-    """Build the user prompt from puzzle context."""
+    """Build the user prompt from puzzle context.
+
+    EVAL HONESTY: we deliberately do NOT include `record.root_comment` here.
+    The root comment often paraphrases the answer; including it leaks the
+    label into the prompt and inflates val/test scores. The model sees only
+    board + side-to-move + setup stones + level + tags. It must generate the
+    teaching commentary from the position alone.
+    """
     lines = [
         f"Board: {record.board_size}x{record.board_size}",
         f"{record.player_to_move} to play",
@@ -141,8 +148,6 @@ def _build_user_prompt(record: RawExtract) -> str:
         lines.append(f"Level: {record.level}")
     if record.tags:
         lines.append(f"Tags: {', '.join(record.tags)}")
-    if record.root_comment and not _is_marker_only(record.root_comment):
-        lines.append(f"Context: {record.root_comment[:200]}")
     return "\n".join(lines)
 
 

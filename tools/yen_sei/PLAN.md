@@ -205,10 +205,15 @@ All thresholds live in `tools/yen_sei/curation_config.json`. Change a number →
 
 ```
 0.  qualify   — Scan ALL external-sources, classify each SGF as gold/silver/bronze/drop
-                per curation_config.json. Writes data/qualification_v2.jsonl + report.
+                per curation_config.json. Writes data/qualification_{TS}.jsonl +
+                qualification_latest.jsonl pointer (TS = YYYYMMDDTHHMM). Keeps
+                last 3 timestamped runs; older ones are auto-deleted.
+                Also enforces two AI-contamination gates BEFORE classification:
+                  • ai_enriched         — drop if SGF YQ.ac > 0
+                  • ai_signature_prose  — drop if >=2 templated-LLM-prose hits
                 NO files copied. (Python, local, multiprocessing)
 1.  sample    — Print N random puzzles from a tier for human spot-check.
-2.  ingest    — Read qualification_v2.jsonl, copy selected tiers into data/sources/
+2.  ingest    — Read qualification_latest.jsonl, copy selected tiers into data/sources/
                 with tier-prefixed filenames: {tier}_{source}_{stem}.sgf.
                 Writes data/sources/_manifest.jsonl with provenance. (Python, local)
 3.  harvest   — Extract (position, comment) pairs from data/sources/. Tier is parsed
@@ -255,8 +260,8 @@ All thresholds live in `tools/yen_sei/curation_config.json`. Change a number →
 
 **yen-sei NEVER reads from or writes to `external-sources/` directly** (except `qualify`).
 
-- `qualify` scans external-sources/ read-only to score puzzles and produce qualification_v2.jsonl.
-- `ingest` reads qualification_v2.jsonl (NOT external-sources) and copies selected SGFs into `data/sources/` with tier-prefixed names.
+- `qualify` scans external-sources/ read-only to score puzzles and produce qualification_{TS}.jsonl + qualification_latest.jsonl pointer.
+- `ingest` reads qualification_latest.jsonl (NOT external-sources) and copies selected SGFs into `data/sources/` with tier-prefixed names. All persisted paths are POSIX, repo-root-relative (see `tools/yen_sei/data_paths.py`).
 - All downstream stages read only from `data/`.
 - Original external-sources files are never modified, moved, or deleted.
 
@@ -391,3 +396,65 @@ LLMConfig(base_url="http://localhost:8080/v1", model="yen-sei-tier1")
 ```
 
 Served via llama.cpp server, vLLM, or Ollama (all expose OpenAI-compatible endpoints).
+
+## Data-Path & Naming Policy (added 2026-04-18)
+
+Helpers live in `tools/yen_sei/data_paths.py`. Every stage that writes a primary
+artefact MUST use them, and every stage that reads one MUST go through the
+`_latest` pointer.
+
+- **Filename format**: `{kind}_{YYYYMMDDTHHMM}.{ext}` (e.g. `qualification_20260418T2146.jsonl`).
+- **Pointer**: `{kind}_latest.{ext}` is a byte-copy of the most recent timestamped file (not a symlink — Windows-portable).
+- **Retention**: `cleanup_old(keep=3)` after each successful run keeps the 3 most recent timestamps and deletes older ones.
+- **POSIX paths only**: all `file_path` / `source_path` fields persisted to JSONL go through `to_posix_rel(p)` (forward slashes, repo-root-relative). Readers use `from_posix_rel(rel)` to materialize an absolute `Path`.
+
+This kills the `qualification_v2 / v2.1 / STALE / kano_239 / smoke` proliferation we accumulated in v2.
+
+## AI-Contamination Filter (added 2026-04-18)
+
+Lives in `governance/teaching_signal.py`, runs inside `qualify`. Two cheap checks
+before sgfmill parses anything:
+
+1. **`ai_enriched`** — regex-extract the SGF root property `YQ[...]`, parse `ac:N`, drop if `N > 0` (the puzzle has been touched by enrichment / AI-solve / verification).
+2. **`ai_signature_prose`** — count hits across 6 patterns of templated LLM prose ("the correct move is", "as an AI", coordinate dumps `(B 3-4) → (W 5-2)`, etc.). Drop if `>= 2`.
+
+Both append to `gate_failures`, which `tier_classifier` already routes to `drop`.
+Manifest written by `ingest` carries `yq_ac` and `ai_signature_hits` for forensics.
+
+Why this matters: without these gates the pipeline would happily ingest
+KataGo-enriched and GPT-4o-enriched puzzles as "gold" training data and we
+would be SFT-ing on our own AI's previous output. The whole point of yen-sei is
+to LEARN HUMAN TEACHING, so AI-touched puzzles must be excluded from training.
+
+## Eval Methodology — Layer A / B / C (added 2026-04-18)
+
+Replaces the old "JSON-compliance %" metric, which was structural-only and
+silently passed prose like "I cannot help".
+
+- **Layer A — Structural** (`eval/scorers.py::score_structural`)
+  - Free, deterministic. Does the output parse as JSON? Does it have non-empty `teaching_comments.correct_comment`, a `wrong_comments` block, and `hints`?
+
+- **Layer B — Grounded** (`eval/scorers.py::score_grounded`)
+  - Free, deterministic, position-anchored. Does the output **mention the actual correct move** (extracted from the reference's `{!cg}` token)? Does it mention **at least one technique that actually applies to this puzzle's tags** (matched against `GO_TECHNIQUE_PATTERN`)? Does it avoid hallucinating off-board SGF coordinates? Is the text plausibly English?
+
+- **Layer C — Judge** (`eval/judges.py`)
+  - Pluggable `Judge` Protocol with `grade(prompt, generated, reference, metadata) -> JudgeResult(score 0..5, rubric, rationale, backend)`.
+  - Default backend `ManualJudge` returns sentinel `score=-1` immediately and writes a random sample of 20 items to `judge_queue.jsonl` for human grading. The human edits the file in-place: stamp `score` (0..5) and `rationale`, save.
+  - **Future plug-in backends** (interface unchanged):
+    - `OpenAIJudge` — calls GPT-4o as judge with a fixed rubric prompt
+    - `LocalJudge` — calls Ollama / vLLM with a stronger local model (Llama-70B, Qwen-72B)
+    - `SubagentJudge` — Copilot subagent invocation via `runSubagent` for batched grading
+  - Reference text is included in the queue, but it is **not** used by Layer A/B (which deliberately don't do reference-string matching, since teaching prose is freeform).
+
+**Headline metric**: `useful_answer_pct = (parses) AND (has correct comment) AND (mentions correct coord OR known technique) AND (looks English)`. This is what the notebooks print and what we track across runs.
+
+### Eval prompt-leak fix (`stages/refine.py`)
+
+`_build_user_prompt` no longer includes a `Context: {root_comment}` line. The
+SGF root comment frequently paraphrases the answer, and including it in the
+test prompt was leaking the label into the input — making val/test scores
+misleadingly high.
+
+The user prompt now contains only: board size, side to move, level, stones,
+tags. The reference assistant turn is the supervised target during training and
+the held-out gold during eval — never repeated back to the model in the prompt.

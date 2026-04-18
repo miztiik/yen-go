@@ -4,6 +4,58 @@ Hard-won insights from building the yen-sei SFT pipeline. Each lesson came from 
 
 ---
 
+## 0. Three Things That Quietly Poisoned Training Data (2026-04-18)
+
+**What happened**: After producing what looked like a clean v2.2 SFT corpus
+(671 gold + 1,881 silver + 11,381 bronze) and rebuilding the Colab notebooks
+to be one-click runnable, the user pointed out three independent issues that
+would have wasted ~6 hours of T4 training time:
+
+1. The data directory was a graveyard of `qualification_v2*.jsonl`,
+   `qualification_v2.1_baseline.jsonl`, `qualification_v2_STALE_pre_walkbug_fix.jsonl`,
+   `qualification_kano_239*`, `qualify_*.log`, `qualify_smoke*` etc. No
+   timestamp convention, no auto-cleanup, no obvious "current" pointer.
+2. Test prompts included `Context: {root_comment}` — i.e. the SGF root comment
+   that often paraphrases the answer. We were leaking the label into the
+   input and inflating val/test scores.
+3. The pipeline had **zero awareness** of the `YQ.ac` SGF property. KataGo-
+   enriched and GPT-4o-enriched puzzles were silently flowing into training
+   as "gold" examples — meaning we'd be SFT-ing on the previous generation
+   of our own AI's output.
+
+**Why each mattered**:
+1. Stale qualification files → ingest could trivially read the wrong vintage
+   (it did, twice). No way to know which file was "current" without `dir /OD`.
+2. Eval prompt-leak → val/test scores would look great even if the model
+   learned nothing. We'd ship a "trained" model that fails on real puzzles
+   because real puzzles don't come with their own root comment in the prompt.
+3. AI-contamination → defeats the entire reason yen-sei exists, which is to
+   learn HUMAN teaching prose, not to recursively distil our own LLM outputs.
+
+**Lesson**: Run a structural sanity audit BEFORE training, not after.
+Specifically:
+- Every persisted artefact path → POSIX, repo-root-relative, timestamped.
+- Every gate that drops puzzles → cheap regex check BEFORE expensive parse.
+- Every eval prompt → diff it against the assistant target. If any token
+  appears verbatim in both prompt and target, it's a leak.
+
+**Applied**:
+- New `tools/yen_sei/data_paths.py` enforces `{kind}_{YYYYMMDDTHHMM}.{ext}` +
+  `{kind}_latest.{ext}` pointer + `cleanup_old(keep=3)`. All stages use it.
+- New `governance/teaching_signal.py` gates: `ai_enriched` (parses `YQ[ac:N]`,
+  drops if N>0) and `ai_signature_prose` (6 templated-LLM-prose regexes,
+  drops if >=2 hits). Both run before sgfmill parse.
+- New `eval/{scorers,judges,runner}.py` module with three layers (Structural /
+  Grounded / Judge). Headline metric is `useful_answer_pct` not raw JSON%.
+- `_build_user_prompt` in `stages/refine.py` no longer emits the `Context:` line.
+
+**Cost of NOT doing this**: 6 GPU-hours per training run × however many runs
+until somebody noticed the model could only "answer" puzzles that arrived
+with their own answer attached. Probably 2-3 runs = ~18 GPU-hours = 1-2
+weeks of Colab Free quota. The fix took one afternoon.
+
+---
+
 ## 1. Never Copy Data Blindly
 
 **What happened**: First ingest attempt blindly copied ~70,000 SGFs from 3 sources into `data/sources/` based on nothing more than "these directories have SGF files." No quality assessment, no filtering, no understanding of what was actually in the files.
@@ -76,7 +128,7 @@ Hard-won insights from building the yen-sei SFT pipeline. Each lesson came from 
 
 ## 7. Absolute Paths in Scripts Are Fragile
 
-**What happened**: The discovery script hardcoded `Path(r"C:\Users\kumarsnaveen\...")` as the external-sources root.
+**What happened**: The discovery script hardcoded `Path(r"C:\Users\abc\...")` as the external-sources root.
 
 **Why it was wrong**: Breaks on any other machine, any other checkout location. Also violates the "config-driven" principle from CLAUDE.md.
 

@@ -16,6 +16,15 @@ from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 from tools.yen_sei.config import DATA_DIR, EXT_ROOT
+from tools.yen_sei.data_paths import (
+    DEFAULT_KEEP,
+    cleanup_old,
+    latest_pointer,
+    now_stamp,
+    resolve_latest,
+    stamped_path,
+    to_posix_rel,
+)
 from tools.yen_sei.governance.config_loader import CurationConfig, load_config
 from tools.yen_sei.governance.teaching_signal import extract_signals, signals_to_dict
 from tools.yen_sei.governance.tier_classifier import classify
@@ -23,8 +32,9 @@ from tools.yen_sei.telemetry.logger import set_context, setup_logger
 
 logger = setup_logger(__name__)
 
-QUALIFICATION_JSONL = DATA_DIR / "qualification_v2.jsonl"
-QUALIFICATION_REPORT = DATA_DIR / "qualification_v2_report.txt"
+# Canonical pointer used by downstream stages. Always == newest stamped run.
+QUALIFICATION_JSONL = latest_pointer("qualification", "jsonl")
+QUALIFICATION_REPORT = latest_pointer("qualification", "report.txt")
 
 
 # Worker globals (one per process, populated by _init_worker)
@@ -79,24 +89,29 @@ def run_qualify(
     set_context(stage="qualify")
     cfg = load_config(config_path)
     DATA_DIR.mkdir(parents=True, exist_ok=True)
+    run_stamp = now_stamp()
 
     # Output path resolution rules (ordered):
-    # 1. Explicit --output-jsonl wins.
-    # 2. Full-corpus scan or --upsert => main qualification_v2.jsonl.
-    # 3. Single-path preview (--path without --upsert) => derived preview path
-    #    named after the leaf folder, so we NEVER overwrite the main baseline.
+    # 1. Explicit --output-jsonl wins (no timestamping, no cleanup).
+    # 2. Single-path preview (--path without --upsert) -> derived preview path
+    #    so we NEVER overwrite the main baseline.
+    # 3. Full-corpus or --upsert -> timestamped artefact under data/, plus
+    #    a refreshed `qualification_latest.jsonl` pointer used by ingest.
     if output_jsonl:
         out_jsonl = Path(output_jsonl)
         out_report = Path(output_report) if output_report else out_jsonl.with_name(out_jsonl.stem + "_report.txt")
+        write_pointer = False
     elif scan_path and not upsert:
         leaf = Path(scan_path).resolve().name
         # Sanitize: keep alnum, dash, underscore; replace others with "_"
         slug = "".join(c if (c.isalnum() or c in "-_") else "_" for c in leaf).strip("_") or "preview"
-        out_jsonl = DATA_DIR / f"qualification_preview_{slug}.jsonl"
-        out_report = DATA_DIR / f"qualification_preview_{slug}_report.txt"
+        out_jsonl = DATA_DIR / f"qualification_preview_{slug}_{run_stamp}.jsonl"
+        out_report = DATA_DIR / f"qualification_preview_{slug}_{run_stamp}_report.txt"
+        write_pointer = False
     else:
-        out_jsonl = QUALIFICATION_JSONL
-        out_report = Path(output_report) if output_report else QUALIFICATION_REPORT
+        out_jsonl = stamped_path("qualification", "jsonl", DATA_DIR, run_stamp)
+        out_report = stamped_path("qualification", "report.txt", DATA_DIR, run_stamp)
+        write_pointer = True
 
     nworkers = workers or max(1, (os.cpu_count() or 4) - 1)
     logger.info("Loaded config: run_id=%s, schema_v=%d", cfg.curation_run_id, cfg.schema_version)
@@ -144,7 +159,7 @@ def run_qualify(
                         "tier": "drop",
                         "curation_run_id": cfg.curation_run_id,
                         "source": source,
-                        "file_path": str(f).replace("\\", "/"),
+                        "file_path": to_posix_rel(f),
                         "original_stem": f.stem,
                         "gate_failures": ["file_too_large"],
                         "is_english": False,
@@ -170,7 +185,7 @@ def run_qualify(
                             "tier": "drop",
                             "curation_run_id": cfg.curation_run_id,
                             "source": source,
-                            "file_path": str(f).replace("\\", "/"),
+                            "file_path": to_posix_rel(f),
                             "original_stem": f.stem,
                             "gate_failures": ["file_too_large"],
                             "is_english": False,
@@ -279,6 +294,10 @@ def run_qualify(
     logger.info("Wrote: %s", out_jsonl)
     logger.info("Wrote: %s", out_report)
 
+    # Update canonical *_latest pointers + auto-cleanup older runs.
+    if write_pointer:
+        _refresh_pointer_and_cleanup(out_jsonl, out_report)
+
 
 def _write_report(
     path: Path,
@@ -341,15 +360,39 @@ def _write_report(
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
+def _refresh_pointer_and_cleanup(stamped_jsonl: Path, stamped_report: Path) -> None:
+    """Refresh `qualification_latest.{jsonl,report.txt}` pointers and prune old runs."""
+    for kind, ext, src in [
+        ("qualification", "jsonl", stamped_jsonl),
+        ("qualification", "report.txt", stamped_report),
+    ]:
+        ptr = latest_pointer(kind, ext)
+        if ptr.exists() or ptr.is_symlink():
+            try:
+                ptr.unlink()
+            except OSError:
+                pass
+        ptr.write_bytes(src.read_bytes())
+    deleted_jsonl = cleanup_old("qualification", "jsonl", keep=DEFAULT_KEEP)
+    deleted_report = cleanup_old("qualification", "report.txt", keep=DEFAULT_KEEP)
+    if deleted_jsonl or deleted_report:
+        logger.info("Cleanup: removed %d old qualification jsonl + %d old reports",
+                    len(deleted_jsonl), len(deleted_report))
+
+
 def sample_tier(
     tier: str,
     source: str | None = None,
     n: int = 10,
     jsonl_path: str | None = None,
 ) -> None:
-    """Print N random samples from a tier. Reads qualification_v2.jsonl."""
+    """Print N random samples from a tier. Reads the latest qualification jsonl."""
     import random
-    src_path = Path(jsonl_path) if jsonl_path else QUALIFICATION_JSONL
+    if jsonl_path:
+        src_path = Path(jsonl_path)
+    else:
+        latest = resolve_latest("qualification", "jsonl")
+        src_path = latest if latest else QUALIFICATION_JSONL
     if not src_path.exists():
         print(f"Run qualify first: {src_path} not found.")
         return
@@ -378,9 +421,11 @@ def sample_tier(
               f"nodes={row['explanation_node_count']} causal={row['causal_phrase_count']} "
               f"tech={row['technique_mentions']} ({','.join(row['techniques_found'][:3])}) "
               f"en_ratio={row['english_word_ratio']}")
-        # Show first 200 chars of the actual SGF root comment for context
+        # Show first 200 chars of the actual SGF root comment for context.
+        # file_path is now POSIX-relative-to-repo-root.
         try:
-            sgf_text = Path(row["file_path"]).read_text(encoding="utf-8", errors="replace")
+            from tools.yen_sei.data_paths import from_posix_rel
+            sgf_text = from_posix_rel(row["file_path"]).read_text(encoding="utf-8", errors="replace")
             import re as _re
             m = _re.search(r"C\[((?:[^\\\]]|\\.)*?)\]", sgf_text)
             if m:
