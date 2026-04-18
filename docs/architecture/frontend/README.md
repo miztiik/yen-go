@@ -52,7 +52,7 @@ frontend/
 
 The frontend does:
 
-- Fetch static SGF/JSON from `yengo-puzzle-collections/`
+- Fetch static SGF/DB from configurable data URL (`VITE_DATA_BASE_URL` in production, local path in dev)
 - Parse SGF in browser (~5KB parser)
 - Render Go board (Canvas, not WebGL)
 - Validate moves against solution trees
@@ -64,6 +64,7 @@ The frontend does NOT:
 - Calculate Go moves
 - Run AI inference
 - Store data on servers
+- Bundle puzzle data into the Pages artifact
 
 ## Component Documentation
 

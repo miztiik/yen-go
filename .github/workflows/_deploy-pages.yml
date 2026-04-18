@@ -2,6 +2,12 @@ name: _Build and Deploy to GitHub Pages
 
 on:
   workflow_call:
+    inputs:
+      data_base_url:
+        description: 'External data base URL for puzzle assets'
+        required: false
+        type: string
+        default: ''
     outputs:
       page_url:
         description: 'The deployed GitHub Pages URL'
@@ -49,15 +55,11 @@ jobs:
           npm run build
         env:
           NODE_ENV: production
+          VITE_DATA_BASE_URL: ${{ inputs.data_base_url }}
 
-      - name: Bundle puzzle collections into build output
+      - name: Bundle config into build output
         run: |
-          cp -r yengo-puzzle-collections frontend/dist/yengo-puzzle-collections
           cp -r config frontend/dist/config
-          # Remove backend-only files not needed by the frontend
-          rm -f frontend/dist/yengo-puzzle-collections/yengo-content.db
-          rm -rf frontend/dist/yengo-puzzle-collections/.puzzle-inventory-state
-          rm -f frontend/dist/yengo-puzzle-collections/.batch-state.json
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5

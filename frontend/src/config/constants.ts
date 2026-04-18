@@ -62,9 +62,20 @@ export interface AppConstantsType {
  */
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
 
+/**
+ * Data base URL for puzzle assets (DB, SGF files).
+ *
+ * When `VITE_DATA_BASE_URL` is set (production), puzzle data is fetched
+ * from that origin (e.g. raw.githubusercontent.com). Otherwise falls back
+ * to the same-origin Pages path for local development.
+ */
+const DATA_BASE = import.meta.env.VITE_DATA_BASE_URL
+  ? import.meta.env.VITE_DATA_BASE_URL.replace(/\/$/, '')
+  : `${BASE}/yengo-puzzle-collections`;
+
 export const APP_CONSTANTS: AppConstantsType = {
   paths: {
-    cdnBase: `${BASE}/yengo-puzzle-collections`,
+    cdnBase: DATA_BASE,
     configBase: `${BASE}/config`,
   },
   sounds: {

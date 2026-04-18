@@ -1,9 +1,11 @@
 import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
+import { APP_CONSTANTS } from '@/config/constants';
 
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
-const DB_PATH = `${BASE}/yengo-puzzle-collections/yengo-search.db`;
-const DB_VERSION_PATH = `${BASE}/yengo-puzzle-collections/db-version.json`;
-const WASM_PATH = `${BASE}/sql-wasm.wasm`;
+const CDN_BASE = APP_CONSTANTS.paths.cdnBase;
+const DB_PATH = `${CDN_BASE}/yengo-search.db`;
+const DB_VERSION_PATH = `${CDN_BASE}/db-version.json`;
+const WASM_BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
+const WASM_PATH = `${WASM_BASE}/sql-wasm.wasm`;
 const DB_VERSION_KEY = 'yen-go-db-version';
 
 let db: Database | null = null;

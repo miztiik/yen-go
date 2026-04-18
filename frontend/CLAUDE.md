@@ -30,7 +30,7 @@ The app is deployed to GitHub Pages at `https://{user}.github.io/yen-go/`. All U
 | --------------------- | --------------------------------------------------------------------------------------------------- |
 | **Base path**         | `base: '/yen-go/'` in `vite.config.ts` → `import.meta.env.BASE_URL` = `'/yen-go/'`                  |
 | **Asset URLs**        | Vite auto-prefixes built JS/CSS/HTML `href`/`src` with base                                         |
-| **Data fetch URLs**   | `APP_CONSTANTS` in `config/constants.ts` derives paths from `import.meta.env.BASE_URL`              |
+| **Data fetch URLs**   | `APP_CONSTANTS` in `config/constants.ts` derives `cdnBase` from `VITE_DATA_BASE_URL` (production: raw.githubusercontent.com) or `BASE_URL` (dev) |
 | **Route parsing**     | `parseRoute()` strips base prefix before matching; `serializeRoute()` prepends it                   |
 | **SPA deep links**    | `public/404.html` redirects to `/?p=...`; inline script in `index.html` restores via `replaceState` |
 | **In-app navigation** | `navigateTo()` uses `pushState` with base-prefixed URLs (client-side, no server)                    |
@@ -40,7 +40,7 @@ The app is deployed to GitHub Pages at `https://{user}.github.io/yen-go/`. All U
 | File                          | Role                                                                 |
 | ----------------------------- | -------------------------------------------------------------------- |
 | `vite.config.ts`              | `base: '/yen-go/'` — single source of truth for base path            |
-| `src/config/constants.ts`     | All data/sound/config paths prefixed with `import.meta.env.BASE_URL` |
+| `src/config/constants.ts`     | Data paths from `VITE_DATA_BASE_URL` (prod) or `BASE_URL` (dev); sounds/config from `BASE_URL` |
 | `src/lib/routing/routes.ts`   | `parseRoute` strips base; `serializeRoute` prepends base             |
 | `index.html`                  | SPA redirect receiver (reads `?p=` from 404 redirect, restores path) |
 | `public/404.html`             | GitHub Pages SPA redirect (encodes path as `?p=` query param)        |
@@ -158,7 +158,6 @@ Level, tag, and quality metadata is loaded from `config/*.json` via **Vite JSON 
 
 - NO server API calls -- fetch static SGF/JSON files only
 - NO AI or move computation -- validate against pre-computed solution trees
-- NO blocking computation >100ms
 - All user data in `localStorage` only
 - Graceful degradation when localStorage unavailable
 

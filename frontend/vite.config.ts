@@ -102,6 +102,11 @@ export default defineConfig({
   define: {
     CLIENT: JSON.stringify(true),
     SERVER: JSON.stringify(false),
+    __DATA_ORIGIN__: JSON.stringify(
+      process.env.VITE_DATA_BASE_URL
+        ? new URL(process.env.VITE_DATA_BASE_URL).origin
+        : ''
+    ),
   },
   plugins: [
     serveRootStaticFiles(), // Must be first to intercept before public/ serving
@@ -164,7 +169,53 @@ export default defineConfig({
             },
           },
           {
-            // Cache external puzzle data with network-first
+            // Cache cross-origin SQLite database (stale-while-revalidate)
+            urlPattern: /^https:\/\/raw\.githubusercontent\.com\/.*\.db$/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'puzzle-db-cache',
+              expiration: {
+                maxEntries: 2,
+                maxAgeSeconds: 60 * 60 * 24, // 1 day
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            // Cache cross-origin SGF puzzle files (cache-first, content-addressed)
+            urlPattern: /^https:\/\/raw\.githubusercontent\.com\/.*\.sgf$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'puzzle-sgf-cache',
+              expiration: {
+                maxEntries: 500,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            // Cache cross-origin JSON data (db-version, puzzle JSON)
+            urlPattern: /^https:\/\/raw\.githubusercontent\.com\/.*\.json$/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'puzzle-data-cache',
+              networkTimeoutSeconds: 5,
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            // Cache other external JSON data with network-first
             urlPattern: /^https:\/\/.*\.json$/i,
             handler: 'NetworkFirst',
             options: {

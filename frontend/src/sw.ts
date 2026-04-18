@@ -9,6 +9,12 @@
 declare const self: ServiceWorkerGlobalScope;
 
 /**
+ * Build-time injected data origin (e.g. 'https://raw.githubusercontent.com').
+ * Empty string when VITE_DATA_BASE_URL is not set (local dev).
+ */
+declare const __DATA_ORIGIN__: string;
+
+/**
  * SyncEvent type for Background Sync API.
  * Not included in standard TypeScript lib.
  */
@@ -17,9 +23,9 @@ interface SyncEvent extends ExtendableEvent {
   readonly lastChance: boolean;
 }
 
-const CACHE_NAME = 'yen-go-v1';
-const STATIC_CACHE = 'yen-go-static-v1';
-const PUZZLE_CACHE = 'yen-go-puzzles-v1';
+const CACHE_NAME = 'yen-go-v2';
+const STATIC_CACHE = 'yen-go-static-v2';
+const PUZZLE_CACHE = 'yen-go-puzzles-v2';
 
 /**
  * Static assets to pre-cache during installation.
@@ -113,23 +119,46 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
 });
 
 /**
+ * Allowed origins for fetch handling: app origin + optional external data origin.
+ */
+const ALLOWED_ORIGINS = new Set<string>([location.origin]);
+if (__DATA_ORIGIN__) {
+  ALLOWED_ORIGINS.add(__DATA_ORIGIN__);
+}
+
+/**
+ * Check if a URL is a puzzle data request (DB, SGF, puzzle JSON).
+ */
+function isPuzzleDataRequest(url: URL): boolean {
+  return (
+    CACHE_PATTERNS.puzzles.test(url.pathname) ||
+    CACHE_PATTERNS.sgf.test(url.pathname) ||
+    CACHE_PATTERNS.db.test(url.pathname)
+  );
+}
+
+/**
  * Fetch event - handle requests with appropriate caching strategy.
  */
 self.addEventListener('fetch', (event: FetchEvent) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Only handle same-origin requests
-  if (url.origin !== location.origin) {
+  // Only handle requests from allowed origins
+  if (!ALLOWED_ORIGINS.has(url.origin)) {
     return;
   }
 
-  // Determine caching strategy based on request URL
-  if (
-    CACHE_PATTERNS.puzzles.test(url.pathname) ||
-    CACHE_PATTERNS.sgf.test(url.pathname) ||
-    CACHE_PATTERNS.db.test(url.pathname)
-  ) {
+  // For cross-origin data requests, use stale-while-revalidate
+  if (url.origin !== location.origin) {
+    if (isPuzzleDataRequest(url)) {
+      event.respondWith(staleWhileRevalidate(request, PUZZLE_CACHE));
+    }
+    return;
+  }
+
+  // Same-origin: determine caching strategy based on request URL
+  if (isPuzzleDataRequest(url)) {
     // Stale-while-revalidate for puzzle data (JSON indexes, SGF, DB files)
     event.respondWith(staleWhileRevalidate(request, PUZZLE_CACHE));
   } else if (CACHE_PATTERNS.wasm.test(url.pathname)) {

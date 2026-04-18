@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'yengo-puzzle-collections/**'
   workflow_dispatch:
 
 permissions:
@@ -24,6 +26,8 @@ jobs:
   deploy:
     name: Build & Deploy
     uses: ./.github/workflows/_deploy-pages.yml
+    with:
+      data_base_url: 'https://raw.githubusercontent.com/miztiik/yen-go/main/yengo-puzzle-collections'
 
   notify-deploy:
     name: Post Deployment Commit Status

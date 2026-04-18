@@ -4,6 +4,7 @@
 
 import type { Puzzle, PuzzleWithId, SkillLevel } from '../../types';
 import { safeParseJson } from '@/utils/safeFetchJson';
+import { APP_CONSTANTS } from '@/config/constants';
 
 /**
  * Result of loading a puzzle.
@@ -35,10 +36,8 @@ export interface LoaderConfig {
 /**
  * Default configuration for production.
  */
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
-
 const DEFAULT_CONFIG: LoaderConfig = {
-  baseUrl: `${BASE}/yengo-puzzle-collections/data`,
+  baseUrl: `${APP_CONSTANTS.paths.cdnBase}/data`,
   validateOnLoad: true,
   timeout: 10000,
   maxRetries: 3,

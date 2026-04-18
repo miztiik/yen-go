@@ -228,14 +228,19 @@ npm run preview
 
 ```bash
 # .env.production
-VITE_API_BASE=/yen-go
-VITE_PUZZLE_PATH=/sgf
+VITE_DATA_BASE_URL=https://raw.githubusercontent.com/miztiik/yen-go/main/yengo-puzzle-collections
 ```
+
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `VITE_DATA_BASE_URL` | External data base URL for puzzle assets (DB, SGF). When set, the frontend fetches puzzle data from this URL instead of the same-origin Pages path. | Unset (falls back to `${BASE_URL}/yengo-puzzle-collections`) |
 
 Access in code:
 
 ```typescript
-const basePath = import.meta.env.VITE_API_BASE;
+// All data paths flow through APP_CONSTANTS.paths.cdnBase
+import { APP_CONSTANTS } from '@/config/constants';
+const dbUrl = `${APP_CONSTANTS.paths.cdnBase}/yengo-search.db`;
 ```
 
 ### Base Path
@@ -248,6 +253,12 @@ export default defineConfig({
   base: "/yen-go/",
 });
 ```
+
+### Data Hosting Architecture
+
+Puzzle data files (yengo-search.db, SGF files, db-version.json) live in the repository at `yengo-puzzle-collections/`. In production, the frontend fetches these from `raw.githubusercontent.com` via `VITE_DATA_BASE_URL`. The GitHub Pages artifact contains only the app bundle - no puzzle data.
+
+In local development, when `VITE_DATA_BASE_URL` is not set, the Vite dev server serves puzzle data from the local filesystem via the `serveRootStaticFiles` plugin.
 
 ---
 
@@ -270,10 +281,13 @@ Configure CDN/hosting for:
 
 ### Puzzle Data
 
-Puzzles in `yengo-puzzle-collections/` use versioned paths:
+Puzzle data is fetched at runtime from `VITE_DATA_BASE_URL` (production) or local filesystem (development). The data is NOT bundled into the Pages artifact.
 
 ```
-/sgf/intermediate/2026/01/batch-001/puzzle.sgf
+# Content-addressed SGF files (immutable, cacheable)
+sgf/0001/abc123def456.sgf
+# SQLite search index
+yengo-search.db
 ```
 
 ---
