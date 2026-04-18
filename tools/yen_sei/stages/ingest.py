@@ -42,11 +42,18 @@ def _safe_stem(stem: str) -> str:
 def run_ingest(
     qualification_jsonl: str | None = None,
     config_path: str | None = None,
-    tiers: tuple[str, ...] = ("gold", "silver", "bronze"),
+    tiers: tuple[str, ...] = ("gold", "silver"),
     dry_run: bool = False,
     clean: bool = True,
 ) -> None:
-    """Copy qualified SGFs into data/sources/ with tier-prefixed names."""
+    """Copy qualified SGFs into data/sources/ with tier-prefixed names.
+
+    Default tiers are ("gold", "silver"). Bronze is excluded by default because
+    it is below the SFT-quality bar — it qualifies as "structurally-valid teaching
+    content" but fails one or more depth/causal/refutation thresholds and would
+    introduce noise into training. Pass --tiers gold,silver,bronze explicitly if
+    you need bronze for a specific evaluation/exploration use case.
+    """
     set_context(stage="ingest")
     cfg = load_config(config_path)
     qual_path = Path(qualification_jsonl) if qualification_jsonl else QUALIFICATION_JSONL
