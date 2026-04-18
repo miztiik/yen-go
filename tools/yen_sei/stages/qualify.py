@@ -72,14 +72,31 @@ def run_qualify(
         source_name: Override the auto-detected source name (only meaningful with scan_path).
             By default, source = first path segment under external-sources/.
         upsert: When True with scan_path, MERGE results into the existing qualification jsonl
-            by replacing rows with matching file_path. When False, the jsonl is overwritten
-            with only the newly scanned rows. Output report always reflects ONLY the new scan.
+            by replacing rows with matching file_path. When False AND scan_path is set, results
+            are written to a derived preview file (qualification_preview_<leaf>.jsonl) so the
+            main baseline is never overwritten by a single-folder run.
     """
     set_context(stage="qualify")
     cfg = load_config(config_path)
-    out_jsonl = Path(output_jsonl) if output_jsonl else QUALIFICATION_JSONL
-    out_report = Path(output_report) if output_report else QUALIFICATION_REPORT
     DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Output path resolution rules (ordered):
+    # 1. Explicit --output-jsonl wins.
+    # 2. Full-corpus scan or --upsert => main qualification_v2.jsonl.
+    # 3. Single-path preview (--path without --upsert) => derived preview path
+    #    named after the leaf folder, so we NEVER overwrite the main baseline.
+    if output_jsonl:
+        out_jsonl = Path(output_jsonl)
+        out_report = Path(output_report) if output_report else out_jsonl.with_name(out_jsonl.stem + "_report.txt")
+    elif scan_path and not upsert:
+        leaf = Path(scan_path).resolve().name
+        # Sanitize: keep alnum, dash, underscore; replace others with "_"
+        slug = "".join(c if (c.isalnum() or c in "-_") else "_" for c in leaf).strip("_") or "preview"
+        out_jsonl = DATA_DIR / f"qualification_preview_{slug}.jsonl"
+        out_report = DATA_DIR / f"qualification_preview_{slug}_report.txt"
+    else:
+        out_jsonl = QUALIFICATION_JSONL
+        out_report = Path(output_report) if output_report else QUALIFICATION_REPORT
 
     nworkers = workers or max(1, (os.cpu_count() or 4) - 1)
     logger.info("Loaded config: run_id=%s, schema_v=%d", cfg.curation_run_id, cfg.schema_version)
