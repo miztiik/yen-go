@@ -4,6 +4,22 @@
 
 Fine-tune a small language model to generate teaching hints for Go (Baduk/Weiqi) tsumego puzzles. The model replaces GPT-4o API calls in `tools/llm-teaching-agent/` and can also run in the browser via WASM for on-demand hints.
 
+## How to train (1-page quickstart)
+
+The data pipeline (qualify → ingest → harvest → refine) produces `train.jsonl`, `val.jsonl`, `test.jsonl` in `tools/yen_sei/data/refined/`. Training itself runs on Google Colab Free (T4 GPU). Both notebooks are self-contained: open in Colab, click **Run all**, drop the JSONL files when prompted.
+
+| Step | Notebook | Time | What you do |
+|---|---|---|---|
+| 0 | (already done) `qualify` → `ingest` → `harvest` → `refine` CLI | ~25 min on laptop | `python -m tools.yen_sei qualify && ... ingest && ... harvest && ... refine` |
+| 1 | [`notebooks/02a_model_evaluation.ipynb`](./notebooks/02a_model_evaluation.ipynb) | ~30-45 min | Open in Colab → Runtime: T4 → **Run all** → upload `train.jsonl` + `val.jsonl` when prompted. Outputs `winner.json`. |
+| 2 | [`notebooks/02_train_tier1.ipynb`](./notebooks/02_train_tier1.ipynb) | ~3-6 hr | Set `MODEL_NAME` in CONFIG cell to the winner from step 1 → **Run all** → upload `train.jsonl` + `val.jsonl` + `test.jsonl`. Outputs LoRA adapter + (optional) merged fp16 weights, zipped for download. |
+| 3 | [`notebooks/06_eval_quality.ipynb`](./notebooks/06_eval_quality.ipynb) | ~15 min | (To be implemented) End-to-end quality eval. |
+| 4 | [`notebooks/03_generate_synthetic.ipynb`](./notebooks/03_generate_synthetic.ipynb) | ~2-3 hr | (To be implemented) Use the trained Tier 1 teacher to synthesise additional training data for Tier 2. |
+| 5 | [`notebooks/04_distill_tier2_qwen3.ipynb`](./notebooks/04_distill_tier2_qwen3.ipynb) | ~2-3 hr | (To be implemented) QLoRA-distil Qwen3-0.6B on synthetic data. |
+| 6 | [`notebooks/05_quantize_gguf.ipynb`](./notebooks/05_quantize_gguf.ipynb) | ~10 min | (To be implemented) Q4 GGUF for browser WASM. |
+
+There is **no copy-pasting of code**. The notebooks include all install steps, data loading, training, evaluation, and download/zip packaging.
+
 ## Model Candidates (Under Evaluation)
 
 We evaluate two candidates for the Tier 1 (server) teacher model before committing:
