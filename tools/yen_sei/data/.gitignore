@@ -1,0 +1,8 @@
+# Pipeline artifacts — generated, not tracked
+*.jsonl
+models/
+sources/*.sgf
+*.sgf
+*.txt
+*.json
+*.log

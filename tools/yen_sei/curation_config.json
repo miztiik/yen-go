@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "curation_run_id": "v2.2-2026-04-18",
+  "description": "Single source of truth for yen-sei training data curation. Tighten thresholds to shrink the gold pool; loosen to widen it. All code reads from here; no hardcoded thresholds in stages/*.py.",
+
+  "marker_patterns": {
+    "use_core_constants": true,
+    "_comment_use_core_constants": "When true, MARKER_ONLY_PATTERNS from tools.core.go_teaching_constants is the base set. additional_markers extends it.",
+    "additional_markers": ["te", "bm", "do", "it", "+", "-", "x", "○", "△", "▲", "◯", "◎", "★", "☆", "nope", "ok", "okay"],
+    "marker_prefix_regex": "^(correct|wrong|right|good|bad|nope|incorrect|fail|fails|te|bm|do|it|also correct|also wrong)\\b[\\W:!,. \\-]*",
+    "_comment_marker_prefix_regex": "Stripped from comment START before length scoring. 'Right! RIGHT' → '' after strip.",
+    "marker_anywhere_regex": "\\b(see variation|see diagram|cf\\.?|continued)\\b",
+    "min_chars_after_strip": 20,
+    "_comment_min_chars_after_strip": "If comment after marker stripping is shorter than this, treat as marker-only."
+  },
+
+  "language": {
+    "method": "heuristic",
+    "_comment_method": "'heuristic' = ASCII ratio + stopword count (no deps). 'wordfreq' = use wordfreq library (must be installed). 'both' = require both to pass.",
+    "min_ascii_letter_ratio": 0.6,
+    "_comment_min_ascii_letter_ratio": "Fraction of comment chars that are [A-Za-z ]. Filters out CJK-heavy comments cheaply.",
+    "min_stopword_hits_per_100_chars": 3.0,
+    "_comment_min_stopword_hits": "English function words per 100 chars. ~3.0 is conservative real English text.",
+    "stopwords": ["the", "a", "an", "is", "to", "and", "of", "in", "this", "that", "white", "black", "plays", "play", "move", "after", "if", "then", "because", "since", "so", "but", "with", "for", "on", "at", "be", "are", "was", "were", "will", "can", "must", "should", "would"],
+    "wordfreq_min_zipf": 2.0,
+    "_comment_wordfreq_min_zipf": "Used only when method includes 'wordfreq'. Mean Zipf frequency threshold across tokens.",
+    "strip_cjk_via_core": true,
+    "_comment_strip_cjk_via_core": "Use tools.core.text_cleaner.strip_cjk before any scoring."
+  },
+
+  "hard_gates": {
+    "min_stones": 4,
+    "max_stones": 100,
+    "_comment_max_stones": "Above this is a whole-game record, not a tsumego.",
+    "valid_board_sizes": [9, 13, 19],
+    "min_variations": 2,
+    "_comment_min_variations": "Need at least correct + wrong path in the SGF tree to be a teachable puzzle. May be bypassed by prose_fallback below.",
+    "prose_fallback": {
+      "_comment": "A puzzle that fails min_variations may still pass the teachable_content gate if its prose explains wrong moves inline (the 'classic book' style: Xuan Xuan Qi Jing, Harada, etc.). Both conditions must be met. Set enabled=false to disable and require tree branches.",
+      "enabled": true,
+      "min_correct_explanation_chars": 150,
+      "min_refutation_phrase_count": 2,
+      "refutation_phrases": [
+        "variation", "variations",
+        "if instead", "instead of",
+        "however", "but if", "otherwise",
+        "wrong", "fails", "fail", "failed", "incorrect",
+        "alternatively", "alternative",
+        "black plays", "white plays",
+        "if black", "if white",
+        "would be", "would have",
+        "main line", "side variation",
+        "see following", "see also", "as follows",
+        "mistake", "correct play"
+      ],
+      "_comment_phrases": "Lowercase substrings. Counted as phrase hits in the cleaned comment text. Tuned for English Go-teaching prose; safely conservative."
+    },
+    "exclude_full_games": true,
+    "max_total_moves": 60,
+    "_comment_max_total_moves": "Cap on solution-tree node count. Above this is likely a game record."
+  },
+
+  "tier_rules": {
+    "_comment": "Each tier checked top-down. First match wins. All thresholds within a tier are AND-ed (the 'structural path'). A tier may optionally define a 'prose_path' that is an alternative content-shape route for puzzles whose wrong-move teaching lives in PROSE inside one big C[] comment instead of in tree branches (classic-book style: Xuan Xuan Qi Jing, Harada, etc.). Both paths are content-driven and contain no source names.",
+    "gold": {
+      "min_correct_explanation_chars": 100,
+      "min_wrong_explanation_chars": 50,
+      "min_explanation_node_count": 2,
+      "min_causal_phrases": 2,
+      "min_english_word_ratio": 0.7,
+      "min_technique_mentions": 1,
+      "prose_path": {
+        "_comment": "Alternative gold path for prose-rich classic-book style. Wrong-move teaching counted as either tree-branch chars OR in-prose refutation phrases.",
+        "min_correct_explanation_chars": 400,
+        "min_refutation_phrase_count": 5,
+        "min_causal_phrases": 5,
+        "min_technique_mentions": 3,
+        "min_english_word_ratio": 0.7
+      },
+      "_comment": "Cho-Chikun-grade examples. Long correct explanation, multiple wrong-move analyses, cites techniques, uses causal language."
+    },
+    "silver": {
+      "min_correct_explanation_chars": 60,
+      "min_wrong_explanation_chars": 30,
+      "min_explanation_node_count": 1,
+      "min_causal_phrases": 1,
+      "min_english_word_ratio": 0.6,
+      "min_technique_mentions": 0,
+      "prose_path": {
+        "_comment": "Alternative silver path for solid prose-style teaching that doesn't reach gold prose threshold.",
+        "min_correct_explanation_chars": 200,
+        "min_refutation_phrase_count": 3,
+        "min_causal_phrases": 2,
+        "min_technique_mentions": 1,
+        "min_english_word_ratio": 0.6
+      },
+      "_comment": "Solid teaching content but less rich. Useful for training at 1x weight."
+    },
+    "bronze": {
+      "min_correct_explanation_chars": 40,
+      "min_wrong_explanation_chars": 0,
+      "min_explanation_node_count": 1,
+      "min_causal_phrases": 0,
+      "min_english_word_ratio": 0.5,
+      "min_technique_mentions": 0,
+      "_comment": "Marginal. Held back unless gold+silver pool is too small."
+    }
+  },
+
+  "source_overrides": {
+    "_comment": "Per-source caps and notes. tier_cap='gold' means this source can reach gold; tier_cap='silver' caps at silver even if signals qualify; tier_cap='drop' excludes entirely.",
+    "authors": {"tier_cap": "gold", "weight_multiplier": 1.5, "notes": "Harada professional commentary; pro-grade voice."},
+    "gogameguru": {"tier_cap": "gold", "weight_multiplier": 1.5, "notes": "Pro commentary; small but high quality."},
+    "ogs": {"tier_cap": "gold", "weight_multiplier": 1.0, "notes": "Curated collections + community; mixed quality."},
+    "goproblems": {"tier_cap": "gold", "weight_multiplier": 1.0, "notes": "Largest source; community-authored."},
+    "blacktoplay": {"tier_cap": "gold", "weight_multiplier": 1.0, "notes": "Curated drills with teaching."},
+    "kisvadim-goproblems": {"tier_cap": "silver", "weight_multiplier": 0.8, "notes": "Mostly drill content; rarely rich teaching."},
+    "tsumegodragon": {"tier_cap": "silver", "weight_multiplier": 0.8, "notes": "Deep variations but sparse comments."},
+    "ambak-tsumego": {"tier_cap": "silver", "weight_multiplier": 0.8, "notes": "Drill-style with brief comments."},
+    "t-hero": {"tier_cap": "silver", "weight_multiplier": 0.8, "notes": "Level-graded but light on prose."},
+    "goproblems_difficulty_based": {"tier_cap": "silver", "weight_multiplier": 0.8, "notes": "Difficulty grading, marginal teaching."},
+    "101weiqi": {"tier_cap": "bronze", "weight_multiplier": 0.5, "notes": "Mostly Chinese; few English comments."},
+    "gotools": {"tier_cap": "drop", "weight_multiplier": 0.0, "notes": "Pure drill markers, zero teaching content."},
+    "syougo": {"tier_cap": "drop", "weight_multiplier": 0.0, "notes": "Japanese-only commentary."},
+    "misc": {"tier_cap": "bronze", "weight_multiplier": 0.5, "notes": "Mixed bag, manual review needed."}
+  },
+
+  "filename_convention": {
+    "pattern": "{tier}_{source}_{original_stem}.sgf",
+    "_comment": "Tier prefix lets harvest read tier from filename without parsing SGF. Use full words gold_/silver_/bronze_ for clarity.",
+    "example": "gold_authors_harada-life-001.sgf"
+  },
+
+  "training_weights": {
+    "_comment": "Sample-weight multipliers for refine stage. Integer multiplier rounds up via round(). gold examples appear N times in train.jsonl. Set tier weight to 0.0 to exclude that tier entirely from train AND val/test.",
+    "gold": 3.0,
+    "silver": 1.0,
+    "bronze": 1.0
+  },
+
+  "split_ratios": {
+    "train": 0.8,
+    "val": 0.1,
+    "test": 0.1,
+    "_comment": "Splits are stratified by tier so val/test contain proportional gold/silver/bronze."
+  },
+
+  "dedup": {
+    "method": "position_hash",
+    "_comment_method": "Hash of (board_size, sorted black stones, sorted white stones, player_to_move). On collision, keep highest-tier copy.",
+    "tie_break": "longest_correct_comment"
+  }
+}
