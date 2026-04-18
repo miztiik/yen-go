@@ -86,8 +86,8 @@ def main() -> int:
     ingest_parser.add_argument("--config", type=str, help="Path to curation_config.json")
     ingest_parser.add_argument("--qualification", type=str, help="Path to qualification_v2.jsonl")
     ingest_parser.add_argument(
-        "--tiers", type=str, default="gold,silver,bronze",
-        help="Comma-separated tiers to ingest (default: gold,silver,bronze)",
+        "--tiers", type=str, default="gold,silver",
+        help="Comma-separated tiers to ingest (default: gold,silver — bronze excluded as below SFT-quality bar)",
     )
     ingest_parser.add_argument(
         "--dry-run", action="store_true",
