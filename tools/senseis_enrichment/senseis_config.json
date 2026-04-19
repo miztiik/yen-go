@@ -5,7 +5,7 @@
   "problem_count": 347,
   "problem_page_pattern": "/?XuanxuanQijingProblem{N}",
   "solution_page_pattern": "/?XuanxuanQijingProblem{N}%2FSolution",
-  "local_dir": "external-sources/kisvadim-goproblems/TSUMEGO CLASSIC - Xuan Xuan Qi Jing",
+  "local_dir": "external-sources/authors/TSUMEGO CLASSIC - Xuan Xuan Qi Jing",
   "enriched_dir_suffix": "-enriched",
   "local_filename_pattern": "{N:04d}.sgf",
   "board_size": 19,

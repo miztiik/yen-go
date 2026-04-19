@@ -1,0 +1,71 @@
+{
+  "collection_slug": "gokyo-shumyo",
+  "senseis_base_url": "https://senseis.xmp.net",
+  "index_page": "/?GokyoShumyoTsumegoSeries",
+  "problem_count": 520,
+  "local_dir": "external-sources/authors/TSUMEGO CLASSIC - GOKYO SHUMYO",
+  "enriched_dir_suffix": "-enriched",
+  "local_filename_pattern": "{N:04d}.sgf",
+  "board_size": 19,
+  "rate_limit_seconds": 3.0,
+  "rate_limit_jitter": 1.0,
+  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+  "sections": [
+    {
+      "number": 1,
+      "name": "Live",
+      "japanese": "生之部",
+      "senseis_prefix": "GokyoShumyoSection1Problem",
+      "count": 103
+    },
+    {
+      "number": 2,
+      "name": "Kill",
+      "japanese": "死之部",
+      "senseis_prefix": "GokyoShumyoSection2Problem",
+      "count": 71
+    },
+    {
+      "number": 3,
+      "name": "Ko",
+      "japanese": "劫之部",
+      "senseis_prefix": "GokyoShumyoSection3Problem",
+      "count": 90
+    },
+    {
+      "number": 4,
+      "name": "Attack",
+      "japanese": "攻之部",
+      "senseis_prefix": "GokyoShumyoSection4Problem",
+      "count": 96
+    },
+    {
+      "number": 5,
+      "name": "Chasing",
+      "japanese": "追落之部",
+      "senseis_prefix": "GokyoShumyoSection5Problem",
+      "count": 40
+    },
+    {
+      "number": 6,
+      "name": "Connect",
+      "japanese": "盤之部",
+      "senseis_prefix": "GokyoShumyoSection6Problem",
+      "count": 74
+    },
+    {
+      "number": 7,
+      "name": "Mixed",
+      "japanese": "挟,点,続,断,征之部",
+      "senseis_prefix": "GokyoShumyoSection7Problem",
+      "count": 46,
+      "number_list": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+        11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+        21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+        31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+        41, 50, 52, 54, 56, 58
+      ]
+    }
+  ]
+}

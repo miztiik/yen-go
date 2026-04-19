@@ -1,0 +1,15 @@
+{
+  "collection_slug": "kyu-exercises",
+  "senseis_base_url": "https://senseis.xmp.net",
+  "index_page": "/?KyuExercises",
+  "problem_count": 215,
+  "problem_page_pattern": "/?KyuExercise{N}",
+  "solution_page_pattern": "/?KyuExercise{N}%2FSolution",
+  "local_dir": "external-sources/authors/Senseis - Kyu Exercises",
+  "enriched_dir_suffix": "-enriched",
+  "local_filename_pattern": "{N:04d}.sgf",
+  "board_size": 19,
+  "rate_limit_seconds": 3.0,
+  "rate_limit_jitter": 1.0,
+  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+}

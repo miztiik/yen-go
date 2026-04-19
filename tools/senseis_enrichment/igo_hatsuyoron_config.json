@@ -1,0 +1,27 @@
+{
+  "collection_slug": "igo-hatsuyoron",
+  "senseis_base_url": "https://senseis.xmp.net",
+  "index_page": "/?IgoHatsuyoRonProblems",
+  "problem_count": 183,
+  "problem_page_pattern": "/?IgoHatsuyoRonProblem{N}",
+  "solution_page_pattern": "/?IgoHatsuyoRonProblem{N}%2FSolution",
+  "local_dir": "external-sources/authors/Igo Hatsuyo-ron/batch-001",
+  "enriched_dir_suffix": "-enriched",
+  "local_filename_pattern": "problem_{N:04d}_p{N}.sgf",
+  "board_size": 19,
+  "rate_limit_seconds": 3.0,
+  "rate_limit_jitter": 1.0,
+  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+  "sections": [
+    {"number": 1, "name": "Live", "range": [1, 30], "count": 30},
+    {"number": 2, "name": "Kill", "range": [31, 62], "count": 32},
+    {"number": 3, "name": "Play Inside", "range": [63, 76], "count": 14},
+    {"number": 4, "name": "Ko", "range": [77, 103], "count": 27},
+    {"number": 5, "name": "Capturing Race", "range": [104, 120], "count": 17},
+    {"number": 6, "name": "Connecting Underneath", "range": [121, 131], "count": 11},
+    {"number": 7, "name": "Wedge", "range": [132, 139], "count": 8},
+    {"number": 8, "name": "Oiotoshi", "range": [140, 155], "count": 16},
+    {"number": 9, "name": "Net", "range": [156, 169], "count": 14},
+    {"number": 10, "name": "Escaping", "range": [170, 183], "count": 14}
+  ]
+}

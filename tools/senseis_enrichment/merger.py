@@ -13,6 +13,7 @@ from pathlib import Path
 
 from tools.core.sgf_parser import SgfNode, SgfTree, parse_sgf, read_sgf_file
 from tools.core.sgf_builder import SGFBuilder
+from tools.core.sgf_types import Color, Point
 from tools.core.text_cleaner import strip_cjk
 
 from tools.senseis_enrichment.config import SenseisConfig
@@ -32,8 +33,11 @@ logger = logging.getLogger("senseis_enrichment.merger")
 
 # Senseis difficulty terms -> puzzle-levels.json slugs
 _SENSEIS_DIFFICULTY_TO_SLUG: dict[str, str] = {
-    "advanced": "advanced",  # 5k-1k
-    "expert": "expert",      # 7d-9d
+    "beginner": "beginner",          # 25k-21k
+    "elementary": "elementary",      # 20k-16k
+    "intermediate": "intermediate",  # 15k-11k
+    "advanced": "advanced",          # 5k-1k
+    "expert": "expert",              # 7d-9d
 }
 
 # Pattern to collapse empty parens left after CJK stripping
@@ -59,6 +63,9 @@ def _sanitize_for_sgf(text: str) -> str:
 def prepare_enriched_directory(config: SenseisConfig) -> Path:
     """Copy original directory to enriched sibling (if not already done).
 
+    In download mode (source dir doesn't exist), creates an empty enriched
+    directory instead of copying.
+
     Returns path to the enriched directory.
     """
     source_dir = config.enriched_dir().parent / config.enriched_dir().name.replace(
@@ -67,9 +74,14 @@ def prepare_enriched_directory(config: SenseisConfig) -> Path:
     enriched = config.enriched_dir()
 
     if not enriched.exists():
-        logger.info("Copying %s -> %s", source_dir, enriched)
-        shutil.copytree(source_dir, enriched)
-        logger.info("Copied %d files", sum(1 for _ in enriched.glob("*.sgf")))
+        if source_dir.exists():
+            logger.info("Copying %s -> %s", source_dir, enriched)
+            shutil.copytree(source_dir, enriched)
+            logger.info("Copied %d files", sum(1 for _ in enriched.glob("*.sgf")))
+        else:
+            # Download mode: no source dir to copy, create empty enriched dir
+            logger.info("Creating enriched directory (download mode): %s", enriched)
+            enriched.mkdir(parents=True, exist_ok=True)
     else:
         logger.info("Enriched directory already exists: %s", enriched)
 
@@ -119,8 +131,13 @@ def add_solution_commentary(
     """Add commentary from Senseis diagrams to solution tree nodes.
 
     For each diagram: parse its move sequence, match against local tree
-    branches, and attach commentary to the correct node with label
-    coordinates resolved.
+    branches, and attach commentary to the correct node. When local tree
+    lacks moves, build new branches from diagram data.
+
+    Handles three cases:
+      1. Full match — commentary attached to existing node
+      2. Partial match — remaining moves built as new branch from divergence
+      3. No match — entire move sequence built as new branch from root
     """
     if not solution_data.diagrams:
         return
@@ -129,57 +146,101 @@ def add_solution_commentary(
     board_size = tree.board_size
 
     for diagram in solution_data.diagrams:
-        if not diagram.commentary:
-            continue
-
-        # Normalize newlines from cached HTML paragraphs to spaces
-        commentary = " ".join(diagram.commentary.split("\n"))
-
         # Parse the diagram SGF for moves and labels
         seq = parse_diagram_sgf(diagram.sgf_content)
 
-        # Resolve label/move references to board coordinates
-        resolved = resolve_label_references(
-            commentary, seq.labels, seq.moves, transform, board_size
-        )
-        resolved = _sanitize_for_sgf(resolved)
+        # Skip diagrams with neither commentary nor moves
+        if not diagram.commentary and not seq.moves:
+            continue
+
+        commentary = ""
+        if diagram.commentary:
+            # Normalize newlines from cached HTML paragraphs to spaces
+            commentary = " ".join(diagram.commentary.split("\n"))
+
+            # Resolve label/move references to board coordinates
+            commentary = resolve_label_references(
+                commentary, seq.labels, seq.moves, transform, board_size
+            )
+            commentary = _sanitize_for_sgf(commentary)
+
+        if not seq.moves:
+            # No moves in diagram — commentary goes on root node
+            if commentary:
+                label = diagram.diagram_name or "Note"
+                _append_comment(tree.solution_tree, f"({label}) {commentary}")
+            continue
 
         # Find where this diagram's moves match the local tree
         target_node, depth = find_matching_branch(
             tree.solution_tree, seq.moves, transform, board_size
         )
 
-        if target_node is None:
-            # No moves matched at all — attach to root as fallback
-            label = diagram.diagram_name or "Note"
-            text = f"({label}) {resolved}"
-            if tree.solution_tree.children:
-                _append_comment(tree.solution_tree.children[0], text)
-            continue
-
-        if depth == len(seq.moves):
+        if target_node is not None and depth == len(seq.moves):
             # Full match — commentary describes this exact line
-            _append_comment(target_node, resolved)
+            if commentary:
+                _append_comment(target_node, commentary)
+        elif target_node is not None and depth < len(seq.moves):
+            # Partial match — build remaining moves as new variation
+            leaf = _build_move_branch(
+                target_node, seq.moves[depth:], transform, board_size
+            )
+            if commentary:
+                label = diagram.diagram_name or "Variation"
+                _append_comment(leaf, f"({label}) {commentary}")
+        elif seq.moves:
+            # No match at all — build entire sequence as new branch from root
+            leaf = _build_move_branch(
+                tree.solution_tree, seq.moves, transform, board_size
+            )
+            if commentary:
+                label = diagram.diagram_name or "Note"
+                _append_comment(leaf, f"({label}) {commentary}")
+
+
+def _build_move_branch(
+    parent: SgfNode,
+    moves: list[tuple[str, str]],
+    transform: "PositionTransform | None",
+    board_size: int,
+) -> SgfNode:
+    """Build a branch of move nodes from diagram moves, returning the leaf.
+
+    Reuses existing child nodes where moves match (shared prefix detection),
+    only creating new nodes where the diagram diverges from existing branches.
+    """
+    current = parent
+    for color_str, sgf_coord in moves:
+        if transform:
+            p = Point.from_sgf(sgf_coord)
+            p = transform_point(p, board_size, transform)
+            local_coord = p.to_sgf()
         else:
-            # Partial match — diagram diverges after depth moves.
-            # Describe the variation from the divergence point.
-            diverge_move_idx = depth  # 0-based index of first non-matching move
-            if diverge_move_idx < len(seq.moves):
-                color, coord = seq.moves[diverge_move_idx]
-                if transform:
-                    from tools.core.sgf_types import Point
-                    p = Point.from_sgf(coord)
-                    p = transform_point(p, board_size, transform)
-                    local_coord = p.to_sgf()
-                else:
-                    local_coord = coord
-                if diagram.diagram_name:
-                    prefix = f"({diagram.diagram_name})"
-                else:
-                    prefix = f"(If {local_coord})"
-            else:
-                prefix = f"({diagram.diagram_name or 'Variation'})"
-            _append_comment(target_node, f"{prefix} {resolved}")
+            local_coord = sgf_coord
+
+        # Check if this move already exists as a child (shared prefix)
+        existing = None
+        for child in current.children:
+            if (
+                child.color
+                and child.color.value == color_str
+                and child.move
+                and child.move.to_sgf() == local_coord
+            ):
+                existing = child
+                break
+
+        if existing:
+            current = existing
+        else:
+            new_node = SgfNode(
+                move=Point.from_sgf(local_coord),
+                color=Color(color_str),
+            )
+            current.add_child(new_node)
+            current = new_node
+
+    return current
 
 
 def _append_comment(node: SgfNode, text: str) -> None:
@@ -228,6 +289,12 @@ def merge_problem(
 
     # Rebuild SGF using the builder
     builder = SGFBuilder.from_tree(tree)
+
+    # Merge root comment: page metadata + any diagram commentary added to root
+    # (diagrams with no moves attach commentary to tree.solution_tree)
+    root_commentary_from_diagrams = tree.solution_tree.comment
+    if root_commentary_from_diagrams:
+        root_comment = root_comment + "\n" + root_commentary_from_diagrams
     builder.root_comment = root_comment
 
     # Set YG[] difficulty from Senseis mapping

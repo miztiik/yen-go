@@ -155,7 +155,7 @@ def _classify_match(
     except Exception:
         return MatchClass.PARSE_ERROR, "", "", ""
 
-    local_hash, _, _ = canonical_position_hash(
+    local_hash, _ = canonical_position_hash(
         local_tree.black_stones, local_tree.white_stones, local_tree.board_size
     )
 

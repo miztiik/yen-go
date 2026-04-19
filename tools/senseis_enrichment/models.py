@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from tools.core.sgf_types import PositionTransform  # noqa: F401 — re-export for backward compat
+
 
 @dataclass
 class SenseisPageData:
@@ -85,21 +87,6 @@ class SenseisSolutionData:
             preamble_text=d.get("preamble_text", ""),
             status=d.get("status", "ok"),
         )
-
-
-@dataclass
-class PositionTransform:
-    """Rotation/reflection transform to map Senseis coords to local coords."""
-
-    rotation: int = 0  # 0, 90, 180, 270
-    reflect: bool = False  # horizontal reflection after rotation
-
-    def to_dict(self) -> dict:
-        return {"rotation": self.rotation, "reflect": self.reflect}
-
-    @classmethod
-    def from_dict(cls, d: dict) -> PositionTransform:
-        return cls(rotation=d["rotation"], reflect=d["reflect"])
 
 
 @dataclass

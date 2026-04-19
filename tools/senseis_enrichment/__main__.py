@@ -122,6 +122,14 @@ def main() -> None:
         "--refresh", action="store_true",
         help="Delete solution cache before running (re-fetches solution pages with updated parser)",
     )
+    parser.add_argument(
+        "--eval", action="store_true",
+        help="Evaluate enrichment quality against cache truth (post-enrichment validation)",
+    )
+    parser.add_argument(
+        "--eval-pct", type=float, default=40.0,
+        help="Percentage of problems to sample for eval (default: 40)",
+    )
 
     args = parser.parse_args()
     _setup_logging(args.verbose)
@@ -146,6 +154,16 @@ def main() -> None:
         from tools.senseis_enrichment.audit import run_audit
         run_audit(config=config, start=args.start or 1, end=args.end)
         return
+
+    if args.eval:
+        from tools.senseis_enrichment.eval import run_eval
+        report = run_eval(
+            config=config,
+            sample_pct=args.eval_pct,
+            start=args.start,
+            end=args.end,
+        )
+        sys.exit(0 if report.overall_pass else 1)
 
     if args.reset:
         clear_checkpoint(config.working_dir())
