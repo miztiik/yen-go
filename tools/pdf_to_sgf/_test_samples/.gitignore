@@ -1,0 +1,8 @@
+# Downloaded sample PDFs and extracted images (not tracked)
+*.pdf
+extracted/
+key_extracted/
+pages/
+_output/
+*.jsonl
+_test_samples/
