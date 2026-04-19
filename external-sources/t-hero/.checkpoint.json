@@ -1,8 +1,8 @@
 {
   "current_batch": 1,
-  "files_in_current_batch": 0,
+  "files_in_current_batch": 355,
   "version": "1.0.0",
-  "last_updated": "2026-02-24T09:58:06.110590+00:00",
+  "last_updated": "2026-04-13T19:36:28.630821+00:00",
   "collections_completed": [
     "117",
     "104",
@@ -74,7 +74,7 @@
   "current_collection": null,
   "current_collection_name": null,
   "puzzle_index_in_collection": 0,
-  "puzzles_downloaded": 0,
+  "puzzles_downloaded": 355,
   "puzzles_skipped": 8048,
   "puzzles_errors": 3,
   "recent_errors": [
