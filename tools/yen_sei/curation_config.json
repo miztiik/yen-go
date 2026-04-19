@@ -132,17 +132,70 @@
   },
 
   "training_weights": {
-    "_comment": "Sample-weight multipliers for refine stage. Integer multiplier rounds up via round(). gold examples appear N times in train.jsonl. Set tier weight to 0.0 to exclude that tier entirely from train AND val/test.",
-    "gold": 3.0,
+    "_comment": "Sample-weight multipliers for refine stage. ALWAYS 1.0 for all tiers - we do NOT upsample. Duplicating examples does not add information; it just over-weights the optimizer's gradient on those rows and inflates apparent dataset size. Tier balance is achieved at INGEST time via bronze_selection.cap_policy. Set a tier weight to 0.0 to exclude that tier entirely from train+val+test.",
+    "gold": 1.0,
     "silver": 1.0,
     "bronze": 1.0
   },
 
+  "bronze_selection": {
+    "_comment": "Bronze pool is the long tail of qualified puzzles. We keep ALL gold and silver, and selectively admit bronze under criteria + cap so bronze cannot dominate the training distribution. Applied at INGEST time before harvest. Set enabled=false to exclude bronze entirely.",
+    "enabled": true,
+    "criteria": {
+      "min_wrong_explanation_chars": 30,
+      "min_technique_mentions": 1,
+      "min_quality_score": 0.4
+    },
+    "cap_policy": "max_of_gold_silver",
+    "_comment_cap": "'max_of_gold_silver': bronze ingested <= len(gold)+len(silver) so bronze cannot exceed combined high-tier weight. 'fixed': use cap_value. 'unlimited': no cap (not recommended).",
+    "cap_value": 2000,
+    "sort_formula": {
+      "_comment": "Composite quality score for ranking bronze when capped. Higher = kept first. score = a*correct_chars + b*wrong_chars + c*techniques + d*causal + e*english_ratio.",
+      "correct_chars_weight": 1.0,
+      "wrong_chars_weight": 2.0,
+      "techniques_weight": 50.0,
+      "causal_weight": 20.0,
+      "english_ratio_weight": 100.0
+    }
+  },
+
+  "test_sets": [
+    {
+      "id": "marker_only_mixed",
+      "description": "200 marker-only puzzles, mixed sources, no reference prose. Tests pure puzzle-solving capability.",
+      "source": "marker_only",
+      "size": 200,
+      "selectors": {"board_sizes": [9, 13, 19]}
+    },
+    {
+      "id": "marker_only_life_death_19",
+      "description": "150 life-and-death tsumego, 19x19, marker-only.",
+      "source": "marker_only",
+      "size": 150,
+      "selectors": {"board_sizes": [19], "techniques_any": ["life", "death", "kill", "live"]}
+    },
+    {
+      "id": "marker_only_tactical",
+      "description": "100 ladder/snapback/net tactical drills, marker-only.",
+      "source": "marker_only",
+      "size": 100,
+      "selectors": {"techniques_any": ["ladder", "snapback", "net", "throw", "sacrifice"]}
+    },
+    {
+      "id": "heldout_gold_silver",
+      "description": "100 held-out gold+silver with reference prose. Sanity check vs the marker-only sets.",
+      "source": "training_pool",
+      "size": 100,
+      "tiers": ["gold", "silver"],
+      "withhold_from_train": true
+    }
+  ],
+
   "split_ratios": {
-    "train": 0.8,
+    "train": 0.9,
     "val": 0.1,
-    "test": 0.1,
-    "_comment": "Splits are stratified by tier so val/test contain proportional gold/silver/bronze."
+    "test": 0.0,
+    "_comment": "Test split is no longer drawn from the training pool. Test sets are defined explicitly in test_sets[] above and built from marker-only and held-out gold/silver puzzles. Train/val split applies to the remaining training pool only."
   },
 
   "dedup": {

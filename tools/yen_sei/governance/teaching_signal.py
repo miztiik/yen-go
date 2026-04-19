@@ -76,6 +76,13 @@ class TeachingSignals:
     yq_ac: int = 0
     ai_signature_hits: int = 0
 
+    # Solution structure (used by eval test-set generation when there is no
+    # teaching prose to verify against). The first move on each first-level
+    # branch of the solution tree, classified as correct or wrong using the
+    # same is_correct flag the walk already uses.
+    correct_first_move: str = ""
+    wrong_first_moves: list[str] = field(default_factory=list)
+
     # Hard-gate failure list (empty = passes all gates)
     gate_failures: list[str] = field(default_factory=list)
 
@@ -239,6 +246,29 @@ def extract_signals(sgf_path: Path, source: str, cfg: CurationConfig) -> Teachin
 
     if tree.solution_tree:
         _walk(tree.solution_tree, True, signals, cfg, all_text)
+
+    # First-move classification: examine the first-level children of the
+    # solution-tree root. Each branch's first move is the candidate; whether
+    # it's correct/wrong follows the same flag the walk uses. Used by eval
+    # test-set generation when there is no teaching prose to verify against.
+    if tree.solution_tree:
+        for child in tree.solution_tree.children:
+            if child.move is None:
+                continue
+            try:
+                move = child.move.to_sgf()
+            except Exception:
+                continue
+            child_correct = bool(child.is_correct)
+            props = child.properties or {}
+            if "TE" in props:
+                child_correct = True
+            if "BM" in props:
+                child_correct = False
+            if child_correct and not signals.correct_first_move:
+                signals.correct_first_move = move
+            elif not child_correct and move not in signals.wrong_first_moves:
+                signals.wrong_first_moves.append(move)
 
     # English-ness on the concatenation of all teaching text
     combined = " ".join(all_text)

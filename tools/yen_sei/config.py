@@ -53,7 +53,7 @@ SELECTION_MIN_SCORE = 0.5  # Tier A threshold
 DEFAULT_MIN_COMMENT_LENGTH = 80
 
 # Train/val/test split ratios
-SPLIT_RATIOS = {"train": 0.8, "val": 0.1, "test": 0.1}
+SPLIT_RATIOS = {"train": 0.9, "val": 0.1, "test": 0.0}
 
 # Model targets
 TIER1_MODEL = "google/gemma-4-e2b"

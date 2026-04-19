@@ -40,20 +40,86 @@ def _safe_stem(stem: str) -> str:
     return cleaned or "unnamed"
 
 
+def _bronze_quality(row: dict, w: dict) -> float:
+    """Composite quality score for ranking bronze rows when capped.
+    Higher = better. Weights come from curation_config.json -> bronze_selection.sort_formula.
+    """
+    return (
+        float(w.get("correct_chars_weight", 1.0)) * (row.get("correct_explanation_chars") or 0)
+        + float(w.get("wrong_chars_weight", 2.0)) * (row.get("wrong_explanation_chars") or 0)
+        + float(w.get("techniques_weight", 50.0)) * (row.get("technique_mentions") or 0)
+        + float(w.get("causal_weight", 20.0)) * (row.get("causal_phrase_count") or 0)
+        + float(w.get("english_ratio_weight", 100.0)) * float(row.get("english_word_ratio") or 0.0)
+    )
+
+
+def _apply_bronze_selection(
+    bronze_rows: list[dict],
+    n_gold: int,
+    n_silver: int,
+    bs_cfg: dict,
+) -> tuple[list[dict], dict]:
+    """Filter bronze rows by criteria, then cap so bronze cannot dominate gold+silver.
+
+    Returns (kept_rows, stats_dict).
+    """
+    if not bs_cfg.get("enabled", True):
+        return [], {"input": len(bronze_rows), "after_criteria": 0, "after_cap": 0, "reason": "disabled"}
+
+    crit = bs_cfg.get("criteria", {})
+    min_wrong = int(crit.get("min_wrong_explanation_chars", 0))
+    min_tech = int(crit.get("min_technique_mentions", 0))
+    min_q = float(crit.get("min_quality_score", 0.0))
+    sort_w = bs_cfg.get("sort_formula", {})
+
+    after_criteria: list[dict] = []
+    for r in bronze_rows:
+        if (r.get("wrong_explanation_chars") or 0) < min_wrong:
+            continue
+        if (r.get("technique_mentions") or 0) < min_tech:
+            continue
+        # Light synthetic quality_score on the fly (qualify doesn't compute one)
+        q = _bronze_quality(r, sort_w) / 1000.0  # rough normalisation
+        if q < min_q:
+            continue
+        r["_bronze_quality"] = _bronze_quality(r, sort_w)
+        after_criteria.append(r)
+
+    cap_policy = bs_cfg.get("cap_policy", "max_of_gold_silver")
+    if cap_policy == "max_of_gold_silver":
+        cap = n_gold + n_silver
+    elif cap_policy == "fixed":
+        cap = int(bs_cfg.get("cap_value", 0))
+    else:  # unlimited
+        cap = len(after_criteria)
+
+    if len(after_criteria) > cap:
+        after_criteria.sort(key=lambda r: r["_bronze_quality"], reverse=True)
+        kept = after_criteria[:cap]
+    else:
+        kept = after_criteria
+
+    return kept, {
+        "input": len(bronze_rows),
+        "after_criteria": len(after_criteria),
+        "cap": cap,
+        "after_cap": len(kept),
+    }
+
+
 def run_ingest(
     qualification_jsonl: str | None = None,
     config_path: str | None = None,
-    tiers: tuple[str, ...] = ("gold", "silver"),
+    tiers: tuple[str, ...] = ("gold", "silver", "bronze"),
     dry_run: bool = False,
     clean: bool = True,
 ) -> None:
     """Copy qualified SGFs into data/sources/ with tier-prefixed names.
 
-    Default tiers are ("gold", "silver"). Bronze is excluded by default because
-    it is below the SFT-quality bar — it qualifies as "structurally-valid teaching
-    content" but fails one or more depth/causal/refutation thresholds and would
-    introduce noise into training. Pass --tiers gold,silver,bronze explicitly if
-    you need bronze for a specific evaluation/exploration use case.
+    Default tiers are ("gold", "silver", "bronze"). Gold and silver are kept
+    in full. Bronze is pre-filtered by curation_config.json -> bronze_selection
+    (criteria + quality-ranked cap so bronze <= gold+silver). Set the tier list
+    explicitly to override.
     """
     set_context(stage="ingest")
     cfg = load_config(config_path)
@@ -72,14 +138,39 @@ def run_ingest(
     logger.info("Filename pattern: %s", pattern)
     logger.info("Tiers to ingest: %s", ", ".join(tiers))
 
-    selected: list[dict] = []
+    selected_by_tier: dict[str, list[dict]] = {"gold": [], "silver": [], "bronze": []}
     with qual_path.open("r", encoding="utf-8") as f:
         for line in f:
             row = json.loads(line)
-            if row.get("tier") in tiers:
-                selected.append(row)
+            t = row.get("tier")
+            if t in tiers and t in selected_by_tier:
+                selected_by_tier[t].append(row)
 
-    logger.info("Selected %d rows across tiers %s", len(selected), tiers)
+    n_gold = len(selected_by_tier["gold"])
+    n_silver = len(selected_by_tier["silver"])
+    n_bronze_raw = len(selected_by_tier["bronze"])
+
+    # Apply bronze selection (criteria + cap) so bronze cannot dominate.
+    if "bronze" in tiers:
+        bs_cfg = (cfg.raw or {}).get("bronze_selection", {})
+        bronze_kept, bs_stats = _apply_bronze_selection(
+            selected_by_tier["bronze"], n_gold, n_silver, bs_cfg,
+        )
+        selected_by_tier["bronze"] = bronze_kept
+        logger.info(
+            "Bronze selection: %d input -> %d after criteria -> %d kept (cap=%s)",
+            bs_stats["input"], bs_stats["after_criteria"],
+            bs_stats["after_cap"], bs_stats.get("cap", "?"),
+        )
+
+    selected: list[dict] = (
+        selected_by_tier["gold"] + selected_by_tier["silver"] + selected_by_tier["bronze"]
+    )
+    logger.info(
+        "Final ingest mix: gold=%d silver=%d bronze=%d (bronze raw was %d)",
+        len(selected_by_tier["gold"]), len(selected_by_tier["silver"]),
+        len(selected_by_tier["bronze"]), n_bronze_raw,
+    )
 
     if dry_run:
         per_tier: Counter = Counter(r["tier"] for r in selected)

@@ -334,8 +334,10 @@ def run_refine(
         "test": TEST_JSONL,
     }
 
-    # Write outputs. Train split applies tier-weight upsampling (integer multiplier);
-    # val/test are written 1x for clean evaluation. sft.jsonl mirrors train + val + test.
+    # Write outputs. NO upsampling — each unique example is written exactly
+    # once. Tier balance is achieved at INGEST time via bronze_selection cap.
+    # If a tier has training_weights == 0 the example is dropped entirely
+    # (used to fully exclude a tier from train+val+test).
     with out_path.open("w", encoding="utf-8-sig") as f_all, \
          SFT_METADATA_JSONL.open("w", encoding="utf-8-sig") as f_meta:
         writers = {split: path.open("w", encoding="utf-8-sig") for split, path in split_files.items()}
@@ -344,23 +346,21 @@ def run_refine(
             written_per_tier: dict[str, int] = {}
             for split_name, group in split_buckets.items():
                 for ex in group:
+                    if ex.metadata.sample_weight <= 0.0:
+                        continue  # excluded tier
                     messages_only = {"messages": [m.model_dump() for m in ex.messages]}
                     line = json.dumps(messages_only, ensure_ascii=False) + "\n"
                     meta_line = json.dumps(ex.metadata.model_dump(), ensure_ascii=False) + "\n"
-                    multiplier = int(round(ex.metadata.sample_weight)) if split_name == "train" else 1
-                    if multiplier <= 0:
-                        continue  # bronze with weight 0 is dropped from train
-                    for _ in range(multiplier):
-                        writers[split_name].write(line)
-                        f_all.write(line)
-                        f_meta.write(meta_line)
-                        written_per_split[split_name] += 1
-                        written_per_tier[ex.metadata.tier] = written_per_tier.get(ex.metadata.tier, 0) + 1
+                    writers[split_name].write(line)
+                    f_all.write(line)
+                    f_meta.write(meta_line)
+                    written_per_split[split_name] += 1
+                    written_per_tier[ex.metadata.tier] = written_per_tier.get(ex.metadata.tier, 0) + 1
         finally:
             for w in writers.values():
                 w.close()
 
-    logger.info("Refine complete: %d unique → %d emitted (with upsampling)",
+    logger.info("Refine complete: %d unique → %d emitted (no upsampling)",
                 len(examples), sum(written_per_split.values()))
     logger.info("Per split: %s", written_per_split)
     logger.info("Per tier (post-weight): %s", written_per_tier)
@@ -379,7 +379,7 @@ def run_refine(
         print(f"{'='*50}")
         print(f"Input records:                  {len(records)}")
         print(f"Unique positions kept:          {len(examples)}")
-        print(f"Total rows emitted (upsampled): {sum(written_per_split.values())}")
+        print(f"Total rows emitted:             {sum(written_per_split.values())}")
         print("\nFilter breakdown:")
         for reason, count in filter_stats.items():
             print(f"  {reason}: {count}")

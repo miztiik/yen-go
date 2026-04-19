@@ -120,6 +120,15 @@ def main() -> int:
         help="Max allowed failure rate (default: 0.05)",
     )
 
+    # eval_prep
+    eval_prep_parser = subparsers.add_parser(
+        "eval-prep",
+        help="Build named eval test sets from qualification jsonl + curation_config.test_sets[]",
+    )
+    eval_prep_parser.add_argument("--qualification", type=str, help="Override qualification jsonl path")
+    eval_prep_parser.add_argument("--config", type=str, help="Path to curation_config.json")
+    eval_prep_parser.add_argument("--seed", type=int, default=42, help="Sampling seed")
+
     # serve
     subparsers.add_parser("serve", help="Launch monitoring GUI")
 
@@ -225,6 +234,15 @@ def main() -> int:
         return run_validate(
             input_path=args.input,
             max_failure_rate=args.max_failure_rate,
+        )
+
+    elif args.command == "eval-prep":
+        from tools.yen_sei.stages.eval_prep import run_eval_prep
+
+        run_eval_prep(
+            qualification_jsonl=args.qualification,
+            config_path=args.config,
+            seed=args.seed,
         )
 
     elif args.command == "serve":
