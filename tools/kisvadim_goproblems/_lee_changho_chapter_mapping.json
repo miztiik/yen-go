@@ -1,0 +1,152 @@
+{
+  "collection_slug": "lee-changho-tesuji",
+  "notes": "6-volume tesuji series (李昌镐精讲围棋手筋). 16 topic chapters from original book structure. 735 total files. GB2312 encoded Chinese, all Black-to-play. 39 files had ★ in filenames (difficulty markers). MULTIGOGM[] non-standard prop stripped by prepare.",
+  "volumes": {
+    "vol-1": {
+      "chinese_title": "上篇/下篇 (Elementary)",
+      "chapters": [
+        "01-fighting-and-capturing"
+      ]
+    },
+    "vol-2": {
+      "chinese_title": "提高篇 (Improvement)",
+      "chapters": [
+        "02-snapback-and-liberties"
+      ]
+    },
+    "vol-3": {
+      "chinese_title": "李昌镐精讲围棋手筋 3",
+      "chapters": [
+        "03-connecting-groups",
+        "04-splitting-groups",
+        "05-settling-groups",
+        "06-endgame-vol3"
+      ]
+    },
+    "vol-4": {
+      "chinese_title": "李昌镐精讲围棋手筋 4",
+      "chapters": [
+        "07-net-and-squeeze"
+      ]
+    },
+    "vol-5": {
+      "chinese_title": "李昌镐精讲围棋手筋 5",
+      "chapters": [
+        "08-connecting-vol5",
+        "09-making-shape",
+        "10-endgame-vol5",
+        "11-life-and-death",
+        "12-attack-vol5",
+        "13-escape"
+      ]
+    },
+    "vol-6": {
+      "chinese_title": "李昌镐精讲围棋手筋 6",
+      "chapters": [
+        "14-capturing-race",
+        "15-attack-vol6",
+        "16-endgame-vol6"
+      ]
+    }
+  },
+  "chapters": {
+    "01-fighting-and-capturing": {
+      "source_folder": "1. FIGHTING AND CAPTURING",
+      "file_count": 123,
+      "volume": 1
+    },
+    "02-snapback-and-liberties": {
+      "source_folder": "2. SNAPBACK AND SHORTAGE OF LIBERTIES",
+      "file_count": 123,
+      "volume": 2
+    },
+    "03-connecting-groups": {
+      "source_folder": "3.1 CONNECTING GROUPS",
+      "file_count": 28,
+      "volume": 3
+    },
+    "04-splitting-groups": {
+      "source_folder": "3.2 SPLITTING GROUPS",
+      "file_count": 57,
+      "volume": 3
+    },
+    "05-settling-groups": {
+      "source_folder": "3.3 SETTLING GROUPS",
+      "file_count": 8,
+      "volume": 3
+    },
+    "06-endgame-vol3": {
+      "source_folder": "3.4 ENDGAME",
+      "file_count": 29,
+      "volume": 3
+    },
+    "07-net-and-squeeze": {
+      "source_folder": "4. NET AND SQUEEZE TACTICS",
+      "file_count": 123,
+      "volume": 4
+    },
+    "08-connecting-vol5": {
+      "source_folder": "5.1 CONNECTING",
+      "file_count": 16,
+      "volume": 5
+    },
+    "09-making-shape": {
+      "source_folder": "5.2 MAKING SHAPE",
+      "file_count": 28,
+      "volume": 5
+    },
+    "10-endgame-vol5": {
+      "source_folder": "5.3 END GAME",
+      "file_count": 20,
+      "volume": 5
+    },
+    "11-life-and-death": {
+      "source_folder": "5.4 LIFE AND DEATH",
+      "file_count": 16,
+      "volume": 5
+    },
+    "12-attack-vol5": {
+      "source_folder": "5.5 ATTACK",
+      "file_count": 32,
+      "volume": 5
+    },
+    "13-escape": {
+      "source_folder": "5.6 ESCAPE",
+      "file_count": 10,
+      "volume": 5
+    },
+    "14-capturing-race": {
+      "source_folder": "6.1 CAPTURING RACE",
+      "file_count": 40,
+      "volume": 6
+    },
+    "15-attack-vol6": {
+      "source_folder": "6.2 ATTACK",
+      "file_count": 40,
+      "volume": 6
+    },
+    "16-endgame-vol6": {
+      "source_folder": "6.3 ENDGAME",
+      "file_count": 42,
+      "volume": 6
+    }
+  },
+  "chapter_counts": {
+    "01-fighting-and-capturing": 123,
+    "02-snapback-and-liberties": 123,
+    "03-connecting-groups": 28,
+    "04-splitting-groups": 57,
+    "05-settling-groups": 8,
+    "06-endgame-vol3": 29,
+    "07-net-and-squeeze": 123,
+    "08-connecting-vol5": 16,
+    "09-making-shape": 28,
+    "10-endgame-vol5": 20,
+    "11-life-and-death": 16,
+    "12-attack-vol5": 32,
+    "13-escape": 10,
+    "14-capturing-race": 40,
+    "15-attack-vol6": 40,
+    "16-endgame-vol6": 42
+  }
+}

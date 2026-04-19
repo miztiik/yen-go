@@ -1,0 +1,53 @@
+{
+  "collection_slug": "sakata-eio-tesuji",
+  "notes": "9 tesuji technique chapters from Sakata Eio's book. A-suffix files are reference diagrams included in chapter sequence. Reorganized into numbered descriptive directories.",
+  "chapters": {
+    "01-hane": {
+      "source_prefix": "Hane-s-",
+      "file_count": 13
+    },
+    "02-sagari": {
+      "source_prefix": "Sagari-s-",
+      "file_count": 12
+    },
+    "03-tsuke": {
+      "source_prefix": "Tsuke-s-",
+      "file_count": 17
+    },
+    "04-oki": {
+      "source_prefix": "oki-s-",
+      "file_count": 12
+    },
+    "05-kiri": {
+      "source_prefix": "kiri-s-",
+      "file_count": 12
+    },
+    "06-kosumi": {
+      "source_prefix": "Kosumi-s-",
+      "file_count": 19
+    },
+    "07-kake": {
+      "source_prefix": "Kake-s-",
+      "file_count": 8
+    },
+    "08-tobi": {
+      "source_prefix": "Tobi-s-",
+      "file_count": 10
+    },
+    "09-warikomi": {
+      "source_prefix": "Warikomi-s-",
+      "file_count": 7
+    }
+  },
+  "chapter_counts": {
+    "01-hane": 13,
+    "02-sagari": 12,
+    "03-tsuke": 17,
+    "04-oki": 12,
+    "05-kiri": 12,
+    "06-kosumi": 19,
+    "07-kake": 8,
+    "08-tobi": 10,
+    "09-warikomi": 7
+  }
+}

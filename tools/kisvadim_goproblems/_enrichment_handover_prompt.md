@@ -54,14 +54,36 @@ Report findings before proceeding.
 3. **Check `config/collections.json`**: Does a collection already exist for this book? If yes, use that slug. If no, register a new one with the next available ID.
 4. **Slug full-name compliance check**: If an existing slug uses a shortened name (e.g., `kobayashi-basic-tesuji` instead of `kobayashi-satoru-basic-tesuji`), it MUST be renamed to use the full author name. Follow the **Slug Rename Checklist** (Lesson Learned #16) before proceeding with any enrichment.
 5. **Cross-source dedup check**: Search for published puzzles already using this collection slug:
-   - Grep `yengo-puzzle-collections/sgf/` for the slug in `YL[]` properties — count existing published puzzles
    - Grep `external-sources/` (all subdirectories, not just kisvadim) for the slug — check if other sources already contributed to this collection
    - If puzzles are already published under this slug from another source, record the count and note that this kisvadim source will add to (not replace) the existing collection. Sequence numbers for YL[] embedding must account for the existing puzzle count (use `volume_offset` in `_enrichment_state.json`).
    - If the existing puzzles may overlap with the new source (same author, similar count), investigate dedup before embedding — the pipeline's content-hash dedup will catch identical positions but not near-duplicates.
 
-### Step 3: Normalize file names
+### Step 3: Normalize file names and directory structure
 
 Rename all SGF files to 4-digit zero-padded format (`0001.sgf`, `0002.sgf`, ...) using natural sort order. This must happen BEFORE YL embedding since sequence numbers depend on sorted file order.
+
+#### Directory Organization Rules
+
+**Chaptered collections** must use descriptive subdirectories with numeric sequence prefixes to preserve the author's intended order:
+
+```
+SOURCE_DIR/
+  01-fighting-and-capturing/     0001.sgf .. 0123.sgf
+  02-snapback-and-liberties/     0001.sgf .. 0123.sgf
+  03-connecting-groups/          0001.sgf .. 0028.sgf
+  ...
+```
+
+Rules:
+- **Numeric prefix**: `{NN}-{descriptive-slug}/` — 2-digit sequence number ensures directory listing matches the book's chapter order (alphabetical sort breaks author intent).
+- **Descriptive slug**: Kebab-case English topic name derived from the original chapter/folder name (e.g., `5.4 LIFE AND DEATH` → `11-life-and-death`).
+- **Disambiguation suffix**: When the same topic appears in multiple volumes (e.g., "Endgame" in volumes 3, 5, and 6), append `-volN` (e.g., `06-endgame-vol3`, `10-endgame-vol5`, `16-endgame-vol6`).
+- **Files numbered per-chapter**: Each subdirectory starts at `0001.sgf` and numbers sequentially within that chapter (not globally across the whole collection).
+- **Never flatten chapters**: If the source has chapter structure (subdirectories, numbered prefixes, or volume markers), preserve it as directories. The directory structure IS the chapter structure — it feeds directly into YL[] embedding.
+
+**Flat collections** (no chapters): Files in the source directory root, renamed to `0001.sgf` through `NNNN.sgf`.
+
+#### Rename Implementation
 
 ```python
 import re
@@ -87,6 +109,8 @@ for temp_path, new_name in temp_map:
 ```
 
 Handles: `Problem (N).sgf`, `NNN.sgf`, `NNNN.sgf`, and any non-standard naming.
+
+**Save a rename map** (`_COLLECTION_rename_map.json`) for traceability: `{"original_folder/original_file.sgf": "NN-chapter-slug/0001.sgf", ...}`
 
 ### Step 4: Prepare (re-encode + clean)
 
@@ -116,31 +140,50 @@ clean_sgf = builder.build()
 
 ### Step 5: Embed YL[] (collection membership)
 
-**If directory has chapter subdirectories:**
+#### YL[] Format Rules
 
-1. Create `embed.json` in the source directory:
-```json
-{
-  "collection_slug": "author-name-book-title",
-  "source_dir": "DIRECTORY NAME",
-  "chapters": {
-    "CHAPTER 1": "1",
-    "CHAPTER 2": "2",
-    "Some Named Dir": "named-slug"
-  }
-}
+The `YL[]` property encodes collection membership as `slug:chapter/position`:
+
+| Structure | YL Format | Example |
+|-----------|-----------|---------|
+| Chaptered | `slug:NN-descriptive-name/position` | `YL[lee-changho-tesuji:01-fighting-and-capturing/1]` |
+| Flat | `slug:position` | `YL[kada-katsuji-tsumego-class:1]` |
+
+- **Chapter ID = directory name**: The YL chapter ID MUST match the actual subdirectory name (including the numeric prefix). This is the single source of truth — `01-fighting-and-capturing` in the directory listing = `01-fighting-and-capturing` in `YL[]`.
+- **Position is 1-based within chapter**: Each chapter's position starts at 1, matching the `0001.sgf` file in that subdirectory.
+- **No generic names**: Never use `vol-1`, `chapter-1`, or bare numbers as chapter IDs. Always use descriptive slugs that reflect the topic/content (e.g., `connecting-groups`, `life-and-death`, `heaven`, `earth`, `man`).
+
+#### Chaptered collections
+
+The directory structure from Step 3 directly drives the YL embedding:
+
+```python
+import re
+from pathlib import Path
+
+BASE = Path("external-sources/kisvadim-goproblems/SOURCE_DIR")
+SLUG = "collection-slug"
+YL_PAT = re.compile(r'YL\[[^\]]*\]')
+
+for chapter_dir in sorted(BASE.iterdir()):
+    if not chapter_dir.is_dir():
+        continue
+    chapter = chapter_dir.name  # e.g. "01-fighting-and-capturing"
+    for sgf in sorted(chapter_dir.glob("*.sgf")):
+        pos = int(sgf.stem)  # 0001 → 1
+        yl = f"YL[{SLUG}:{chapter}/{pos}]"
+        content = sgf.read_text(encoding="utf-8")
+        if YL_PAT.search(content):
+            content = YL_PAT.sub(yl, content)  # replace existing
+        elif "SZ[" in content:
+            content = content.replace("SZ[", f"{yl}SZ[", 1)
+        else:
+            content = content.replace("(;", f"(;{yl}", 1)
+        sgf.write_text(content, encoding="utf-8")
 ```
 
-2. Run:
-```bash
-python -m tools.kisvadim_goproblems embed-chapters \
-  --source-dir "external-sources/kisvadim-goproblems/SOURCE_DIR" \
-  --mapping "external-sources/kisvadim-goproblems/SOURCE_DIR/embed.json"
-```
+#### Flat collections (no chapters)
 
-**If directory has NO chapter subdirectories (flat list of SGFs):**
-
-Use the phrase-match strategy or write inline:
 ```python
 # Simple YL embedding for flat directories
 import re
@@ -292,7 +335,7 @@ All CJK (Chinese/Japanese/Korean) content must be translated using **full cultur
 
 ## Directory Status
 
-See `_enrichment_state.json` for the full per-directory state (63 directories, 38 done, 25 pending). That file is the single source of truth — do not duplicate status here.
+See `_enrichment_state.json` for the full per-directory state (67 directories, 42 done, 25 pending). That file is the single source of truth — do not duplicate status here.
 
 ## Lessons Learned
 
@@ -302,7 +345,7 @@ See `_enrichment_state.json` for the full per-directory state (63 directories, 3
 4. **CJK vocabulary is small**: Hashimoto used only 19 unique phrases. Dictionary needed only 13 new entries. Survey CJK first to estimate scope.
 5. **Multi-volume sequence offsets**: Store `volume_offset` per directory in the state file for cross-volume numbering.
 6. **Collection naming**: Full author name in slugs. Numbers retained only when part of published title. Consult domain experts for proper romanization.
-7. **Chapter IDs**: Use directory names (e.g., `elementary`, `intermediate`, `advanced`) not integers in YL[] chapter slots.
+7. **Chapter IDs**: Use numbered descriptive directory names (e.g., `01-fighting-and-capturing`, `02-snapback-and-liberties`) in YL[] chapter slots — never bare integers or generic `vol-N` labels. The numeric prefix preserves author-intended ordering; the descriptive slug preserves topic meaning. The directory name IS the chapter ID.
 8. **File name normalization**: Always rename to 4-digit zero-padded (`0001.sgf`) BEFORE embedding. Two-pass rename avoids collisions. Natural sort handles `Problem (N).sgf` patterns.
 9. **Japanese content requires different handling**: `MAEDA TSUMEGO Tsumego Masterpieces` contains Japanese literary commentary (hiragana/katakana + kanji), NOT Chinese. Do NOT run `ChineseTranslator` on Japanese text — it garbles the output by replacing hiragana particles (の, は, を, に, で, か) with English glosses that destroy sentence structure. Use `config/jp-en-dictionary.json` ONLY for isolated Go term headers (e.g., `黒先白死` → "Black to play, White dies"), not full literary prose. Preserve original Japanese where it has scholarly/historical value.
 10. **Dictionary-based JP translation is destructive on prose**: The JP-EN dictionary works for isolated terms but fails catastrophically on connected prose. If a file contains full Japanese sentences, preserve the original text. Only translate structured headers (e.g., `第N図「XXX」` puzzle intent lines). If you accidentally garble text, reverse-translate using the dictionary's inverse mapping, then fix bracket pairing (`「`→`」` alternation).
@@ -367,3 +410,61 @@ See `_enrichment_state.json` for the full per-directory state (63 directories, 3
     - Merged Dojo directory: `GO SEIGEN TSUMEGO DOJO/vol-1/` and `vol-2/` are exact copies of VOL 1/VOL 2. Both sets processed identically — confirmed identical content via diff.
     - YL[] embedding: `_embed_go_seigen.py` handles all 10 source directories (including merged Dojo). Inserts after PL[] or SZ[] as fallback. Dry run verified 2290 total, then applied live. All 16 boundary checks passed.
     - Artifacts kept: `_chengyu_translations.json` (403 translations, reference), `_embed_go_seigen.py` (reusable). Temp scripts removed: `_temp_jp_survey.py`, `_fix_segoe_remaining.py`, `_translate_segoe_jp.py`, `_translate_shokyuu.py`, `_chengyu_list.json`.
+30. **Ishigure Ikuro batch enrichment** (4 directories = 497 files across 4 collections):
+    - Author: 石榑郁郎, Ishigure Ikuro 6-dan (1937-2020). Japanese professional, Nihon Ki-in. Known for tsumego pedagogy with rich teaching commentary.
+    - Collections: `ishigure-ikuro-basic-tsumego` (ID 39, 123 flat), `ishigure-ikuro-6dan-challenge` (ID 180, 105 across 3 chapters), `ishigure-ikuro-tsumego-masterpiece` (ID 181, 150 across heaven/earth/man), `ishigure-ikuro-sure-kill-tsumego` (ID 182, 119 across 3 chapters).
+    - Slug rename: `ishigure-basic-tsumego` → `ishigure-ikuro-basic-tsumego` (ID 39). Old slug to aliases[]. 123 published SGFs updated. SLUG_MAP updated.
+    - CJK profile: Two distinct profiles — 6Dan Challenge and Masterpiece had light CJK (watermark `飞扬围棋出品` + `正解图`/`失败图` labels, all dictionary-covered, 0 new entries). Sure Kill and 123 Basic had heavy CJK with rich teaching commentary (38 new dictionary entries total: 20 for Sure Kill, 18 for 123 Basic).
+    - N[] branch labels: Sure Kill and 123 Basic used Chinese N[] labels (`审题`=Review problem, `正解`=Correct, `变化`=Variation, `失败`=Failure). 6Dan and Masterpiece had no N[] after prepare. Merge step critical for the heavy-CJK dirs.
+    - Masterpiece chapters: Uses traditional Japanese `天地人` (Heaven/Earth/Man) classification — chapter IDs `heaven`, `earth`, `man`. Not difficulty levels but aesthetic/philosophical ordering.
+    - Cross-source: ID 39 had 123 puzzles already published from OGS/mixed. Content-hash dedup handles overlap. New kisvadim source adds rich commentary that OGS versions lack.
+    - Pipeline order: rename → prepare → merge N[] → translate → embed YL[] → verify. All 4 dirs followed same order. Light-CJK dirs had trivial merge/translate steps (0 remaining after first pass).
+    - No special scripts needed — standard pipeline tools handled all 4 directories.
+31. **Nihon Ki-in Tesuji Daijiten** (1 directory, 2636 files, 1 collection):
+    - Book: 手筋大事典, Nihon Ki-in (institutional compilation, no single author), December 1992, ISBN 4818203556. 1,117 pages, 27cm large-format reference. Comprehensive tesuji from Japanese and Chinese Go classical literature + games from Edo to Heisei era.
+    - Collection: `nihon-kiin-tesuji-daijiten` (ID 183, flat, 2636 puzzles).
+    - NOT the same as Segoe Tesuji Dictionary (ID 58) — different book, publisher, era.
+    - SGF profile: Pure ASCII, no CJK characters, no CA[]/AP[]/GN[]/EV[]/N[]/PL[] headers. Extremely clean — just SZ[19]FF[4] + stone positions + solution branches.
+    - **Pinyin comments (new pattern)**: 175 files (6.6%) contained Chinese Pinyin romanization in C[] comments (e.g., `shi bai tu` = failure diagram, `xian shou` = sente, `shun N mu` = gains N points). This is a digitizer who romanized Chinese commentary rather than keeping CJK characters. The `ChineseTranslator` tool does NOT handle Pinyin — it operates on CJK byte sequences. Solution: manual Pinyin-to-English mapping (132 unique phrases) saved as `_pinyin_translations.json`, applied via string replacement.
+    - 3 compound/corrupted comments needed individual fixing: duplicated phrases and LB[] data mixed into C[] values.
+    - LB[] labels: 133 files had clean ASCII point labels (e.g., `LB[oa:a]`), preserved as-is.
+    - Who plays first: Black 1838, White 790, Neither 8.
+    - Pipeline order: rename → prepare → translate pinyin → embed YL[] → verify. Steps 6 (CJK translate) and 7 (merge N[]) skipped (no CJK, no N[]).
+32. **Pinyin comment handling**: When SGF comments contain Chinese Pinyin romanization instead of CJK characters, the standard `ChineseTranslator` pipeline won't work. Create a manual mapping file (`_pinyin_translations.json`) with all unique Pinyin phrases translated to English Go terms, then apply via simple string replacement. This is distinct from CJK translation — Pinyin is already ASCII, just in a different language.
+33. **Flat directory with chapter-encoded filenames**: When a source directory is flat (no subdirectories) but has chapter structure encoded in filename prefixes (e.g., `Hane-s-01.sgf`, `Sagari-s-03.sgf`), parse the prefix to classify files into chapters, then assign global 4-digit names preserving chapter order. "A"/"a" suffix files are supplementary reference diagrams — natural sort places them after their parent exercise (01, 01A, 02, ...). Embed YL[] with `slug:chapter/position` where position resets per chapter. Worked example: Sakata Eio Tesuji (110 files, 9 technique chapters, 4 reference diagrams). See `_enrich_sakata.py` and `_sakata_chapter_mapping.json`.
+34. **Lee Changho multi-volume enrichment** (735 files, 6 volumes, 16 topic chapters):
+    - Author: 李昌镐, Lee Changho 9p (Korean, b. 1975). Chinese publication series "李昌镐精讲围棋手筋" (Lee Changho Exquisite Go Tesuji), 6 volumes.
+    - Collection: `lee-changho-tesuji` (ID 45, pre-existing from OGS). Updated description, kept source as "mixed".
+    - **File count discrepancy**: State file said 311, actual was 735. Always verify by counting files on disk, not trusting the state file.
+    - **Directory structure**: 16 topic subfolders reorganized into numbered descriptive directories:
+      ```
+      01-fighting-and-capturing/    (123)  ← Vol 1
+      02-snapback-and-liberties/    (123)  ← Vol 2
+      03-connecting-groups/          (28)  ← Vol 3
+      04-splitting-groups/           (57)  ← Vol 3
+      05-settling-groups/             (8)  ← Vol 3
+      06-endgame-vol3/               (29)  ← Vol 3
+      07-net-and-squeeze/           (123)  ← Vol 4
+      08-connecting-vol5/            (16)  ← Vol 5
+      09-making-shape/               (28)  ← Vol 5
+      10-endgame-vol5/               (20)  ← Vol 5
+      11-life-and-death/             (16)  ← Vol 5
+      12-attack-vol5/                (32)  ← Vol 5
+      13-escape/                     (10)  ← Vol 5
+      14-capturing-race/             (40)  ← Vol 6
+      15-attack-vol6/                (40)  ← Vol 6
+      16-endgame-vol6/               (42)  ← Vol 6
+      ```
+    - **YL format**: `lee-changho-tesuji:01-fighting-and-capturing/1` through `lee-changho-tesuji:16-endgame-vol6/42`. Numeric prefix preserves author-intended chapter order. Files numbered 0001.sgf per-chapter with position matching file number.
+    - **Key lesson**: Do NOT flatten chapter structure into generic `vol-N` directories — this loses the descriptive topic names the publisher chose. Preserve and enhance the original structure with numbered prefixes for ordering + descriptive slugs for meaning.
+    - **★ in filenames**: 39 files had Unicode star (★) marking difficulty. Natural sort handles them correctly — `3-1-8★` sorts at the `3-1-8` position (no separate base file exists). Stars stripped during rename to 4-digit.
+    - **Mixed extensions**: `.sgf` (311 files) and `.SGF` (424 files). Used case-insensitive glob `*.[sS][gG][fF]`.
+    - **GB2312 without CA[] header**: 97.8% of files had no encoding declaration. The `prepare` step auto-detects and re-encodes.
+    - **Chinese comments**: 826 translations across 719 files. Only 3 new dictionary entries needed: 忧 (worry), 霜 (frost), 顺 (naturally). Standard Go terms like 黑先, 失败, 打劫, 正解 were already in dictionary.
+    - **MULTIGOGM[1]**: Non-standard property from MultiGo editor, present in all 735 files. Stripped by prepare's parser/builder round-trip.
+35. **Directory structure = chapter structure = YL chapter IDs** (universal rule): The enriched directory layout is the single source of truth for chapter membership. Every numbered descriptive directory (`NN-descriptive-slug/`) maps 1:1 to a YL chapter ID. The three must always agree:
+    - Directory name: `07-net-and-squeeze/`
+    - File inside: `07-net-and-squeeze/0042.sgf`
+    - YL tag: `YL[slug:07-net-and-squeeze/42]`
+    - Chapter mapping JSON key: `"07-net-and-squeeze": {"file_count": 123, ...}`
+    If any of these disagree, the enrichment is broken. Verification step must check all four are consistent.

@@ -234,26 +234,54 @@
     "Ishigure Ikuro 123 BASIC TSUMEGO": {
       "file_count": 123,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "ishigure-ikuro-basic-tsumego",
+      "collection_id": 39,
+      "cjk_fragments_added": 18,
+      "notes": "Heavy CJK with rich commentary. 18 new dictionary entries. Flat (no chapters). Slug renamed from ishigure-basic-tsumego. 123 published SGFs updated.",
+      "volume_offset": 0
     },
     "Ishigure Ikuro 6Dan Tsumego Challenge": {
       "file_count": 105,
       "structure": "chapters",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "ishigure-ikuro-6dan-challenge",
+      "collection_id": 180,
+      "chapters": {
+        "CHAPTER 1": "chapter-1",
+        "CHAPTER 2": "chapter-2",
+        "CHAPTER 3": "chapter-3"
+      },
+      "cjk_fragments_added": 0,
+      "notes": "Light CJK (watermark + labels only). 3 chapters: 45/45/15."
     },
     "Ishigure Ikuro Go – Sure Kill Tsumegos for Shodan, 2D and 3D": {
       "file_count": 119,
       "structure": "chapters",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "ishigure-ikuro-sure-kill-tsumego",
+      "collection_id": 182,
+      "chapters": {
+        "Sure Kill Tsumego (40 problems)": "sure-kill",
+        "Challenging Shodan Tsumego (40 problems)": "shodan",
+        "Challenging High Dan Tsumego (39 problems)": "high-dan"
+      },
+      "cjk_fragments_added": 20,
+      "notes": "Heavy CJK with teaching commentary. 20 new dictionary entries. 3 chapters: 40/40/39."
     },
     "Ishigure Ikuro’s Tsumego Masterpiece Collection": {
       "file_count": 150,
       "structure": "chapters",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "ishigure-ikuro-tsumego-masterpiece",
+      "collection_id": 181,
+      "chapters": {
+        "PART 1 - HEAVEN": "heaven",
+        "PART 2 - EARTH": "earth",
+        "PART 3 - MAN": "man"
+      },
+      "cjk_fragments_added": 0,
+      "notes": "Light CJK (watermark + labels). 3 parts: 50/50/50. Heaven/Earth/Man structure."
     },
     "KADA KATSUJI Tsumego Brilliances Vol 1-4": {
       "file_count": 216,
@@ -295,14 +323,25 @@
     "KAKU KYUSHIN 200 TSUMEGO PROBLEM": {
       "file_count": 200,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "kaku-kyushin-200-tsumego",
+      "collection_id": 186,
+      "cjk_fragments_added": 0,
+      "notes": "Kaku Kyushin 6p (Nihon Ki-in). Light CJK (formulaic labels + watermark only, all dictionary-covered). No N[]. Flat (no chapters)."
     },
     "KAKU KYUSHIN Increase Your Fighting Strength Ten-fold with Kyushin’s Tsumego 戦いの力が10倍になる求真詰碁": {
       "file_count": 151,
       "structure": "chapters",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "kaku-kyushin-fighting-strength",
+      "collection_id": 187,
+      "chapters": {
+        "CHAPTER 1 - C CLASS": "01-c-class",
+        "CHAPTER 2 - B CLASS": "02-b-class",
+        "CHAPTER 3 - A CLASS": "03-a-class"
+      },
+      "cjk_fragments_added": 0,
+      "notes": "MYCOM 2006, supervised by Rin Kaiho and O Rissei. ABC class = Kaku’s own grading: C=kyu, B=dan, A=high-dan. 3 chapters: 44/86/21. Light CJK only."
     },
     "KOBAYASHI SATORU 105 BASIC TESUJI FOR 1~3 DAN": {
       "file_count": 105,
@@ -343,10 +382,12 @@
       "notes": "Kano Yoshinori 9p. Graded Go Problems for Beginners Vol 1. 4 levels, no CJK, no N[], clean English content. Slug renamed from graded-go-problems-beginners-1. Published March 1985."
     },
     "LEE CHANGHO TESUJI": {
-      "file_count": 311,
+      "file_count": 735,
       "structure": "chapters",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "lee-changho-tesuji",
+      "chapters": ["vol-1", "vol-2", "vol-3", "vol-4", "vol-5", "vol-6"],
+      "notes": "6-volume series (李昌镐精讲围棋手筋). 16 original topic subfolders reorganized into 6 volume subdirs (vol-1 through vol-6). GB2312 Chinese, 3 new dictionary entries (忧/霜/顺). 39 ★ files included. File count corrected from 311 to 735."
     },
     "MAEDA NOBUAKI Delightful Tsumego (selected 160 from God of Tsumego)": {
       "file_count": 160,
@@ -421,8 +462,10 @@
     "SAKATA EIO TESUJI": {
       "file_count": 110,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "sakata-eio-tesuji",
+      "chapters": ["hane", "sagari", "tsuke", "oki", "kiri", "kosumi", "kake", "tobi", "warikomi"],
+      "notes": "9 technique chapters encoded in filename prefixes. 4 'A' suffix reference diagrams included in sequence. No CJK, no N[]. Prepare + embed only."
     },
     "SATO SUNAO - FLEXIBLE TSUMEGO": {
       "file_count": 134,
@@ -449,32 +492,55 @@
     "TSUMEGO CLASSIC - GENRAN": {
       "file_count": 61,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "genran",
+      "collection_id": 22,
+      "notes": "Pure ASCII, no CJK. All 61 files missing SZ/PL (injected: 34B, 27W). GN[XL] stripped. xl06 missing in source (61 files numbered xl01-xl62, renumbered sequentially 1-61). Pass move B[] in problem 1 (ko variation). 56 files with variations."
     },
     "TSUMEGO CLASSIC - GOKYO SEIMYO": {
       "file_count": 516,
       "structure": "chapters",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "gokyo-seimyo",
+      "collection_id": 25,
+      "chapters": {
+        "VOL.1": {"slug": "vol-1", "count": 195},
+        "VOL.2": {"slug": "vol-2", "count": 153},
+        "VOL.3": {"slug": "vol-3", "count": 146},
+        "VOL.4": {"slug": "vol-4", "count": 22}
+      },
+      "cjk_fragments_added": 47,
+      "notes": "Japanese classic (1812) by Hayashi Genbi. VOL.4 is 22 full game records (Qing dynasty players), not tsumego. All 516 files were missing PL[] (inferred from first move color: 278 W, 233 B, 5 zero-move defaulted to B). 230 files had SZ[19] injected. GBK-encoded Chinese decoded and translated (47 new dictionary entries + 8 aliases). 5 zero-move files kept as-is."
     },
     "TSUMEGO CLASSIC - GOKYO SHUMYO": {
       "file_count": 447,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "gokyo-shumyo",
+      "collection_id": 26,
+      "cjk_fragments_added": 51,
+      "notes": "Japanese classic (1812) by Hayashi Genbi. 152 files had GBK-encoded Chinese move comments (decoded + translated). 59 files dual-tagged: 37 with guanzi-pu, 20 with guanzi-pu+xuanxuan-qijing, 2 with guanzi-pu (Fa Yang Lun not registered). 3 PL anomalies fixed (2x PL[2], 1x missing PL). 5 zero-move files kept as-is. 1 broken comment fixed. 420 AP[MultiGo] stripped."
     },
     "TSUMEGO CLASSIC - GUANZI PU": {
       "file_count": 1477,
       "structure": "chapters",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "guanzi-pu",
+      "collection_id": 27,
+      "chapters": {
+        "GUANZI PU 1": "vol-1",
+        "GUANZI PU 2": "vol-2",
+        "GUANZI PU 3": "vol-3"
+      },
+      "notes": "Classical endgame/life-and-death collection by Guo Bailing (Qing dynasty, 1660s). 3 volumes: 539+557+381 files. Pure ASCII, no CJK. All files were missing PL[] and SZ[] (injected PL[W] pre-prepare). GN[GZP1/2/3] stripped. 1 zero-move file (0424 in vol-1) kept as-is. All linear solutions, no branching."
     },
     "TSUMEGO CLASSIC - Xuan Xuan Qi Jing": {
       "file_count": 347,
       "structure": "flat",
-      "status": "pending",
-      "slug": null
+      "status": "done",
+      "slug": "xuanxuan-qijing",
+      "collection_id": 67,
+      "notes": "Chinese classic (1349 CE) by Yan Defu & Yan Tianzhang. Pure ASCII, no CJK. 2 files had N[] labels (Ko, Bad) merged to C[]. 1 file had PL[2] fixed to PL[W], 1 file missing PL[]/SZ[] fixed. No chapters (flat)."
     },
     "YAMADA KIMIO Interesting Tsumego Dojo": {
       "file_count": 87,
@@ -508,54 +574,5 @@
       "status": "done",
       "slug": "yamada-kimio-road-to-3-dan"
     }
-  },
-  "Ishigure Ikuro 6Dan Tsumego Challenge": {
-    "status": "done",
-    "slug": "ishigure-ikuro-6dan-challenge",
-    "collection_id": 180,
-    "files": 105,
-    "chapters": {
-      "CHAPTER 1": "chapter-1",
-      "CHAPTER 2": "chapter-2",
-      "CHAPTER 3": "chapter-3"
-    },
-    "cjk_fragments_added": 0,
-    "notes": "Light CJK (watermark + labels only). 3 chapters: 45/45/15."
-  },
-  "Ishigure Ikuro's Tsumego Masterpiece Collection": {
-    "status": "done",
-    "slug": "ishigure-ikuro-tsumego-masterpiece",
-    "collection_id": 181,
-    "files": 150,
-    "chapters": {
-      "PART 1 - HEAVEN": "heaven",
-      "PART 2 - EARTH": "earth",
-      "PART 3 - MAN": "man"
-    },
-    "cjk_fragments_added": 0,
-    "notes": "Light CJK (watermark + labels). 3 parts: 50/50/50. Heaven/Earth/Man structure."
-  },
-  "Ishigure Ikuro Go – Sure Kill Tsumegos for Shodan, 2D and 3D": {
-    "status": "done",
-    "slug": "ishigure-ikuro-sure-kill-tsumego",
-    "collection_id": 182,
-    "files": 119,
-    "chapters": {
-      "Sure Kill Tsumego (40 problems)": "sure-kill",
-      "Challenging Shodan Tsumego (40 problems)": "shodan",
-      "Challenging High Dan Tsumego (39 problems)": "high-dan"
-    },
-    "cjk_fragments_added": 20,
-    "notes": "Heavy CJK with teaching commentary. 20 new dictionary entries. 3 chapters: 40/40/39."
-  },
-  "Ishigure Ikuro 123 BASIC TSUMEGO": {
-    "status": "done",
-    "slug": "ishigure-ikuro-basic-tsumego",
-    "collection_id": 39,
-    "files": 123,
-    "chapters": null,
-    "cjk_fragments_added": 18,
-    "notes": "Heavy CJK with rich commentary. 18 new dictionary entries. Flat (no chapters). Slug renamed from ishigure-basic-tsumego. 123 published SGFs updated.",
-    "volume_offset": 0
   }
 }

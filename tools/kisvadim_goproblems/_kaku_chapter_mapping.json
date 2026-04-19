@@ -1,0 +1,21 @@
+{
+  "collection": "kaku-kyushin-fighting-strength",
+  "source_directory": "KAKU KYUSHIN Increase Your Fighting Strength Ten-fold with Kyushin's Tsumego 戦いの力が10倍になる求真詰碁",
+  "chapters": {
+    "01-c-class": {
+      "original_name": "CHAPTER 1 - C CLASS",
+      "description": "C-class problems (kyu level)",
+      "file_count": 44
+    },
+    "02-b-class": {
+      "original_name": "CHAPTER 2 - B CLASS",
+      "description": "B-class problems (dan level)",
+      "file_count": 86
+    },
+    "03-a-class": {
+      "original_name": "CHAPTER 3 - A CLASS",
+      "description": "A-class problems (high-dan level)",
+      "file_count": 21
+    }
+  }
+}
