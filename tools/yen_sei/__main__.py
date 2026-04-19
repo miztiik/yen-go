@@ -129,6 +129,14 @@ def main() -> int:
     eval_prep_parser.add_argument("--config", type=str, help="Path to curation_config.json")
     eval_prep_parser.add_argument("--seed", type=int, default=42, help="Sampling seed")
 
+    # eval_dryrun
+    eval_dryrun_parser = subparsers.add_parser(
+        "eval-dryrun",
+        help="Heuristic pre-screening of named test sets (no GPU). Reports board/tag/source distributions.",
+    )
+    eval_dryrun_parser.add_argument("--refined-dir", type=str, default=None,
+                                    help="Override the data/refined dir to scan.")
+
     # serve
     subparsers.add_parser("serve", help="Launch monitoring GUI")
 
@@ -244,6 +252,11 @@ def main() -> int:
             config_path=args.config,
             seed=args.seed,
         )
+
+    elif args.command == "eval-dryrun":
+        from tools.yen_sei.eval.dryrun import run_dryrun
+
+        run_dryrun(refined_dir=args.refined_dir)
 
     elif args.command == "serve":
         print("GUI server not yet implemented. See PLAN.md for details.")

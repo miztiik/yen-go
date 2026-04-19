@@ -458,3 +458,113 @@ misleadingly high.
 The user prompt now contains only: board size, side to move, level, stones,
 tags. The reference assistant turn is the supervised target during training and
 the held-out gold during eval — never repeated back to the model in the prompt.
+
+## v2.3 — Bronze Criteria, No Upsampling, Marker-Only Test Sets (added 2026-04-19)
+
+### Why
+
+Two flaws found after the first end-to-end v2.2 run:
+
+1. **Gold ×3 upsampling**. `training_weights` defaulted to `{gold: 3.0, silver: 1.0, bronze: 1.0}`, and refine's writer multiplied each gold row 3 times into `train.jsonl`. This artificially inflated the apparent dataset size and over-weighted the optimizer's gradient on duplicated rows without adding any new information. Hides true sample counts. Increases overfit risk.
+
+2. **Bronze dominated training**. Default ingest blindly admitted every bronze row that passed the loose tier rules (`cor>=40, wrong>=0`). Bronze ended up at 73% of the training set (8,300+ of 11,400 rows). Bronze is the long tail by definition; if it dominates the distribution, the model learns the long tail's voice rather than gold-and-silver's.
+
+### Fix
+
+- **Upsampling removed**. `training_weights` now `{gold: 1.0, silver: 1.0, bronze: 1.0}` (always). `refine` writes each unique example exactly once. Setting a tier weight to `0.0` still excludes that tier entirely (used to disable a tier without re-running ingest).
+- **Bronze admitted by criteria + cap**. New `bronze_selection` block in `curation_config.json`:
+
+  ```json
+  {
+    "criteria": {"min_wrong_explanation_chars": 30, "min_technique_mentions": 1, "min_quality_score": 0.4},
+    "cap_policy": "max_of_gold_silver",
+    "sort_formula": { "wrong_chars_weight": 2.0, "techniques_weight": 50.0, ... }
+  }
+  ```
+
+  Applied at INGEST time. Rows below criteria drop. Survivors are quality-ranked
+  via `sort_formula` and capped at `len(gold) + len(silver)` so bronze
+  cannot dominate. Result on the same input corpus:
+  `bronze 11,535 → 948 kept` (cap was 2,552 — well below).
+
+### Marker-only test pool
+
+Test sets used to be drawn from the same training pool (`split_ratios.test = 0.1`).
+That meant test puzzles had teaching prose, so the user prompt risked leaking
+the answer (root comment paraphrase) and the reference assistant message was
+the very thing we were grading the model on. Now:
+
+- `split_ratios.test = 0.0` — test split inside the training pool is empty.
+- New "marker-only" pool: ~45,700 puzzles that **fail the prose / english gates** but are **structurally valid** — `correct_first_move` non-empty, `>=1` wrong_first_move, `variation_count >= 2`, hard gates pass, no AI contamination. They have zero English teaching prose, so nothing leaks.
+- New `test_sets[]` config block defines named sets:
+
+  ```json
+  [
+    {"id": "marker_only_mixed",         "source": "marker_only",   "size": 200},
+    {"id": "marker_only_life_death_19", "source": "marker_only",   "size": 150,
+       "selectors": {"board_sizes": [19], "techniques_any": ["life","death","kill","live"]}},
+    {"id": "marker_only_tactical",      "source": "marker_only",   "size": 100,
+       "selectors": {"techniques_any": ["ladder","snapback","net","throw","sacrifice"]}},
+    {"id": "heldout_gold_silver",       "source": "training_pool", "size": 100,
+       "tiers": ["gold","silver"]}
+  ]
+  ```
+
+- New CLI stage `python -m tools.yen_sei eval-prep` reads
+  `qualification_latest.jsonl + test_sets[]` and writes per-set:
+  - `data/refined/test_{id}.jsonl` — chat row with `[system, user]` only (no
+    assistant), so the prompt-leak surface is zero.
+  - `data/refined/test_{id}_metadata.jsonl` — sidecar with `correct_first_move`,
+    `wrong_first_moves`, `tags`, `board_size`, `side_to_move`, `source`,
+    `has_reference_prose`, `puzzle_hash`.
+
+### Eval runner: multi-set comparison
+
+`tools.yen_sei.eval.runner` adds:
+
+- `evaluate(rows, sidecars=...)` — reads `correct_first_move` from sidecar
+  when there is no reference assistant message (Layer B falls back from
+  parsing `{!cg}` in the reference to reading `sidecar.correct_first_move`).
+- `evaluate_test_sets(test_sets, ...)` — orchestrator that runs `evaluate`
+  on each named set, writes per-set artefacts to
+  `out_dir/{test_set_id}/test_summary.json + test_results.json`, and prints
+  a comparison table at the top of `out_dir/comparison.json`.
+- `load_test_set_bundle(refined_dir, test_set_id)` — convenience loader
+  for notebook callers.
+
+### Pre-training dryrun
+
+New `python -m tools.yen_sei eval-dryrun`. Heuristic-only — no GPU. Prints
+per-set `n`, board-size / side / source distributions, top tags,
+`%has_correct_first_move`, `%with_known_technique_tag`, `%has_reference_prose`,
+plus a comparison table. Catches degenerate test sets (single source, all one
+side, no tags, etc.) before you spend GPU minutes on them. Writes
+`data/refined/test_sets_dryrun.json`.
+
+### Notebook updates
+
+- `02_train_tier1.ipynb` — Cell 3 discovers `test_*.jsonl` automatically.
+  Cell 5 replaces the inline 200-line scorer with one call to
+  `evaluate_test_sets(model, tokenizer, TEST_SETS, OUT_DIR/eval)`. Cell 6 zips
+  the per-set `eval/` subtree into the artifact bundle.
+- `02a_model_evaluation.ipynb` (bake-off) — same multi-set runner.
+  Verdict cell now picks the winner by **mean `useful_answer_pct` across the
+  marker-only sets only** (the prose-leak-free pools); `heldout_gold_silver`
+  is reported but excluded from the decision because it shares distribution
+  with the training pool.
+
+### v2.3 numbers (same input corpus, same qualifier)
+
+| metric                | v2.2     | v2.3    |
+| --------------------- | -------- | ------- |
+| qualified gold        | 672      | 672     |
+| qualified silver      | 1,879    | 1,880   |
+| qualified bronze      | 11,416   | 11,535  |
+| **bronze ingested**   | 11,416   | **948** |
+| unique training rows  | 8,522    | 3,173   |
+| **rows in train.jsonl** | **7,850** (gold ×3 + silver + bronze) | **2,855** (no upsampling) |
+| val rows              | 851      | 316     |
+| test rows (in pool)   | 855      | 2 (vestigial) |
+| marker-only test pool | n/a      | 45,692  |
+| named test sets       | n/a      | 4 (200+150+100+100) |
+
