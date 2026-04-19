@@ -40,6 +40,10 @@ from tools.core.checkpoint import (
 )
 from tools.core.logging import format_duration, setup_logging
 from tools.core.paths import get_project_root, rel_path
+from tools.core.position_transform import (
+    canonical_position_hash as d4_canonical_hash,
+    find_transform,
+)
 from tools.core.sgf_analysis import compute_solution_depth, count_total_nodes
 from tools.core.sgf_compare import (
     MATCH_LEVEL_NAMES,
@@ -52,7 +56,8 @@ from tools.core.sgf_compare import (
     make_unmatched_result,
     position_hash,
 )
-from tools.core.sgf_parser import SGFParseError, SgfTree, parse_sgf
+from tools.core.sgf_parser import SGFParseError, SgfTree, parse_sgf, read_sgf_file
+from tools.core.sgf_types import PositionTransform
 
 logger = logging.getLogger("compare_dirs")
 
@@ -91,37 +96,59 @@ class ParsedFile:
     raw: str
     pos_hash: str
     f_hash: str | None
+    canonical_hash: str = ""  # D4-canonical position hash
+    canonical_transform: PositionTransform = field(
+        default_factory=PositionTransform
+    )  # transform that produced the canonical hash
 
 
 def _build_index(
     directory: Path, label: str, log: logging.Logger
-) -> tuple[dict[str, list[ParsedFile]], dict[str, ParsedFile], list[tuple[str, str]]]:
+) -> tuple[
+    dict[str, list[ParsedFile]],  # pos_hash_index (identity)
+    dict[str, list[ParsedFile]],  # canonical_hash_index (D4)
+    dict[str, ParsedFile],        # name_index
+    list[tuple[str, str]],        # errors
+]:
     """Parse all SGF files in a directory and build hash indexes.
 
     Returns:
-        (pos_hash_index, name_index, errors)
+        (pos_hash_index, canonical_hash_index, name_index, errors)
         - pos_hash_index: maps position_hash -> list of ParsedFile
+        - canonical_hash_index: maps D4-canonical hash -> list of ParsedFile
         - name_index: maps rel_path -> ParsedFile
         - errors: list of (rel_path, error_message)
     """
-    sgf_files = sorted(directory.rglob("*.sgf"))
+    # Case-insensitive glob: some sources use .SGF extension
+    sgf_files = sorted(
+        f for f in directory.rglob("*") if f.suffix.lower() == ".sgf"
+    )
     log.info(f"[{label}] Found {len(sgf_files)} SGF files in {rel_path(str(directory))}")
 
     pos_index: dict[str, list[ParsedFile]] = {}
+    canonical_index: dict[str, list[ParsedFile]] = {}
     name_index: dict[str, ParsedFile] = {}
     errors: list[tuple[str, str]] = []
+    encoding_fallback_count = 0
 
     for sgf_path in sgf_files:
         # Use path relative to scanned root so subdirectory files don't collide
         file_rel = sgf_path.relative_to(directory).as_posix()
         try:
-            raw = sgf_path.read_text(encoding="utf-8")
+            raw, enc = read_sgf_file(sgf_path)
+            if enc != "utf-8":
+                encoding_fallback_count += 1
             tree = parse_sgf(raw)
 
             if not tree.black_stones and not tree.white_stones:
                 errors.append((file_rel, "no_stones"))
                 log.warning(f"[{label}] {file_rel}: no stones (AB/AW missing)")
                 continue
+
+            # Compute both identity and D4-canonical hashes
+            c_hash, c_transform = d4_canonical_hash(
+                tree.black_stones, tree.white_stones, tree.board_size,
+            )
 
             pf = ParsedFile(
                 path=sgf_path,
@@ -130,8 +157,11 @@ def _build_index(
                 raw=raw,
                 pos_hash=position_hash(tree),
                 f_hash=full_hash(tree),
+                canonical_hash=c_hash,
+                canonical_transform=c_transform,
             )
             pos_index.setdefault(pf.pos_hash, []).append(pf)
+            canonical_index.setdefault(pf.canonical_hash, []).append(pf)
             name_index[file_rel] = pf
 
         except SGFParseError as e:
@@ -141,11 +171,17 @@ def _build_index(
             errors.append((file_rel, str(e)))
             log.error(f"[{label}] {file_rel}: unexpected error: {e}")
 
+    parsed_count = sum(len(v) for v in pos_index.values())
     log.info(
-        f"[{label}] Parsed {sum(len(v) for v in pos_index.values())} files, "
+        f"[{label}] Parsed {parsed_count} files, "
         f"{len(errors)} errors"
     )
-    return pos_index, name_index, errors
+    if encoding_fallback_count > 0:
+        log.info(
+            f"[{label}] {encoding_fallback_count} files decoded via "
+            f"encoding fallback (non-UTF-8)"
+        )
+    return pos_index, canonical_index, name_index, errors
 
 
 # ---------------------------------------------------------------------------
@@ -171,10 +207,10 @@ def _compare_directories(
 
     # Build indexes for both directories
     log.info("Building source index...")
-    source_index, source_names, source_errors = _build_index(source_dir, "source", log)
+    source_index, source_canonical, source_names, source_errors = _build_index(source_dir, "source", log)
 
     log.info("Building target index...")
-    target_index, target_names, target_errors = _build_index(target_dir, "target", log)
+    target_index, target_canonical, target_names, target_errors = _build_index(target_dir, "target", log)
 
     # Load checkpoint if resuming
     compared_set: set[str] = set()
@@ -222,12 +258,11 @@ def _compare_directories(
             if pf.rel_path in compared_set:
                 continue
 
-            # Look up by position hash in target
+            # Tier 1: Identity hash lookup in target
             target_candidates = target_index.get(pf.pos_hash, [])
 
             if target_candidates:
-                # Position match found — classify against best candidate
-                # For 1:1 collections we expect exactly 1 match per hash
+                # Position match found (identity) — classify against best candidate
                 target_pf = target_candidates[0]
                 matched_target_files.add(target_pf.rel_path)
 
@@ -244,19 +279,52 @@ def _compare_directories(
                     match_counts.get(result.match_level, 0) + 1
                 )
             else:
-                # No position match — check filename correlation (Level 1)
-                if pf.rel_path in target_names:
-                    target_pf = target_names[pf.rel_path]
-                    matched_target_files.add(target_pf.rel_path)
-                    result = make_filename_mismatch_result(
-                        pf.rel_path, pf.tree, target_pf.tree, target_pf.rel_path
-                    )
-                    results.append(result)
-                    match_counts[1] = match_counts.get(1, 0) + 1
-                else:
-                    result = make_unmatched_result(pf.rel_path, pf.tree)
-                    results.append(result)
-                    match_counts[0] = match_counts.get(0, 0) + 1
+                # Tier 2: D4-canonical hash lookup in target
+                canonical_candidates = target_canonical.get(pf.canonical_hash, [])
+                d4_matched = False
+
+                if canonical_candidates:
+                    # Found canonical match — verify with exact transform
+                    for target_pf in canonical_candidates:
+                        transform = find_transform(
+                            pf.tree.black_stones,
+                            pf.tree.white_stones,
+                            target_pf.tree.black_stones,
+                            target_pf.tree.white_stones,
+                            pf.tree.board_size,
+                        )
+                        if transform is not None:
+                            matched_target_files.add(target_pf.rel_path)
+                            result = classify_match(
+                                pf.tree,
+                                target_pf.tree,
+                                pf.rel_path,
+                                target_pf.rel_path,
+                                raw_a=pf.raw,
+                                raw_b=target_pf.raw,
+                                transform=transform,
+                            )
+                            results.append(result)
+                            match_counts[result.match_level] = (
+                                match_counts.get(result.match_level, 0) + 1
+                            )
+                            d4_matched = True
+                            break
+
+                if not d4_matched:
+                    # Tier 3: Filename fallback (Level 1) or Unmatched (Level 0)
+                    if pf.rel_path in target_names:
+                        target_pf = target_names[pf.rel_path]
+                        matched_target_files.add(target_pf.rel_path)
+                        result = make_filename_mismatch_result(
+                            pf.rel_path, pf.tree, target_pf.tree, target_pf.rel_path
+                        )
+                        results.append(result)
+                        match_counts[1] = match_counts.get(1, 0) + 1
+                    else:
+                        result = make_unmatched_result(pf.rel_path, pf.tree)
+                        results.append(result)
+                        match_counts[0] = match_counts.get(0, 0) + 1
 
             compared_set.add(pf.rel_path)
             files_since_checkpoint += 1
@@ -372,6 +440,20 @@ def _print_console_summary(
     if matched_levels:
         pct_total = matched / source_total * 100 if source_total else 0
         print(f"  Match rate: {pct_total:.1f}%")
+
+        # Show identity vs D4 match counts
+        identity_count = sum(
+            1 for r in source_results
+            if r.match_level > 0 and r.match_method == "identity"
+        )
+        d4_count = sum(
+            1 for r in source_results
+            if r.match_level > 0 and r.match_method == "d4_symmetry"
+        )
+        if d4_count > 0:
+            print(f"    Identity matches: {identity_count}")
+            print(f"    D4 symmetry matches: {d4_count}")
+
         for lv, count in matched_levels:
             print(f"    Level {lv} ({MATCH_LEVEL_NAMES[lv]}): {count}")
 
@@ -467,12 +549,23 @@ def _write_summary(
             lines.append(f"- **Target-only** (no match in source): {target_only_count}")
 
     # Details
+    identity_count = sum(
+        1 for r in source_results
+        if r.match_level > 0 and r.match_method == "identity"
+    )
+    d4_count = sum(
+        1 for r in source_results
+        if r.match_level > 0 and r.match_method == "d4_symmetry"
+    )
+
     lines.extend([
         "",
         "### Details",
         "",
         f"- Parse errors (source): {source_errors}",
         f"- Parse errors (target): {target_errors}",
+        f"- Identity matches: {identity_count}",
+        f"- D4 symmetry matches: {d4_count}",
         f"- PL-absent matches: {pl_absent_count}",
         f"- PL-conflict matches: {pl_conflict_count}",
     ])
