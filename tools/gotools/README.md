@@ -32,8 +32,6 @@ python gotools_ingestor.py --reset
 
 ### The Discovery Journey
 
-The GoTools puzzle format is a **compressed proprietary format** created by Thomas Wolf in 1994. We reverse-engineered it by analyzing:
-
 1. **The official Rust parser** in [cameron-martin/tsumego-solver](https://github.com/cameron-martin/tsumego-solver/blob/master/src/gotools_parser/mod.rs)
 2. **The PEG grammar file** at [grammar.pest](https://github.com/cameron-martin/tsumego-solver/blob/master/src/gotools_parser/grammar.pest)
 3. **Raw puzzle data** from the repository
@@ -180,8 +178,6 @@ GoTools has 6 levels, but YenGo uses 5 levels with sub-levels (1-3):
 ### File Structure
 
 ```
-           (C) Copyright 1994 Thomas Wolf All Rights Reserved
-217 problems
 $ P2058006
 ?AB?AC?AEAAF?BA?BBABC?BD?BEABF?CAACBACDACEACFADCADDAEAAEBAEC[AB][BD]
 ?+l1d#5 3 1 40.00 4 ?? 0 255 :CCBC:
@@ -283,13 +279,11 @@ Settings in `config.json`:
 ## Attribution
 
 | Item                 | Source                                                                                                          |
-| -------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Original puzzle data | GoTools collection (© 1994 Thomas Wolf)                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------------------------------- |                                                                    |
 | Puzzle repository    | [cameron-martin/tsumego-solver](https://github.com/cameron-martin/tsumego-solver)                               |
 | Parser reference     | [gotools_parser/mod.rs](https://github.com/cameron-martin/tsumego-solver/blob/master/src/gotools_parser/mod.rs) |
 | Format grammar       | [grammar.pest](https://github.com/cameron-martin/tsumego-solver/blob/master/src/gotools_parser/grammar.pest)    |
 
-This ingestor converts puzzles to YenGo format for educational purposes.
 
 ---
 

@@ -7,10 +7,8 @@ See `frontend/CLAUDE.md` and `backend/CLAUDE.md` for subsystem-specific guidance
 ## Non-Negotiable Constraints ("Holy Laws")
 
 1. **Zero Runtime Backend** -- No server-side logic. Static files on GitHub Pages only (SQLite DB is a static file loaded client-side via sql.js WASM).
-2. **Deterministic Builds** -- Same input must produce identical output. Pinned sources, reproducible CI.
-3. **Local-First Persistence** -- All user data in `localStorage`. No cloud sync, no accounts.
-4. **No Browser AI** -- Browser validates moves against pre-computed solution trees. No neural nets, no MCTS, no move generation, no blocking computation >100ms. sql.js is a query engine, not AI.
-5. **Type Safety** -- TypeScript `strict: true`. No `any` without justification. Python type hints everywhere.
+2. **Local-First Persistence** -- All user data in `localStorage`. No cloud sync, no accounts.
+3. **Type Safety** -- TypeScript `strict: true`. No `any` without justification. Python type hints everywhere.
 
 ## Project Structure
 
@@ -148,8 +146,7 @@ Scoped auto-injection: `.github/instructions/*.instructions.md` files with `appl
 - **Buy, don't build** -- Buy, don’t build — Prefer mature, well-maintained public libraries over custom implementations. Check `pyproject.toml` / `package.json` before adding dependencies. Do not re-implement solved infrastructure problems.Examples:
   1. HTTP client → use `httpx`, not a custom wrapper around sockets.
   2. XML parsing → use `lxml`, not a handwritten parser.
-  3. SGF handling → use `sgfmill`.
-  4. Retries → use `tenacity`.
+  3. Retries → use `tenacity`.
 - Only build custom code when no stable, production-grade library exists.
 - **Config-driven** -- Tags from `config/tags.json`, levels from `config/puzzle-levels.json`. Never hardcode.
 
@@ -158,21 +155,30 @@ Scoped auto-injection: `.github/instructions/*.instructions.md` files with `appl
 - All tests pass
 - TypeScript strict compilation succeeds
 - No lint warnings (ESLint frontend, ruff backend)
-- Lighthouse score > 90 (Performance, PWA)
 - Constitution compliance verified
 
 ## What NOT to Do
 
-- Server-side code or APIs
-- AI/move computation in browser
-- Modify `deprecated_generator/`
 - Hardcode tag aliases or version numbers
 - Store user data outside `localStorage`
-- > 100 files per directory
+- > 500 files per directory
 - Skip logging
 - Manual SGF string building (use `SgfBuilder`)
 - Custom retry/HTTP logic (use `HttpClient`)
 - Assume context without checking -- ask first
+- **Use absolute paths in data files, configs, or serialized output** -- See Path Rules below
+
+## Path Rules (MANDATORY)
+
+All paths persisted to files (JSON, JSONL, configs, databases, logs) MUST be:
+
+1. **Relative** -- Never absolute. Relative to the project root or the relevant data directory.
+2. **POSIX format** -- Forward slashes only (`data/sources/foo.sgf`, not `data\sources\foo.sgf`).
+3. **Minimal** -- Store the smallest useful path. If a filename alone is sufficient for reconstruction (e.g., `goproblems__6840.sgf` when the parent directory is known), store just the filename.
+
+**Why**: Absolute paths break portability (other machines, CI, Colab). Windows backslashes break cross-platform tooling. Use `pathlib.PurePosixPath` or `.as_posix()` when converting `Path` objects to strings for serialization.
+
+**In-memory `Path` objects** for local I/O are fine as-is (platform-native). The rule applies only to data that leaves the process (written to disk, logged, serialized).
 
 ## Frontend Design Conventions
 
