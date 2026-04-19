@@ -355,7 +355,7 @@ def _write_report(
     lines.append("\nNext steps:")
     lines.append("  1. Review tier counts above. Tighten/loosen thresholds in curation_config.json.")
     lines.append("  2. Sample puzzles per tier:  python -m tools.yen_sei sample --tier gold --n 10")
-    lines.append("  3. When happy, ingest:       python -m tools.yen_sei ingest --tiers gold,silver")
+    lines.append("  3. When happy, ingest:       python -m tools.yen_sei ingest")
 
     path.write_text("\n".join(lines), encoding="utf-8")
 

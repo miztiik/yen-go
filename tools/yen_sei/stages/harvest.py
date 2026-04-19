@@ -11,6 +11,7 @@ import logging
 from pathlib import Path
 
 from tools.core.sgf_parser import parse_sgf, read_sgf_file
+from tools.core.text_cleaner import sanitize_for_training
 from tools.yen_sei.config import RAW_DIR, RAW_JSONL, SOURCES_DIR
 from tools.yen_sei.models.raw_extract import RawExtract, SolutionNode
 from tools.yen_sei.telemetry.logger import set_context, setup_logger
@@ -27,7 +28,7 @@ def _extract_nodes(node, nodes: list[SolutionNode]) -> None:
             SolutionNode(
                 move=move_str,
                 color=node.color or "B",
-                comment=node.comment or "",
+                comment=sanitize_for_training(node.comment),
                 is_correct=node.is_correct,
                 children_count=len(node.children),
             )
@@ -53,7 +54,7 @@ def _parse_one_sgf(sgf_path: Path, source: str, tier: str) -> RawExtract | None:
     setup_b = [str(p) if not isinstance(p, str) else p for p in tree.black_stones]
     setup_w = [str(p) if not isinstance(p, str) else p for p in tree.white_stones]
 
-    total_chars = len(tree.root_comment or "")
+    total_chars = len(sanitize_for_training(tree.root_comment))
     total_chars += sum(len(n.comment) for n in nodes)
 
     # Extract metadata from YenGo properties if available
@@ -72,7 +73,7 @@ def _parse_one_sgf(sgf_path: Path, source: str, tier: str) -> RawExtract | None:
         player_to_move=tree.player_to_move or "B",
         setup_black=setup_b,
         setup_white=setup_w,
-        root_comment=tree.root_comment or "",
+        root_comment=sanitize_for_training(tree.root_comment),
         solution_nodes=nodes,
         tags=tags,
         level=level,
