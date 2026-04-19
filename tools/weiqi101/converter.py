@@ -46,16 +46,28 @@ def _build_solution_tree(
     nodes: dict[int, SolutionNode],
     node_id: int,
     is_black: bool,
+    is_variation_start: bool = True,
 ) -> str:
     """Recursively build the SGF solution tree from andata nodes.
 
     Single-child paths are inlined. Multiple children create SGF
-    variation branches with `()`.
+    variation branches with ``()``.
+
+    Correctness annotations are placed **only on the first move** of
+    each variation:
+
+    - ``TE[1]`` + ``C[Correct]`` on the first correct move
+    - ``BM[1]`` + ``C[Wrong]`` on the first wrong move
+
+    Subsequent continuation moves carry no correctness markers, keeping
+    ``C[]`` free for actual teaching comments.
 
     Args:
         nodes: All solution nodes keyed by ID.
         node_id: Current node ID to process.
         is_black: Whether the current move is black.
+        is_variation_start: Whether this node is the first move of a
+            variation (branch root or tree root).
 
     Returns:
         SGF string fragment for this subtree.
@@ -71,10 +83,14 @@ def _build_solution_tree(
         color = "B" if is_black else "W"
         move_sgf = f";{color}[{coord}]"
 
-        if node.is_correct:
-            move_sgf += "C[Correct]"
-        elif node.is_failure:
-            move_sgf += "C[Wrong]"
+        if is_variation_start:
+            if node.is_correct:
+                move_sgf += "TE[1]C[Correct]"
+            elif node.is_failure:
+                move_sgf += "BM[1]C[Wrong]"
+            elif node.comment:
+                translated = translate_chinese_text(node.comment)
+                move_sgf += f"C[{escape_sgf_text(translated)}]"
         elif node.comment:
             translated = translate_chinese_text(node.comment)
             move_sgf += f"C[{escape_sgf_text(translated)}]"
@@ -84,12 +100,18 @@ def _build_solution_tree(
         next_black = not is_black if coord else is_black
 
         if len(children) == 1:
-            child_sgf = _build_solution_tree(nodes, children[0], next_black)
+            child_sgf = _build_solution_tree(
+                nodes, children[0], next_black,
+                is_variation_start=is_variation_start if not coord else False,
+            )
             return move_sgf + child_sgf
         else:
             parts = [move_sgf] if move_sgf else []
             for child_id in children:
-                child_sgf = _build_solution_tree(nodes, child_id, next_black)
+                child_sgf = _build_solution_tree(
+                    nodes, child_id, next_black,
+                    is_variation_start=True,
+                )
                 if child_sgf:
                     parts.append(f"({child_sgf})")
             return "\n".join(parts)
@@ -116,7 +138,7 @@ def convert_puzzle_to_sgf(
     - PL[] (player to move)
     - C[] (root comment / intent)
     - AB[], AW[] (setup stones)
-    - Move C[] comments (Correct/Wrong)
+    - Move annotations: TE[1]/BM[1] + C[Correct]/C[Wrong] on first moves only
 
     Excluded (per spec): GN[], PC[], EV[], SO[], YQ[] (pipeline job)
 
@@ -166,6 +188,10 @@ def convert_puzzle_to_sgf(
     # Root C[] intent comment
     if root_comment:
         parts.append(f"C[{escape_sgf_text(root_comment)}]")
+    else:
+        # Auto-generate player-to-move comment (mirrors site's finfo display)
+        ptm = "Black" if puzzle.player_to_move == "B" else "White"
+        parts.append(f"C[{ptm} to play]")
 
     # Setup stones
     ab = _stones_to_sgf("AB", puzzle.black_stones)

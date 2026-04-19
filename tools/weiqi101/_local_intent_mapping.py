@@ -34,6 +34,16 @@ CATEGORY_TO_INTENT: dict[str, str] = {
     "棋理": "{player} to find the correct move",
     # 模仿 — needs live sampling before committing intent
     "欣赏题": "{player} to find the best move",  # Appreciation/demonstration
+    # English aliases (from qday sweep, 2015+ daily puzzles)
+    "Life & Death": "{player} to live or kill",
+    "Fight": "{player} to win the capturing race",
+    "Tesuji": "{player} to find the tesuji",
+    "Opening": "{player} to find the best opening move",
+    "Joseki": "{player} to find the correct joseki",
+    "Endgame": "{player} to find the best endgame move",
+    "Comprehensive": "{player} to find the best move",
+    "Middle Game": "{player} to find the best middle game move",
+    "Principles": "{player} to find the correct move",
 }
 
 

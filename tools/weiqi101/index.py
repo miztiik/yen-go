@@ -25,13 +25,25 @@ def get_index_path(output_dir: Path) -> Path:
 def load_puzzle_ids(output_dir: Path) -> set[int]:
     """Load all known puzzle IDs from the index file.
 
+    Supports two entry formats:
+    - Batch: "batch-001/78000.sgf" (puzzle ID is the filename stem)
+    - Qday:  "qday/2026/04/20260414-3.sgf:354411" (puzzle ID after colon)
+
     Returns:
         Set of puzzle IDs for O(1) duplicate checking.
     """
     entries = load_index(output_dir / INDEX_FILENAME)
     ids: set[int] = set()
     for entry in entries:
-        # Entry format: "batch-001/78000.sgf"
+        # Qday format: path:puzzle_id
+        if ":" in entry:
+            _, _, pid_str = entry.rpartition(":")
+            try:
+                ids.add(int(pid_str))
+            except ValueError:
+                pass
+            continue
+        # Batch format: batch-001/78000.sgf
         filename = entry.rsplit("/", 1)[-1] if "/" in entry else entry
         stem = filename.replace(".sgf", "")
         try:

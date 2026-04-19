@@ -19,6 +19,15 @@
     "实战": "general-practice",
     "棋理": "general-practice",
     "模仿": "general-practice",
-    "欣赏题": "general-practice"
+    "欣赏题": "general-practice",
+    "Life & Death": "life-and-death",
+    "Fight": "capturing-race",
+    "Tesuji": "tesuji-problems",
+    "Opening": "opening-problems",
+    "Joseki": "joseki-problems",
+    "Endgame": "endgame-problems",
+    "Comprehensive": "general-practice",
+    "Middle Game": "general-practice",
+    "Principles": "general-practice"
   }
 }

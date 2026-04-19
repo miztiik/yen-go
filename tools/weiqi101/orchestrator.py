@@ -37,7 +37,7 @@ from .config import (
     DELAY_JITTER_FACTOR,
     get_sgf_dir,
 )
-from .extractor import extract_qqdata, is_rate_limited_page
+from .extractor import extract_qqdata, is_login_page, is_rate_limited_page
 from .index import load_puzzle_ids, sort_index
 from .models import PuzzleData
 from .storage import save_puzzle
@@ -539,6 +539,17 @@ def _process_html(
         checkpoint.record_error(ref, "rate_limited_captcha")
         return "rate_limited"
 
+    # Detect login/authentication redirect
+    if is_login_page(html):
+        logger.error(
+            f"Login page detected while fetching {ref}. "
+            "Session expired or this puzzle requires authentication. "
+            "Re-run with fresh --cookies."
+        )
+        stats.errors += 1
+        checkpoint.record_error(ref, "login_redirect")
+        return "rate_limited"  # Treat as rate_limited to trigger abort
+
     # Extract qqdata JSON
     qqdata = extract_qqdata(html)
     if qqdata is None:
@@ -582,12 +593,13 @@ def _process_html(
             puzzle.type_name, puzzle.player_to_move
         )
 
-    # Enrichment: collection membership (YL[])
+    # Enrichment: collection membership (YL[] — books only)
     collection_entries: list[str] | None = None
-    if config.match_collections:
-        slug = _local_collections_mapping.resolve_collection_slug(puzzle.type_name)
-        if slug:
-            collection_entries = [slug]
+
+    # Book membership from bookinfos
+    collection_entries = _local_collections_mapping.enrich_collections_from_bookinfos(
+        collection_entries, puzzle.bookinfos,
+    )
 
     # Chapter-aware enrichment: append slug:CHAPTER/POSITION when available
     if config.chapter_sequences and puzzle.puzzle_id in config.chapter_sequences:

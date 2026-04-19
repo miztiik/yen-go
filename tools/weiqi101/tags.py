@@ -35,6 +35,16 @@ TAG_MAPPING: dict[str, str | None] = {
     "棋理": None,   # Go theory/principles — conceptual, not technique
     "模仿": None,   # Imitation/mirror-go — defer until sampled
     "欣赏题": None,  # Appreciation/demonstration — educational, not technique
+    # English aliases (from qday sweep, 2015+ daily puzzles)
+    "Life & Death": "life-and-death",
+    "Fight": "capture-race",
+    "Tesuji": "tesuji",
+    "Opening": "fuseki",
+    "Joseki": "joseki",
+    "Endgame": "endgame",
+    "Comprehensive": None,  # Same as 综合
+    "Middle Game": None,     # Same as 中盘
+    "Principles": None,      # Same as 棋理
 }
 
 

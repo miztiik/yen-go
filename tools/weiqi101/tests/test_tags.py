@@ -70,3 +70,41 @@ def test_qili_is_none():
 def test_mofang_is_none():
     """Imitation puzzles deferred until sampled."""
     assert map_tag("模仿") is None
+
+
+# English aliases (from qday sweep, 2015+ daily puzzles)
+
+def test_english_life_and_death():
+    assert map_tag("Life & Death") == "life-and-death"
+
+
+def test_english_fight():
+    assert map_tag("Fight") == "capture-race"
+
+
+def test_english_tesuji():
+    assert map_tag("Tesuji") == "tesuji"
+
+
+def test_english_opening():
+    assert map_tag("Opening") == "fuseki"
+
+
+def test_english_joseki():
+    assert map_tag("Joseki") == "joseki"
+
+
+def test_english_endgame():
+    assert map_tag("Endgame") == "endgame"
+
+
+def test_english_comprehensive_is_none():
+    assert map_tag("Comprehensive") is None
+
+
+def test_english_middle_game_is_none():
+    assert map_tag("Middle Game") is None
+
+
+def test_english_principles_is_none():
+    assert map_tag("Principles") is None

@@ -59,18 +59,28 @@ def test_no_setup_stones():
 
 
 def test_no_solution_tree():
+    """Puzzle without solution tree is accepted (position-only)."""
     data = _sample_qqdata()
     data["andata"] = {}
     puzzle = PuzzleData.from_qqdata(data)
     error = validate_puzzle(puzzle)
-    assert error is not None
-    assert "solution" in error.lower()
+    assert error is None  # Position-only puzzles are valid
 
 
 def test_missing_root_node():
+    """Puzzle with solution tree but no root node is accepted with warning."""
     data = _sample_qqdata()
     data["andata"] = {"1": {"pt": "pd", "o": 1, "subs": []}}
     puzzle = PuzzleData.from_qqdata(data)
     error = validate_puzzle(puzzle)
-    assert error is not None
-    assert "root node" in error.lower()
+    assert error is None  # Warns but does not reject
+
+
+def test_missing_board_size_inferred():
+    """Puzzle with missing board size is inferred from stone coordinates."""
+    data = _sample_qqdata()
+    data["boardsize"] = None
+    puzzle = PuzzleData.from_qqdata(data)
+    error = validate_puzzle(puzzle)
+    assert error is None
+    assert puzzle.board_size is not None  # Should be inferred

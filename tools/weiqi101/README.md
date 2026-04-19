@@ -14,6 +14,8 @@ Modular tool to download Go/Baduk tsumego puzzles from [101weiqi.com](https://ww
 
 | Capability | Command | Output |
 |---|---|---|
+| **Browser capture** (bypasses CAPTCHA) | `receive` + Tampermonkey userscript | SGF files in `sgf/batch-NNN/` |
+| Import from JSONL file | `import-jsonl FILE` | SGF files in `sgf/batch-NNN/` |
 | Download daily 8-puzzle sets | `puzzle daily` | SGF files in `sgf/batch-NNN/` |
 | Download puzzles by ID range | `puzzle --start-id/--end-id` | SGF files in `sgf/batch-NNN/` |
 | Download a specific book | `puzzle --book-id N` | SGF files in `books/book-N/sgf/` |
@@ -136,7 +138,189 @@ python -m tools.weiqi101 daily --start-date 2026-03-01 --end-date 2026-03-14 --d
 - `httpx` library (already in project dependencies)
 - Run from the project root: `python -m tools.weiqi101 ...`
 
+### Rate Limiting and Cookies
+
+101weiqi.com aggressively rate-limits automated requests. The tool uses a 60s default delay with jitter, but the site may still serve Tencent CAPTCHA pages or require login after ~5-10 requests per session.
+
+**Recommended workflow for sustained downloading:**
+
+1. Log in to 101weiqi.com in your regular browser (Chrome/Edge/Firefox)
+2. Open DevTools (F12) → Application → Cookies → `www.101weiqi.com`
+3. Copy the cookie values (typically `sessionid` and `csrftoken`)
+4. Pass them to the tool:
+
+```bash
+python -m tools.weiqi101 --cookies "sessionid=abc123;csrftoken=xyz789" puzzle --book-id 197 --resume
+```
+
+**Dealing with CAPTCHA blocks:**
+- The tool detects CAPTCHA and login pages, saves checkpoint, and exits cleanly
+- Wait 15-30 minutes between sessions for the rate-limit to expire
+- Re-run with `--resume` to continue from where you left off
+- Each session typically downloads ~5-10 puzzles before being blocked
+- A 100-puzzle book completes in ~10-15 runs spaced over a few hours
+
 ## Source Modes
+
+### Browser Capture (Recommended for Sustained Downloads)
+
+The automated HTTP client gets blocked by Tencent CAPTCHA after ~5-10 requests. The **browser capture** mode bypasses this by using your real browser to browse 101weiqi.com while a Tampermonkey userscript extracts puzzle data and sends it to a local Python receiver.
+
+#### Setup
+
+1. Install [Tampermonkey](https://www.tampermonkey.net/) in Chrome/Edge/Firefox
+2. Create a new userscript and paste the contents of [`browser/101weiqi-capture.user.js`](browser/101weiqi-capture.user.js)
+3. Start the local receiver:
+
+```bash
+python -m tools.weiqi101 receive
+```
+
+4. Browse to any 101weiqi puzzle page (e.g. `https://www.101weiqi.com/q/78000/`)
+5. The userscript captures the page and sends it to the receiver automatically
+
+#### How It Works
+
+The userscript auto-detects everything on page load:
+
+1. Checks if the server has an active queue (e.g. from `--book-id`)
+2. If a queue is active → auto-captures and navigates through it
+3. If no queue → captures the current page and waits
+
+**No mode selection needed.** Just start the server and browse.
+
+#### Downloading a Book
+
+**Option 1: Pre-load from CLI** (simplest)
+
+```bash
+# Discover book IDs first (one-time)
+python -m tools.weiqi101 discover-book-ids --book-id 197 --by-chapter
+
+# Start with book pre-loaded — just browse to any puzzle page
+python -m tools.weiqi101 receive --book-id 197
+```
+
+**Option 2: Pick from browser** (visual)
+
+1. Start the plain receiver: `python -m tools.weiqi101 receive`
+2. Browse to any puzzle page
+3. Tampermonkey menu > **"Pick a Book"**
+4. A dialog shows all discovered books with download progress
+5. Click one to start downloading — the script navigates automatically
+
+#### Menu Commands
+
+| Command | Description |
+|---------|-------------|
+| **Pick a Book** | Browse discovered books with progress, click to start |
+| **Stop** | Pause navigation (also stops server queue) |
+| **Show Telemetry** | Pop up timing, error counts, book info from server |
+| **Reset Stats** | Clear local OK/Skip/Error/CAPTCHA/404 counters |
+
+#### Status Bar
+
+A fixed bar at the top of each page shows:
+- Current action (capturing, navigating, waiting)
+- Counters: `OK`, `Skip`, `Err`, `CAPTCHA`, `404`, `Total`
+- State: `RUNNING` or `IDLE`
+
+#### CAPTCHA & Error Handling
+
+- **CAPTCHA detected**: The script pauses, shows a notification, and polls every 5s. Solve it manually; the script resumes automatically.
+- **Login required**: Script stops. Log in, then reload.
+- **404 / No qqdata**: Counted as `notfound`, skipped automatically.
+- **Receiver unreachable**: Script stops immediately to avoid losing pages.
+
+#### Receiver CLI Options
+
+```bash
+python -m tools.weiqi101 receive [OPTIONS]
+```
+
+| Option                      | Default    | Description                               |
+| --------------------------- | ---------- | ----------------------------------------- |
+| `--host`                    | 127.0.0.1  | Bind address                              |
+| `--port`                    | 8101       | Bind port                                 |
+| `--book-id`                 | —          | Pre-load book queue from book-ids.jsonl    |
+| `--output-dir`              | (default)  | Output directory                          |
+| `--batch-size`              | 1000       | Max SGF files per batch directory          |
+| `--match-collections`       | on         | Assign YL[] collection from category       |
+| `--resolve-intent`          | on         | Generate root C[] intent from category     |
+
+#### Receiver Endpoints
+
+| Endpoint            | Method | Description                              |
+| ------------------- | ------ | ---------------------------------------- |
+| `POST /capture`     | POST   | Submit qqdata JSON for processing         |
+| `POST /queue/book`  | POST   | Load a book's IDs: `{"book_id": 197}`     |
+| `POST /queue/ids`   | POST   | Load custom IDs: `{"ids": [1,2,3]}`       |
+| `GET  /next`        | GET    | Pop next puzzle URL from queue             |
+| `GET  /queue/status` | GET   | Queue progress (pending, visited, %)       |
+| `GET  /queue/stop`  | GET    | Deactivate the queue                       |
+| `GET  /books`       | GET    | List all discovered books with progress    |
+| `GET  /status`      | GET    | Download stats + queue summary             |
+| `GET  /telemetry`   | GET    | Detailed event log, timing, errors         |
+| `GET  /health`      | GET    | Health check                               |
+
+#### Telemetry & Logging
+
+Both the server and userscript provide detailed telemetry:
+
+**Server-side (Python):**
+- Every capture event is logged to the file logger with `[TELEM]` prefix: timestamp, puzzle ID, status, duration, file path
+- `GET /telemetry` returns a JSON summary:
+  - `counts`: ok/skipped/error breakdown
+  - `total_processed`, `avg_duration_ms`
+  - `last_ok_at`, `last_error_at` timestamps
+  - `recent_errors`: last 50 errors with details
+  - `recent_events`: last 200 events with full metadata
+  - `book_id`, `book_name` if a book queue is active
+  - `started_at`: session start time
+
+**Userscript-side (browser console):**
+- Every action is logged to the browser console with `[YenGo] [INFO|WARN|ERROR]` prefix and ISO timestamp
+- Open DevTools (F12) > Console to see the live log
+- Events logged: page load, capture start/success/skip/error, navigation, CAPTCHA detection, queue requests
+
+**File logging (persistent audit trail):**
+- All server events are written to `logs/YYYYMMDD-HHMMSS-101weiqi.jsonl`
+- Queue lifecycle events: load, next, stop, complete
+- Each capture: puzzle ID, status, duration, SGF file path
+
+#### Offline Import from JSONL
+
+If you save captured data as JSONL (one `{"qqdata": {...}}` per line), import it later:
+
+```bash
+python -m tools.weiqi101 import-jsonl captured-data.jsonl
+```
+
+#### Typical Book Download Workflow
+
+```bash
+# 1. Discover book IDs (one-time per book)
+python -m tools.weiqi101 discover-book-ids --book-id 197 --by-chapter
+
+# 2. Start receiver with the book pre-loaded
+python -m tools.weiqi101 receive --book-id 197
+
+# 3. Open any 101weiqi puzzle page in browser
+#    The userscript auto-captures and navigates through the queue
+
+# 4. If interrupted (CAPTCHA, close browser), just restart:
+python -m tools.weiqi101 receive --book-id 197
+#    Already-downloaded puzzles are automatically skipped
+
+# 5. Monitor progress (optional)
+curl http://127.0.0.1:8101/queue/status   # queue progress
+curl http://127.0.0.1:8101/books           # all books with progress
+curl http://127.0.0.1:8101/telemetry      # detailed event history
+```
+
+**Throughput**: ~10-20 puzzles/minute (limited by page load + random 3-8s delay). A 1000-puzzle book takes ~1-2 hours of idle browsing.
+
+**Bolt-on design**: This feature is fully contained in `receiver.py` + `browser/`. Remove both to uninstall completely.
 
 ### Daily Puzzles
 
@@ -168,10 +352,11 @@ URL pattern: `https://www.101weiqi.com/chessmanual/{puzzle_id}/`
 | --------------------------- | --------------------------- | ------------------------------------------------ |
 | `--output-dir`              | `external-sources/101weiqi` | Output directory                                 |
 | `--batch-size`              | 1000                        | Max SGF files per batch directory                |
-| `--puzzle-delay`            | 3.0                         | Delay between requests (seconds)                 |
+| `--puzzle-delay`            | 60.0                        | Delay between requests (seconds)                 |
 | `--max-puzzles`             | 10000                       | Maximum puzzles to download per run              |
 | `--resume`                  | off                         | Resume from last checkpoint                      |
 | `--dry-run`                 | off                         | Show what would be downloaded                    |
+| `--cookies`                 | —                           | Session cookies (`Name=Value;Name2=Value2`)       |
 | `--no-log-file`             | off                         | Disable file logging (console only)              |
 | `-v`, `--verbose`           | off                         | Enable verbose/debug logging                     |
 | `--match-collections`       | on                          | Assign YL[] collection from category mapping     |
@@ -311,8 +496,8 @@ Each downloaded SGF includes:
 | `CA[UTF-8]`  | Character encoding                                              | Mandatory                        |
 | `SZ[N]`      | Board size (5–19)                                               | `qqdata.boardsize`               |
 | `PL[B/W]`    | Player to move first                                            | `qqdata.firsthand`               |
-| `AB[..]`     | Black setup stones                                              | `qqdata.prepos[0]`               |
-| `AW[..]`     | White setup stones                                              | `qqdata.prepos[1]`               |
+| `AB[..]`     | Black setup stones                                              | `qqdata.c` (decoded), fallback `prepos[0]` |
+| `AW[..]`     | White setup stones                                              | `qqdata.c` (decoded), fallback `prepos[1]` |
 | `YG[..]`     | YenGo level slug (mapped from Chinese kyu/dan, **calibrated**)  | `qqdata.levelname` → `levels.py` + `_local_levels_mapping.json` |
 | `YT[..]`     | YenGo tag (mapped from Chinese puzzle category)                 | `qqdata.qtypename` → `tags.py`   |
 | `YX[..]`     | Complexity metrics: `d:depth;r:nodes;s:sol_len;u:unique;w:wrong`| Computed from `qqdata.andata`    |
@@ -566,13 +751,18 @@ regex + brace matching (not a JS engine). Key fields:
 ```json
 {
   "publicid": 78000,          // Puzzle numeric ID
-  "boardsize": 19,            // Board size (5–19)
-  "firsthand": 1,             // 1=black, 2=white
+  "lu": 19,                   // Board size (路 = lines), 5–19
+  "blackfirst": true,         // Side to move (true=black, false=white)
+  "ru": 1,                    // Resource type (1=puzzle /q/, 2=chessmanual)
   "levelname": "13K+",        // Chinese kyu/dan string
   "qtypename": "死活题",       // Chinese puzzle category
   "qtype": 1,                 // Numeric category ID
-  "prepos": [["pd","pe"], ["oc","oe"]],  // [black_stones, white_stones]
-  "andata": { "0": { "pt": "pd", "o": 1, "f": 0, "subs": [1,2], "c": "" } },
+  "content": "amsTQlYQ...",   // XOR-encoded COMPLETE board position (PRIMARY source)
+  "prepos": [["pd","pe"], ["oc","oe"]],  // PARTIAL subset only — fallback
+  "c": "amsTUUER...",         // XOR-encoded transformed position (NOT used for rendering)
+  "andata": { "0": { "pt": "pd", "o": 1, "f": 0, "subs": [1,2] } },
+  "ok_answers": [["od"]],     // Correct first-move sequences
+  "fail_answers": [["pc","od"]],  // Wrong-path sequences
   "taskresult": { "ok_total": 11112, "fail_total": 5345 },
   "vote": 5.0,
   "bookinfos": [],
@@ -582,12 +772,47 @@ regex + brace matching (not a JS engine). Key fields:
 }
 ```
 
-### Alternate fields (some sources)
+### Content field decode chain (from production JS)
 
-- `blackfirst` (bool) — alternative to `firsthand` (int)
+The site's JS bundle (`ca3b6e99...js`) decodes the `content` field before board init:
+
+```
+QipanAPI.buildTimu101 → test123(qqdata) → test202(encoded, key)
+```
+
+**Key derivation** (from `ru` field):
+```
+base   = atob("MTAx") = "101"
+suffix = ru + 1                         // 2 for ru=1, 3 for ru=2
+key    = base + suffix + suffix + suffix  // "101222" or "101333"
+```
+
+**test202** (XOR decode):
+1. Base64-decode the encoded string
+2. XOR each byte with the key (cycling through key bytes)
+3. JSON.parse the result → `[[black_coords], [white_coords]]`
+
+**buildInitGameData** reads: `{ ab: qqdata.content[0], aw: qqdata.content[1] }`
+
+**Fields decoded by test123**: `content`, `ok_answers`, `change_answers`, `fail_answers`, `clone_pos`, `clone_prepos`
+
+**Fields NOT encoded**: `andata` (solution tree), `prepos` (partial stones), `answers` (flat answer list)
+
+### Field roles
+
+| Field | Encoding | Role | Stone count |
+|-------|----------|------|-------------|
+| `content` | XOR + base64 (ru-dependent key) | **Primary**: complete canonical board position | Full (e.g., 31 stones) |
+| `c` | XOR + base64 (opposite key) | Transformed/flipped position — NOT used for rendering | Full but different coords |
+| `prepos` | Plain JSON | Legacy fallback — partial subset only | Partial (e.g., 8 stones) |
+| `andata` | Plain JSON | Solution tree (nodes with `pt`, `o`, `f`, `subs`) | N/A |
+
+### Additional fields
+
+- `boardsize` — explicit board size (some sources use this instead of `lu`)
+- `firsthand` (int) — alternative to `blackfirst` (bool): 1=black, 2=white
 - `psm.prepos` — fallback setup stones when `prepos` is empty
-- `c` field with base64+XOR encoded positions (keys `"101222"`, `"101333"`)
-- `xv` field — board transformation flag (`xv % 3 != 0` → flip)
+- `xv` field — board transformation flag (`xv % 3 != 0` → flip for display variety)
 - `answers` array — flat alternative to hierarchical `andata`: `{"ty": 1}` (correct) / `{"ty": 3}` (failure)
 
 ## Module Structure
@@ -618,7 +843,7 @@ regex + brace matching (not a JS engine). Key fields:
 ## Running Tests
 
 ```bash
-# All tests (128 tests)
+# All tests (221 tests)
 python -m pytest tools/weiqi101/tests/ -v
 
 # Quick summary

@@ -22,8 +22,8 @@ from .config import (
     DEFAULT_BATCH_SIZE,
     DEFAULT_PUZZLE_DELAY,
     get_output_dir,
-    to_relative_path,
 )
+from tools.core.paths import rel_path as to_relative_path
 from .logging_config import setup_logging
 from .orchestrator import DownloadConfig, download_puzzles
 
@@ -337,6 +337,43 @@ Output Structure:
         help="Polite delay between requests in seconds (default: 3.0)",
     )
 
+    # Browser capture: receive mode
+    receive_parser = subparsers.add_parser(
+        "receive",
+        help="Start HTTP receiver for browser-captured puzzle data",
+    )
+    receive_parser.add_argument(
+        "--host",
+        type=str,
+        default=None,
+        help="Bind host (default: 127.0.0.1)",
+    )
+    receive_parser.add_argument(
+        "--port",
+        type=int,
+        default=None,
+        help="Bind port (default: 8101)",
+    )
+    receive_parser.add_argument(
+        "--book-id",
+        type=int,
+        default=None,
+        metavar="BOOK_ID",
+        help="Pre-load a book's puzzle IDs into the queue at startup",
+    )
+
+    # Browser capture: import-jsonl mode
+    import_jsonl_parser = subparsers.add_parser(
+        "import-jsonl",
+        help="Import puzzles from a JSONL file of captured qqdata records",
+    )
+    import_jsonl_parser.add_argument(
+        "jsonl_file",
+        type=Path,
+        metavar="JSONL_FILE",
+        help="Path to a JSONL file (one JSON object per line with 'qqdata' key)",
+    )
+
     # Discover-categories utility
     discover_cat_parser = subparsers.add_parser(
         "discover-categories",
@@ -353,6 +390,30 @@ Output Structure:
     disc_ids_parser = subparsers.add_parser(
         "discover-book-ids",
         help="Discover puzzle IDs within one or more books (scrapes /book/levelorder/)",
+    )
+
+    # Backfill-yl utility
+    backfill_parser = subparsers.add_parser(
+        "backfill-yl",
+        help="Backfill YL[] in qday SGFs from telemetry logs (books only)",
+    )
+    backfill_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="Show what would change without modifying files",
+    )
+
+    # Backfill-annotations utility
+    backfill_ann_parser = subparsers.add_parser(
+        "backfill-annotations",
+        help="Fix solution tree annotations (TE[1]/BM[1] on first moves, strip from continuations)",
+    )
+    backfill_ann_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="Show what would change without modifying files",
     )
     disc_ids_parser.add_argument(
         "--book-id",
@@ -412,6 +473,14 @@ Output Structure:
         return _run_discover_categories(args)
     if args.source_mode == "discover-book-ids":
         return _run_discover_book_ids(args)
+    if args.source_mode == "backfill-yl":
+        return _run_backfill_yl(args)
+    if args.source_mode == "backfill-annotations":
+        return _run_backfill_annotations(args)
+    if args.source_mode == "receive":
+        return _run_receive(args)
+    if args.source_mode == "import-jsonl":
+        return _run_import_jsonl(args)
 
     # If downloading a book without an explicit output-dir, default to a
     # book-specific subdirectory so each book's SGFs stay isolated.
@@ -768,6 +837,157 @@ def _run_discover_book_ids(args: argparse.Namespace) -> int:
     total_ids = sum(_count_ids(e) for e in existing.values())
     print(f"\n{_ts()} Saved {len(existing)} books ({total_ids:,} puzzle IDs total) → {output_path}")
     return 0
+
+
+def _run_backfill_yl(args: argparse.Namespace) -> int:
+    """Backfill YL[] in qday SGFs from telemetry logs."""
+    from .backfill import backfill_yl
+    from .config import get_output_dir
+
+    output_dir = get_output_dir(getattr(args, "output_dir", None))
+    setup_logging(
+        output_dir=output_dir,
+        verbose=getattr(args, "verbose", False),
+        log_to_file=not getattr(args, "no_log_file", False),
+    )
+
+    qday_dir = output_dir / "qday"
+    log_dir = output_dir / "logs"
+
+    if not qday_dir.exists():
+        print(f"Error: qday directory not found: {qday_dir}")
+        return 1
+    if not log_dir.exists():
+        print(f"Error: logs directory not found: {log_dir}")
+        return 1
+
+    dry_run = getattr(args, "dry_run", False)
+    if dry_run:
+        print("DRY RUN — no files will be modified\n")
+
+    stats = backfill_yl(qday_dir=qday_dir, log_dir=log_dir, dry_run=dry_run)
+
+    print(f"\n{'=' * 50}")
+    print("Backfill Summary")
+    print(f"{'=' * 50}")
+    print(f"Total SGFs:  {stats['total']}")
+    print(f"Updated:     {stats['updated']} (book slugs written)")
+    print(f"Removed:     {stats['removed']} (YL stripped)")
+    print(f"Unchanged:   {stats['unchanged']}")
+    print(f"Errors:      {stats['errors']}")
+    if dry_run:
+        print("\n(dry run — no files were modified)")
+    return 0 if stats["errors"] == 0 else 1
+
+
+def _run_backfill_annotations(args: argparse.Namespace) -> int:
+    """Fix solution tree annotations in existing SGFs."""
+    from .backfill import backfill_annotations
+    from .config import get_output_dir
+
+    output_dir = get_output_dir(getattr(args, "output_dir", None))
+    setup_logging(
+        output_dir=output_dir,
+        verbose=getattr(args, "verbose", False),
+        log_to_file=not getattr(args, "no_log_file", False),
+    )
+
+    # Scan both qday and batch SGF directories
+    sgf_dirs = [
+        output_dir / "qday",
+        output_dir / "sgf",
+    ]
+    # Also include book subdirectories
+    books_dir = output_dir / "books"
+    if books_dir.exists():
+        for book_dir in sorted(books_dir.iterdir()):
+            sgf_subdir = book_dir / "sgf"
+            if sgf_subdir.exists():
+                sgf_dirs.append(sgf_subdir)
+
+    existing_dirs = [d for d in sgf_dirs if d.exists()]
+    if not existing_dirs:
+        print("Error: no SGF directories found")
+        return 1
+
+    dry_run = getattr(args, "dry_run", False)
+    if dry_run:
+        print("DRY RUN — no files will be modified\n")
+
+    print(f"Scanning {len(existing_dirs)} directories...")
+    for d in existing_dirs:
+        print(f"  {d}")
+
+    stats = backfill_annotations(sgf_dirs=existing_dirs, dry_run=dry_run)
+
+    print(f"\n{'=' * 50}")
+    print("Annotation Backfill Summary")
+    print(f"{'=' * 50}")
+    print(f"Total SGFs:  {stats['total']}")
+    print(f"Fixed:       {stats['fixed']}")
+    print(f"Unchanged:   {stats['unchanged']}")
+    print(f"Errors:      {stats['errors']}")
+    if dry_run:
+        print("\n(dry run — no files were modified)")
+    return 0 if stats["errors"] == 0 else 1
+
+
+def _run_receive(args: argparse.Namespace) -> int:
+    """Start the HTTP receiver for browser-captured qqdata."""
+    from .config import RECEIVER_HOST, RECEIVER_PORT, get_output_dir
+    from .receiver import run_receiver
+
+    output_dir = get_output_dir(getattr(args, "output_dir", None))
+    host = getattr(args, "host", None) or RECEIVER_HOST
+    port = getattr(args, "port", None) or RECEIVER_PORT
+    batch_size = getattr(args, "batch_size", None) or DEFAULT_BATCH_SIZE
+
+    setup_logging(
+        output_dir=output_dir,
+        verbose=getattr(args, "verbose", False),
+        log_to_file=not getattr(args, "no_log_file", False),
+    )
+
+    run_receiver(
+        output_dir=output_dir,
+        host=host,
+        port=port,
+        batch_size=batch_size,
+        match_collections=getattr(args, "match_collections", True),
+        resolve_intent=getattr(args, "resolve_intent", True),
+        book_id=getattr(args, "book_id", None),
+    )
+    return 0
+
+
+def _run_import_jsonl(args: argparse.Namespace) -> int:
+    """Import puzzles from a JSONL file of captured qqdata records."""
+    from .config import get_output_dir
+    from .receiver import import_jsonl
+
+    jsonl_path: Path = args.jsonl_file
+    if not jsonl_path.exists():
+        print(f"Error: file not found: {jsonl_path}")
+        return 1
+
+    output_dir = get_output_dir(getattr(args, "output_dir", None))
+    batch_size = getattr(args, "batch_size", None) or DEFAULT_BATCH_SIZE
+
+    setup_logging(
+        output_dir=output_dir,
+        verbose=getattr(args, "verbose", False),
+        log_to_file=not getattr(args, "no_log_file", False),
+    )
+
+    stats = import_jsonl(
+        jsonl_path=jsonl_path,
+        output_dir=output_dir,
+        batch_size=batch_size,
+        match_collections=getattr(args, "match_collections", True),
+        resolve_intent=getattr(args, "resolve_intent", True),
+    )
+    print(f"\nImport complete: {stats['ok']} saved, {stats['skipped']} skipped, {stats['error']} errors")
+    return 0 if stats["error"] == 0 else 1
 
 
 if __name__ == "__main__":

@@ -224,9 +224,22 @@ def _extract_js_var_direct(html: str, var_name: str) -> list | dict | None:
     start = m.start(1)
     depth = 1
     i = start + 1
-    while i < len(html) and depth > 0:
+    html_len = len(html)
+    while i < html_len and depth > 0:
         c = html[i]
-        if c in "[{":
+        if c in ('"', "'"):
+            # Skip over string literals so brackets inside strings
+            # don't affect the depth counter.
+            quote = c
+            i += 1
+            while i < html_len:
+                if html[i] == "\\":
+                    i += 2  # skip escaped character
+                    continue
+                if html[i] == quote:
+                    break
+                i += 1
+        elif c in "[{":
             depth += 1
         elif c in "]}":
             depth -= 1
@@ -467,6 +480,65 @@ KNOWN_CATEGORIES: list[tuple[str, str]] = [
 ]
 
 
+def _extract_books_from_list_page(html: str) -> list[BookInfo]:
+    """Extract all books from the /book/list/ page.
+
+    The page embeds ``var g_books = [...]`` containing every book on the site,
+    regardless of whether it has tags. Each entry has: id, name, qcount,
+    levelname, username, etc.
+    """
+    books: list[BookInfo] = []
+
+    data = _extract_js_var(html, "g_books")
+    if not isinstance(data, list):
+        return books
+
+    for entry in data:
+        if not isinstance(entry, dict):
+            continue
+        book_id = entry.get("id")
+        name = entry.get("name", "")
+        if not book_id or not name:
+            continue
+
+        books.append(BookInfo(
+            book_id=int(book_id),
+            name=name.strip(),
+            name_en=translate_chinese_text(name.strip()),
+            puzzle_count=int(entry.get("qcount", 0)),
+            difficulty=str(entry.get("levelname", "")).strip(),
+            sharer=entry.get("username", ""),
+            tags=[],
+            url=f"{BASE_URL}/book/{book_id}/",
+        ))
+
+    return books
+
+
+def discover_all_books_from_list(client: WeiQiClient) -> list[BookInfo]:
+    """Discover all books from /book/list/ (single request, complete list).
+
+    This endpoint returns every book on the site via the ``g_books`` JS variable,
+    unlike the tag-based BFS which only finds tagged books.
+
+    Args:
+        client: HTTP client instance.
+
+    Returns:
+        List of BookInfo objects for every book on the site.
+    """
+    url = f"{BASE_URL}/book/list/"
+    logger.info(f"Fetching complete book list from {url}")
+    html = client.fetch_page(url)
+    if not html:
+        logger.error("Failed to fetch /book/list/ page")
+        return []
+
+    books = _extract_books_from_list_page(html)
+    logger.info(f"Found {len(books)} books from /book/list/")
+    return books
+
+
 def discover_book_tags(client: WeiQiClient, delay: float = 2.0) -> list[BookTag]:
     """Discover all book tags from the /book/ main page.
 
@@ -594,7 +666,8 @@ def run_full_discovery(
     1. Total puzzle count (from /status/)
     2. Book tags (from /book/)
     3. Books per tag (BFS through each tag)
-    4. Category page counts (BFS through each category)
+    4. Complete book list from /book/list/ (merges untagged books)
+    5. Category page counts (BFS through each category)
 
     Progress is printed to the console after every HTTP request, and
     if ``output_path`` is given, the catalog is incrementally saved
@@ -617,21 +690,21 @@ def run_full_discovery(
 
     with WeiQiClient() as client:
         # 1. Total puzzle count
-        print("[1/4] Fetching total puzzle count from /status/ ...")
+        print("[1/5] Fetching total puzzle count from /status/ ...")
         catalog.total_active_puzzles = discover_total_puzzles(client)
         print(f"       Total active puzzles: {catalog.total_active_puzzles:,}")
         _save_incremental("puzzle_count")
         time.sleep(delay)
 
         # 2. Discover book tags
-        print("[2/4] Discovering book tags from /book/ ...")
+        print("[2/5] Discovering book tags from /book/ ...")
         catalog.book_tags = discover_book_tags(client)
         print(f"       Found {len(catalog.book_tags)} book tags")
         _save_incremental("book_tags")
         time.sleep(delay)
 
         # 3. BFS: discover books under each tag
-        print(f"[3/4] BFS: discovering books across {len(catalog.book_tags)} tags ...")
+        print(f"[3/5] BFS: discovering books across {len(catalog.book_tags)} tags ...")
         all_books: dict[int, BookInfo] = {}
         for i, tag in enumerate(catalog.book_tags, 1):
             books = discover_books_by_tag(client, tag.tag_id, delay)
@@ -650,13 +723,28 @@ def run_full_discovery(
                 _save_incremental(f"tag_{i}_of_{len(catalog.book_tags)}")
             time.sleep(delay)
 
+        tagged_count = len(all_books)
         catalog.books = sorted(all_books.values(), key=lambda b: b.book_id)
-        logger.info(f"Total unique books discovered: {len(catalog.books)}")
-        print(f"       Total unique books: {len(catalog.books)}")
-        _save_incremental("all_books")
+        logger.info(f"Total unique books from tags: {tagged_count}")
+        print(f"       Tagged books: {tagged_count}")
+        _save_incremental("tagged_books")
 
-        # 4. Discover category page counts
-        print(f"[4/4] Probing {len(KNOWN_CATEGORIES)} category pages ...")
+        # 4. Merge untagged books from /book/list/
+        print("[4/5] Fetching complete book list from /book/list/ ...")
+        list_books = discover_all_books_from_list(client)
+        merged = 0
+        for book in list_books:
+            if book.book_id not in all_books:
+                all_books[book.book_id] = book
+                merged += 1
+        catalog.books = sorted(all_books.values(), key=lambda b: b.book_id)
+        print(f"       /book/list/: {len(list_books)} total, {merged} new (untagged)")
+        print(f"       Combined unique books: {len(all_books)}")
+        _save_incremental("all_books")
+        time.sleep(delay)
+
+        # 5. Discover category page counts
+        print(f"[5/5] Probing {len(KNOWN_CATEGORIES)} category pages ...")
         catalog.categories = discover_category_pages(client, delay)
         for cat in catalog.categories:
             est = cat.page_count * 20

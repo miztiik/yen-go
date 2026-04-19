@@ -15,6 +15,7 @@ from tools.core.paths import get_project_root
 DEFAULT_OUTPUT_DIR = Path("external-sources/101weiqi")
 
 SGF_SUBDIR = "sgf"
+QDAY_SUBDIR = "qday"
 LOGS_SUBDIR = "logs"
 
 # ============================================================================
@@ -94,6 +95,14 @@ USER_AGENT = (
 
 
 # ============================================================================
+# BROWSER CAPTURE RECEIVER
+# ============================================================================
+
+RECEIVER_HOST = "127.0.0.1"
+RECEIVER_PORT = 8101
+RECEIVER_MAX_BODY = 1024 * 1024  # 1 MB max POST body
+
+# ============================================================================
 # PATH HELPERS
 # ============================================================================
 
@@ -109,6 +118,11 @@ def get_output_dir(custom_dir: Path | None = None) -> Path:
 def get_sgf_dir(output_dir: Path) -> Path:
     """Get the SGF subdirectory."""
     return output_dir / SGF_SUBDIR
+
+
+def get_qday_dir(output_dir: Path) -> Path:
+    """Get the daily puzzles (qday) subdirectory."""
+    return output_dir / QDAY_SUBDIR
 
 
 def get_logs_dir(output_dir: Path) -> Path:

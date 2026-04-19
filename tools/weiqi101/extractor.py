@@ -17,6 +17,18 @@ logger = logging.getLogger("101weiqi.extractor")
 # instead of actual puzzle content.
 _RATE_LIMIT_MARKERS = ("TCaptcha.js", "turing.captcha.qcloud.com")
 
+# Markers that indicate the page redirected to a login wall.
+# These appear in the page URL or HTML when the site requires authentication
+# to view a puzzle (e.g., locked content, session expired).
+_LOGIN_MARKERS = (
+    "/accounts/signin",
+    "/accounts/login",
+    "/login/",
+    "denglu",            # Chinese for "login" in URL paths
+    'id="login-form"',
+    'class="login-page"',
+)
+
 
 def is_rate_limited_page(html: str) -> bool:
     """Detect if the returned HTML is a CAPTCHA / rate-limit page.
@@ -27,6 +39,17 @@ def is_rate_limited_page(html: str) -> bool:
     if "var qqdata" in html:
         return False  # Normal puzzle page (even if data is partial)
     return any(marker in html for marker in _RATE_LIMIT_MARKERS)
+
+
+def is_login_page(html: str) -> bool:
+    """Detect if the returned HTML is a login/authentication page.
+
+    When the site requires login to view a puzzle, it redirects to
+    a login page instead of rendering puzzle data.
+    """
+    if "var qqdata" in html:
+        return False  # Has puzzle data — not a login redirect
+    return any(marker in html for marker in _LOGIN_MARKERS)
 
 def extract_qqdata(html: str) -> dict | None:
     """Extract the qqdata JSON object from an HTML page.

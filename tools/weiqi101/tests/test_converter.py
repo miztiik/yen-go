@@ -59,15 +59,15 @@ def test_basic_sgf_conversion():
 
 
 def test_solution_tree_in_sgf():
-    """Solution tree with correct/wrong annotations."""
+    """Solution tree with correct/wrong annotations on first moves only."""
     puzzle = PuzzleData.from_qqdata(_sample_qqdata())
     sgf = convert_puzzle_to_sgf(puzzle)
 
-    # Root move (correct)
-    assert ";B[rd]C[Correct]" in sgf
+    # Root move (correct) — first move gets TE[1] + C[Correct]
+    assert ";B[rd]TE[1]C[Correct]" in sgf
 
-    # Wrong variation
-    assert "C[Wrong]" in sgf
+    # Wrong variation — first move gets BM[1] + C[Wrong]
+    assert "BM[1]C[Wrong]" in sgf
 
 
 def test_white_to_play():
@@ -195,17 +195,18 @@ def test_root_comment_emitted():
     assert "C[Black to live or kill]" in sgf
 
 
-def test_root_comment_absent_when_none():
-    """No root C[] when root_comment is None."""
+def test_root_comment_auto_generated_when_none():
+    """Auto-generates 'Black/White to play' root C[] when root_comment is None."""
     puzzle = PuzzleData.from_qqdata(_sample_qqdata())
     sgf = convert_puzzle_to_sgf(puzzle)
-    # Root C[] should not appear; only move-level C[Correct]/C[Wrong]
-    # Check that C[ only appears attached to moves (after ;B or ;W)
-    lines = sgf.split("\n")
-    for line in lines:
-        # Root properties are in the first line
-        if line.startswith("(;FF[4]"):
-            assert "C[" not in line
+    assert "C[Black to play]" in sgf
+
+    # White to play
+    data = _sample_qqdata()
+    data["firsthand"] = 2
+    puzzle_w = PuzzleData.from_qqdata(data)
+    sgf_w = convert_puzzle_to_sgf(puzzle_w)
+    assert "C[White to play]" in sgf_w
 
 
 def test_all_enrichment_together():
@@ -263,3 +264,67 @@ def test_yl_dashed_chapter():
         puzzle, collection_entries=["book-x:intro-a/5"]
     )
     assert "YL[book-x:intro-a/5]" in sgf
+
+
+# =============================================================================
+# English qtypename aliases (qday 2015+ daily puzzles)
+# =============================================================================
+
+
+def test_english_qtypename_fight():
+    """English qtypename 'Fight' produces YT[capture-race]."""
+    data = _sample_qqdata()
+    data["qtypename"] = "Fight"
+    puzzle = PuzzleData.from_qqdata(data)
+    sgf = convert_puzzle_to_sgf(puzzle)
+    assert "YT[capture-race]" in sgf
+
+
+def test_english_qtypename_life_and_death():
+    """English qtypename 'Life & Death' produces YT[life-and-death]."""
+    data = _sample_qqdata()
+    data["qtypename"] = "Life & Death"
+    puzzle = PuzzleData.from_qqdata(data)
+    sgf = convert_puzzle_to_sgf(
+        puzzle,
+        root_comment="Black to live or kill",
+        collection_entries=["life-and-death"],
+    )
+    assert "YT[life-and-death]" in sgf
+    assert "YL[life-and-death]" in sgf
+    assert "C[Black to live or kill]" in sgf
+
+
+def test_english_qtypename_comprehensive_no_tag():
+    """English qtypename 'Comprehensive' produces no YT[] (intentionally unmapped)."""
+    data = _sample_qqdata()
+    data["qtypename"] = "Comprehensive"
+    puzzle = PuzzleData.from_qqdata(data)
+    sgf = convert_puzzle_to_sgf(puzzle)
+    assert "YT[" not in sgf
+
+
+def test_continuation_moves_have_no_correctness_comment():
+    """Only the first move of each variation gets C[Correct]/C[Wrong]."""
+    data = _sample_qqdata()
+    # Build a deeper tree: B[rd] correct → W[pe] correct → B[qe] correct
+    #                       B[rd] correct → W[oe] wrong
+    data["andata"] = {
+        "0": {"pt": "rd", "o": 1, "subs": [1, 3]},
+        "1": {"pt": "pe", "o": 1, "subs": [2]},
+        "2": {"pt": "qe", "o": 1, "subs": []},
+        "3": {"pt": "oe", "f": 1, "subs": []},
+    }
+    puzzle = PuzzleData.from_qqdata(data)
+    sgf = convert_puzzle_to_sgf(puzzle)
+
+    # First move of the tree gets TE[1]C[Correct]
+    assert ";B[rd]TE[1]C[Correct]" in sgf
+    # W[pe] is a variation start (branch child) — gets TE[1]C[Correct]
+    assert ";W[pe]TE[1]C[Correct]" in sgf
+    # B[qe] is a continuation (single child of pe) — NO markers
+    assert ";B[qe]C[Correct]" not in sgf
+    assert ";B[qe]TE[1]" not in sgf
+    assert ";B[qe]" in sgf  # just the bare move
+    # Wrong variation first move gets BM[1]C[Wrong]
+    assert ";W[oe]BM[1]C[Wrong]" in sgf

@@ -74,3 +74,41 @@ def test_mofang_not_mapped():
     """Imitation puzzles need sampling before committing intent."""
     result = resolve_intent("模仿", "B")
     assert result is None
+
+
+# English aliases (from qday sweep, 2015+ daily puzzles)
+
+def test_english_life_and_death():
+    assert resolve_intent("Life & Death", "B") == "Black to live or kill"
+
+
+def test_english_fight():
+    assert resolve_intent("Fight", "B") == "Black to win the capturing race"
+
+
+def test_english_tesuji():
+    assert resolve_intent("Tesuji", "W") == "White to find the tesuji"
+
+
+def test_english_opening():
+    assert resolve_intent("Opening", "B") == "Black to find the best opening move"
+
+
+def test_english_joseki():
+    assert resolve_intent("Joseki", "B") == "Black to find the correct joseki"
+
+
+def test_english_endgame():
+    assert resolve_intent("Endgame", "W") == "White to find the best endgame move"
+
+
+def test_english_comprehensive():
+    assert resolve_intent("Comprehensive", "B") == "Black to find the best move"
+
+
+def test_english_middle_game():
+    assert resolve_intent("Middle Game", "B") == "Black to find the best middle game move"
+
+
+def test_english_principles():
+    assert resolve_intent("Principles", "B") == "Black to find the correct move"
