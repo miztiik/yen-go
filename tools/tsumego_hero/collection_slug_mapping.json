@@ -1,0 +1,396 @@
+{
+  "_description": "Maps TH local slugs to global collection slugs (config/collections.json). Used by package_collections.py to build the final sgf-by-collection directory structure.",
+  "_generated": "2026-04-13",
+  "mappings": [
+    {
+      "th_slug": "easy-capture",
+      "global_slug": "capture-problems",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "easy-kill",
+      "global_slug": "kill-problems",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "easy-life",
+      "global_slug": "life-and-death",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "gokyo-1",
+      "global_slug": "gokyo-shumyo",
+      "chapter": "01-volume-i",
+      "action": "map"
+    },
+    {
+      "th_slug": "gokyo-shumyo-ii",
+      "global_slug": "gokyo-shumyo",
+      "chapter": "02-volume-ii",
+      "action": "map"
+    },
+    {
+      "th_slug": "gokyo-shumyo-iii",
+      "global_slug": "gokyo-shumyo",
+      "chapter": "03-volume-iii",
+      "action": "map"
+    },
+    {
+      "th_slug": "gokyo-shumyo-iv",
+      "global_slug": "gokyo-shumyo",
+      "chapter": "04-volume-iv",
+      "action": "map"
+    },
+    {
+      "th_slug": "hatsuyoron",
+      "global_slug": "igo-hatsuyoron",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "kanzufu",
+      "global_slug": "guanzi-pu",
+      "chapter": "01-life-death",
+      "action": "map"
+    },
+    {
+      "th_slug": "kanzufu-tesuji",
+      "global_slug": "guanzi-pu",
+      "chapter": "02-tesuji",
+      "action": "map"
+    },
+    {
+      "th_slug": "kpa-1",
+      "global_slug": "korean-problem-academy",
+      "chapter": "01-volume-1",
+      "action": "map"
+    },
+    {
+      "th_slug": "kpa-2",
+      "global_slug": "korean-problem-academy",
+      "chapter": "02-volume-2",
+      "action": "map"
+    },
+    {
+      "th_slug": "korean-problem-academy-3",
+      "global_slug": "korean-problem-academy",
+      "chapter": "03-volume-3",
+      "action": "map"
+    },
+    {
+      "th_slug": "korean-problem-academy-4",
+      "global_slug": "korean-problem-academy",
+      "chapter": "04-volume-4",
+      "action": "map"
+    },
+    {
+      "th_slug": "lad-advanced",
+      "global_slug": "cho-chikun-life-death-advanced",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "lad-elementary",
+      "global_slug": "cho-chikun-life-death-elementary",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "lad-intermediate",
+      "global_slug": "cho-chikun-life-death-intermediate",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "tsumego-dict-1",
+      "global_slug": "tsumego-dictionary",
+      "chapter": "01-volume-i",
+      "action": "map"
+    },
+    {
+      "th_slug": "tsumego-dict-2",
+      "global_slug": "tsumego-dictionary",
+      "chapter": "02-volume-ii",
+      "action": "map"
+    },
+    {
+      "th_slug": "tsumego-dictionary-volume-iii",
+      "global_slug": "tsumego-dictionary",
+      "chapter": "03-volume-iii",
+      "action": "map"
+    },
+    {
+      "th_slug": "xuanxuan-qijing",
+      "global_slug": "xuanxuan-qijing",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "1000-weiqi-problems-1st-half",
+      "global_slug": "weiqi-problems",
+      "chapter": "01-first-half",
+      "action": "map"
+    },
+    {
+      "th_slug": "1000-weiqi-problems-2nd-half",
+      "global_slug": "weiqi-problems",
+      "chapter": "02-second-half",
+      "action": "map"
+    },
+    {
+      "th_slug": "attack-hero",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "beautiful-tsumego",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "blind-spot",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "boundless-sky",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "diabolical",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "direction-of-the-play",
+      "global_slug": "kajiwara-direction-of-play",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "endgame-tesujis",
+      "global_slug": "endgame-problems",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "kano-yoshinori-volume-1",
+      "global_slug": "kano-yoshinori-graded-go-problems",
+      "chapter": "01-volume-1",
+      "action": "map"
+    },
+    {
+      "th_slug": "kano-yoshinori-volume-2",
+      "global_slug": "kano-yoshinori-graded-go-problems",
+      "chapter": "02-volume-2",
+      "action": "map"
+    },
+    {
+      "th_slug": "kano-yoshinori-volume-3",
+      "global_slug": "kano-yoshinori-graded-go-problems",
+      "chapter": "03-volume-3",
+      "action": "map"
+    },
+    {
+      "th_slug": "kano-yoshinori-volume-4",
+      "global_slug": "kano-yoshinori-graded-go-problems",
+      "chapter": "04-volume-4",
+      "action": "map"
+    },
+    {
+      "th_slug": "ko-gems",
+      "global_slug": "ko-problems",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "level-evaluation-set-beginner",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "problems-from-professional-games",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "sacrificial-tsumego",
+      "global_slug": "sacrifice-techniques",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "secret-by-kim-jiseok",
+      "global_slug": "kim-jiseok-tsumego",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "hong-dojo",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "segoe-tesuji-dictionary-part-1",
+      "global_slug": "segoe-kensaku-tesuji-dictionary",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "single-digit-kyu-problems",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "tesuji-training",
+      "global_slug": "tesuji-training",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "tesujis-in-real-board-positions",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "tsumego-grandmaster",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "tsumego-master",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "tsumego-of-fortitude",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "weiqi-life-death-drills",
+      "global_slug": "weiqi-problems",
+      "chapter": "03-life-death-drills",
+      "action": "map"
+    },
+    {
+      "th_slug": "yi-kuo",
+      "global_slug": "yi-kuo",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "13x13-endgame-problems-difficult",
+      "global_slug": "small-board-problems",
+      "chapter": "05-13x13-hard",
+      "action": "map"
+    },
+    {
+      "th_slug": "13x13-endgame-problems-easy",
+      "global_slug": "small-board-problems",
+      "chapter": "04-13x13-easy",
+      "action": "map"
+    },
+    {
+      "th_slug": "4x4-problems",
+      "global_slug": "small-board-problems",
+      "chapter": "01-4x4",
+      "action": "map"
+    },
+    {
+      "th_slug": "5x5-problems",
+      "global_slug": "small-board-problems",
+      "chapter": "02-5x5",
+      "action": "map"
+    },
+    {
+      "th_slug": "9x9-endgame-problems",
+      "global_slug": "small-board-problems",
+      "chapter": "03-9x9",
+      "action": "map"
+    },
+    {
+      "th_slug": "carnage",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "french-advanced",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "french-easy",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "french-intermediate",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "giants",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "hunting",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "pretty-area",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "the-ghost",
+      "global_slug": null,
+      "chapter": null,
+      "action": "drop"
+    },
+    {
+      "th_slug": "the-j-group",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "the-l-group",
+      "global_slug": "general-practice",
+      "chapter": null,
+      "action": "map"
+    },
+    {
+      "th_slug": "the-rules-of-capturing-races",
+      "global_slug": "capturing-races-unsolved",
+      "chapter": null,
+      "action": "map"
+    }
+  ]
+}

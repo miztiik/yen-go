@@ -69,6 +69,12 @@ class DownloadConfig:
     intent_confidence_threshold: float = 0.8
     # Validation: minimum stones override (None = use config default)
     min_stones: int | None = None
+    # Validation: minimum board dimension override (None = use config default)
+    min_board_size: int | None = None
+    # Validation: maximum solution depth override (None = use config default, 0 = no cap)
+    max_solution_depth: int | None = None
+    # Validation: minimum solution depth override (None = use config default, 0 = allow no-solution)
+    min_solution_depth: int | None = None
 
     # Gap fill: after collections, auto-find and download out-of-collection puzzles
     fill_gaps: bool = False
@@ -77,8 +83,18 @@ class DownloadConfig:
     @property
     def validation_config(self) -> PuzzleValidationConfig | None:
         """Build validation config with CLI overrides (if any)."""
+        overrides: dict = {}
         if self.min_stones is not None:
-            return DEFAULT_CONFIG.merge({"min_stones": self.min_stones})
+            overrides["min_stones"] = self.min_stones
+        if self.min_board_size is not None:
+            overrides["min_board_size"] = self.min_board_size
+        if self.min_solution_depth is not None:
+            overrides["min_solution_depth"] = self.min_solution_depth
+        if self.max_solution_depth is not None:
+            # 0 means no cap
+            overrides["max_solution_depth"] = None if self.max_solution_depth == 0 else self.max_solution_depth
+        if overrides:
+            return DEFAULT_CONFIG.merge(overrides)
         return None
 
 

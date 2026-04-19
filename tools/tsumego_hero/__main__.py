@@ -199,6 +199,24 @@ Output Structure:
         default=None,
         help="Minimum stones required on the board (overrides config default of 2)",
     )
+    parser.add_argument(
+        "--min-board-size",
+        type=int,
+        default=None,
+        help="Minimum board dimension (overrides config default of 5)",
+    )
+    parser.add_argument(
+        "--max-solution-depth",
+        type=int,
+        default=None,
+        help="Maximum solution depth (0 = no cap, overrides config default of 30)",
+    )
+    parser.add_argument(
+        "--min-solution-depth",
+        type=int,
+        default=None,
+        help="Minimum solution depth (0 = allow no-solution puzzles, overrides config default of 1)",
+    )
 
     # Logging
     # Gap fill
@@ -274,6 +292,9 @@ Output Structure:
             match_collections=args.match_collections,
             resolve_intent=args.resolve_intent,
             min_stones=args.min_stones,
+            min_board_size=args.min_board_size,
+            max_solution_depth=args.max_solution_depth,
+            min_solution_depth=args.min_solution_depth,
         )
 
         try:
@@ -322,6 +343,9 @@ Output Structure:
         match_collections=args.match_collections,
         resolve_intent=args.resolve_intent,
         min_stones=args.min_stones,
+        min_board_size=args.min_board_size,
+        max_solution_depth=args.max_solution_depth,
+        min_solution_depth=args.min_solution_depth,
         fill_gaps=args.fill_gaps,
         fill_gaps_max_id=args.fill_gaps_max_id,
     )

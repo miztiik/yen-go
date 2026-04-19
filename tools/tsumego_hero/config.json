@@ -23,7 +23,7 @@
     "skip_existing": true,
     "verify_sgf": true,
     "stop_on_consecutive_failures": 5,
-    "batch_size": 1000
+    "batch_size": 2000
   },
   
   "logging": {
