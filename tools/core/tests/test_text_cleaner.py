@@ -10,6 +10,7 @@ from tools.core.text_cleaner import (
     generate_slug,
     infer_curator,
     infer_type,
+    sanitize_for_training,
 )
 
 # ==============================
@@ -209,3 +210,80 @@ class TestConstants:
     def test_go_terms_has_common_terms(self) -> None:
         for term in ["tesuji", "life", "death", "ko", "ladder", "tsumego"]:
             assert term in GO_TERMS
+
+
+# ==============================
+# sanitize_for_training Tests
+# ==============================
+
+class TestSanitizeForTraining:
+    def test_strips_bold_tags(self) -> None:
+        assert sanitize_for_training("Correct! <b>CORRECT!</b>") == "Correct! CORRECT!"
+
+    def test_strips_anchor_keeps_link_text(self) -> None:
+        result = sanitize_for_training(
+            'See <a href="https://senseis.xmp.net/?BentFour">Bent four</a>.'
+        )
+        assert "<a" not in result
+        assert "href" not in result
+        assert "Bent four" in result
+
+    def test_strips_urls(self) -> None:
+        result = sanitize_for_training("See https://senseis.xmp.net/?CaptureThree for details.")
+        assert "senseis.xmp.net" not in result
+        assert "https" not in result
+        assert "See" in result
+
+    def test_normalizes_crlf(self) -> None:
+        result = sanitize_for_training("Line one\r\nLine two\r\nLine three")
+        assert "\r" not in result
+        assert result == "Line one\nLine two\nLine three"
+
+    def test_normalizes_lone_cr(self) -> None:
+        result = sanitize_for_training("Line one\rLine two")
+        assert "\r" not in result
+        assert result == "Line one\nLine two"
+
+    def test_preserves_case(self) -> None:
+        """Unlike clean_comment_text, case is preserved."""
+        result = sanitize_for_training("Black is ALIVE in the corner.")
+        assert "ALIVE" in result
+
+    def test_preserves_cjk(self) -> None:
+        """Unlike clean_comment_text, CJK characters are preserved."""
+        result = sanitize_for_training("\u56f2\u7881 is Go in Japanese")
+        assert "\u56f2\u7881" in result
+
+    def test_none_returns_empty(self) -> None:
+        assert sanitize_for_training(None) == ""
+
+    def test_empty_returns_empty(self) -> None:
+        assert sanitize_for_training("") == ""
+
+    def test_collapses_excessive_whitespace(self) -> None:
+        result = sanitize_for_training("Too    many   spaces")
+        assert result == "Too many spaces"
+
+    def test_collapses_excessive_newlines(self) -> None:
+        result = sanitize_for_training("Para one\n\n\n\n\nPara two")
+        assert result == "Para one\n\nPara two"
+
+    def test_preserves_paragraph_breaks(self) -> None:
+        result = sanitize_for_training("Para one\n\nPara two")
+        assert result == "Para one\n\nPara two"
+
+    def test_real_pollution_example(self) -> None:
+        """Real example from OGS training data."""
+        dirty = (
+            'Correct! <b>CORRECT!</b>\r\n\r\nBlack is alive\r\n\r\n'
+            'Black can easily make two real eyes.\r\n\r\n'
+            'See <a href="https://senseis.xmp.net/?CaptureThreeToGetAnEye">'
+            "Capture three to get an eye</a>."
+        )
+        result = sanitize_for_training(dirty)
+        assert "<b>" not in result
+        assert "<a" not in result
+        assert "senseis.xmp.net" not in result
+        assert "\r" not in result
+        assert "Correct! CORRECT!" in result
+        assert "Capture three to get an eye" in result
