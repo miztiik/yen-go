@@ -67,7 +67,6 @@ The browser only does:
 | Database queries           | localStorage                           |
 | Move calculation           | Pre-computed solution trees            |
 | Neural network inference   | Heuristic classification at build time |
-| Heavy computation (>100ms) | Pre-compute everything                 |
 
 ## Configuration
 
