@@ -38,8 +38,9 @@ _CJK_PATTERN = re.compile(
 _HTML_TAG_PATTERN = re.compile(r"<[^>]+>")
 _WHITESPACE_PATTERN = re.compile(r"\s+")
 
-# URLs (http/https) commonly embedded in SGF comments from online sources
-_URL_PATTERN = re.compile(r"https?://\S+", re.IGNORECASE)
+# URLs (http/https) commonly embedded in SGF comments from online sources.
+# SGF escapes colons as \:, so we also match http\:// and https\://.
+_URL_PATTERN = re.compile(r"https?\\?://\S+", re.IGNORECASE)
 
 # Numbered problem/question/exercise labels (noise in training sets)
 _NUMBERING_PATTERN = re.compile(
@@ -76,6 +77,32 @@ def normalize_text(text: str) -> str:
     text = text.lower()
     text = _WHITESPACE_PATTERN.sub(" ", text)
     return text.strip()
+
+
+_MULTI_NEWLINE = re.compile(r"\n{3,}")
+_MULTI_SPACE = re.compile(r"[^\S\n]{2,}")  # 2+ non-newline whitespace
+
+
+def sanitize_for_training(text: str | None) -> str:
+    """Light sanitization for SFT training data.
+
+    Removes web artifacts (HTML tags, URLs, carriage returns) while preserving
+    teaching prose — case, CJK content, and paragraph structure are kept intact.
+
+    Pipeline:
+        1. Normalize \\r\\n → \\n, strip lone \\r
+        2. strip_html — remove tags, decode entities
+        3. strip_urls — remove http/https URLs
+        4. Collapse excessive whitespace (preserve paragraph breaks)
+    """
+    if not text:
+        return ""
+    result = text.replace("\r\n", "\n").replace("\r", "\n")
+    result = strip_html(result)
+    result = strip_urls(result)
+    result = _MULTI_SPACE.sub(" ", result)
+    result = _MULTI_NEWLINE.sub("\n\n", result)
+    return result.strip()
 
 
 def clean_comment_text(text: str | None) -> str:

@@ -168,6 +168,33 @@ class Move:
         return f"{self.color}[{self.point}]"
 
 
+@dataclass(frozen=True, slots=True)
+class PositionTransform:
+    """D4 symmetry transform (rotation + optional reflection).
+
+    Represents one of 8 possible board symmetries: 4 rotations (0, 90, 180,
+    270 degrees clockwise) combined with an optional horizontal reflection
+    applied after rotation.
+    """
+
+    rotation: int = 0  # 0, 90, 180, 270 degrees clockwise
+    reflect: bool = False  # horizontal reflection after rotation
+
+    @property
+    def is_identity(self) -> bool:
+        """Check if this is the identity (no-op) transform."""
+        return self.rotation == 0 and not self.reflect
+
+    def to_dict(self) -> dict:
+        """Serialize to JSON-compatible dict."""
+        return {"rotation": self.rotation, "reflect": self.reflect}
+
+    @classmethod
+    def from_dict(cls, d: dict) -> PositionTransform:
+        """Deserialize from dict."""
+        return cls(rotation=d["rotation"], reflect=d["reflect"])
+
+
 # --- Level constants (mirrored from backend/puzzle_manager/core/constants.py) ---
 
 SLUG_TO_LEVEL: Final[dict[str, int]] = {

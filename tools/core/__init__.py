@@ -14,6 +14,7 @@ Modules:
     logging: Structured logging (console + JSON file)
     paths: Path utilities (project root, relative paths, POSIX normalization)
     rate_limit: Timestamp-based rate limiting (overlaps wait with processing)
+    sgf_structural_checks: SGF structural validation (parseability, stones, moves, etc.)
     validation: Source-agnostic puzzle validation (board size, solution, etc.)
 
 Design Principles:
@@ -111,10 +112,29 @@ from tools.core.text_cleaner import (
     infer_curator,
     infer_type,
     normalize_text,
+    sanitize_for_training,
     strip_boilerplate,
     strip_cjk,
     strip_html,
     strip_urls,
+)
+from tools.core.sgf_structural_checks import (
+    IssueCode,
+    StructuralCheckResult,
+    StructuralIssue,
+    StructuralIssueSeverity,
+    run_structural_checks,
+)
+from tools.core.go_teaching_constants import (
+    EXPLANATION_KEYWORDS,
+    GO_TECHNIQUE_PATTERN,
+    GO_TECHNIQUES,
+    MARKER_ONLY_PATTERNS,
+)
+from tools.core.teaching_schema import (
+    TeachingComments,
+    TeachingOutput,
+    parse_teaching_output,
 )
 from tools.core.validation import (
     PuzzleValidationConfig,
@@ -171,6 +191,12 @@ __all__ = [
     # rate_limit
     "RateLimiter",
     "wait_with_jitter",
+    # sgf_structural_checks
+    "IssueCode",
+    "StructuralCheckResult",
+    "StructuralIssue",
+    "StructuralIssueSeverity",
+    "run_structural_checks",
     # validation
     "PuzzleValidationResult",
     "PuzzleValidationConfig",
@@ -200,5 +226,14 @@ __all__ = [
     "ChineseTranslationResult",
     "get_chinese_translator",
     "translate_chinese_text",
+    # go_teaching_constants
+    "MARKER_ONLY_PATTERNS",
+    "GO_TECHNIQUES",
+    "GO_TECHNIQUE_PATTERN",
+    "EXPLANATION_KEYWORDS",
+    # teaching_schema
+    "TeachingComments",
+    "TeachingOutput",
+    "parse_teaching_output",
 ]
 

@@ -27,7 +27,7 @@ from enum import IntEnum
 
 from tools.core.sgf_analysis import compute_solution_depth, count_total_nodes, get_all_paths
 from tools.core.sgf_parser import SgfNode, SgfTree
-from tools.core.sgf_types import Color
+from tools.core.sgf_types import Color, PositionTransform
 
 
 class MatchLevel(IntEnum):
@@ -78,6 +78,9 @@ class CompareResult:
     markers_differ: bool = False
     detail: str = ""
     error: str | None = None
+    match_method: str = "identity"  # "identity" or "d4_symmetry"
+    transform_rotation: int | None = None  # 0/90/180/270 if d4_symmetry
+    transform_reflect: bool | None = None  # if d4_symmetry
 
     def to_dict(self) -> dict:
         """Convert to JSON-serializable dict."""
@@ -101,6 +104,9 @@ class CompareResult:
             "markers_differ": self.markers_differ,
             "detail": self.detail,
             "error": self.error,
+            "match_method": self.match_method,
+            "transform_rotation": self.transform_rotation,
+            "transform_reflect": self.transform_reflect,
         }
 
 
@@ -267,11 +273,19 @@ def classify_match(
     *,
     raw_a: str = "",
     raw_b: str = "",
+    transform: PositionTransform | None = None,
 ) -> CompareResult:
     """Classify the match level between two parsed SGF trees.
 
     Implements the Level 7→0 cascade from the design doc (D7).
+
+    When ``transform`` is provided and non-identity, tree_b's solution
+    coordinates are transformed before comparison (D4-symmetric match).
     """
+    from tools.core.position_transform import inverse_transform, transform_node
+
+    is_d4 = transform is not None and not transform.is_identity
+
     pl_status = _determine_pl_status(tree_a, tree_b)
     pos_hash = position_hash(tree_a)
     f_hash = full_hash(tree_a)
@@ -300,10 +314,22 @@ def classify_match(
         source_depth=source_depth,
         target_depth=target_depth,
         match_level=0,
+        match_method="d4_symmetry" if is_d4 else "identity",
+        transform_rotation=transform.rotation if is_d4 else None,
+        transform_reflect=transform.reflect if is_d4 else None,
     )
 
-    # Level 7: Byte-identical
-    if raw_a and raw_b and raw_a == raw_b:
+    # For D4 matches, transform tree_b's solution to tree_a's orientation.
+    # find_transform() returns T where T(source) = target, so we need
+    # inverse(T) to map target coordinates back to source space.
+    if is_d4:
+        inv = inverse_transform(transform)
+        solution_b = transform_node(tree_b.solution_tree, tree_b.board_size, inv)
+    else:
+        solution_b = tree_b.solution_tree
+
+    # Level 7: Byte-identical (only possible for identity matches)
+    if not is_d4 and raw_a and raw_b and raw_a == raw_b:
         base.match_level = MatchLevel.BYTE_IDENTICAL
         base.first_move_match = True
         base.correct_line_match = True
@@ -326,7 +352,7 @@ def classify_match(
 
     # Extract move paths for tree comparison
     paths_a = extract_move_paths(tree_a.solution_tree)
-    paths_b = extract_move_paths(tree_b.solution_tree)
+    paths_b = extract_move_paths(solution_b)
 
     # Level 6: Tree-identical
     if paths_a == paths_b:
@@ -334,17 +360,24 @@ def classify_match(
         base.first_move_match = True
         base.correct_line_match = True
         base.comments_differ = _check_comments_differ(
-            tree_a.solution_tree, tree_b.solution_tree
+            tree_a.solution_tree, solution_b
         )
         base.markers_differ = _check_markers_differ(
-            tree_a.solution_tree, tree_b.solution_tree
+            tree_a.solution_tree, solution_b
         )
-        base.detail = "Tree-identical (same moves, different formatting)"
+        detail = "Tree-identical (same moves, different formatting)"
+        if is_d4:
+            detail += f" [D4: rot={transform.rotation}°, ref={transform.reflect}]"
+        base.detail = detail
         return base
 
     # Check first correct move (D9: fast discriminator)
     first_a = _get_first_correct_move(tree_a)
-    first_b = _get_first_correct_move(tree_b)
+    # For D4 matches, extract first move from the transformed solution
+    if is_d4:
+        first_b = _get_first_correct_move_from_node(solution_b)
+    else:
+        first_b = _get_first_correct_move(tree_b)
 
     if first_a is not None and first_b is not None:
         base.first_move_match = first_a == first_b
@@ -362,7 +395,7 @@ def classify_match(
 
     # Check correct main line
     correct_a = _extract_correct_line(tree_a.solution_tree)
-    correct_b = _extract_correct_line(tree_b.solution_tree)
+    correct_b = _extract_correct_line(solution_b)
     base.correct_line_match = correct_a == correct_b
 
     if not base.correct_line_match:
@@ -375,10 +408,10 @@ def classify_match(
     if paths_a < paths_b:
         base.match_level = MatchLevel.SUPERSET
         base.comments_differ = _check_comments_differ(
-            tree_a.solution_tree, tree_b.solution_tree
+            tree_a.solution_tree, solution_b
         )
         base.markers_differ = _check_markers_differ(
-            tree_a.solution_tree, tree_b.solution_tree
+            tree_a.solution_tree, solution_b
         )
         base.detail = (
             f"Target is superset of source "
@@ -389,10 +422,10 @@ def classify_match(
     # Level 4: Divergent (neither is a subset)
     base.match_level = MatchLevel.DIVERGENT
     base.comments_differ = _check_comments_differ(
-        tree_a.solution_tree, tree_b.solution_tree
+        tree_a.solution_tree, solution_b
     )
     base.markers_differ = _check_markers_differ(
-        tree_a.solution_tree, tree_b.solution_tree
+        tree_a.solution_tree, solution_b
     )
     base.detail = (
         f"Same correct line but variation branches diverge "
@@ -403,9 +436,14 @@ def classify_match(
 
 def _get_first_correct_move(tree: SgfTree) -> str | None:
     """Get the first correct move as a string, or None if no solution."""
-    if not tree.solution_tree.children:
+    return _get_first_correct_move_from_node(tree.solution_tree)
+
+
+def _get_first_correct_move_from_node(node: SgfNode) -> str | None:
+    """Get the first correct move from a solution node, or None if no solution."""
+    if not node.children:
         return None
-    for child in tree.solution_tree.children:
+    for child in node.children:
         if child.is_correct and child.move:
             return _node_to_move_str(child)
     return None
