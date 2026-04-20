@@ -110,47 +110,70 @@ export function getPuzzlesByTag(tagId: number): PuzzleRow[] {
 }
 
 export function getPuzzlesByCollection(colId: number): PuzzleRow[] {
-  return query<PuzzleRow>(
-    `${BASE_SELECT}, pc.sequence_number, pc.chapter FROM puzzles p
-     JOIN puzzle_collections pc ON p.content_hash = pc.content_hash
-     WHERE pc.collection_id = ?
-     ORDER BY pc.sequence_number`,
-    [colId]
-  );
+  try {
+    return query<PuzzleRow>(
+      `${BASE_SELECT}, pc.sequence_number, pc.chapter FROM puzzles p
+       JOIN puzzle_collections pc ON p.content_hash = pc.content_hash
+       WHERE pc.collection_id = ?
+       ORDER BY pc.sequence_number`,
+      [colId]
+    );
+  } catch {
+    // Fallback for older DB versions without the chapter column
+    return query<PuzzleRow>(
+      `${BASE_SELECT}, pc.sequence_number FROM puzzles p
+       JOIN puzzle_collections pc ON p.content_hash = pc.content_hash
+       WHERE pc.collection_id = ?
+       ORDER BY pc.sequence_number`,
+      [colId]
+    );
+  }
 }
 
 /** Get distinct non-empty chapter strings for a collection. */
 export function getCollectionChapters(colId: number): string[] {
-  const rows = query<{ chapter: string }>(
-    `SELECT DISTINCT chapter FROM puzzle_collections
-     WHERE collection_id = ? AND chapter != '' AND chapter != '0'
-     ORDER BY chapter`,
-    [colId]
-  );
-  return rows.map((r) => r.chapter);
+  try {
+    const rows = query<{ chapter: string }>(
+      `SELECT DISTINCT chapter FROM puzzle_collections
+       WHERE collection_id = ? AND chapter != '' AND chapter != '0'
+       ORDER BY chapter`,
+      [colId]
+    );
+    return rows.map((r) => r.chapter);
+  } catch {
+    return [];
+  }
 }
 
 /** Get puzzle count per chapter for a collection. */
 export function getCollectionChapterCounts(colId: number): Record<string, number> {
-  const rows = query<{ chapter: string; cnt: number }>(
-    `SELECT chapter, COUNT(*) as cnt FROM puzzle_collections
-     WHERE collection_id = ? AND chapter != '' AND chapter != '0'
-     GROUP BY chapter
-     ORDER BY chapter`,
-    [colId]
-  );
-  return Object.fromEntries(rows.map((r) => [r.chapter, r.cnt]));
+  try {
+    const rows = query<{ chapter: string; cnt: number }>(
+      `SELECT chapter, COUNT(*) as cnt FROM puzzle_collections
+       WHERE collection_id = ? AND chapter != '' AND chapter != '0'
+       GROUP BY chapter
+       ORDER BY chapter`,
+      [colId]
+    );
+    return Object.fromEntries(rows.map((r) => [r.chapter, r.cnt]));
+  } catch {
+    return {};
+  }
 }
 
 /** Get distinct chapter count per collection. 0 for chapterless collections. */
 export function getAllCollectionChapterCounts(): Record<number, number> {
-  const rows = query<{ collection_id: number; cnt: number }>(
-    `SELECT collection_id, COUNT(DISTINCT chapter) as cnt
-     FROM puzzle_collections
-     WHERE chapter != '' AND chapter != '0'
-     GROUP BY collection_id`
-  );
-  return Object.fromEntries(rows.map((r) => [r.collection_id, r.cnt]));
+  try {
+    const rows = query<{ collection_id: number; cnt: number }>(
+      `SELECT collection_id, COUNT(DISTINCT chapter) as cnt
+       FROM puzzle_collections
+       WHERE chapter != '' AND chapter != '0'
+       GROUP BY collection_id`
+    );
+    return Object.fromEntries(rows.map((r) => [r.collection_id, r.cnt]));
+  } catch {
+    return {};
+  }
 }
 
 export function searchCollections(searchQuery: string): CollectionRow[] {

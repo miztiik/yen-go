@@ -795,11 +795,11 @@ export function SolverView({
                 <button
                   type="button"
                   onClick={() => onPrev?.()}
-                  className="action-tooltip inline-flex items-center justify-center w-[3.75rem] h-[3.75rem] rounded-full bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="action-tooltip inline-flex items-center justify-center w-[3.125rem] h-[3.125rem] rounded-full bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed"
                   disabled={!onPrev}
                   aria-label="Previous puzzle"
                 >
-                  <ChevronLeftIcon size={30} />
+                  <ChevronLeftIcon size={24} />
                 </button>
 
                 <div className="action-separator" aria-hidden="true" />
@@ -808,11 +808,11 @@ export function SolverView({
                 <button
                   type="button"
                   onClick={() => puzzleState.undo()}
-                  className="action-tooltip inline-flex items-center justify-center w-[3.75rem] h-[3.75rem] rounded-full bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="action-tooltip inline-flex items-center justify-center w-[3.125rem] h-[3.125rem] rounded-full bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed"
                   disabled={puzzleState.state.moveCount === 0 || isSolved || isReviewMode}
                   aria-label="Undo (Z)"
                 >
-                  <UndoIcon size={30} />
+                  <UndoIcon size={24} />
                 </button>
 
                 <div className="action-separator" aria-hidden="true" />
@@ -820,11 +820,11 @@ export function SolverView({
                 <button
                   type="button"
                   onClick={() => puzzleState.reset()}
-                  className="action-tooltip inline-flex items-center justify-center w-[3.75rem] h-[3.75rem] rounded-full bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="action-tooltip inline-flex items-center justify-center w-[3.125rem] h-[3.125rem] rounded-full bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed"
                   disabled={puzzleState.state.moveCount === 0 || isSolved || isReviewMode}
                   aria-label="Reset (X)"
                 >
-                  <ResetIcon size={30} />
+                  <ResetIcon size={24} />
                 </button>
 
                 <div className="action-separator" aria-hidden="true" />
@@ -837,25 +837,25 @@ export function SolverView({
                       setHintsUsedCount((c) => c + 1);
                       puzzleState.requestHint(hintsUsedCount);
                     }}
-                    className="action-tooltip inline-flex items-center justify-center w-[3.75rem] h-[3.75rem] rounded-full bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed relative"
+                    className="action-tooltip inline-flex items-center justify-center w-[3.125rem] h-[3.125rem] rounded-full bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed relative"
                     disabled={isSolved || isReviewMode || hintsRemaining <= 0}
                     aria-label={`Hint (${!isSolved ? hintsRemaining : 0} remaining)`}
                   >
-                    <HintIcon size={34} count={!isSolved ? hintsRemaining : 0} />
+                    <HintIcon size={28} count={!isSolved ? hintsRemaining : 0} />
                   </button>
                 )}
                 {(isSolved || isWrong) && (
                   <button
                     type="button"
                     onClick={() => puzzleState.revealSolution()}
-                    className={`action-tooltip inline-flex items-center justify-center w-[3.75rem] h-[3.75rem] rounded-full transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 ${
+                    className={`action-tooltip inline-flex items-center justify-center w-[3.125rem] h-[3.125rem] rounded-full transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 ${
                       isReviewMode
                         ? 'bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] shadow-[var(--shadow-sm)]'
                         : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)]'
                     }`}
                     aria-label={isReviewMode ? 'Reviewing solution' : 'Review solution'}
                   >
-                    <SolutionIcon size={30} />
+                    <SolutionIcon size={24} />
                   </button>
                 )}
 
@@ -868,13 +868,13 @@ export function SolverView({
                     onClick={onNext}
                     className={`action-tooltip inline-flex items-center justify-center rounded-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 ${
                       isSolved || isWrong
-                        ? 'w-[4.375rem] h-[4.375rem] bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] shadow-[0_2px_8px_rgba(0,0,0,0.15)] animate-[pulse-cta_2s_ease-in-out_infinite] transition-all duration-200'
-                        : 'w-[3.75rem] h-[3.75rem] bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] transition-colors duration-150'
+                        ? 'w-[3.75rem] h-[3.75rem] bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] shadow-[0_2px_8px_rgba(0,0,0,0.15)] animate-[pulse-cta_2s_ease-in-out_infinite] transition-all duration-200'
+                        : 'w-[3.125rem] h-[3.125rem] bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] transition-colors duration-150'
                     }`}
                     aria-label="Next puzzle"
                     data-testid="next-button"
                   >
-                    <ChevronRightIcon size={isSolved || isWrong ? 34 : 30} />
+                    <ChevronRightIcon size={isSolved || isWrong ? 28 : 24} />
                   </button>
                 )}
                 {/* Auto-advance countdown ring — replaces Next button during countdown */}
@@ -882,36 +882,36 @@ export function SolverView({
                   <button
                     type="button"
                     onClick={autoAdvanceCountdown.onCancel}
-                    className="relative inline-flex items-center justify-center w-[4.375rem] h-[4.375rem] rounded-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+                    className="relative inline-flex items-center justify-center w-[3.75rem] h-[3.75rem] rounded-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
                     aria-label={`Auto-advancing in ${Math.ceil(autoAdvanceCountdown.remainingMs / 1000)} seconds. Click to cancel.`}
                     data-testid="auto-advance-countdown"
                     role="timer"
                   >
                     <svg
-                      width="70"
-                      height="70"
-                      viewBox="0 0 70 70"
+                      width="60"
+                      height="60"
+                      viewBox="0 0 60 60"
                       className="absolute inset-0"
                       aria-hidden="true"
                     >
                       <circle
-                        cx="35"
-                        cy="35"
-                        r="30"
+                        cx="30"
+                        cy="30"
+                        r="26"
                         fill="none"
                         stroke="var(--color-bg-secondary)"
                         strokeWidth="3"
                       />
                       <circle
-                        cx="35"
-                        cy="35"
-                        r="30"
+                        cx="30"
+                        cy="30"
+                        r="26"
                         fill="none"
                         stroke="var(--color-accent)"
                         strokeWidth="3"
                         strokeLinecap="round"
-                        strokeDasharray={`${2 * Math.PI * 30}`}
-                        strokeDashoffset={`${2 * Math.PI * 30 * (1 - (autoAdvanceCountdown.totalMs > 0 ? autoAdvanceCountdown.remainingMs / autoAdvanceCountdown.totalMs : 0))}`}
+                        strokeDasharray={`${2 * Math.PI * 26}`}
+                        strokeDashoffset={`${2 * Math.PI * 26 * (1 - (autoAdvanceCountdown.totalMs > 0 ? autoAdvanceCountdown.remainingMs / autoAdvanceCountdown.totalMs : 0))}`}
                         style={{
                           transform: 'rotate(-90deg)',
                           transformOrigin: 'center',
@@ -928,10 +928,10 @@ export function SolverView({
                   <button
                     type="button"
                     onClick={onSkip}
-                    className="action-tooltip inline-flex items-center justify-center w-[3.75rem] h-[3.75rem] rounded-full bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+                    className="action-tooltip inline-flex items-center justify-center w-[3.125rem] h-[3.125rem] rounded-full bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
                     aria-label="Skip to next puzzle"
                   >
-                    <ChevronRightIcon size={30} />
+                    <ChevronRightIcon size={24} />
                   </button>
                 )}
               </div>

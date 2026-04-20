@@ -734,16 +734,20 @@
 
 /* Board column — flex-grow fills available space, overflow hidden clips canvas.
  * Centers the goban-container both horizontally and vertically so the board
- * sits in the visual center of the available space. */
+ * sits in the visual center of the available space.
+ *
+ * Mobile (stacked): board-first layout — guaranteed height based on viewport
+ * width so the board never collapses to zero when sidebar content is tall.
+ * The page scrolls vertically with the sidebar below the board. */
 .solver-board-col {
-  flex: 1 1 0%;
+  flex: 0 0 auto;
+  height: min(calc(100vw - 1rem), 80vh);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   z-index: 1;
-  min-height: 0;
 }
 
 /* Sidebar column — stretches to match board height */
@@ -824,9 +828,11 @@
   }
 
   /* Board column — percentage-based, grows to fill remaining space.
-     justify-content:flex-start aligns the board's top edge with the sidebar. */
+     justify-content:flex-start aligns the board's top edge with the sidebar.
+     Resets mobile board-first height to auto so flex-grow drives sizing. */
   .solver-board-col {
     flex: 1 1 62%;
+    height: auto;
     min-width: 0;
     min-height: 0;
     /* T10: Right-side spacing between board and sidebar */
@@ -859,6 +865,7 @@
 
   .solver-board-col {
     flex: 1 1 62%;
+    height: auto;
     min-width: 0;
     max-height: 100%;
   }
@@ -934,9 +941,9 @@
 /* ── Action bar separator ── */
 .action-separator {
   width: 1px;
-  height: 2.25rem;
+  height: 1.75rem;
   background: var(--color-neutral-200, #d4c9b8);
-  margin: 0 6px;
+  margin: 0 4px;
   flex-shrink: 0;
 }
 
