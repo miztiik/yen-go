@@ -747,7 +747,13 @@
  * justify-content value back to `center`. */
 .solver-board-col {
   flex: 0 0 auto;
-  height: min(calc(100vw - 1rem), 80vh);
+  /* Board column reserves square viewport space so the goban can compute its
+     initial size from `Math.min(parent.width, parent.height)`. We can NOT use
+     `fit-content` here — it would resolve to 0 before the goban renders,
+     collapsing the canvas to nothing. The dead-space-below-board issue is
+     fixed by GobanContainer reporting the actual rendered height back via
+     the `--goban-h` CSS variable on this column (see GobanContainer.tsx). */
+  height: var(--goban-h, min(calc(100vw - 1rem), 80vh));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -756,10 +762,14 @@
   z-index: 1;
 }
 
-/* Sidebar column — stretches to match board height */
+/* Sidebar column — Phase 5 (F2): claim any vertical slack on mobile so the
+ * action bar reserve sits flush against the panel rather than after a
+ * visible whitespace gap. Desktop is overridden in the wide-viewport
+ * breakpoint (~line 1099) where the sidebar uses align-self:flex-start. */
 .solver-sidebar-col {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
   gap: 0.5rem;
   width: 100%;
   overflow: hidden;
@@ -814,6 +824,9 @@
   border-top-right-radius: 16px;
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18);
   animation: bottomSheetSlideIn 220ms cubic-bezier(0.32, 0.72, 0, 1);
+  /* Clip footer/header backgrounds so their corners follow the panel's
+   * border-radius (otherwise the footer's elevated bg shows square edges). */
+  overflow: hidden;
 }
 .bottom-sheet-handle {
   width: 36px;
@@ -885,7 +898,10 @@
 @media (min-width: 768px) {
   .bottom-sheet-panel {
     max-width: 520px;
-    margin-bottom: 5vh;
+    /* Phase 5 fix: center the sheet vertically on desktop so it reads as a
+     * proper modal popover rather than "hanging" off the bottom edge.
+     * Mobile keeps bottom-anchored slide-up via overlay align-items. */
+    margin: auto;
     border-radius: 16px;
     animation: bottomSheetPopIn 180ms ease-out;
   }
@@ -1088,7 +1104,9 @@
 
   /* Board column — percentage-based, grows to fill remaining space.
      justify-content:flex-start aligns the board's top edge with the sidebar.
-     Resets mobile board-first height to auto so flex-grow drives sizing. */
+     Resets mobile board-first height to auto so flex-grow drives sizing.
+     Phase 5 (F2): on desktop we ignore the --goban-h variable and let flex
+     size the column; explicit height:auto wins over the mobile rule. */
   .solver-board-col {
     flex: 1 1 62%;
     height: auto;
@@ -1098,6 +1116,8 @@
     padding-right: 12px;
     justify-content: flex-start;
     padding-top: 0.5rem;
+    /* Phase 5 fix: keep the board off the viewport bottom edge on desktop. */
+    padding-bottom: 1rem;
   }
 
   /* Sidebar — percentage-based, wider panel with min/max guards.

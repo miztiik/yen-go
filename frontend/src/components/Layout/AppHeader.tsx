@@ -41,7 +41,7 @@ export function AppHeader({
 }: AppHeaderProps) {
   return (
     <header
-      className={`relative z-30 flex items-center border-b border-[var(--color-border)] bg-[var(--color-bg-panel)] px-4 ${compact ? 'h-11' : 'h-14'}`}
+      className={`relative z-30 items-center border-b border-[var(--color-border)] bg-[var(--color-bg-panel)] px-4 ${compact ? 'h-11 hidden md:flex' : 'h-14 flex'}`}
       role="banner"
     >
       {/* Left: Logo — compact mode shows icon only for puzzle pages */}

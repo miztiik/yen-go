@@ -205,10 +205,19 @@ export function ProblemNav({
         <div className="progress-bar-fill" style={{ width: `${completionPct}%` }} />
       </div>
 
-      {/* Bottom row: completion % + streak */}
+      {/* Bottom row: completion text + streak.
+          Phase 5 (F4): drop the demoralizing "X/total (pct%)" framing in
+          favor of "X solved" — the denominator and percentage discourage
+          users on long sets (a 200-puzzle collection at 4 solved reads as
+          "2%" failure rather than "you've started!"). The exact total stays
+          accessible via the "1 / 200" counter at the top of this nav strip
+          and via aria-label for screen readers. */}
       <div className="nav-footer">
-        <span className="completion-text">
-          Solved: {solvedCount}/{totalProblems} ({completionPct}%)
+        <span
+          className="completion-text"
+          aria-label={`${solvedCount} of ${totalProblems} puzzles solved (${completionPct}%)`}
+        >
+          {solvedCount} solved
         </span>
         {currentStreak !== undefined && currentStreak >= 2 && (
           <span
