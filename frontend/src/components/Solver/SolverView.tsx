@@ -34,6 +34,7 @@ import { TransformBar } from '../Transforms/TransformBar';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronDownIcon,
   DoubleChevronLeftIcon,
   DoubleChevronRightIcon,
   UndoIcon,
@@ -43,7 +44,14 @@ import {
   CollectionIcon,
 } from '../shared/icons';
 import { QualityStars } from '../shared/QualityStars';
+import {
+  UI_HIDE_QUALITY_IN_SOLVER,
+  UI_COLLAPSE_TRANSFORM_BAR,
+  UI_PINNED_SOLVER_ACTION_BAR,
+  UI_KEYBOARD_HELP,
+} from '../../services/featureFlags';
 import { KBShortcut } from '../shared/KBShortcut';
+import { KeyboardHelp } from '../shared/KeyboardHelp';
 import { parseYCProperty, getCornerBounds, transformCornerPosition } from '../../lib/auto-viewport';
 import {
   extractYenGoProperties,
@@ -639,7 +647,7 @@ export function SolverView({
 
   return (
     <div
-      className={`solver-layout ${className}`}
+      className={`solver-layout ${UI_PINNED_SOLVER_ACTION_BAR ? 'solver-action-pinned' : ''} ${className}`}
       data-component="solver-view"
       data-status={puzzleState.state.status}
     >
@@ -738,11 +746,16 @@ export function SolverView({
                     {name}
                   </span>
                 ))}
-                {metadata.quality > 0 && <QualityStars quality={metadata.quality} size={12} />}
+                {!UI_HIDE_QUALITY_IN_SOLVER && metadata.quality > 0 && (
+                  <QualityStars quality={metadata.quality} size={12} />
+                )}
               </div>
             )}
 
-            {/* Section 1: Board Transforms — single compact strip (T03) */}
+            {/* Section 1: Board Transforms — visible inline only when collapsible flag is OFF.
+             * When UI_COLLAPSE_TRANSFORM_BAR is ON, the same controls render at the bottom
+             * of the sidebar inside a collapsible "View options" panel. */}
+            {!UI_COLLAPSE_TRANSFORM_BAR && (
             <div className="py-1.5" data-section="transforms">
               <TransformBar
                 settings={transformSettings}
@@ -762,6 +775,7 @@ export function SolverView({
                 onToggleZoom={() => setZoomEnabled((z) => !z)}
               />
             </div>
+            )}
 
             {/* Section 2: Hint display + comments */}
             <div className="py-1.5 min-h-[60px] hint-section">
@@ -1069,6 +1083,44 @@ export function SolverView({
                 data-testid="solution-tree-container"
               />
             </div>
+
+            {/* Section 6: View options — collapsible panel containing TransformBar.
+             * Demoted from prime sidebar real estate (Spec: Phase 1 chrome shrink).
+             * Defaults to closed; user opens once per puzzle if they need it. */}
+            {UI_COLLAPSE_TRANSFORM_BAR && (
+              <details
+                className="py-1.5 group rounded-[var(--radius-md)] border border-[var(--color-panel-border)] bg-[var(--color-bg-elevated)]/40"
+                data-section="view-options"
+                data-testid="view-options"
+              >
+                <summary className="flex items-center justify-between gap-2 px-3 py-2 cursor-pointer select-none text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider list-none [&::-webkit-details-marker]:hidden">
+                  <span>View options</span>
+                  <ChevronDownIcon
+                    size={14}
+                    className="transition-transform duration-200 group-open:rotate-180"
+                  />
+                </summary>
+                <div className="px-3 pb-3 pt-1">
+                  <TransformBar
+                    settings={transformSettings}
+                    onToggleFlipH={toggleFlipH}
+                    onToggleFlipV={toggleFlipV}
+                    onToggleFlipDiag={toggleFlipDiag}
+                    onRotateCW={rotateCW}
+                    onRotateCCW={rotateCCW}
+                    onToggleSwapColors={toggleSwapColors}
+                    coordinateLabels={settings.coordinateLabels}
+                    onToggleCoordinates={() =>
+                      updateSettings({ coordinateLabels: !settings.coordinateLabels })
+                    }
+                    disabled={isReviewMode}
+                    zoomEnabled={zoomEnabled}
+                    isZoomable={isZoomable}
+                    onToggleZoom={() => setZoomEnabled((z) => !z)}
+                  />
+                </div>
+              </details>
+            )}
           </div>
           {/* end solver-sidebar-surface */}
         </div>
@@ -1119,6 +1171,22 @@ export function SolverView({
       <KBShortcut shortcut="ArrowUp" action={handleKBPrevSibling} enabled={isReviewMode} />
       <KBShortcut shortcut="ArrowDown" action={handleKBNextSibling} enabled={isReviewMode} />
       <KBShortcut shortcut="a" action={handleToggleAutoAdvance} enabled={true} />
+
+      {/* Phase 3: Keyboard shortcut help overlay (`?` key) — UI_KEYBOARD_HELP */}
+      {UI_KEYBOARD_HELP && (
+        <KeyboardHelp
+          shortcuts={[
+            { keys: 'Esc', description: 'Reset puzzle (or cancel auto-advance)' },
+            { keys: 'z', description: 'Undo last move' },
+            { keys: 'x', description: 'Reset puzzle' },
+            { keys: '←', description: 'Previous puzzle / move (in review)' },
+            { keys: '→', description: 'Next move (in review)' },
+            { keys: '↑ / ↓', description: 'Cycle sibling variations (review mode)' },
+            { keys: 'a', description: 'Toggle auto-advance' },
+            { keys: '?', description: 'Show this help' },
+          ]}
+        />
+      )}
     </div>
   );
 }

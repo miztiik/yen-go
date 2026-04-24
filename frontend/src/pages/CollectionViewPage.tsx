@@ -517,6 +517,12 @@ export function CollectionViewPage({
       </button>
     ) : undefined;
 
+    // Phase 2: count surfaces on the Filters trigger badge.
+    const activeCount =
+      filterState.activeFilterCount +
+      (selectedChapter ? 1 : 0) +
+      (contentType > 0 ? 1 : 0);
+
     return (
       <PuzzleSetHeader
         title={collectionDisplayName}
@@ -526,6 +532,7 @@ export function CollectionViewPage({
         {...(info.onBack ? { onBack: info.onBack } : {})}
         backLabel={backLabelProp ?? 'Back to collections'}
         {...(filterStripContent ? { filterStrip: filterStripContent } : {})}
+        activeFilterCount={activeCount}
         {...(skipButton ? { rightContent: skipButton } : {})}
         progress={
           info.totalPuzzles > 0 ? Math.round((info.completedCount / info.totalPuzzles) * 100) : 0

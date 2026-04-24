@@ -11,7 +11,14 @@
  */
 
 import type { VNode, ComponentChildren } from 'preact';
+import { useState } from 'preact/hooks';
 import { ChevronLeftIcon } from '../shared/icons';
+import { BottomSheet } from '../shared/BottomSheet';
+import {
+  UI_HEADER_DROP_COUNTER,
+  UI_FILTERS_IN_SHEET,
+  UI_HEADER_DROP_PROGRESS_BAR,
+} from '../../services/featureFlags';
 
 // ============================================================================
 // Types
@@ -34,6 +41,8 @@ export interface PuzzleSetHeaderProps {
   progress?: number;
   /** Optional filter strip content (rendered below the main toolbar row) */
   filterStrip?: ComponentChildren;
+  /** Optional active filter count for the Filters trigger badge (sheet mode only). */
+  activeFilterCount?: number;
   /** Optional right-side content (stats, badges, etc.) */
   rightContent?: ComponentChildren;
   /** Test ID prefix */
@@ -53,12 +62,20 @@ export function PuzzleSetHeader({
   backLabel = 'Back',
   progress,
   filterStrip,
+  activeFilterCount,
   rightContent,
   testId = 'puzzle-set-header',
 }: PuzzleSetHeaderProps): VNode {
   // Progress: use explicit value or derive from index
   const progressPct =
     progress ?? (totalPuzzles > 0 ? Math.round(((currentIndex + 1) / totalPuzzles) * 100) : 0);
+
+  // Phase 2: Filters live inside a BottomSheet by default. Flip
+  // UI_FILTERS_IN_SHEET to false in services/featureFlags.ts to revert to the
+  // legacy inline strip below the header.
+  const useSheet = UI_FILTERS_IN_SHEET && filterStrip !== undefined && filterStrip !== null;
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const filterCount = activeFilterCount ?? 0;
 
   return (
     <div data-testid={testId}>
@@ -86,19 +103,47 @@ export function PuzzleSetHeader({
           )}
         </div>
 
-        {/* Puzzle counter */}
-        {totalPuzzles > 0 && (
+        {/* Puzzle counter — hidden under UI_HEADER_DROP_COUNTER (Phase 1 chrome shrink).
+         * The same counter is shown inside ProblemNav in the sidebar; duplicating it
+         * here just consumed header width without adding information. */}
+        {!UI_HEADER_DROP_COUNTER && totalPuzzles > 0 && (
           <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-bg-secondary)] px-3 py-1 text-xs font-semibold text-[var(--color-text-secondary)] tracking-wide whitespace-nowrap">
             {currentIndex + 1} / {totalPuzzles}
           </span>
+        )}
+
+        {/* Phase 2: Filters trigger lives in the toolbar, not below it. */}
+        {useSheet && (
+          <button
+            type="button"
+            onClick={() => setFiltersOpen(true)}
+            className="filters-trigger"
+            aria-label={
+              filterCount > 0 ? `Filters, ${filterCount} active` : 'Open filters'
+            }
+            aria-haspopup="dialog"
+            aria-expanded={filtersOpen}
+            data-active={filterCount > 0}
+            data-testid={`${testId}-filters-trigger`}
+          >
+            Filters
+            {filterCount > 0 && (
+              <span className="filters-trigger-count" aria-hidden="true">
+                {filterCount}
+              </span>
+            )}
+          </button>
         )}
 
         {/* Right content slot (stats, badges) */}
         {rightContent}
       </header>
 
-      {/* Progress bar — thin strip below header */}
-      {totalPuzzles > 0 && (
+      {/* Progress bar — thin strip below header.
+       * Phase 4: hidden when UI_HEADER_DROP_PROGRESS_BAR is on; ProblemNav in
+       * the sidebar already shows a richer "Solved: X/Y (Z%)" bar. To revert,
+       * flip the flag back to false in services/featureFlags.ts. */}
+      {!UI_HEADER_DROP_PROGRESS_BAR && totalPuzzles > 0 && (
         <div
           className="h-1 bg-[var(--color-bg-secondary)]"
           role="progressbar"
@@ -118,14 +163,37 @@ export function PuzzleSetHeader({
         </div>
       )}
 
-      {/* Filter strip (optional) */}
-      {filterStrip && (
+      {/* Filter strip — legacy inline rendering when sheet flag is OFF. */}
+      {filterStrip && !useSheet && (
         <div
           className="px-3 py-2 bg-[var(--color-bg-elevated)] border-b border-[var(--color-panel-border)] overflow-visible"
           data-testid={`${testId}-filters`}
         >
           {filterStrip}
         </div>
+      )}
+
+      {/* Filter strip — sheet rendering. */}
+      {useSheet && (
+        <BottomSheet
+          isOpen={filtersOpen}
+          onClose={() => setFiltersOpen(false)}
+          title="Filters"
+          testId={`${testId}-filters-sheet`}
+          footer={
+            <button
+              type="button"
+              onClick={() => setFiltersOpen(false)}
+              className="filters-trigger"
+              data-active="true"
+              data-testid={`${testId}-filters-sheet-done`}
+            >
+              Done
+            </button>
+          }
+        >
+          <div data-testid={`${testId}-filters`}>{filterStrip}</div>
+        </BottomSheet>
       )}
     </div>
   );

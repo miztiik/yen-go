@@ -153,6 +153,26 @@ export function PuzzleSetPlayer({
   // Auto-advance settings
   const { settings: appSettings } = useSettings();
 
+  // Phase 4 (D3): one-time hint when the user solves their first puzzle in
+  // this session and auto-advance is OFF. The hint is dismissible and
+  // remembered in localStorage so we never nag a user who has already seen it.
+  // Storage key is intentionally namespaced; clearing it re-enables the hint.
+  const AUTO_ADV_HINT_KEY = 'yengo:autoAdvanceHintShown';
+  const [autoAdvanceHint, setAutoAdvanceHint] = useState<string | null>(null);
+  const autoAdvanceHintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dismissAutoAdvanceHint = useCallback(() => {
+    setAutoAdvanceHint(null);
+    if (autoAdvanceHintTimerRef.current) {
+      clearTimeout(autoAdvanceHintTimerRef.current);
+      autoAdvanceHintTimerRef.current = null;
+    }
+  }, []);
+  useEffect(() => {
+    return () => {
+      if (autoAdvanceHintTimerRef.current) clearTimeout(autoAdvanceHintTimerRef.current);
+    };
+  }, []);
+
   // Load the puzzle set on mount (or when loader changes due to filter change)
   useEffect(() => {
     let cancelled = false;
@@ -318,6 +338,31 @@ export function PuzzleSetPlayer({
           }, failOnWrongDelayMs);
         } else {
           startCountdown();
+          // Phase 4 (D3): if auto-advance is off and this is the user's first
+          // correct solve in the set, surface a one-time hint. Skipped if the
+          // user has already seen it in any prior session.
+          if (!effectiveAutoAdvance && completedIndexes.size === 0) {
+            try {
+              const seen =
+                typeof localStorage !== 'undefined' && localStorage.getItem(AUTO_ADV_HINT_KEY);
+              if (!seen) {
+                setAutoAdvanceHint(
+                  'Auto-advance is off — enable it in Settings to skip ahead automatically.'
+                );
+                if (typeof localStorage !== 'undefined') {
+                  localStorage.setItem(AUTO_ADV_HINT_KEY, '1');
+                }
+                if (autoAdvanceHintTimerRef.current)
+                  clearTimeout(autoAdvanceHintTimerRef.current);
+                autoAdvanceHintTimerRef.current = setTimeout(
+                  () => setAutoAdvanceHint(null),
+                  6000
+                );
+              }
+            } catch {
+              // localStorage unavailable (private mode etc.) — silently skip.
+            }
+          }
         }
       }
     },
@@ -329,6 +374,8 @@ export function PuzzleSetPlayer({
       failOnWrong,
       failOnWrongDelayMs,
       totalPuzzles,
+      effectiveAutoAdvance,
+      completedIndexes.size,
     ]
   );
 
@@ -615,6 +662,25 @@ export function PuzzleSetPlayer({
           />
         )}
       </div>
+      {/* Phase 4 (D3): one-time auto-advance hint toast (dismissible). */}
+      {autoAdvanceHint && (
+        <div
+          role="status"
+          aria-live="polite"
+          data-testid="auto-advance-hint"
+          className="fixed left-1/2 -translate-x-1/2 bottom-[5.5rem] z-50 max-w-[20rem] flex items-center gap-2 px-3 py-2 rounded-[var(--radius-md)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-xs shadow-[var(--shadow-md)] border border-[var(--color-panel-border)]"
+        >
+          <span className="flex-1">{autoAdvanceHint}</span>
+          <button
+            type="button"
+            onClick={dismissAutoAdvanceHint}
+            className="shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+            aria-label="Dismiss hint"
+          >
+            ×
+          </button>
+        </div>
+      )}
     </div>
   );
 }

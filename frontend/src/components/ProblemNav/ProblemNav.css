@@ -182,6 +182,10 @@
   letter-spacing: 0.01em;
   white-space: nowrap;
   user-select: none;
+  /* Phase 4 (C): purely informational — explicitly mark as non-interactive
+     so it does not invite a click that does nothing. */
+  cursor: default;
+  pointer-events: none;
   border: 1px solid transparent;
   transition:
     background-color 200ms ease,
