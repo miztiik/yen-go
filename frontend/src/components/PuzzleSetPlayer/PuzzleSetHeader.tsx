@@ -14,6 +14,7 @@ import type { VNode, ComponentChildren } from 'preact';
 import { useState } from 'preact/hooks';
 import { ChevronLeftIcon } from '../shared/icons';
 import { BottomSheet } from '../shared/BottomSheet';
+import { SettingsGear } from '../Layout/SettingsGear';
 import {
   UI_HEADER_DROP_COUNTER,
   UI_FILTERS_IN_SHEET,
@@ -137,6 +138,13 @@ export function PuzzleSetHeader({
 
         {/* Right content slot (stats, badges) */}
         {rightContent}
+
+        {/* Phase 5 (F5): On mobile, AppHeader is hidden when compact, so the
+         * settings gear has to live somewhere reachable. Park it at the right
+         * of this toolbar, mobile-only. Desktop keeps the gear in AppHeader. */}
+        <div className="md:hidden flex items-center" data-testid={`${testId}-mobile-actions`}>
+          <SettingsGear />
+        </div>
       </header>
 
       {/* Progress bar — thin strip below header.

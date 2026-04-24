@@ -31,6 +31,7 @@ export { SolutionIcon } from './SolutionIcon';
 export { SearchIcon } from './SearchIcon';
 export { GridIcon } from './GridIcon';
 export { ListIcon } from './ListIcon';
+export { SlidersIcon } from './SlidersIcon';
 
 // Page header icons (colorful — use page accent colors)
 export { CalendarIcon } from './CalendarIcon';

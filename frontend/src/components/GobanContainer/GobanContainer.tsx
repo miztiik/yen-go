@@ -45,6 +45,13 @@ export function GobanContainer({
 }: GobanContainerProps): JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);
   const lastSizeRef = useRef({ width: 0, height: 0 });
+  /**
+   * Phase 5 (F2): when we publish `--goban-h` the parent column shrinks,
+   * which the ResizeObserver below would otherwise interpret as "less
+   * space available" and re-size the goban smaller — producing an
+   * infinite shrink loop. We remember the parent height we just induced
+   * and ignore the next matching observation. */
+  const expectedParentShrinkRef = useRef<number | null>(null);
 
   const recenterGoban = useCallback(() => {
     if (!goban || !gobanDiv || !containerRef.current) return;
@@ -64,6 +71,20 @@ export function GobanContainer({
         // The parent layout (e.g. solver-board-col) handles centering.
         containerRef.current.style.width = `${metrics.width}px`;
         containerRef.current.style.height = `${metrics.height}px`;
+
+        // Phase 5 (F2): publish the actual rendered board height back to the
+        // parent column as `--goban-h`, so `.solver-board-col` can shrink to
+        // hug the goban (the column originally reserved a square viewport
+        // slot, leaving 120-180px of dead space below cropped corner puzzles).
+        // Pure CSS can't observe child metrics, so we bridge via a custom
+        // property. The parent CSS uses `min(...)` as the fallback so the
+        // initial render still gets enough space for the goban to size itself.
+        const parent = containerRef.current.parentElement;
+        if (parent) {
+          parent.style.setProperty('--goban-h', `${metrics.height}px`);
+          // Tell the ResizeObserver below to ignore the shrink we just caused.
+          expectedParentShrinkRef.current = metrics.height;
+        }
       }
     } catch {
       // computeMetrics may not be available on all renderer types
@@ -90,6 +111,15 @@ export function GobanContainer({
     const parent = container.parentElement;
     if (!parent) return;
 
+    // Phase 5 (F2): reset the published goban height so the parent's CSS
+    // fallback (`min(100vw - 1rem, 80vh)`) is in effect for the initial
+    // measurement of this new goban instance. Without this, switching to a
+    // taller puzzle after a cropped one would be sized against the previous
+    // puzzle's shrunken parent height.
+    parent.style.removeProperty('--goban-h');
+    expectedParentShrinkRef.current = null;
+    lastSizeRef.current = { width: 0, height: 0 };
+
     let rafId: number | null = null;
 
     const handleResize = (entries: ResizeObserverEntry[]): void => {
@@ -98,6 +128,17 @@ export function GobanContainer({
 
       const { width, height } = entry.contentRect;
       if (width <= 0 || height <= 0) return;
+
+      // Phase 5 (F2): if the parent just shrank to the height we induced via
+      // `--goban-h`, ignore this observation to break the resize feedback loop.
+      if (
+        expectedParentShrinkRef.current !== null &&
+        Math.abs(height - expectedParentShrinkRef.current) < 2
+      ) {
+        expectedParentShrinkRef.current = null;
+        lastSizeRef.current = { width, height };
+        return;
+      }
 
       // Debounce: skip if size hasn't meaningfully changed
       const prev = lastSizeRef.current;

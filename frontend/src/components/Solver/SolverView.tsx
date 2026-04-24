@@ -28,6 +28,7 @@ import { useGoban } from '../../hooks/useGoban';
 import { usePuzzleState, type PuzzleStatus } from '../../hooks/usePuzzleState';
 import { useTransforms } from '../../hooks/useTransforms';
 import { useSettings } from '../../hooks/useSettings';
+import { useIsDesktop } from '../../hooks/useMediaQuery';
 import { GobanContainer } from '../GobanContainer';
 import { HintOverlay, cornerPositionToLabel, getMaxLevel } from './HintOverlay';
 import { TransformBar } from '../Transforms/TransformBar';
@@ -42,8 +43,10 @@ import {
   SolutionIcon,
   HintIcon,
   CollectionIcon,
+  SlidersIcon,
 } from '../shared/icons';
 import { QualityStars } from '../shared/QualityStars';
+import { BottomSheet } from '../shared/BottomSheet';
 import {
   UI_HIDE_QUALITY_IN_SOLVER,
   UI_COLLAPSE_TRANSFORM_BAR,
@@ -141,8 +144,27 @@ export function SolverView({
   const [autoAdvanceToast, setAutoAdvanceToast] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // -- View options sheet (mobile) — Phase 5 (F-modern): the dated
+  // "VIEW OPTIONS \u25be" disclosure card is replaced by an icon-only sliders
+  // button that opens this sheet. Desktop keeps the inline <details>. --
+  const [viewOptionsSheetOpen, setViewOptionsSheetOpen] = useState(false);
+  // Adaptive: on desktop the panel docks into the sidebar (push-down), on
+  // mobile it slides up as a BottomSheet. One state, one trigger.
+  const isDesktop = useIsDesktop();
+
+  // -- Tag spoiler reveal (F1) — technique tags ("net", "ladder", etc.) leak
+  // the puzzle category before the user attempts. Hide behind a single
+  // "Reveal hints" pill until the user explicitly opts in, or auto-reveal once
+  // they finish (solved / wrong / review). Resets per puzzle below. --
+  const [tagsRevealed, setTagsRevealed] = useState(false);
+
   // -- SGF Metadata --
   const metadata = useMemo(() => extractYenGoProperties(sgf), [sgf]);
+
+  // Reset spoiler reveal whenever the puzzle changes.
+  useEffect(() => {
+    setTagsRevealed(false);
+  }, [sgf]);
 
   // -- Board size (from SZ property, default 19) --
   const boardSize = useMemo(() => {
@@ -659,7 +681,12 @@ export function SolverView({
       {/* -- Right Column: Sidebar (hidden in minimal mode) -- */}
       {!minimal && (
         <div className="solver-sidebar-col">
-          <div className="rounded-3xl bg-[var(--color-card-bg)] shadow-[var(--shadow-lg)] p-6 flex flex-col gap-5 border border-[var(--color-panel-border)] min-h-0 overflow-y-auto">
+          {/* Phase 5 (F3): drop the floating-card chrome (rounded corners,
+              shadow, large padding, border) on mobile — it's a desktop-widget
+              treatment that fights the board on small screens. Lichess and
+              Tsumego Pro use a flush borderless strip below the board. Desktop
+              keeps the full card. */}
+          <div className="bg-[var(--color-card-bg)] p-3 flex flex-col gap-3 min-h-0 overflow-y-auto md:rounded-3xl md:shadow-[var(--shadow-lg)] md:p-6 md:gap-5 md:border md:border-[var(--color-panel-border)]">
             {/* Section 0: ProblemNav or Puzzle Counter with Chevron Navigation */}
             {puzzleNav && (
               <div className="py-1.5" data-testid="puzzle-nav-slot">
@@ -728,14 +755,30 @@ export function SolverView({
                     {rankRange ?? metadata.level.replace(/-/g, ' ')}
                   </span>
                 )}
-                {metadata.tags?.map((tag: string) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-neutral-200)]"
-                  >
-                    {tag.replace(/-/g, ' ')}
-                  </span>
-                ))}
+                {metadata.tags && metadata.tags.length > 0 && (
+                  tagsRevealed || isSolved || isWrong || isReviewMode ? (
+                    metadata.tags.map((tag: string) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-neutral-200)]"
+                        data-testid="tag-chip"
+                      >
+                        {tag.replace(/-/g, ' ')}
+                      </span>
+                    ))
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setTagsRevealed(true)}
+                      className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--color-bg-secondary)]/50 text-[var(--color-text-secondary)] border border-dashed border-[var(--color-neutral-300)] hover:bg-[var(--color-bg-secondary)] hover:text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors cursor-pointer"
+                      aria-label={`Reveal ${metadata.tags.length} technique hint tag${metadata.tags.length === 1 ? '' : 's'} (spoiler)`}
+                      title="Tags reveal the technique — click to show"
+                      data-testid="tags-reveal-button"
+                    >
+                      Reveal hints · {metadata.tags.length}
+                    </button>
+                  )
+                )}
                 {collectionNames.map((name: string, i: number) => (
                   <span
                     key={`col-${i}`}
@@ -748,6 +791,23 @@ export function SolverView({
                 ))}
                 {!UI_HIDE_QUALITY_IN_SOLVER && metadata.quality > 0 && (
                   <QualityStars quality={metadata.quality} size={12} />
+                )}
+                {/* View Options trigger — single adaptive control across breakpoints.
+                 * Anchored to the right of the metadata/tag row; opens a sheet
+                 * (bottom on mobile, centered popover on desktop). */}
+                {UI_COLLAPSE_TRANSFORM_BAR && (
+                  <button
+                    type="button"
+                    onClick={() => setViewOptionsSheetOpen((v) => !v)}
+                    className="ml-auto inline-flex items-center justify-center w-8 h-8 rounded-full text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors data-[active=true]:bg-[var(--color-accent)]/10 data-[active=true]:text-[var(--color-accent)]"
+                    aria-label="View options (board flip, rotate, coordinates, zoom)"
+                    aria-expanded={viewOptionsSheetOpen}
+                    title="View options"
+                    data-testid="view-options-trigger"
+                    data-active={viewOptionsSheetOpen}
+                  >
+                    <SlidersIcon size={18} />
+                  </button>
                 )}
               </div>
             )}
@@ -777,8 +837,10 @@ export function SolverView({
             </div>
             )}
 
-            {/* Section 2: Hint display + comments */}
-            <div className="py-1.5 min-h-[60px] hint-section">
+            {/* Section 2: Hint display + comments — no fixed reserve. Only
+             * takes space when hints or comments are present so we don't leave
+             * a 60px empty band on solved/clean puzzles. */}
+            <div className="hint-section">
               {!isSolved && (
                 <HintOverlay
                   hints={displayHints}
@@ -1084,42 +1146,46 @@ export function SolverView({
               />
             </div>
 
-            {/* Section 6: View options — collapsible panel containing TransformBar.
-             * Demoted from prime sidebar real estate (Spec: Phase 1 chrome shrink).
-             * Defaults to closed; user opens once per puzzle if they need it. */}
-            {UI_COLLAPSE_TRANSFORM_BAR && (
-              <details
-                className="py-1.5 group rounded-[var(--radius-md)] border border-[var(--color-panel-border)] bg-[var(--color-bg-elevated)]/40"
-                data-section="view-options"
-                data-testid="view-options"
+            {/* Section 6: View options — trigger lives inline with the metadata
+             * row above (right-anchored). On desktop the panel docks here
+             * (push-down inside the sidebar) so it never blocks the board.
+             * On mobile it opens as a BottomSheet (rendered below). */}
+            {UI_COLLAPSE_TRANSFORM_BAR && isDesktop && viewOptionsSheetOpen && (
+              <div
+                className="py-2 px-3 rounded-[var(--radius-md)] border border-[var(--color-panel-border)] bg-[var(--color-bg-elevated)]/60"
+                data-testid="view-options-inline"
               >
-                <summary className="flex items-center justify-between gap-2 px-3 py-2 cursor-pointer select-none text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider list-none [&::-webkit-details-marker]:hidden">
-                  <span>View options</span>
-                  <ChevronDownIcon
-                    size={14}
-                    className="transition-transform duration-200 group-open:rotate-180"
-                  />
-                </summary>
-                <div className="px-3 pb-3 pt-1">
-                  <TransformBar
-                    settings={transformSettings}
-                    onToggleFlipH={toggleFlipH}
-                    onToggleFlipV={toggleFlipV}
-                    onToggleFlipDiag={toggleFlipDiag}
-                    onRotateCW={rotateCW}
-                    onRotateCCW={rotateCCW}
-                    onToggleSwapColors={toggleSwapColors}
-                    coordinateLabels={settings.coordinateLabels}
-                    onToggleCoordinates={() =>
-                      updateSettings({ coordinateLabels: !settings.coordinateLabels })
-                    }
-                    disabled={isReviewMode}
-                    zoomEnabled={zoomEnabled}
-                    isZoomable={isZoomable}
-                    onToggleZoom={() => setZoomEnabled((z) => !z)}
-                  />
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">
+                    View options
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setViewOptionsSheetOpen(false)}
+                    className="inline-flex items-center justify-center w-6 h-6 rounded-full text-[var(--color-text-muted)] hover:bg-[var(--color-bg-secondary)] hover:text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] transition-colors"
+                    aria-label="Close view options"
+                  >
+                    ✕
+                  </button>
                 </div>
-              </details>
+                <TransformBar
+                  settings={transformSettings}
+                  onToggleFlipH={toggleFlipH}
+                  onToggleFlipV={toggleFlipV}
+                  onToggleFlipDiag={toggleFlipDiag}
+                  onRotateCW={rotateCW}
+                  onRotateCCW={rotateCCW}
+                  onToggleSwapColors={toggleSwapColors}
+                  coordinateLabels={settings.coordinateLabels}
+                  onToggleCoordinates={() =>
+                    updateSettings({ coordinateLabels: !settings.coordinateLabels })
+                  }
+                  disabled={isReviewMode}
+                  zoomEnabled={zoomEnabled}
+                  isZoomable={isZoomable}
+                  onToggleZoom={() => setZoomEnabled((z) => !z)}
+                />
+              </div>
             )}
           </div>
           {/* end solver-sidebar-surface */}
@@ -1136,6 +1202,37 @@ export function SolverView({
         >
           {autoAdvanceToast}
         </div>
+      )}
+
+      {/* Phase 5: View options BottomSheet — mobile only.
+          Desktop docks the same content inline in the sidebar (above). */}
+      {UI_COLLAPSE_TRANSFORM_BAR && !isDesktop && (
+        <BottomSheet
+          isOpen={viewOptionsSheetOpen}
+          onClose={() => setViewOptionsSheetOpen(false)}
+          title="View options"
+          testId="view-options-sheet"
+        >
+          <div className="px-4 py-3">
+            <TransformBar
+              settings={transformSettings}
+              onToggleFlipH={toggleFlipH}
+              onToggleFlipV={toggleFlipV}
+              onToggleFlipDiag={toggleFlipDiag}
+              onRotateCW={rotateCW}
+              onRotateCCW={rotateCCW}
+              onToggleSwapColors={toggleSwapColors}
+              coordinateLabels={settings.coordinateLabels}
+              onToggleCoordinates={() =>
+                updateSettings({ coordinateLabels: !settings.coordinateLabels })
+              }
+              disabled={isReviewMode}
+              zoomEnabled={zoomEnabled}
+              isZoomable={isZoomable}
+              onToggleZoom={() => setZoomEnabled((z) => !z)}
+            />
+          </div>
+        </BottomSheet>
       )}
 
       {/* Keyboard shortcuts (UI-031, UI-045) — rendered as invisible components */}
