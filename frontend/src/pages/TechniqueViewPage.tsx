@@ -408,6 +408,9 @@ export function TechniqueViewPage({
       </button>
     ) : undefined;
 
+    // Phase 2: count surfaces on the Filters trigger badge.
+    const activeCount = filterState.activeFilterCount + (contentType > 0 ? 1 : 0);
+
     return (
       <PuzzleSetHeader
         title={techniqueDisplayName}
@@ -416,6 +419,7 @@ export function TechniqueViewPage({
         {...(info.onBack ? { onBack: info.onBack } : {})}
         backLabel={backLabelProp ?? 'Back to techniques'}
         {...(filterStripContent ? { filterStrip: filterStripContent } : {})}
+        activeFilterCount={activeCount}
         {...(skipButton ? { rightContent: skipButton } : {})}
         progress={
           info.totalPuzzles > 0 ? Math.round((info.completedCount / info.totalPuzzles) * 100) : 0

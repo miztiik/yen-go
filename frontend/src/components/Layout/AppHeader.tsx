@@ -13,6 +13,7 @@ import { YenGoLogo, YenGoLogoWithText } from './YenGoLogo';
 import { UserProfile } from './UserProfile';
 import { SettingsGear } from './SettingsGear';
 import { StreakBadge } from '../Streak/StreakDisplay';
+import { UI_COMPACT_HEADER_HIDE_STREAK } from '../../services/featureFlags';
 
 export interface AppHeaderProps {
   /** Show streak display (default: true) */
@@ -64,7 +65,12 @@ export function AppHeader({
       <div className="flex items-center gap-3">
         {rightContent}
 
-        {showStreak && streak > 0 && <StreakBadge streak={streak} />}
+        {/* Streak badge — hidden on solving routes (compact mode) under
+         * UI_COMPACT_HEADER_HIDE_STREAK because ProblemNav already shows the
+         * current streak in the sidebar. Avoids duplicate chrome. */}
+        {showStreak &&
+          streak > 0 &&
+          !(UI_COMPACT_HEADER_HIDE_STREAK && compact) && <StreakBadge streak={streak} />}
 
         <SettingsGear />
         <UserProfile {...(onClickProfile ? { onClick: onClickProfile } : {})} />

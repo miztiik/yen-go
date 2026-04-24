@@ -9,12 +9,16 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/preact';
+import { render, screen, fireEvent } from '@testing-library/preact';
 import { PuzzleSetHeader } from '@/components/PuzzleSetPlayer/PuzzleSetHeader';
 
 describe('PuzzleSetHeader', () => {
   describe('progress bar', () => {
-    it('uses explicit progress prop when provided', () => {
+    // Phase 4 (Issue 3): the header progress bar is hidden by default via
+    // UI_HEADER_DROP_PROGRESS_BAR=true. ProblemNav's sidebar progress bar is
+    // the single source of truth. These tests now assert the bar is suppressed
+    // even when totalPuzzles > 0 / progress is supplied.
+    it('does not render progress bar when explicit progress prop is provided', () => {
       render(
         <PuzzleSetHeader
           title="Test"
@@ -25,27 +29,18 @@ describe('PuzzleSetHeader', () => {
         />,
       );
 
-      const bar = screen.getByTestId('hdr-progress');
-      // Explicit 50% should be used, NOT index-based (1/100 = 1%)
-      expect(bar.getAttribute('aria-valuenow')).toBe('50');
+      expect(screen.queryByTestId('hdr-progress')).toBeNull();
     });
 
-    it('falls back to index-based progress when progress prop is omitted', () => {
+    it('does not render progress bar when falling back to index-based progress', () => {
       render(
-        <PuzzleSetHeader
-          title="Test"
-          currentIndex={4}
-          totalPuzzles={10}
-          testId="hdr"
-        />,
+        <PuzzleSetHeader title="Test" currentIndex={4} totalPuzzles={10} testId="hdr" />,
       );
 
-      const bar = screen.getByTestId('hdr-progress');
-      // (4+1)/10 * 100 = 50%
-      expect(bar.getAttribute('aria-valuenow')).toBe('50');
+      expect(screen.queryByTestId('hdr-progress')).toBeNull();
     });
 
-    it('shows 0% progress when explicit progress is 0', () => {
+    it('does not render progress bar when explicit progress is 0', () => {
       render(
         <PuzzleSetHeader
           title="Test"
@@ -56,11 +51,10 @@ describe('PuzzleSetHeader', () => {
         />,
       );
 
-      const bar = screen.getByTestId('hdr-progress');
-      expect(bar.getAttribute('aria-valuenow')).toBe('0');
+      expect(screen.queryByTestId('hdr-progress')).toBeNull();
     });
 
-    it('shows 100% progress when all puzzles completed', () => {
+    it('does not render progress bar when all puzzles completed', () => {
       render(
         <PuzzleSetHeader
           title="Test"
@@ -71,8 +65,7 @@ describe('PuzzleSetHeader', () => {
         />,
       );
 
-      const bar = screen.getByTestId('hdr-progress');
-      expect(bar.getAttribute('aria-valuenow')).toBe('100');
+      expect(screen.queryByTestId('hdr-progress')).toBeNull();
     });
 
     it('does not render progress bar when totalPuzzles is 0', () => {
@@ -134,7 +127,10 @@ describe('PuzzleSetHeader', () => {
   });
 
   describe('puzzle counter', () => {
-    it('shows current / total in counter badge', () => {
+    // Phase 1 chrome shrink: counter is suppressed under UI_HEADER_DROP_COUNTER
+    // because ProblemNav in the sidebar already shows the same data. To revert,
+    // flip UI_HEADER_DROP_COUNTER to false in services/featureFlags.ts.
+    it('does not render counter badge in header (deduped against ProblemNav)', () => {
       render(
         <PuzzleSetHeader
           title="Test"
@@ -144,8 +140,8 @@ describe('PuzzleSetHeader', () => {
         />,
       );
 
-      // Should show "5 / 20" (1-based display)
-      expect(screen.getByText('5 / 20')).toBeDefined();
+      // The counter "5 / 20" should NOT appear in the header
+      expect(screen.queryByText('5 / 20')).toBeNull();
     });
 
     it('does not render counter when totalPuzzles is 0', () => {
@@ -196,7 +192,11 @@ describe('PuzzleSetHeader', () => {
   });
 
   describe('filter strip', () => {
-    it('renders filter strip content when provided', () => {
+    // Phase 2 (UI_FILTERS_IN_SHEET): the filter strip is no longer rendered
+    // inline below the toolbar. A "Filters" trigger button replaces it; the
+    // strip content lives inside a BottomSheet that opens on click. To revert,
+    // flip UI_FILTERS_IN_SHEET to false in services/featureFlags.ts.
+    it('renders a Filters trigger button when filterStrip is provided', () => {
       render(
         <PuzzleSetHeader
           title="Test"
@@ -207,8 +207,55 @@ describe('PuzzleSetHeader', () => {
         />,
       );
 
-      expect(screen.getByTestId('hdr-filters')).toBeDefined();
+      expect(screen.getByTestId('hdr-filters-trigger')).toBeDefined();
+      // Sheet content is not in the DOM until the trigger is clicked.
+      expect(screen.queryByTestId('my-filters')).toBeNull();
+    });
+
+    it('opens the filters sheet and reveals the strip when trigger is clicked', () => {
+      render(
+        <PuzzleSetHeader
+          title="Test"
+          currentIndex={0}
+          totalPuzzles={5}
+          filterStrip={<div data-testid="my-filters">Filters here</div>}
+          testId="hdr"
+        />,
+      );
+
+      fireEvent.click(screen.getByTestId('hdr-filters-trigger'));
       expect(screen.getByTestId('my-filters')).toBeDefined();
+      expect(screen.getByTestId('hdr-filters-sheet')).toBeDefined();
+    });
+
+    it('renders activeFilterCount badge on the trigger when count > 0', () => {
+      render(
+        <PuzzleSetHeader
+          title="Test"
+          currentIndex={0}
+          totalPuzzles={5}
+          filterStrip={<div data-testid="my-filters">Filters here</div>}
+          activeFilterCount={3}
+          testId="hdr"
+        />,
+      );
+
+      const trigger = screen.getByTestId('hdr-filters-trigger');
+      expect(trigger.getAttribute('data-active')).toBe('true');
+      expect(trigger.textContent).toContain('3');
+    });
+
+    it('omits the trigger entirely when no filterStrip is provided', () => {
+      render(
+        <PuzzleSetHeader
+          title="Test"
+          currentIndex={0}
+          totalPuzzles={5}
+          testId="hdr"
+        />,
+      );
+
+      expect(screen.queryByTestId('hdr-filters-trigger')).toBeNull();
     });
   });
 });

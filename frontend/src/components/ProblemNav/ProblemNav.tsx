@@ -215,6 +215,8 @@ export function ProblemNav({
             className="streak-badge"
             data-testid="streak-badge"
             data-tier={currentStreak >= 10 ? 'peak' : currentStreak >= 5 ? 'elevated' : 'base'}
+            aria-label={`Current solve streak: ${currentStreak} in a row`}
+            title={`Current solve streak: ${currentStreak} in a row`}
           >
             <StreakIcon size={14} /> {currentStreak} in a row
           </span>

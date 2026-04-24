@@ -233,6 +233,9 @@ export const TrainingViewPage: FunctionalComponent<TrainingViewPageProps> = ({
         </div>
       );
 
+      // Phase 2: count surfaces on the Filters trigger badge.
+      const activeCount = filterState.activeFilterCount + (contentType > 0 ? 1 : 0);
+
       return (
         <PuzzleSetHeader
           title={`Training: ${levelInfo?.name ?? level}`}
@@ -246,11 +249,21 @@ export const TrainingViewPage: FunctionalComponent<TrainingViewPageProps> = ({
           backLabel="Back to training"
           rightContent={statsContent}
           {...(filterStripContent ? { filterStrip: filterStripContent } : {})}
+          activeFilterCount={activeCount}
           testId="training-header"
         />
       );
     },
-    [levelInfo, level, completedCount, accuracy, percentComplete, filterStripContent]
+    [
+      levelInfo,
+      level,
+      completedCount,
+      accuracy,
+      percentComplete,
+      filterStripContent,
+      filterState.activeFilterCount,
+      contentType,
+    ]
   );
 
   // Empty filter state — when tag/content-type filter produces zero results
