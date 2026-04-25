@@ -35,7 +35,6 @@ import { TransformBar } from '../Transforms/TransformBar';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  ChevronDownIcon,
   DoubleChevronLeftIcon,
   DoubleChevronRightIcon,
   UndoIcon,
