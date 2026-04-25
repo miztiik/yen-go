@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         101weiqi Puzzle Capture for YenGo
 // @namespace    https://github.com/yengo
-// @version      4.5.5
+// @version      5.30.0
 // @description  Auto-captures puzzle data from 101weiqi.com and sends to local YenGo receiver. Start server, browse any puzzle page, it just works.
-// @match        https://www.101weiqi.com/q/*
-// @match        https://www.101weiqi.com/chessmanual/*
-// @match        https://www.101weiqi.com/qday/*
+// @match        *://www.101weiqi.com/q/*
+// @match        *://www.101weiqi.com/chessmanual/*
+// @match        *://www.101weiqi.com/qday/*
+// @match        *://www.101weiqi.com/book/*
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
@@ -20,6 +21,24 @@
 (function () {
   "use strict";
 
+  // ╔══════════════════════════════════════════════════════════════════╗
+  // ║                    TABLE OF CONTENTS                             ║
+  // ╠══════════════════════════════════════════════════════════════════╣
+  // ║  1. CORE INFRA       — config, state, logging, content decoding  ║
+  // ║  2. UI               — status bar, overlays, picker              ║
+  // ║  3. INFRA HELPERS    — HTTP, delays, wake lock, tab ownership    ║
+  // ║  4. QDAY SWEEP       — daily-puzzle sweep mode                   ║
+  // ║  5. BOOK DISCOVERY   — chapter scrape + manifest build           ║
+  // ║  6. BOOK CAPTURE     — chapter-mode capture loop                ║
+  // ║  7. NAVIGATION       — goNext, triggerSiteNext, autoStart        ║
+  // ║  8. CAPTURE LOOP     — capture(), navigation watcher             ║
+  // ║  9. MENU COMMANDS    — Tampermonkey GM_registerMenuCommand entries║
+  // ╚══════════════════════════════════════════════════════════════════╝
+  //
+  // Folding: VS Code recognises //#region / //#endregion pairs.
+  // Use "Fold All Regions" (Ctrl+K Ctrl+8) for a quick map.
+
+  //#region 1. CORE INFRA
   // -- Config -----------------------------------------------------
   const RECEIVER = "http://127.0.0.1:8101";
   const DEFAULT_BASE_DELAY_MS = 4500;
@@ -31,12 +50,31 @@
   const BURST_COOLDOWN_MIN_MS = 5000;
   const BURST_COOLDOWN_MAX_MS = 11000;
   const ERROR_BACKOFF_STEP_MS = 7000;
-  const ERROR_BACKOFF_MAX_MS = 90000;
+  const ERROR_BACKOFF_MAX_MS = 9000;
   const HTTP_TIMEOUT_MS = 15000;
   const QQDATA_POLL_MS = 1000;
   const QQDATA_MAX_WAIT = 10000;
   const DAILY_MIN_NUM = 1;
   const DAILY_MAX_NUM = 8;
+
+  // -- Anti-blocking: human-like behavior -------------------------
+  const THINK_TIME_MIN_MS = 300; // Simulated "reading" time
+  const THINK_TIME_MAX_MS = 8000;
+  const SESSION_BREAK_EVERY = 35; // Take a long break every N puzzles
+  const SESSION_BREAK_MIN_MS = 1200;
+  const SESSION_BREAK_MAX_MS = 1800;
+  const SCROLL_NOISE_CHANCE = 0.3; // 30% chance of random scroll
+  const GOTOPIC_TIMEOUT_MS = 12000; // Max wait for AJAX puzzle change
+
+  // Chapter-mode pacing: single consistent interval per puzzle (~30s ± jitter)
+  const CHAPTER_INTERVAL_MIN_MS = 1000; //
+  const CHAPTER_INTERVAL_MAX_MS = 1500; //
+  const CHAPTER_SESSION_BREAK_EVERY = 40; // Long break every N puzzles
+  const CHAPTER_SESSION_BREAK_MIN_MS = 1800; //
+  const CHAPTER_SESSION_BREAK_MAX_MS = 4200; //
+
+  // Timestamp tracking for interval-based pacing
+  let captureStartedAt = 0;
 
   // -- State ------------------------------------------------------
   const KEY_RUNNING = "yengo_running";
@@ -46,6 +84,8 @@
   const KEY_WAKE_LOCK = "yengo_wake_lock";
   const KEY_OWNER_TAB = "yengo_owner_tab";
   const KEY_OWNER_HEARTBEAT = "yengo_owner_hb";
+  const KEY_BOOK_DISCOVERY = "yengo_book_discovery";
+  const KEY_BOOK_PLAN = "yengo_book_plan";
 
   const HEARTBEAT_INTERVAL_MS = 5000; // 10s
   const OWNER_STALE_MS = 30000; // 30s before declaring owner dead
@@ -78,10 +118,16 @@
 
   let running = GM_getValue(KEY_RUNNING, false);
   let qdayPlan = GM_getValue(KEY_QDAY_PLAN, null);
+  let bookDiscovery = GM_getValue(KEY_BOOK_DISCOVERY, null);
+  let bookPlan = GM_getValue(KEY_BOOK_PLAN, null);
   let issueStreak = 0;
   let stats = { ...DEFAULT_STATS, ...GM_getValue(KEY_STATS, {}), session_start: new Date().toISOString() };
   let wakeLockEnabled = GM_getValue(KEY_WAKE_LOCK, false);
   let wakeLockSentinel = null;
+  // Drift detection: how many consecutive captures landed on a *different*
+  // book than the active capture target. 3-in-a-row triggers an ERR log
+  // (capture continues — see reconcileAttribution / drift_from_active).
+  let driftBookStreak = 0;
 
   // -- Logging ----------------------------------------------------
   // Phase icons for console clarity:
@@ -207,6 +253,9 @@
     }
   }
 
+  //#endregion 1. CORE INFRA
+
+  //#region 2. UI
   // -- Status bar (create once, update dynamic spans) -------------
   let _barMsgEl = null;
   let _barDelayEl = null;
@@ -369,7 +418,10 @@
     // Update stats
     if (_barStatsEl) {
       const t = stats.ok + stats.skipped + stats.error;
-      const mode = isQdaySweepActive() ? "QDAY" : "QUEUE";
+      const mode = isQdaySweepActive() ? "QDAY"
+        : isBookDiscoveryActive() ? "BOOK:DISCOVER"
+        : isBookCaptureActive() ? "BOOK:CAPTURE"
+        : "QUEUE";
       _barStatsEl.textContent =
         `OK:${stats.ok} Skip:${stats.skipped} Err:${stats.error} ` +
         `CAPTCHA:${stats.captcha||0} 404:${stats.notfound||0} Total:${t}` +
@@ -377,6 +429,9 @@
     }
   }
 
+  //#endregion 2. UI
+
+  //#region 3. INFRA HELPERS
   // -- HTTP helpers -----------------------------------------------
   function http(method, path, body) {
     return new Promise((resolve, reject) => {
@@ -403,6 +458,9 @@
     // /q/12345/ or /chessmanual/12345/
     const m = location.pathname.match(/\/(?:q|chessmanual)\/(\d+)/);
     if (m) return parseInt(m[1], 10);
+    // /book/{bookId}/{chapterId}/{pid}/ (chapter-listing puzzle link)
+    const bm = location.pathname.match(/^\/book\/\d+\/\d+\/(\d+)\/?$/);
+    if (bm) return parseInt(bm[1], 10);
     // Alpine store (most reliable during SPA navigation)
     try {
       const qipan = unsafeWindow.Alpine && unsafeWindow.Alpine.store("qipan");
@@ -422,7 +480,32 @@
   }
 
   function waitMs(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    // Pause-aware sleep: resolves early (with value 'aborted') if the
+    // capture loop is paused or stopped while we're waiting. Callers
+    // that care can check the resolved value; legacy callers that just
+    // `await waitMs(N)` will still see a Promise that resolves — but it
+    // will resolve much sooner than `ms` if the user pauses, which is
+    // what we want so [Control] Pause/Resume actually takes effect
+    // immediately instead of being held hostage by a 60s sleep.
+    return new Promise((resolve) => {
+      // Snapshot the running flag at entry. We tolerate transient false
+      // values — only treat the wait as aborted if the flag flipped from
+      // true to false during the wait (i.e. the user actively paused).
+      const wasRunning = running;
+      const start = Date.now();
+      const tickMs = 250;
+      const tick = setInterval(() => {
+        if (wasRunning && !running) {
+          clearInterval(tick);
+          resolve("aborted");
+          return;
+        }
+        if (Date.now() - start >= ms) {
+          clearInterval(tick);
+          resolve("done");
+        }
+      }, tickMs);
+    });
   }
 
   function getBaseDelay() {
@@ -450,6 +533,117 @@
     }
 
     return Math.max(1200, Math.round(delayMs));
+  }
+
+  // -- Anti-blocking: human-like behavior -------------------------
+
+  /**
+   * Trigger the site's own Next button via Alpine.js dispatch.
+   * The site uses: @click="$dispatch('gotopic', 1)"
+   * which fetches nextUrl from $store.qipan and loads the next puzzle via AJAX.
+   * Returns true if the puzzle changed, false if it didn't (fallback needed).
+   */
+  async function triggerSiteNext() {
+    const oldId = getPuzzleId();
+    try {
+      const store = unsafeWindow.Alpine && unsafeWindow.Alpine.store("qipan");
+      if (!store || !store.nextUrl) {
+        plog("WARN", "No Alpine nextUrl — site Next unavailable");
+        return false;
+      }
+      // Mark game as finished so Next button is rendered. Some site
+      // versions define `gameFinished` as a read-only/computed property
+      // on the Alpine store proxy — assignment then throws and would
+      // abort the whole dispatch. Swallow the failure: the gotopic
+      // event below is what actually drives navigation.
+      try {
+        store.gameFinished = true;
+      } catch (e) {
+        plog("DEBUG", `Site Next: cannot set gameFinished (${e.message}) — proceeding with gotopic dispatch anyway`);
+      }
+
+      // Dispatch the gotopic event (same as clicking Next button)
+      const topicEl = document.querySelector('[x-data]');
+      if (topicEl) {
+        topicEl.dispatchEvent(new CustomEvent("gotopic", {
+          detail: 1,
+          bubbles: true,
+        }));
+      } else {
+        // Fallback: directly call the Alpine dispatch mechanism
+        unsafeWindow.dispatchEvent(new CustomEvent("gotopic", {
+          detail: 1,
+          bubbles: true,
+        }));
+      }
+
+      // Wait for the puzzle to change (Alpine store qqdata.publicid)
+      const changed = await waitForPuzzleChange(oldId, GOTOPIC_TIMEOUT_MS);
+      if (changed) {
+        plog("NEXT", `Site Next loaded puzzle ${getPuzzleId()} (AJAX, no page reload)`);
+        return true;
+      }
+      plog("WARN", `Site Next dispatched but puzzle didn't change (was ${oldId})`);
+      return false;
+    } catch (err) {
+      plog("WARN", `Site Next failed: ${err.message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Wait for the Alpine store puzzle ID to change from oldId.
+   * Returns true if changed within timeout, false otherwise.
+   */
+  function waitForPuzzleChange(oldId, timeoutMs) {
+    return new Promise((resolve) => {
+      let elapsed = 0;
+      const interval = 500;
+      const iv = setInterval(() => {
+        elapsed += interval;
+        const currentId = getPuzzleId();
+        if (currentId && currentId !== oldId) {
+          clearInterval(iv);
+          resolve(true);
+        } else if (elapsed >= timeoutMs) {
+          clearInterval(iv);
+          resolve(false);
+        }
+      }, interval);
+    });
+  }
+
+  /**
+   * Simulate human-like page interaction:
+   * - Random scroll (30% chance)
+   * - "Think time" delay (3-8s)
+   * - Session break every N puzzles (2-6 min)
+   */
+  async function simulateHumanBehavior() {
+    const totalCaptures = stats.ok + stats.skipped;
+
+    // Session break
+    if (totalCaptures > 0 && totalCaptures % SESSION_BREAK_EVERY === 0) {
+      const breakMs = randomBetween(SESSION_BREAK_MIN_MS, SESSION_BREAK_MAX_MS);
+      const breakMin = (breakMs / 60000).toFixed(1);
+      plog("WAIT", `Session break: ${breakMin} min pause (${totalCaptures} puzzles done)`);
+      updateStatus(`Taking a break... ${breakMin} min (${totalCaptures} done)`, "#888");
+      await waitMs(breakMs);
+    }
+
+    // Think time
+    const thinkMs = randomBetween(THINK_TIME_MIN_MS, THINK_TIME_MAX_MS);
+    await waitMs(thinkMs);
+
+    // Random scroll noise
+    if (Math.random() < SCROLL_NOISE_CHANCE) {
+      try {
+        const scrollY = Math.floor(randomBetween(50, 300));
+        unsafeWindow.scrollBy({ top: scrollY, behavior: "smooth" });
+        await waitMs(randomBetween(800, 2000));
+        unsafeWindow.scrollBy({ top: -scrollY, behavior: "smooth" });
+      } catch (_) {}
+    }
   }
 
   // -- Wake Lock (sleep prevention) --------------------------------
@@ -551,6 +745,9 @@
     if (reason) log("INFO", `Stopped: ${reason}`);
   }
 
+  //#endregion 3. INFRA HELPERS
+
+  //#region 4. QDAY SWEEP
   // -- Qday sweep helpers -----------------------------------------
   function isQdaySweepActive() {
     return !!(qdayPlan && qdayPlan.active);
@@ -666,6 +863,8 @@
   }
 
   function startQdaySweep(order) {
+    clearBookDiscovery();
+    clearBookPlan();
     const current = parseQdayPath();
     if (!current) {
       alert("Open a qday page first (for example: /qday/2015/7/13/1/).");
@@ -709,7 +908,1249 @@
     capture();
   }
 
-  // -- qqdata readiness check --------------------------------------
+  //#endregion 4. QDAY SWEEP
+
+  //#region 5. BOOK DISCOVERY
+  // -- Book sweep: URL parsing & DOM extraction ----------------------
+
+  function parseBookPath(pathname = location.pathname) {
+    // /book/5121/8973/12345/           → { book_id, chapter_id, puzzle_id, type: "puzzle" }
+    // /book/5121/8973/                 → { book_id, chapter_id, type: "chapter" }
+    // /book/5121/8973/?page=2          → { book_id, chapter_id, page: 2, type: "chapter" }
+    // /book/5121/                      → { book_id, type: "book" }
+
+    // 3-segment puzzle-on-chapter URL takes precedence over chapter listing.
+    const pz = pathname.match(/^\/book\/(\d+)\/(\d+)\/(\d+)\/?$/);
+    if (pz) {
+      return {
+        book_id: parseInt(pz[1], 10),
+        chapter_id: parseInt(pz[2], 10),
+        puzzle_id: parseInt(pz[3], 10),
+        type: "puzzle",
+      };
+    }
+
+    const ch = pathname.match(/^\/book\/(\d+)\/(\d+)/);
+    if (ch) {
+      const params = new URLSearchParams(location.search);
+      return {
+        book_id: parseInt(ch[1], 10),
+        chapter_id: parseInt(ch[2], 10),
+        page: parseInt(params.get("page") || "1", 10),
+        type: "chapter",
+      };
+    }
+
+    const bk = pathname.match(/^\/book\/(\d+)\/?$/);
+    if (bk) return { book_id: parseInt(bk[1], 10), type: "book" };
+
+    return null;
+  }
+
+  function isBookPage() {
+    return location.pathname.startsWith("/book/");
+  }
+
+  // Access embedded JS variables directly via unsafeWindow (no HTML parsing)
+  function extractPagedata() {
+    try {
+      if (unsafeWindow.pagedata) return unsafeWindow.pagedata;
+      if (unsafeWindow.nodedata && unsafeWindow.nodedata.pagedata)
+        return unsafeWindow.nodedata.pagedata;
+      if (unsafeWindow.bookdata) return unsafeWindow.bookdata;
+    } catch (_) {}
+    return null;
+  }
+
+  function extractChaptersFromDom() {
+    const pd = extractPagedata();
+    if (!pd) return [];
+    const chapters = pd.chapters || pd.zjlist;
+    if (!Array.isArray(chapters)) return [];
+    return chapters
+      .filter((e) => e && (e.id || e.zjid))
+      .map((e) => {
+        // Site-declared puzzle count for the chapter. The book root
+        // page exposes this on each zjlist entry as `nodecount`. Some
+        // older payloads use `qcount`/`qnum`. Falling back to qids.length
+        // covers both shapes; 0 means the chapter listing already told
+        // us it has no puzzles, so we should skip it without ever
+        // navigating in (see init code that sets skip_status="declared_empty").
+        const declaredCount =
+          (typeof e.nodecount === "number" ? e.nodecount : null)
+          ?? (typeof e.qcount === "number" ? e.qcount : null)
+          ?? (typeof e.qnum === "number" ? e.qnum : null)
+          ?? (Array.isArray(e.qids) ? e.qids.length : 0);
+        return {
+          chapter_id: parseInt(e.id || e.zjid, 10),
+          name: e.name || "",
+          declared_count: declaredCount | 0,
+        };
+      });
+  }
+
+  /**
+   * Extract puzzle entries with their positional index from pagedata.
+   * Returns [{id, qindex}] where qindex is:
+   *   - Global position on level-order pages (e.g. 61 on page 2)
+   *   - Per-chapter position on chapter pages (e.g. 1-38)
+   *
+   * ID FIELD CHOICE: prefer `publicid` (the "Q-NNN" number shown to users
+   * and stamped on `qqdata.publicid` at capture time). Some books expose a
+   * separate `qid` field which is a *different ID space* — visiting
+   * `/q/{qid}/` redirects to a page whose `qqdata.publicid` differs (e.g.
+   * book 25369 ch1: qid 295990 -> publicid 261436). If discovery stores the
+   * qid, the capture-time identity gate refuses every puzzle as
+   * url_data_mismatch. We must store the same field the gate compares
+   * against. See memory: "weiqi101: discovery vs capture id-space drift".
+   */
+  function extractPuzzleEntriesFromDom() {
+    const pd = extractPagedata();
+    if (!pd) return [];
+    const qs = pd.qs;
+    if (!Array.isArray(qs)) return [];
+    return qs
+      .map((e) => ({
+        id: parseInt(e.publicid || e.qid || e.id, 10),
+        qindex: parseInt(e.qindex, 10) || 0,
+      }))
+      .filter((e) => !isNaN(e.id));
+  }
+
+  function extractMaxPage() {
+    const pd = extractPagedata();
+    if (!pd) return 1;
+    return pd.maxpage || 1;
+  }
+
+  function extractBookName() {
+    const pd = extractPagedata();
+    if (!pd) return "";
+    return String(pd.bookname || pd.name || "").trim();
+  }
+
+  function extractBookDifficulty() {
+    const pd = extractPagedata();
+    if (!pd) return "";
+    return String(pd.qlevelname || pd.difficulty || "").trim();
+  }
+
+  function extractChapterNumber() {
+    const pd = extractPagedata();
+    if (!pd) return 0;
+    return parseInt(pd.number, 10) || 0;
+  }
+
+  function buildChapterUrl(bookId, chapterId, page) {
+    // ALWAYS include explicit ?page=N (even for page 1). When the URL omits
+    // ?page=, 101weiqi sometimes lands on the last page instead of page 1,
+    // which corrupts the scrape order. Explicit page eliminates that.
+    const base = `https://www.101weiqi.com/book/${bookId}/${chapterId}/`;
+    const p = page && page >= 1 ? page : 1;
+    return `${base}?page=${p}`;
+  }
+
+  /**
+   * Infer the actually-rendered chapter page from puzzle qindex values.
+   * 101weiqi assigns each puzzle a per-chapter qindex (1, 2, 3, ...).
+   * The first qindex on a page tells us which page slice we're viewing,
+   * regardless of what the URL or our requested page says.
+   *
+   * Returns the inferred page number in [1, maxPage], or null if no qindex
+   * data is available (caller should fall back to URL/state).
+   */
+  function inferRenderedPage(entries, maxPage, defaultPerPage = 25) {
+    if (!Array.isArray(entries) || entries.length === 0) return null;
+    const qidxs = entries.map((e) => e.qindex).filter((q) => q > 0);
+    if (qidxs.length === 0) return null;
+    const firstQ = Math.min(...qidxs);
+    const lastQ = Math.max(...qidxs);
+    // perPage estimate: trust this page's span if it looks "full",
+    // otherwise assume the site's standard 25/page (last page may be short).
+    const localPerPage = lastQ - firstQ + 1;
+    const perPage = localPerPage >= defaultPerPage ? localPerPage : defaultPerPage;
+    const inferred = Math.floor((firstQ - 1) / perPage) + 1;
+    return Math.max(1, Math.min(inferred, Math.max(1, maxPage || 1)));
+  }
+
+  /**
+   * Pick the next page to visit given the set of pages already scraped and
+   * the current rendered page. Prefer the nearest unscraped page going
+   * forward; if none, fall back to the nearest unscraped page going backward.
+   * Returns null if every page in [1..maxPage] has been scraped.
+   */
+  function pickNextChapterPage(scrapedPages, maxPage, currentPage) {
+    const scraped = new Set((scrapedPages || []).map(Number));
+    const remaining = [];
+    for (let p = 1; p <= maxPage; p++) {
+      if (!scraped.has(p)) remaining.push(p);
+    }
+    if (remaining.length === 0) return null;
+    const forward = remaining.find((p) => p > currentPage);
+    if (forward != null) return forward;
+    // No forward page missing — go backward, nearest first.
+    const backward = remaining.filter((p) => p < currentPage).sort((a, b) => b - a);
+    return backward[0] != null ? backward[0] : remaining[0];
+  }
+
+  // 101weiqi serves chapter listings at 25 puzzles per page. We use this
+  // to jump straight to the listing page that contains a target puzzle
+  // instead of always landing on page 1 and paginating forward — which
+  // wasted up to N-1 page loads (and N-1 anti-bot delays) per puzzle on
+  // chapters with multiple pages.
+  const CHAPTER_PUZZLES_PER_PAGE = 25;
+
+  function chapterPageForPosition(posInChapter, perPage) {
+    const pp = perPage && perPage > 0 ? perPage : CHAPTER_PUZZLES_PER_PAGE;
+    const n = Number(posInChapter);
+    if (!Number.isFinite(n) || n < 1) return 1;
+    return Math.floor((n - 1) / pp) + 1;
+  }
+
+  /**
+   * Compute the chapter-listing page for a chapter_seq entry. Falls back
+   * to page 1 if the entry has no per-chapter position recorded.
+   */
+  function targetChapterPageForEntry(entry) {
+    if (!entry) return 1;
+    return chapterPageForPosition(entry.pos_in_chapter || 0);
+  }
+
+  function isChapterMode() {
+    return !!(bookPlan && bookPlan.active && bookPlan.mode === "chapter");
+  }
+
+  function chapterPlanCurrentEntry(plan) {
+    if (!plan || !Array.isArray(plan.chapter_seq)) return null;
+    return plan.chapter_seq[plan.current_seq_idx] || null;
+  }
+
+  // -- Book sweep: Discovery state management ------------------------
+
+  function isBookDiscoveryActive() {
+    return !!(bookDiscovery && bookDiscovery.phase && bookDiscovery.phase !== "done");
+  }
+
+  function saveBookDiscovery(disc) {
+    bookDiscovery = disc;
+    GM_setValue(KEY_BOOK_DISCOVERY, disc);
+  }
+
+  function clearBookDiscovery() {
+    bookDiscovery = null;
+    GM_setValue(KEY_BOOK_DISCOVERY, null);
+  }
+
+  // -- Book sweep: Capture state management --------------------------
+
+  function isBookCaptureActive() {
+    return !!(bookPlan && bookPlan.active);
+  }
+
+  function saveBookPlan(plan) {
+    bookPlan = plan;
+    GM_setValue(KEY_BOOK_PLAN, plan);
+  }
+
+  function clearBookPlan() {
+    bookPlan = null;
+    GM_setValue(KEY_BOOK_PLAN, null);
+  }
+
+  // -- Book sweep: Discovery telemetry & checkpoint --------------------
+
+  /**
+   * Merge a skip-state echo from the receiver into the in-memory
+   * bookDiscovery.chapters list. The receiver flips skip_status when
+   * a chapter has had too many empty page-1 renders (auto_empty) or
+   * when the user runs the `skip-chapter` CLI (manual). The userscript
+   * has no other channel to learn about these flips within a session,
+   * so every progress response carries the current state.
+   */
+  function applySkipStateMerge(states) {
+    if (!Array.isArray(states) || !bookDiscovery || !bookDiscovery.chapters) {
+      return false;
+    }
+    let dirty = false;
+    const byId = new Map();
+    for (const s of states) {
+      if (s && s.chapter_id != null) byId.set(s.chapter_id, s);
+    }
+    for (const ch of bookDiscovery.chapters) {
+      const s = byId.get(ch.chapter_id);
+      if (!s) continue;
+      if (ch.skip_status !== s.skip_status) {
+        ch.skip_status = s.skip_status || null;
+        ch.skip_reason = s.skip_reason || null;
+        dirty = true;
+      }
+      const ea = s.empty_attempts || 0;
+      if ((ch.empty_attempts || 0) !== ea) {
+        ch.empty_attempts = ea;
+        dirty = true;
+      }
+    }
+    if (dirty) saveBookDiscovery(bookDiscovery);
+    return dirty;
+  }
+
+  /**
+   * Report discovery progress to backend for JSONL telemetry logging.
+   * Also sends current discovery_state for checkpoint persistence.
+   * The receiver may echo `chapter_skip_states` so we can react to
+   * server-side skip flips (auto-empty threshold or manual CLI override)
+   * within the same session.
+   */
+  async function reportDiscoveryProgress(phase, step, detail) {
+    try {
+      const resp = await http("POST", "/book/discovery/progress", {
+        book_id: bookDiscovery ? bookDiscovery.book_id : null,
+        phase,
+        step,
+        detail: detail || {},
+        discovery_state: bookDiscovery,
+      });
+      if (resp && resp.chapter_skip_states) {
+        applySkipStateMerge(resp.chapter_skip_states);
+      }
+      return resp;
+    } catch (_) {
+      // Non-critical — don't block discovery if backend is temporarily unreachable
+      plog("WARN", `Discovery telemetry failed for ${phase}/${step}`);
+      return null;
+    }
+  }
+
+  /**
+   * Emit a capture-mode lifecycle event (paused, resumed, jumped,
+   * chapter_skipped, session_break) into the per-book capture-log.jsonl.
+   * Best-effort: failures are logged to console only; never block the
+   * main loop. Falls back gracefully when no book is active.
+   */
+  async function reportBookEvent(eventType, detail) {
+    const bookId = (bookPlan && bookPlan.book_id)
+      || (bookDiscovery && bookDiscovery.book_id)
+      || null;
+    const bookName = (bookPlan && bookPlan.book_name)
+      || (bookDiscovery && bookDiscovery.book_name)
+      || "";
+    if (!bookId) return; // nothing to log against
+    try {
+      await http("POST", "/book/log/event", {
+        book_id: bookId,
+        book_name: bookName,
+        event_type: eventType,
+        detail: detail || {},
+      });
+    } catch (_) {
+      plog("WARN", `Book event log failed for ${eventType}`);
+    }
+  }
+
+  /**
+   * Check backend for existing discovery state before starting fresh.
+   * Returns { status: "complete"|"partial"|"none", manifest?, checkpoint? }
+   */
+  async function checkBackendDiscoveryState(bookId) {
+    try {
+      return await http("GET", `/book/${bookId}/discovery`);
+    } catch (_) {
+      return { status: "none" };
+    }
+  }
+
+  // -- Book sweep: Discovery state machine ---------------------------
+
+  async function continueDiscovery() {
+    const bookPath = parseBookPath();
+    if (!bookPath) return;
+
+    // --- INITIAL: User landed on /book/{id}/ page, no discovery active ---
+    if (!bookDiscovery || !bookDiscovery.phase) {
+      if (bookPath.type !== "book") return;
+
+      // Check backend for existing discovery state (checkpoint/restart)
+      const existing = await checkBackendDiscoveryState(bookPath.book_id);
+
+      if (existing.status === "complete") {
+        plog("INFO", `Book ${bookPath.book_id} already discovered — opening overlay (Cancel / Capture / Restart Discovery)`);
+        showBookDiscoveryOverlay(bookPath.book_id);
+        return;
+      }
+
+      // Wait for page JS to load
+      await waitMs(1500);
+
+      const chapters = extractChaptersFromDom();
+      const bookName = extractBookName();
+      const difficulty = extractBookDifficulty();
+
+      if (chapters.length === 0) {
+        plog("WARN", `Book ${bookPath.book_id}: no chapters found in DOM`);
+        updateStatus("No chapters found on this page.", "#ff9800");
+        return;
+      }
+
+      // Resume from checkpoint if partial discovery exists
+      if (existing.status === "partial" && existing.checkpoint) {
+        const cp = existing.checkpoint;
+        // Validate checkpoint matches current book
+        if (cp.book_id === bookPath.book_id && cp.chapters && cp.chapters.length > 0) {
+          plog("INFO", `Resuming discovery from checkpoint: Ch.${(cp.current_chapter_idx || 0) + 1}, phase=${cp.phase}`);
+          bookDiscovery = cp;
+          saveBookDiscovery(cp);
+          await reportDiscoveryProgress("resume", "checkpoint_loaded", {
+            chapter_idx: cp.current_chapter_idx,
+            page: cp.current_page,
+            phase: cp.phase,
+          });
+
+          // Navigate to the right page based on checkpoint phase
+          if (cp.phase === "chapter_puzzles") {
+            const ch = cp.chapters[cp.current_chapter_idx];
+            if (ch) {
+              const delay = computeAdaptiveDelayMs();
+              await waitMs(delay);
+              location.href = buildChapterUrl(cp.book_id, ch.chapter_id, cp.current_page || 1);
+              return;
+            }
+          } else if (cp.phase === "chapters") {
+            // Re-fetch the book root to re-scrape chapter list
+            location.href = `https://www.101weiqi.com/book/${cp.book_id}/`;
+            return;
+          }
+          // If phase is "done" or unknown, fall through to fresh discovery
+        }
+      }
+
+      const disc = {
+        phase: "chapter_puzzles",
+        book_id: bookPath.book_id,
+        book_name: bookName,
+        difficulty: difficulty,
+        chapters: chapters.map((c, i) => {
+          const ch = {
+            chapter_id: c.chapter_id,
+            chapter_number: i + 1,
+            name: c.name,
+            puzzle_ids: [],
+            declared_count: c.declared_count | 0,
+          };
+          // Pre-skip chapters the book listing already declared empty
+          // (nodecount === 0). This avoids a wasteful navigate→render→
+          // chapter_empty_attempt round-trip and the threshold-bump
+          // wait-loop that previously stalled discovery on books like
+          // 5120 (chapters 18, 19, 112). The R2a skip block in the
+          // chapter-puzzle handler honours skip_status and walks past.
+          if (ch.declared_count === 0) {
+            ch.skip_status = "declared_empty";
+            ch.skip_reason = "book listing reports nodecount=0";
+          }
+          return ch;
+        }),
+        current_chapter_idx: 0,
+        current_page: 1,
+        started_at: new Date().toISOString(),
+      };
+      const declaredEmpty = disc.chapters.filter(
+        (c) => c.skip_status === "declared_empty",
+      );
+      if (declaredEmpty.length > 0) {
+        const labels = declaredEmpty
+          .map((c) => "Ch." + c.chapter_number)
+          .join(", ");
+        plog(
+          "INFO",
+          `Pre-skipping ${declaredEmpty.length} chapter(s) with declared nodecount=0: ${labels}`,
+        );
+      }
+
+      saveBookDiscovery(disc);
+      plog("LOAD", `Book "${bookName}" — ${chapters.length} chapters found, starting discovery`);
+      updateStatus(
+        `Discovering "${bookName}" — ${chapters.length} chapters`,
+        "#4fc3f7"
+      );
+
+      // Telemetry: discovery started — include the full chapter list so
+      // the FIRST line in capture-log.jsonl identifies every discovered
+      // chapter (id + name) rather than just a count. (Bug C, 2026-04-24.)
+      await reportDiscoveryProgress("chapter_puzzles", "discovery_started", {
+        book_name: bookName,
+        chapter_count: chapters.length,
+        difficulty: difficulty,
+        chapter_ids: chapters.map((c) => c.chapter_id),
+        chapters: chapters.map((c, i) => ({
+          chapter_number: i + 1,
+          chapter_id: c.chapter_id,
+          name: c.name,
+        })),
+      });
+
+      // Navigate to first chapter
+      const ch = disc.chapters[0];
+      const delay = computeAdaptiveDelayMs();
+      plog("WAIT", `${(delay / 1000).toFixed(1)}s before Ch.1 "${ch.name}"`);
+      await waitMs(delay);
+      plog("NEXT", `-> Ch.1 "${ch.name}" (${ch.chapter_id})`);
+      location.href = buildChapterUrl(disc.book_id, ch.chapter_id);
+      return;
+    }
+
+    // --- CHAPTER PUZZLE SCRAPING ---
+    if (bookDiscovery.phase === "chapter_puzzles" && bookPath.type === "chapter") {
+      await waitMs(1500); // let page JS settle
+
+      const ch = bookDiscovery.chapters[bookDiscovery.current_chapter_idx];
+      const chNum = ch ? ch.chapter_number : "?";
+
+      // R2a: hard skip if this chapter is flagged.
+      // ----------------------------------------------------------
+      // The server flips `skip_status` to:
+      //   - "auto_empty" after EMPTY_ATTEMPT_THRESHOLD page-1 renders
+      //     produced zero puzzles (likely a deleted/broken chapter), OR
+      //   - "manual" when the user runs `skip-chapter` CLI.
+      // Either way we walk forward to the next non-skipped chapter
+      // without touching the network for this one.
+      if (ch && ch.skip_status) {
+        plog(
+          "SKIP",
+          `Ch.${chNum} flagged ${ch.skip_status}` +
+          (ch.skip_reason ? ` (${ch.skip_reason})` : "") +
+          ` — jumping past`,
+        );
+        await reportDiscoveryProgress("chapter_puzzles", "chapter_skipped", {
+          chapter_idx: bookDiscovery.current_chapter_idx,
+          chapter_id: ch.chapter_id,
+          chapter_number: ch.chapter_number,
+          chapter_name: ch.name || "",
+          reason: ch.skip_status,
+        });
+        if (bookDiscovery.current_chapter_idx < bookDiscovery.chapters.length - 1) {
+          bookDiscovery.current_chapter_idx += 1;
+          bookDiscovery.current_page = 1;
+          saveBookDiscovery(bookDiscovery);
+          const next = bookDiscovery.chapters[bookDiscovery.current_chapter_idx];
+          const delay = computeAdaptiveDelayMs();
+          await waitMs(delay);
+          // No `running` guard here on purpose: discovery is page-load
+          // driven and the state has already been advanced + persisted.
+          // Bailing out without navigating leaves the tab parked on a
+          // skipped chapter, which is exactly the "why does it pause?"
+          // bug we hit before. The `running` flag is a capture-loop
+          // concept and does not apply to discovery navigation.
+          plog("NEXT", `-> Ch.${next.chapter_number} "${next.name}" (post-skip)`);
+          location.href = buildChapterUrl(bookDiscovery.book_id, next.chapter_id);
+          return;
+        }
+        // No more chapters — fall through to the "all done" branch.
+      }
+
+      // R2b chapter-jump resume
+      // ----------------------------------------------------------
+      // If this chapter was fully scraped on a previous run we can
+      // skip past it without re-scraping every page. Each chapter
+      // tracks `scraped_pages` (set of page numbers we've completed)
+      // plus `max_page_seen`. When all pages in 1..max_page_seen are
+      // already scraped we navigate straight to the next chapter.
+      // This makes re-running a partially complete discovery cheap
+      // (one page-load per skipped chapter, not maxPage page-loads).
+      if (ch && Array.isArray(ch.scraped_pages) && ch.max_page_seen > 0) {
+        const allDone = ch.scraped_pages.length >= ch.max_page_seen;
+        if (allDone) {
+          plog("SKIP", `Ch.${chNum} already fully scraped (${ch.puzzle_ids.length} ids, ${ch.max_page_seen} pages) — jumping to next chapter`);
+          await reportDiscoveryProgress("chapter_puzzles", "chapter_skipped", {
+            chapter_idx: bookDiscovery.current_chapter_idx,
+            chapter_name: ch.name || "",
+            puzzle_count: ch.puzzle_ids.length,
+          });
+          if (bookDiscovery.current_chapter_idx < bookDiscovery.chapters.length - 1) {
+            bookDiscovery.current_chapter_idx += 1;
+            bookDiscovery.current_page = 1;
+            saveBookDiscovery(bookDiscovery);
+            const next = bookDiscovery.chapters[bookDiscovery.current_chapter_idx];
+            const delay = computeAdaptiveDelayMs();
+            await waitMs(delay);
+            // No `running` guard — see post-skip note above.
+            plog("NEXT", `-> Ch.${next.chapter_number} "${next.name}" (skip-ahead)`);
+            location.href = buildChapterUrl(bookDiscovery.book_id, next.chapter_id);
+            return;
+          }
+          // No more chapters — fall through into the "all done" branch below by faking maxPage state
+        }
+      }
+
+      const entries = extractPuzzleEntriesFromDom();
+      const ids = entries.map((e) => e.id);
+
+      // Capture chapter number from page's pagedata.number (site-assigned)
+      const pageChapterNum = extractChapterNumber();
+      if (ch && pageChapterNum > 0) {
+        ch.site_chapter_number = pageChapterNum;
+      }
+
+      // Empty-page detection: if page 1 of a chapter renders with zero
+      // puzzle entries AND the pager reports ≤1 page, this is almost
+      // certainly a broken/deleted chapter on 101weiqi (chapters 18 &
+      // 19 of book 5120 are the canonical example). Tell the receiver
+      // so it can bump the cross-run empty-attempt counter; after the
+      // threshold the chapter gets `skip_status="auto_empty"` and the
+      // R2a guard above stops re-visiting it on subsequent runs.
+      const earlyMaxPage = extractMaxPage();
+      if (
+        ch
+        && entries.length === 0
+        && (bookDiscovery.current_page || 1) === 1
+        && earlyMaxPage <= 1
+      ) {
+        plog(
+          "WARN",
+          `Ch.${chNum} rendered empty on page 1 (maxPage=${earlyMaxPage}) ` +
+          `— reporting empty attempt`,
+        );
+        const resp = await reportDiscoveryProgress(
+          "chapter_puzzles",
+          "chapter_empty_attempt",
+          {
+            chapter_idx: bookDiscovery.current_chapter_idx,
+            chapter_id: ch.chapter_id,
+            chapter_number: ch.chapter_number,
+            chapter_name: ch.name || "",
+            max_page: earlyMaxPage,
+          },
+        );
+        // The receiver echoes updated skip_status; if this attempt was
+        // the one that crossed the threshold, ch.skip_status is now
+        // set and the next iteration will follow the R2a fast-skip.
+        // Either way, advance to the next chapter rather than
+        // pointlessly paging through a known-empty one.
+        if (
+          bookDiscovery.current_chapter_idx <
+          bookDiscovery.chapters.length - 1
+        ) {
+          bookDiscovery.current_chapter_idx += 1;
+          bookDiscovery.current_page = 1;
+          saveBookDiscovery(bookDiscovery);
+          const next =
+            bookDiscovery.chapters[bookDiscovery.current_chapter_idx];
+          const delay = computeAdaptiveDelayMs();
+          await waitMs(delay);
+          // No `running` guard — see post-skip note above.
+          plog(
+            "NEXT",
+            `-> Ch.${next.chapter_number} "${next.name}" (after-empty)`,
+          );
+          location.href = buildChapterUrl(bookDiscovery.book_id, next.chapter_id);
+          return;
+        }
+        // Last chapter and it's empty — fall through into the done
+        // branch by treating maxPage as 0 (no further pages).
+      }
+
+      if (ch) {
+        // Initialize puzzle_positions map if missing
+        if (!ch.puzzle_positions) ch.puzzle_positions = {};
+
+        // Merge IDs (dedup, preserve order) and record per-chapter qindex
+        const existing = new Set(ch.puzzle_ids);
+        for (const entry of entries) {
+          if (!existing.has(entry.id)) {
+            ch.puzzle_ids.push(entry.id);
+            existing.add(entry.id);
+          }
+          // Record per-chapter position (qindex from chapter page)
+          if (entry.qindex > 0) {
+            ch.puzzle_positions[entry.id] = entry.qindex;
+          }
+        }
+      }
+
+      const maxPage = extractMaxPage();
+      // Determine the page actually rendered (which may differ from
+      // bookDiscovery.current_page when the site overrides our request,
+      // e.g. landing on the last page when ?page= is omitted).
+      const actualPage =
+        inferRenderedPage(entries, maxPage) ||
+        bookPath.page ||
+        bookDiscovery.current_page ||
+        1;
+      if (actualPage !== bookDiscovery.current_page) {
+        plog(
+          "WARN",
+          `Ch.${chNum}: requested p.${bookDiscovery.current_page} but server rendered p.${actualPage} (inferred from qindex)`
+        );
+      }
+      // Record this page as scraped + remember the chapter's max page.
+      // Used by the R2 skip-ahead at the top of this handler on re-runs.
+      if (ch) {
+        if (!Array.isArray(ch.scraped_pages)) ch.scraped_pages = [];
+        if (!ch.scraped_pages.includes(actualPage)) {
+          ch.scraped_pages.push(actualPage);
+        }
+        if (maxPage > (ch.max_page_seen || 0)) ch.max_page_seen = maxPage;
+      }
+      plog(
+        "GRAB",
+        `Ch.${chNum} p.${actualPage}/${maxPage}: ${ids.length} IDs (total: ${ch ? ch.puzzle_ids.length : 0})`
+      );
+
+      // Telemetry: report chapter page progress
+      await reportDiscoveryProgress("chapter_puzzles", "page_scraped", {
+        chapter_idx: bookDiscovery.current_chapter_idx,
+        chapter_name: ch ? ch.name : "",
+        page: actualPage,
+        requested_page: bookDiscovery.current_page,
+        max_page: maxPage,
+        ids_on_page: ids.length,
+        ids_in_chapter: ch ? ch.puzzle_ids.length : 0,
+      });
+
+      // Decide next page using actualPage + scraped set (forward, then backward)
+      const nextPage = pickNextChapterPage(
+        ch ? ch.scraped_pages : [actualPage],
+        maxPage,
+        actualPage
+      );
+
+      if (nextPage != null) {
+        // Still pages left in this chapter
+        bookDiscovery.current_page = nextPage;
+        saveBookDiscovery(bookDiscovery);
+        const delay = computeAdaptiveDelayMs();
+        const dir = nextPage > actualPage ? "forward" : "backward";
+        plog(
+          "WAIT",
+          `${(delay / 1000).toFixed(1)}s before Ch.${chNum} p.${nextPage} (${dir} from p.${actualPage})`
+        );
+        await waitMs(delay);
+        location.href = buildChapterUrl(bookDiscovery.book_id, ch.chapter_id, nextPage);
+      } else if (bookDiscovery.current_chapter_idx < bookDiscovery.chapters.length - 1) {
+        // Next chapter
+        bookDiscovery.current_chapter_idx += 1;
+        bookDiscovery.current_page = 1;
+        saveBookDiscovery(bookDiscovery);
+        const next = bookDiscovery.chapters[bookDiscovery.current_chapter_idx];
+        const delay = computeAdaptiveDelayMs();
+        plog("WAIT", `${(delay / 1000).toFixed(1)}s before Ch.${next.chapter_number} "${next.name}"`);
+        updateStatus(
+          `Discovering Ch.${next.chapter_number}/${bookDiscovery.chapters.length} "${next.name}"`,
+          "#4fc3f7"
+        );
+        await waitMs(delay);
+        plog("NEXT", `-> Ch.${next.chapter_number} "${next.name}" (${next.chapter_id})`);
+        location.href = buildChapterUrl(bookDiscovery.book_id, next.chapter_id);
+      } else {
+        // All chapters done — discovery complete
+        const totalChapterIds = bookDiscovery.chapters.reduce((s, c) => s + c.puzzle_ids.length, 0);
+        plog("DONE", `Chapter discovery complete: ${totalChapterIds} IDs from ${bookDiscovery.chapters.length} chapters`);
+        bookDiscovery.phase = "done";
+        saveBookDiscovery(bookDiscovery);
+
+        // Telemetry: chapter phase complete
+        await reportDiscoveryProgress("chapter_puzzles", "phase_complete", {
+          chapter_count: bookDiscovery.chapters.length,
+          total_ids: totalChapterIds,
+        });
+
+        await reportDiscoveryProgress("done", "discovery_complete", {
+          chapter_count: bookDiscovery.chapters.length,
+          chapter_ids: totalChapterIds,
+        });
+
+        await submitBookManifest(bookDiscovery);
+      }
+      return;
+    }
+  }
+
+  async function submitBookManifest(disc) {
+    const totalIds = disc.chapters.reduce((s, c) => s + (c.puzzle_ids || []).length, 0);
+    const manifest = {
+      book_id: disc.book_id,
+      book_name: disc.book_name,
+      difficulty: disc.difficulty || "",
+      chapters: disc.chapters,
+      discovered_at: new Date().toISOString(),
+    };
+
+    plog("SEND", `Submitting manifest for book ${disc.book_id} "${disc.book_name}"`);
+    updateStatus("Saving book manifest to backend...", "#4fc3f7");
+
+    try {
+      const result = await http("POST", "/book/manifest", manifest);
+      if (result.error) {
+        plog("ERR", `Manifest save failed: ${result.error}`);
+        updateStatus(`Manifest error: ${result.error}`, "#f44336");
+        return;
+      }
+
+      plog("DONE", `Manifest saved: ${result.path || "(ok)"}`);
+      updateStatus(
+        `Manifest saved for "${disc.book_name}" — ready to capture`,
+        "#4caf50"
+      );
+      GM_notification({
+        text: `Book "${disc.book_name}" discovered! ${totalIds} puzzles. Starting capture...`,
+        title: "YenGo",
+        timeout: 10000,
+      });
+
+      // Auto-transition to chapter capture (default mode).
+      // Chapter mode iterates manifest.chapters[].puzzle_ids in order,
+      // skipping any puzzle whose id is already captured. This avoids the
+      // stale-position problem of level-order mode (the site reshuffles
+      // levelorder rankings, but chapter membership is stable).
+      clearBookDiscovery();
+      await startChapterCapture(disc.book_id);
+    } catch (err) {
+      plog("ERR", `Manifest POST failed: ${err.message}`);
+      updateStatus("Manifest save failed — is receiver running?", "#f44336");
+    }
+  }
+
+  //#endregion 5. BOOK DISCOVERY
+
+  //#region 6. BOOK CAPTURE
+  // -- Chapter capture: walk manifest.chapters[].puzzle_ids in order ----
+  //
+  // Why chapter mode (and not level-order):
+  //   * 101weiqi's level-order ranking is recomputed periodically as
+  //     users solve puzzles, so a saved `levelorder_ids` array can drift
+  //     out of sync with the live page. Chapter membership and intra-
+  //     chapter order are stable.
+  //   * Output organization (chapter N, puzzle M) matches the source
+  //     book's pedagogical structure, which is what humans expect when
+  //     browsing the imported collection later.
+  //
+  // Resume rule (per user spec): walk the flattened sequence and start
+  // at the first puzzle whose id is NOT in known_ids. If everything is
+  // already captured, abort with a friendly message.
+
+  async function startChapterCapture(bookId, requestedSeqIdx) {
+    clearQdayPlan();
+    clearBookDiscovery();
+
+    // Stop server-side queue to avoid auto-detection conflict.
+    try { await http("GET", "/queue/stop"); } catch (_) {}
+
+    let manifest;
+    try {
+      manifest = await http("GET", `/book/${bookId}/manifest`);
+    } catch (err) {
+      plog("ERR", `Cannot load manifest for chapter capture: ${err.message}`);
+      updateStatus("Manifest fetch failed \u2014 is receiver running?", "#f44336");
+      return;
+    }
+    if (!manifest || manifest.error) {
+      plog("ERR", `Manifest missing for book ${bookId} \u2014 cannot start chapter capture`);
+      updateStatus(`No manifest for book ${bookId} \u2014 run discovery first`, "#f44336");
+      return;
+    }
+
+    const chapters = manifest.chapters || [];
+    if (chapters.length === 0) {
+      plog("ERR", `Manifest for book ${bookId} has no chapters \u2014 cannot capture (re-run discovery)`);
+      updateStatus(`No chapters for book ${bookId} \u2014 re-run discovery`, "#f44336");
+      return;
+    }
+
+    // Flatten chapters into a single sequence of (chapter_idx, pos, pid).
+    // We intentionally store chapter_name pre-translated by the receiver
+    // so the userscript never has to call the translator itself.
+    // chapter_id is REQUIRED here — chapter capture navigates via the
+    // chapter-listing URL (/book/{book_id}/{chapter_id}/) and clicks the
+    // puzzle entry inside, never via direct /q/{pid}/ jumps (which look
+    // like bot behavior to the site and trigger throttling).
+    const chapterSeq = [];
+    chapters.forEach((ch, chIdx) => {
+      const pids = ch.puzzle_ids || [];
+      pids.forEach((pid, posIdx) => {
+        chapterSeq.push({
+          pid: Number(pid),
+          chapter_idx: chIdx,
+          chapter_id: Number(ch.chapter_id) || null,
+          chapter_number: ch.chapter_number || (chIdx + 1),
+          chapter_name: ch.name || "",
+          pos_in_chapter: posIdx + 1,
+          // 1-based position across the (chapter-ordered) sequence.
+          // Matches book.json `pos` when there are no cross-chapter
+          // pid duplicates, which is the overwhelming common case.
+          global_pos: chapterSeq.length + 1,
+        });
+      });
+    });
+
+    if (chapterSeq.length === 0) {
+      plog("ERR", "Manifest chapters have no puzzle_ids \u2014 cannot start");
+      updateStatus("Manifest chapters are empty \u2014 re-run discovery", "#f44336");
+      return;
+    }
+
+    const knownIds = new Set((manifest.known_ids || []).map(Number));
+    const bookName = manifest.book_name || `Book ${bookId}`;
+
+    // Pick start index: the later of caller-requested and first uncaptured.
+    let firstUncap = -1;
+    for (let i = 0; i < chapterSeq.length; i++) {
+      if (!knownIds.has(chapterSeq[i].pid)) { firstUncap = i; break; }
+    }
+    if (firstUncap === -1) {
+      alert(`Book "${bookName}" is already fully captured! (${knownIds.size}/${chapterSeq.length})`);
+      updateStatus(`"${bookName}" \u2014 already complete`, "#4caf50");
+      return;
+    }
+    const startIdx = Math.max(requestedSeqIdx || 0, firstUncap);
+
+    const startEntry = chapterSeq[startIdx];
+    const plan = {
+      active: true,
+      mode: "chapter",
+      book_id: bookId,
+      book_name: bookName,
+      chapter_seq: chapterSeq,
+      current_seq_idx: startIdx,
+      total_puzzles: chapterSeq.length,
+      captured_ids: [...knownIds],
+      captured_count: knownIds.size,
+      started_at: new Date().toISOString(),
+      // Shape compat with manifest-mode consumers:
+      puzzle_ids: chapterSeq.map((e) => e.pid),
+      puzzle_lookup: {},
+      current_idx: startIdx,
+    };
+
+    saveBookPlan(plan);
+    claimOwnership();
+    if (!startRunning()) return;
+
+    const remaining = chapterSeq.length - knownIds.size;
+    plog("START", "════════════ SESSION START ════════════");
+    plog("START", `Mode: chapter | Book: "${bookName}" (id=${bookId})`);
+    plog("START", `Start: Ch.${startEntry.chapter_number} "${startEntry.chapter_name}" pos ${startEntry.pos_in_chapter} (pid=${startEntry.pid})`);
+    plog("START", `Progress: ${knownIds.size}/${chapterSeq.length} captured, ${remaining} remaining`);
+    updateStatus(
+      `Chapter capture: "${bookName}" — Ch.${startEntry.chapter_number} pos ${startEntry.pos_in_chapter} (${knownIds.size}/${chapterSeq.length})`,
+      "#4fc3f7",
+    );
+
+    // Entry point: navigate to the chapter LISTING page of the start
+    // entry's chapter. The chapter-listing handler in autoStart() will
+    // then locate the puzzle's <a> link and click it — producing a real
+    // navigation with a chapter-page Referer, which is how a human
+    // browses the book. We DO NOT use buildBookPuzzleUrl(pid) here
+    // because direct /q/{pid}/ hits without a chapter Referer get
+    // throttled by 101weiqi.
+    const curBp = parseBookPath();
+    const onTargetChapter =
+      curBp
+      && curBp.type === "chapter"
+      && curBp.book_id === bookId
+      && curBp.chapter_id === startEntry.chapter_id;
+    if (onTargetChapter) {
+      // Already on the right chapter page — the autoStart handler
+      // (called by capture-loop bootstrap) will click the entry.
+      await clickPuzzleInChapterListing(startEntry.pid);
+      return;
+    }
+    if (!startEntry.chapter_id) {
+      // Manifest is missing chapter_id — most likely it was discovered
+      // before this field was required. Tell the user to re-discover.
+      plog("ERR", `Manifest for book ${bookId} has no chapter_id — cannot start chapter capture`);
+      updateStatus(`Manifest missing chapter_id — re-run discovery`, "#f44336");
+      stopRunning();
+      return;
+    }
+    const startPage = targetChapterPageForEntry(startEntry);
+    location.href = buildChapterUrl(bookId, startEntry.chapter_id, startPage);
+  }
+
+  /**
+   * Locate a puzzle's anchor in the current chapter-listing page and
+   * click it (with a brief human-like delay + scroll-into-view). If the
+   * puzzle is not on the current page, paginate to the next chapter
+   * page and recurse. Used by chapter-capture mode in place of direct
+   * /q/{pid}/ navigation.
+   */
+  async function clickPuzzleInChapterListing(pid) {
+    await waitMs(1200); // let chapter-page Alpine state hydrate
+    if (!running) { plog("INFO", "clickPuzzle: paused before scan"); return; }
+
+    const entries = extractPuzzleEntriesFromDom();
+    const onPage = entries.some((e) => Number(e.id) === Number(pid));
+    const bp = parseBookPath();
+    if (!bp || bp.type !== "chapter") {
+      plog("WARN", `clickPuzzle: not on a chapter listing (path=${location.pathname})`);
+      return;
+    }
+
+    if (!onPage) {
+      const maxPage = extractMaxPage();
+      const currentPage = bp.page || 1;
+
+      // Bulk-prune any chapter_seq entries that should be on the CURRENT
+      // listing page (per manifest pos_in_chapter -> page mapping) but
+      // are missing from the live DOM. Those are deleted on the site.
+      // Without this, every gap costs ~1.5s of "skip then re-resume".
+      if (bookPlan && Array.isArray(bookPlan.chapter_seq) && entries.length > 0) {
+        const visiblePids = new Set(entries.map((e) => Number(e.id)));
+        const seq = bookPlan.chapter_seq;
+        let scan = bookPlan.current_seq_idx || 0;
+        let prunedHere = 0;
+        while (scan < seq.length) {
+          const e = seq[scan];
+          if (e.chapter_id !== bp.chapter_id) break;
+          const ePage = chapterPageForPosition(e.pos_in_chapter || 0);
+          if (ePage !== currentPage) break; // stop at first entry off this page
+          if (visiblePids.has(Number(e.pid))) break; // hit a real one — let normal flow handle it
+          scan++;
+          prunedHere++;
+        }
+        if (prunedHere > 0) {
+          bookPlan.current_seq_idx = scan;
+          bookPlan.current_idx = scan;
+          saveBookPlan(bookPlan);
+          plog("WARN", `clickPuzzle: bulk-pruned ${prunedHere} entr${prunedHere === 1 ? "y" : "ies"} missing from Ch.${bp.chapter_id} p.${currentPage} DOM (visible=${visiblePids.size})`);
+          updateStatus(`Pruned ${prunedHere} stale Ch.${bp.chapter_id} p.${currentPage} entries`, "#ff9800");
+          setTimeout(() => { try { autoStart(); } catch (_) {} }, 800);
+          return;
+        }
+      }
+
+      // Prefer a direct jump to the page containing the target puzzle
+      // (computed from the manifest's per-chapter position) instead of
+      // walking one page at a time. Falls back to single-step pagination
+      // when we have no manifest hint or when the computed page is
+      // already the current page (something else is off — try +1).
+      let targetPage = 0;
+      if (bookPlan && Array.isArray(bookPlan.chapter_seq)) {
+        // Restrict to the chapter we're currently navigating; pid alone
+        // is ambiguous when the manifest contains cross-chapter duplicate
+        // pids (book 5120 has 40 such duplicates) and Array.find returns
+        // the first match, which can point at an unrelated chapter.
+        const seqEntry = bookPlan.chapter_seq.find(
+          (e) =>
+            Number(e.pid) === Number(pid) &&
+            (!bp.chapter_id || e.chapter_id === bp.chapter_id)
+        );
+        if (seqEntry) {
+          targetPage = targetChapterPageForEntry(seqEntry);
+        }
+      }
+      const fallbackPage = (bp.page || 1) + 1;
+      const nextPage = targetPage && targetPage !== (bp.page || 1)
+        ? targetPage
+        : fallbackPage;
+      if (nextPage > maxPage) {
+        // Bulk-prune ALL stale entries for this chapter in one pass.
+        // The chapter listing has at most `maxPage * CHAPTER_PUZZLES_PER_PAGE`
+        // slots, so any chapter_seq entry with pos_in_chapter beyond that
+        // can't possibly exist on the live site.
+        // Additionally, collect pids visible in the current DOM and prune
+        // any entry pointing to this chapter whose pid we've never seen.
+        // (Per-pid skipping for entries within range is handled below.)
+        const ccap = maxPage * CHAPTER_PUZZLES_PER_PAGE;
+        let pruned = 0;
+        if (bookPlan && Array.isArray(bookPlan.chapter_seq)) {
+          const seq = bookPlan.chapter_seq;
+          const startIdx = bookPlan.current_seq_idx || 0;
+          // Single per-pid bump (the one we were trying to click).
+          // Forward search constrained to the current chapter to avoid
+          // cross-chapter false matches on duplicate pids.
+          let missingIdx = -1;
+          for (let i = startIdx; i < seq.length; i++) {
+            if (
+              Number(seq[i].pid) === Number(pid) &&
+              (!bp.chapter_id || seq[i].chapter_id === bp.chapter_id)
+            ) {
+              missingIdx = i;
+              break;
+            }
+          }
+          if (missingIdx >= 0) {
+            bookPlan.current_seq_idx = missingIdx + 1;
+            bookPlan.current_idx = missingIdx + 1;
+            pruned++;
+          }
+          // Bulk-bump any *contiguous-by-chapter* tail with pos beyond cap.
+          let scan = bookPlan.current_seq_idx || 0;
+          while (
+            scan < seq.length &&
+            seq[scan].chapter_id === bp.chapter_id &&
+            (seq[scan].pos_in_chapter || 0) > ccap
+          ) {
+            scan++;
+            pruned++;
+          }
+          if (scan !== (bookPlan.current_seq_idx || 0)) {
+            bookPlan.current_seq_idx = scan;
+            bookPlan.current_idx = scan;
+          }
+          saveBookPlan(bookPlan);
+        }
+        plog("WARN", `clickPuzzle: pid ${pid} absent on Ch.${bp.chapter_id} (maxPage=${maxPage}, cap=${ccap}); pruned ${pruned} stale entr${pruned === 1 ? "y" : "ies"} -> seq idx ${bookPlan.current_seq_idx}`);
+        updateStatus(`Pruned ${pruned} stale Ch.${bp.chapter_id} entries — advancing`, "#ff9800");
+        setTimeout(() => { try { autoStart(); } catch (_) {} }, 1500);
+        return;
+      }
+      const delay = computeAdaptiveDelayMs();
+      const hint = targetPage ? "manifest hint" : "step+1";
+      plog("WAIT", `${(delay / 1000).toFixed(1)}s before chapter page ${nextPage} (${hint}, looking for ${pid})`);
+      await waitMs(delay);
+      if (!running) return;
+      location.href = buildChapterUrl(bp.book_id, bp.chapter_id, nextPage);
+      return;
+    }
+
+    // Try selector variants. The site's chapter-listing anchors use
+    // /book/{book_id}/{chapter_id}/{pid}/ format (NOT /q/{pid}/).
+    // We try most-specific first and fall back to broader matches.
+    const chapterPrefix = `/book/${bp.book_id}/${bp.chapter_id}/${pid}`;
+    const candidates = [
+      `a[href="${chapterPrefix}/"]`,
+      `a[href="${chapterPrefix}"]`,
+      `a[href*="${chapterPrefix}/"]`,
+      `a[href*="${chapterPrefix}"]`,
+      // Legacy fallback in case the site changes back to /q/ format.
+      `a[href="/q/${pid}/"]`,
+      `a[href*="/q/${pid}/"]`,
+    ];
+    let link = null;
+    for (const sel of candidates) {
+      link = document.querySelector(sel);
+      if (link) break;
+    }
+    if (!link) {
+      plog("WARN", `clickPuzzle: no anchor for pid ${pid} on Ch.${bp.chapter_id} p.${bp.page || 1} — DOM has ${entries.length} entries; tried ${candidates.length} selectors`);
+      updateStatus(`Anchor missing for ${pid} — retry in 3s`, "#ff9800");
+      // Don't silently freeze — re-tick so resume can either retry or
+      // bump past the entry on next pass.
+      setTimeout(() => { try { autoStart(); } catch (_) {} }, 3000);
+      return;
+    }
+
+    // Human-like: scroll, wait, click.
+    try { link.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (_) {}
+    const clickDelay = randomBetween(700, 1700);
+    await waitMs(clickDelay);
+    if (!running) { plog("INFO", "clickPuzzle: paused before click"); return; }
+    plog("CLICK", `Clicking puzzle ${pid} from chapter listing (Ch.${bp.chapter_id})`);
+    link.click();
+  }
+
+  // -- Book sweep: Confirmation overlay for /book/ pages -------------
+
+  async function showBookDiscoveryOverlay(bookId) {
+    if (document.getElementById("yengo-book-overlay")) return;
+
+    const bookName = extractBookName() || `Book ${bookId}`;
+    const chapters = extractChaptersFromDom();
+
+    // Check backend for existing discovery state
+    const existing = await checkBackendDiscoveryState(bookId);
+
+    const overlay = document.createElement("div");
+    overlay.id = "yengo-book-overlay";
+    overlay.style.cssText =
+      "position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000000;" +
+      "background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;";
+
+    const dialog = document.createElement("div");
+    dialog.style.cssText =
+      "background:#1e1e2e;color:#e0e0e0;border-radius:8px;padding:20px;max-width:500px;" +
+      "width:90%;font:14px/1.6 monospace;";
+
+    const title = document.createElement("h2");
+    title.style.cssText = "margin:0 0 12px;color:#4fc3f7;";
+    title.textContent = "Discover Book for YenGo?";
+    dialog.appendChild(title);
+
+    const info = document.createElement("p");
+    info.style.cssText = "color:#ccc;margin:0 0 8px;";
+    info.textContent = `"${bookName}" — ${chapters.length} chapters detected`;
+    dialog.appendChild(info);
+
+    // Show existing backend state if any
+    if (existing.status === "complete") {
+      const existInfo = document.createElement("p");
+      existInfo.style.cssText = "color:#4caf50;margin:0 0 8px;font-size:12px;";
+      const m = existing.manifest;
+      const chCount = (m.chapters || []).length;
+      const totalIds = (m.chapters || []).reduce((s, c) => s + (c.puzzle_ids || []).length, 0);
+      existInfo.textContent = `Already discovered: ${chCount} chapters, ${totalIds} puzzle IDs. You can skip to capture.`;
+      dialog.appendChild(existInfo);
+    } else if (existing.status === "partial") {
+      const existInfo = document.createElement("p");
+      existInfo.style.cssText = "color:#ff9800;margin:0 0 8px;font-size:12px;";
+      const cp = existing.checkpoint;
+      existInfo.textContent = `Partial discovery found (phase: ${cp.phase}, Ch.${(cp.current_chapter_idx || 0) + 1}). Can resume from checkpoint.`;
+      dialog.appendChild(existInfo);
+    }
+
+    const desc = document.createElement("p");
+    desc.style.cssText = "color:#888;margin:0 0 16px;font-size:12px;";
+    desc.textContent = "Phase 1: Navigate chapters to build manifest. Phase 2: Capture each puzzle in chapter order.";
+    dialog.appendChild(desc);
+
+    const btnRow = document.createElement("div");
+    btnRow.style.cssText = "display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;";
+
+    const btnStyle =
+      "padding:8px 16px;border:none;border-radius:4px;cursor:pointer;font:14px monospace;";
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.style.cssText = btnStyle + "background:#333;color:#e0e0e0;";
+    cancelBtn.onclick = () => overlay.remove();
+    btnRow.appendChild(cancelBtn);
+
+    // If already discovered, offer "Capture (chapter mode)".
+    if (existing.status === "complete") {
+      const m = existing.manifest || {};
+      const hasChapters = Array.isArray(m.chapters) && m.chapters.length > 0
+        && m.chapters.some((c) => Array.isArray(c.puzzle_ids) && c.puzzle_ids.length > 0);
+
+      if (hasChapters) {
+        const chapterBtn = document.createElement("button");
+        chapterBtn.textContent = "Capture (chapter mode)";
+        chapterBtn.title = "Walk chapters in order via AJAX Next within each chapter, navigating to chapter listings only at boundaries";
+        chapterBtn.style.cssText = btnStyle + "background:#ba68c8;color:#1a1a2e;font-weight:bold;";
+        chapterBtn.onclick = () => {
+          overlay.remove();
+          startChapterCapture(bookId);
+        };
+        btnRow.appendChild(chapterBtn);
+      }
+    }
+
+    // If partial, offer "Resume" button
+    if (existing.status === "partial") {
+      const resumeBtn = document.createElement("button");
+      resumeBtn.textContent = "Resume Discovery";
+      resumeBtn.style.cssText = btnStyle + "background:#ff9800;color:#1a1a2e;font-weight:bold;";
+      resumeBtn.onclick = () => {
+        overlay.remove();
+        // continueDiscovery will detect checkpoint and resume
+        continueDiscovery();
+      };
+      btnRow.appendChild(resumeBtn);
+    }
+
+    const startBtn = document.createElement("button");
+    startBtn.textContent = existing.status !== "none" ? "Restart Discovery" : "Start Discovery";
+    startBtn.style.cssText = btnStyle + "background:#4fc3f7;color:#1a1a2e;font-weight:bold;";
+    startBtn.onclick = () => {
+      overlay.remove();
+      clearBookDiscovery();
+      clearBookPlan();
+      continueDiscovery();
+    };
+    btnRow.appendChild(startBtn);
+
+    dialog.appendChild(btnRow);
+    overlay.appendChild(dialog);
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+    document.body.appendChild(overlay);
+  }
   function getQqdata() {
     // Alpine store is the authoritative source during SPA navigation
     try {
@@ -757,9 +2198,266 @@
     );
   }
 
-  // -- Navigate to next (always asks server) ----------------------
+  //#endregion 6. BOOK CAPTURE
+
+  //#region 7. NAVIGATION
+  // -- Navigate to next (prefer site's AJAX Next, fallback to URL) -
   async function goNext() {
     if (!isOwnerTab()) return;
+    // Hard stop — if the user paused/stopped before we even started
+    // navigating, do nothing. Every `await` point inside this function
+    // re-checks `running` so a pause mid-wait aborts the navigation
+    // before any URL change or AJAX click happens.
+    if (!running) {
+      plog("INFO", "goNext: not running — navigation suppressed");
+      return;
+    }
+
+    // ── Chapter mode: walk pre-flattened chapter_seq in order ──
+    // Skip-list resume: any pid already in captured_ids is jumped over
+    // without navigating, so re-runs cost only the cost of advancing
+    // the index. The actual next puzzle is the first uncaptured one
+    // strictly after the current index.
+    if (isBookCaptureActive() && isChapterMode()) {
+      // Mark current puzzle as captured.
+      const curId = Number(getPuzzleId());
+      if (curId && !bookPlan.captured_ids.includes(curId)) {
+        bookPlan.captured_ids.push(curId);
+        bookPlan.captured_count = bookPlan.captured_ids.length;
+      }
+
+      // Periodic captured_ids refresh from server manifest.
+      // Catches cross-book duplicates captured during this session
+      // (e.g. another book containing the same pid was completed
+      // since session start). Cheap: manifest endpoint is local and
+      // only does a disk scan. Frequency = every N puzzles processed.
+      const REFRESH_EVERY = 25;
+      const processed = (bookPlan.captured_ids || []).length;
+      if (processed > 0 && processed % REFRESH_EVERY === 0) {
+        try {
+          const fresh = await http(
+            "GET",
+            `/book/${bookPlan.book_id}/manifest`,
+          );
+          const freshKnown = (fresh && fresh.known_ids) || [];
+          if (Array.isArray(freshKnown) && freshKnown.length) {
+            const merged = new Set(
+              (bookPlan.captured_ids || []).map(Number),
+            );
+            let added = 0;
+            for (const pid of freshKnown) {
+              const n = Number(pid);
+              if (!merged.has(n)) { merged.add(n); added++; }
+            }
+            if (added > 0) {
+              bookPlan.captured_ids = [...merged];
+              bookPlan.captured_count = bookPlan.captured_ids.length;
+              plog(
+                "SKIP",
+                `Refreshed captured_ids: +${added} from server (now ${merged.size}/${bookPlan.total_puzzles})`,
+              );
+            }
+          }
+        } catch (e) {
+          plog("WARN", `captured_ids refresh failed: ${e.message}`);
+        }
+      }
+
+      // Find next uncaptured entry strictly after current index.
+      // Treat both successfully-captured and permanently-failed pids as
+      // "do not retry". failed_ids is populated by capture() when the
+      // receiver returns 422 with a known puzzle_id (typically a
+      // validation error that won't resolve on retry, e.g. invalid
+      // board size). Without this, those puzzles never enter known_ids
+      // and the skip-walk loops forever on the same end-of-chapter
+      // target (observed: book 5120 ch12 pos59 / new_index: 395).
+      const captured = new Set((bookPlan.captured_ids || []).map(Number));
+      const failed = new Set((bookPlan.failed_ids || []).map(Number));
+      let nextIdx = (bookPlan.current_seq_idx || 0) + 1;
+      let skipped = 0;
+      while (
+        nextIdx < bookPlan.chapter_seq.length &&
+        (captured.has(Number(bookPlan.chapter_seq[nextIdx].pid)) ||
+          failed.has(Number(bookPlan.chapter_seq[nextIdx].pid)))
+      ) {
+        nextIdx++;
+        skipped++;
+      }
+      if (skipped > 0) {
+        plog("SKIP", `Chapter mode: skipped ${skipped} already-captured puzzle(s)`);
+        reportBookEvent("chapter_mode_skipped", {
+          skipped,
+          new_index: nextIdx,
+        });
+      }
+
+      if (nextIdx >= bookPlan.chapter_seq.length) {
+        const name = bookPlan.book_name || `Book ${bookPlan.book_id}`;
+        const count = bookPlan.captured_count || 0;
+        plog("DONE", `Chapter sweep complete: "${name}" — ${count} captured`);
+        stopRunning();
+        clearBookPlan();
+        updateStatus(`Chapter done: "${name}" — ${count} captured`, "#4caf50");
+        GM_notification({
+          text: `Chapter sweep complete: "${name}" — ${count} puzzles.`,
+          title: "YenGo",
+          timeout: 15000,
+        });
+        return;
+      }
+
+      const next = bookPlan.chapter_seq[nextIdx];
+      bookPlan.current_seq_idx = nextIdx;
+      bookPlan.current_idx = nextIdx; // shape compat
+      saveBookPlan(bookPlan);
+
+      // Optional session break to mimic human behavior.
+      const totalCaptures = stats.ok + stats.skipped;
+      if (totalCaptures > 0 && totalCaptures % CHAPTER_SESSION_BREAK_EVERY === 0) {
+        const breakMs = randomBetween(CHAPTER_SESSION_BREAK_MIN_MS, CHAPTER_SESSION_BREAK_MAX_MS);
+        const breakMin = (breakMs / 60000).toFixed(1);
+        plog("WAIT", `Session break: ${breakMin} min pause (${totalCaptures} puzzles done)`);
+        updateStatus(`Taking a break... ${breakMin} min (${totalCaptures} done)`, "#888");
+        await waitMs(breakMs);
+        if (!running) { plog("INFO", "goNext: paused during chapter session break — abort"); return; }
+      }
+
+      // Pacing: chapter mode interval, minus elapsed since capture.
+      const targetInterval = randomBetween(CHAPTER_INTERVAL_MIN_MS, CHAPTER_INTERVAL_MAX_MS);
+      const elapsed = Date.now() - captureStartedAt;
+      const remainingWait = Math.max(3000, targetInterval - elapsed);
+      const waitSec = (remainingWait / 1000).toFixed(0);
+      const progressStr = `Ch.${next.chapter_number} pos ${next.pos_in_chapter} (${bookPlan.captured_count}/${bookPlan.total_puzzles})`;
+      plog("WAIT", `${waitSec}s until ${progressStr}`);
+      updateStatus(`Chapter next in ${waitSec}s -> ${progressStr}`, "#81c784");
+      await waitMs(remainingWait);
+      if (!running) {
+        plog("INFO", "goNext: paused mid-interval (chapter) — abort");
+        return;
+      }
+
+      // Navigation policy: AJAX Next is the primary mechanism — it's
+      // exactly what a human clicks ("Next" button on the puzzle page).
+      // We only navigate to a chapter listing when the next puzzle is
+      // in a different chapter than the one we're currently in (chapter
+      // boundary). The site's AJAX Next at end-of-chapter sometimes
+      // jumps to recommended puzzles outside the current chapter; we
+      // detect that via the manifest's per-chapter pid set and recover
+      // by going to the next chapter's listing page.
+
+      // Find current entry by the pid actually on the page.
+      // We previously did a global Array.find by pid here, but that
+      // returns the FIRST occurrence — which is wrong when the manifest
+      // has cross-chapter duplicate pids (book 5120 has 40). The wrong
+      // chapter_idx then makes sameChapter false-negative and triggers
+      // a spurious chapter-listing navigation, or rewinds the cursor.
+      const curPidForNav = Number(getPuzzleId());
+      const curIdxHint = bookPlan.current_seq_idx || 0;
+      const hintEntry = bookPlan.chapter_seq[curIdxHint];
+      let curEntry = null;
+      // Primary: trust the cursor — it was set to the entry we were
+      // navigating to before this capture cycle started.
+      if (hintEntry && Number(hintEntry.pid) === curPidForNav) {
+        curEntry = hintEntry;
+      }
+      // Fallback A: forward search from the hint (handles intra-chapter
+      // AJAX skips that landed on a later same-chapter pid).
+      if (!curEntry) {
+        for (let i = curIdxHint + 1; i < bookPlan.chapter_seq.length; i++) {
+          if (Number(bookPlan.chapter_seq[i].pid) === curPidForNav) {
+            curEntry = bookPlan.chapter_seq[i];
+            break;
+          }
+        }
+      }
+      // Fallback B: backward, but only within the hint's chapter to
+      // avoid cross-chapter rewinds on duplicate pids.
+      if (!curEntry && hintEntry) {
+        for (let i = curIdxHint - 1; i >= 0; i--) {
+          const e = bookPlan.chapter_seq[i];
+          if (e.chapter_idx !== hintEntry.chapter_idx) break;
+          if (Number(e.pid) === curPidForNav) { curEntry = e; break; }
+        }
+      }
+      if (!curEntry) {
+        curEntry = hintEntry || bookPlan.chapter_seq[0];
+        plog("WARN", `goNext: pid ${curPidForNav} not in chapter_seq near idx ${curIdxHint} — falling back to seq[idx]`);
+      }
+      const sameChapter = curEntry && curEntry.chapter_idx === next.chapter_idx;
+      plog("DEBUG", `goNext: cur=Ch.${curEntry && curEntry.chapter_number}/pos${curEntry && curEntry.pos_in_chapter} (pid ${curPidForNav}) -> next=Ch.${next.chapter_number}/pos${next.pos_in_chapter} (pid ${next.pid}) sameChapter=${sameChapter}`);
+
+      if (sameChapter) {
+        const ajaxOk = await triggerSiteNext();
+        if (ajaxOk) {
+          const landedPid = Number(getPuzzleId());
+          // Build set of pids that legitimately belong to current chapter
+          // (so we can detect if AJAX jumped out of the chapter).
+          const currentChapterPids = new Set(
+            bookPlan.chapter_seq
+              .filter((e) => e.chapter_idx === next.chapter_idx)
+              .map((e) => Number(e.pid))
+          );
+          if (landedPid === next.pid) {
+            plog("NEXT", `-> ${progressStr} via AJAX (puzzle ${landedPid})`);
+            capture();
+            return;
+          }
+          if (currentChapterPids.has(landedPid)) {
+            // Site landed on a different in-chapter puzzle (e.g. it skipped
+            // one we'd already captured). Sync our index to the landed pid
+            // and capture it.
+            // Forward-only resync constrained to next.chapter_idx: never
+            // rewind to an earlier-chapter occurrence of a duplicated pid
+            // (root cause of the book 5120 ch12 pos59 capture loop).
+            const resyncStart = (bookPlan.current_seq_idx || 0) + 1;
+            let landedIdx = -1;
+            for (let i = resyncStart; i < bookPlan.chapter_seq.length; i++) {
+              const e = bookPlan.chapter_seq[i];
+              if (e.chapter_idx !== next.chapter_idx) break;
+              if (Number(e.pid) === landedPid) { landedIdx = i; break; }
+            }
+            if (landedIdx >= 0) {
+              bookPlan.current_seq_idx = landedIdx;
+              bookPlan.current_idx = landedIdx;
+              saveBookPlan(bookPlan);
+              plog("NEXT", `-> in-chapter resync: AJAX landed on ${landedPid} (expected ${next.pid}) — capturing`);
+            } else {
+              plog("WARN", `landed pid ${landedPid} not found forward in Ch.${next.chapter_number} — capturing without resync`);
+            }
+            capture();
+            return;
+          }
+          // AJAX jumped outside chapter — fall through to chapter-listing nav.
+          plog("WARN", `AJAX next landed on ${landedPid} (outside Ch.${next.chapter_number}, currentChapterPids size=${currentChapterPids.size}) — navigating to chapter listing`);
+        } else {
+          plog("WARN", `AJAX next failed (triggerSiteNext returned false) inside Ch.${next.chapter_number} — falling back to chapter listing`);
+        }
+      } else {
+        // Different chapter — navigate to its listing.
+        plog("INFO", `Chapter boundary: Ch.${curEntry && curEntry.chapter_number} -> Ch.${next.chapter_number}`);
+      }
+
+      // Chapter boundary or AJAX recovery: navigate to chapter listing.
+      // The autoStart handler will click the entry on landing.
+      if (!next.chapter_id) {
+        plog("ERR", `Next entry (pid=${next.pid}) has no chapter_id — manifest needs re-discovery`);
+        stopRunning();
+        return;
+      }
+      // Land directly on the listing page that contains the target puzzle
+      // instead of always page 1 (avoids N-1 wasted paginations per puzzle).
+      const nextChapterPage = targetChapterPageForEntry(next);
+      plog("NEXT", `-> ${progressStr} via chapter listing (Ch.${next.chapter_id} p.${nextChapterPage})`);
+      location.href = buildChapterUrl(bookPlan.book_id, next.chapter_id, nextChapterPage);
+      return;
+    }
+
+    // ── Other capture flows (qday, etc.): dual-wait behavior ──
+    lastCaptureWasDuplicate = false;
+
+    // Human-like behavior: think time + session breaks + scroll noise
+    await simulateHumanBehavior();
+
     const wait = computeAdaptiveDelayMs();
     const waitSec = (wait / 1000).toFixed(1);
 
@@ -787,7 +2485,19 @@
         "#81c784"
       );
       await waitMs(wait);
-      plog("NEXT", `-> ${nextPlan.currentDate} #${nextPlan.currentNum}`);
+
+      // Try site's AJAX Next button first (no page reload)
+      const ajaxOk = await triggerSiteNext();
+      if (ajaxOk) {
+        // AJAX navigation succeeded — puzzle loaded in-place.
+        // Sync plan from the new page state and re-capture.
+        syncQdayPlanFromPage();
+        capture();
+        return;
+      }
+
+      // Fallback: full page navigation
+      plog("NEXT", `-> ${nextPlan.currentDate} #${nextPlan.currentNum} (full nav)`);
       location.href = buildQdayUrl(nextPlan.currentDate, nextPlan.currentNum);
       return;
     }
@@ -819,6 +2529,383 @@
       updateStatus("Server unreachable! Is 'receive' running?", "#f44336");
     }
   }
+
+  // ─────────────────────────────────────────────────────────────
+  // PAGE FACT HARVESTING (multi-layer identity)
+  //
+  // A puzzle page exposes book/chapter/pid via several independent
+  // channels. We collect all of them and let a reconciler pick the
+  // most trustworthy values — far more resilient than trusting any
+  // single channel.
+  //
+  //   L1 URL path        — /book/{book_id}/{chapter_id}/{pid}/
+  //   L2 qqdata          — Alpine store: publicid, bookinfos[]
+  //   L3 Breadcrumb      — DOM <a> + "No.K" position text
+  //   L4 Included-in     — DOM list of additional book memberships
+  //   L5 <title>         — "Question {N} - {chapter_name} - 101WEIQI"
+  //   L6 Visible ID      — DOM text "ID：Q-{pid}"
+  //
+  // Trust order (user-defined): qqdata > DOM > URL.
+  // Pid quorum: qqdata.publicid PLUS at least one of (URL pid, visible
+  // pid). Without qqdata there is no puzzle data to save.
+  // ─────────────────────────────────────────────────────────────
+
+  function parseUrlPath(pathname) {
+    const p = pathname || location.pathname;
+    // /book/{book_id}/{chapter_id}/{pid}/
+    let m = p.match(/^\/book\/(\d+)\/(\d+)\/(\d+)\/?$/);
+    if (m) return { book_id: parseInt(m[1], 10), chapter_id: parseInt(m[2], 10), pid: parseInt(m[3], 10) };
+    // /book/{book_id}/{chapter_id}/
+    m = p.match(/^\/book\/(\d+)\/(\d+)\/?$/);
+    if (m) return { book_id: parseInt(m[1], 10), chapter_id: parseInt(m[2], 10), pid: null };
+    // /q/{pid}/ or /chessmanual/{pid}/
+    m = p.match(/^\/(?:q|chessmanual)\/(\d+)/);
+    if (m) return { book_id: null, chapter_id: null, pid: parseInt(m[1], 10) };
+    return { book_id: null, chapter_id: null, pid: null };
+  }
+
+  function scrapeBreadcrumb() {
+    // Verified against /book/5120/45791/68168/:
+    //   <a href="/book/5120/">叶老师围棋初级A</a> / <a href="/book/5120/45791/">作业</a> / No.27
+    const out = { book_id: null, book_name: "", chapter_id: null, chapter_name: "", position: null };
+    try {
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+      let posNode = null;
+      while (walker.nextNode()) {
+        const t = walker.currentNode.textContent.trim();
+        const pm = t.match(/^No\.(\d+)$/i) || t.match(/^第(\d+)题$/);
+        if (!pm) continue;
+        // Verify ancestor contains book links (rules out random "No.X" text)
+        let p = walker.currentNode.parentElement;
+        for (let depth = 0; depth < 4 && p; depth++, p = p.parentElement) {
+          if (p.querySelectorAll('a[href^="/book/"]').length >= 2) {
+            posNode = { container: p, position: parseInt(pm[1], 10) };
+            break;
+          }
+        }
+        if (posNode) break;
+      }
+      if (posNode) {
+        out.position = posNode.position;
+        for (const a of posNode.container.querySelectorAll('a[href^="/book/"]')) {
+          const href = a.getAttribute("href") || "";
+          const bm = href.match(/^\/book\/(\d+)\/?$/);
+          const cm = href.match(/^\/book\/(\d+)\/(\d+)\/?$/);
+          if (bm && out.book_id == null) {
+            out.book_id = parseInt(bm[1], 10);
+            out.book_name = (a.textContent || "").trim();
+          } else if (cm && out.chapter_id == null) {
+            out.chapter_id = parseInt(cm[2], 10);
+            out.chapter_name = (a.textContent || "").trim();
+          }
+        }
+      }
+    } catch (_) {}
+    return out;
+  }
+
+  function extractTitleFacts() {
+    // Page <title>: "Question 27 - 作业 - 101WEIQI"
+    const out = { position: null, chapter_name: "" };
+    try {
+      const t = (document.title || "").trim();
+      const m = t.match(/^(?:Question|第)\s*(\d+)\s*[\u9898\-—]\s*(.+?)\s*-\s*101WEIQI/i);
+      if (m) {
+        out.position = parseInt(m[1], 10);
+        out.chapter_name = (m[2] || "").trim();
+      }
+    } catch (_) {}
+    return out;
+  }
+
+  function extractVisiblePid() {
+    // Visible "ID：Q-{pid}" label on the puzzle info area.
+    try {
+      const text = document.body && document.body.innerText || "";
+      const m = text.match(/ID[\uFF1A:]\s*Q-(\d+)/);
+      if (m) return parseInt(m[1], 10);
+    } catch (_) {}
+    return null;
+  }
+
+  function harvestPageFacts() {
+    const url = parseUrlPath(location.pathname);
+    const qq = getQqdata() || {};
+    const qqdata = {
+      pid: qq.publicid != null ? Number(qq.publicid) : null,
+      qqdata_id: qq.id != null ? Number(qq.id) : null,
+      bookinfos: Array.isArray(qq.bookinfos) ? qq.bookinfos.map(function (b) {
+        return {
+          book_id: Number(b && (b.book_id || b.id || 0)) || null,
+          name: String((b && (b.name || b.book_name)) || "").trim(),
+        };
+      }).filter(function (b) { return b.book_id; }) : [],
+    };
+    const breadcrumb = scrapeBreadcrumb();
+    const included = (typeof scrapePageBooks === "function") ? scrapePageBooks() : [];
+    const title = extractTitleFacts();
+    const visiblePid = extractVisiblePid();
+    return { url: url, qqdata: qqdata, breadcrumb: breadcrumb, included: included, title: title, visiblePid: visiblePid };
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // RECONCILERS — pure functions, easy to self-test.
+  // ─────────────────────────────────────────────────────────────
+
+  function reconcilePid(facts) {
+    const candidates = {
+      qqdata: facts.qqdata && facts.qqdata.pid != null ? Number(facts.qqdata.pid) : null,
+      url: facts.url && facts.url.pid != null ? Number(facts.url.pid) : null,
+      visible: facts.visiblePid != null ? Number(facts.visiblePid) : null,
+    };
+    if (candidates.qqdata == null) {
+      return { ok: false, pid: null, reason: "no_qqdata_pid", agreed_layers: [], conflicts: [], candidates: candidates };
+    }
+    const pid = candidates.qqdata;
+    const agreed = ["qqdata"];
+    const conflicts = [];
+    for (const layer of ["url", "visible"]) {
+      const v = candidates[layer];
+      if (v == null) continue;
+      if (v === pid) agreed.push(layer);
+      else conflicts.push({ layer: layer, value: v });
+    }
+    if (agreed.length < 2) {
+      return { ok: false, pid: pid, reason: "no_quorum", agreed_layers: agreed, conflicts: conflicts, candidates: candidates };
+    }
+    return { ok: true, pid: pid, reason: "quorum", agreed_layers: agreed, conflicts: conflicts, candidates: candidates };
+  }
+
+  function reconcileAttribution(facts, opts) {
+    opts = opts || {};
+    const activeBookId = opts.activeBookId || null;
+    const manifestSeq = Array.isArray(opts.manifestSeq) ? opts.manifestSeq : null;
+    const r = {
+      book_id: null, book_name: "", book_source: "none",
+      chapter_id: null, chapter_name: "", chapter_source: "none",
+      chapter_number: 0, chapter_number_source: "none",
+      position: null, position_source: "none",
+      global_position: 0,
+      all_known_books: [], drift_from_active: false,
+    };
+    const qqBooks = (facts.qqdata && facts.qqdata.bookinfos) || [];
+    const breadId = facts.breadcrumb && facts.breadcrumb.book_id;
+    const incBooks = (facts.included || []);
+    const urlBookId = facts.url && facts.url.book_id;
+
+    // BOOK selection (priority: qqdata cross-confirmed > qqdata > breadcrumb > included > url)
+    let chosen = null;
+    let src = "none";
+    if (breadId && qqBooks.some(function (b) { return b.book_id === breadId; })) {
+      chosen = qqBooks.find(function (b) { return b.book_id === breadId; });
+      src = "qqdata+breadcrumb";
+    } else if (activeBookId && qqBooks.some(function (b) { return b.book_id === activeBookId; })) {
+      chosen = qqBooks.find(function (b) { return b.book_id === activeBookId; });
+      src = "qqdata+active";
+    } else if (breadId) {
+      chosen = { book_id: breadId, name: facts.breadcrumb.book_name };
+      src = "breadcrumb";
+    } else if (qqBooks.length > 0) {
+      chosen = qqBooks[0]; src = "qqdata";
+    } else if (incBooks.length > 0) {
+      chosen = incBooks[0]; src = "included";
+    } else if (urlBookId) {
+      chosen = { book_id: urlBookId, name: "" }; src = "url";
+    }
+    if (chosen) {
+      r.book_id = chosen.book_id;
+      r.book_name = chosen.name || "";
+      r.book_source = src;
+    }
+
+    // Aggregate all known book memberships for provenance
+    const seen = new Set();
+    function pushBook(b) {
+      if (b && b.book_id && !seen.has(b.book_id)) {
+        seen.add(b.book_id);
+        r.all_known_books.push({ book_id: b.book_id, name: b.name || "" });
+      }
+    }
+    qqBooks.forEach(pushBook);
+    incBooks.forEach(pushBook);
+    if (breadId) pushBook({ book_id: breadId, name: facts.breadcrumb.book_name });
+    if (urlBookId) pushBook({ book_id: urlBookId, name: "" });
+
+    // CHAPTER (breadcrumb is rendered with the page → most trustworthy)
+    if (facts.breadcrumb && facts.breadcrumb.chapter_id) {
+      r.chapter_id = facts.breadcrumb.chapter_id;
+      r.chapter_name = facts.breadcrumb.chapter_name || "";
+      r.chapter_source = "breadcrumb";
+    } else if (urlBookId && facts.url && facts.url.chapter_id) {
+      r.chapter_id = facts.url.chapter_id;
+      r.chapter_source = "url";
+    }
+
+    // POSITION (within chapter)
+    if (facts.breadcrumb && facts.breadcrumb.position) {
+      r.position = facts.breadcrumb.position;
+      r.position_source = "breadcrumb";
+    } else if (facts.title && facts.title.position) {
+      r.position = facts.title.position;
+      r.position_source = "title";
+      if (!r.chapter_name) r.chapter_name = facts.title.chapter_name || "";
+    }
+
+    // Manifest cross-reference: chapter_number + global_position when
+    // we have a manifest for the *active* book that contains this pid
+    // or chapter_id. Only applies when reconciled book == active book.
+    if (manifestSeq && r.book_id && activeBookId && Number(r.book_id) === Number(activeBookId)) {
+      // Prefer pid match (handles case where chapter_id missing from breadcrumb)
+      const pid = facts.qqdata && facts.qqdata.pid;
+      if (pid != null) {
+        for (const e of manifestSeq) {
+          if (Number(e.pid) === Number(pid)) {
+            r.chapter_number = Number(e.chapter_number) || 0;
+            r.chapter_number_source = "manifest+pid";
+            r.global_position = Number(e.global_pos) || 0;
+            if (!r.chapter_id && e.chapter_id) r.chapter_id = Number(e.chapter_id);
+            if (!r.chapter_name && e.chapter_name) r.chapter_name = e.chapter_name;
+            if (!r.position && e.pos_in_chapter) {
+              r.position = Number(e.pos_in_chapter);
+              r.position_source = "manifest+pid";
+            }
+            break;
+          }
+        }
+      }
+      // Fall back to chapter_id match for chapter_number
+      if (!r.chapter_number && r.chapter_id) {
+        for (const e of manifestSeq) {
+          if (Number(e.chapter_id) === Number(r.chapter_id)) {
+            r.chapter_number = Number(e.chapter_number) || 0;
+            r.chapter_number_source = "manifest+chapter";
+            if (!r.chapter_name && e.chapter_name) r.chapter_name = e.chapter_name;
+            break;
+          }
+        }
+      }
+    }
+
+    if (activeBookId && r.book_id && Number(r.book_id) !== Number(activeBookId)) {
+      r.drift_from_active = true;
+    }
+    return r;
+  }
+
+  // Self-tests — run once at script load. Same pattern as _testCaptureGate.
+  (function _testReconcilers() {
+    const cases = [
+      { name: "all-agree", facts: { qqdata: { pid: 100 }, url: { pid: 100 }, visiblePid: 100 }, ok: true, pid: 100 },
+      { name: "qq+url", facts: { qqdata: { pid: 100 }, url: { pid: 100 }, visiblePid: null }, ok: true, pid: 100 },
+      { name: "qq-only", facts: { qqdata: { pid: 100 }, url: { pid: null }, visiblePid: null }, ok: false },
+      { name: "no-qq", facts: { qqdata: { pid: null }, url: { pid: 100 }, visiblePid: 100 }, ok: false },
+      { name: "qq+visible-vs-url", facts: { qqdata: { pid: 100 }, url: { pid: 200 }, visiblePid: 100 }, ok: true, pid: 100 },
+    ];
+    for (const c of cases) {
+      const r = reconcilePid(c.facts);
+      if (r.ok !== c.ok) log("WARN", `[selftest] reconcilePid '${c.name}': ok=${r.ok} want=${c.ok}`);
+      else if (r.ok && r.pid !== c.pid) log("WARN", `[selftest] reconcilePid '${c.name}': pid=${r.pid} want=${c.pid}`);
+    }
+    const a1 = reconcileAttribution({
+      qqdata: { pid: 100, bookinfos: [{ book_id: 5120, name: "A" }] },
+      url: { book_id: 5120, chapter_id: 45791, pid: 100 },
+      breadcrumb: { book_id: 5120, book_name: "A", chapter_id: 45791, chapter_name: "Ch1", position: 27 },
+      included: [{ book_id: 5120, name: "A" }], title: { position: 27, chapter_name: "Ch1" }, visiblePid: 100,
+    }, { activeBookId: 5120 });
+    if (a1.book_id !== 5120 || a1.chapter_id !== 45791 || a1.position !== 27 || a1.drift_from_active) {
+      log("WARN", "[selftest] reconcileAttribution all-agree failed", a1);
+    }
+    const a2 = reconcileAttribution({
+      qqdata: { pid: 999, bookinfos: [{ book_id: 9999, name: "Other" }] },
+      url: { book_id: 9999, chapter_id: 7000, pid: 999 },
+      breadcrumb: { book_id: 9999, book_name: "Other", chapter_id: 7000, chapter_name: "X", position: 1 },
+      included: [], title: { position: 1, chapter_name: "X" }, visiblePid: 999,
+    }, { activeBookId: 5120 });
+    if (a2.book_id !== 9999 || !a2.drift_from_active) {
+      log("WARN", "[selftest] reconcileAttribution drift case failed", a2);
+    }
+  })();
+
+  // ─────────────────────────────────────────────────────────────
+  // CAPTURE IDENTITY GATE
+  //
+  // Before POSTing a puzzle to the receiver, three identifiers
+  // must all agree on the same puzzle ID:
+  //
+  //   urlPid       — pid in the address bar (what we navigated to)
+  //   dataPid      — qqdata.publicid (ID stamped on the in-memory
+  //                  puzzle data the site actually handed us)
+  //   expectedPid  — chapter-mode only: the pid bookPlan said we
+  //                  would capture at this chapter position
+  //
+  // If urlPid !== dataPid the page is mid-swap: the AJAX `gotopic`
+  // dispatch updated the URL but qqdata still holds the previous
+  // puzzle. Posting now would write puzzle N's stones into a file
+  // labelled puzzle N+1.
+  //
+  // If expectedPid !== dataPid the site landed us on a different
+  // puzzle than the manifest expected (rare, e.g. site reordered
+  // the level walk). We'd still capture stale data into the wrong
+  // chapter slot.
+  //
+  // The gate refuses such payloads. Caller logs the divergence and
+  // moves on to goNext() — never POSTs.
+  // ─────────────────────────────────────────────────────────────
+
+  function evaluateCaptureGate({ urlPid, dataPid, expectedPid }) {
+    const ids = { urlPid, dataPid, expectedPid: expectedPid || null };
+    if (!urlPid) return { ok: false, reason: "no_url_pid", ids };
+    if (!dataPid) return { ok: false, reason: "no_data_pid", ids };
+    if (Number(urlPid) !== Number(dataPid)) {
+      return { ok: false, reason: "url_data_mismatch", ids };
+    }
+    if (expectedPid && Number(expectedPid) !== Number(dataPid)) {
+      return { ok: false, reason: "manifest_data_mismatch", ids };
+    }
+    return { ok: true, ids };
+  }
+
+  // Poll until the gate accepts or timeout elapses. Returns the
+  // verdict either way; caller decides what to do on refusal.
+  // Short pollMs because url/qqdata convergence is normally well
+  // under 1s; the timeout is a safety net for hard divergences.
+  async function awaitCaptureGate({ expectedPid, timeoutMs = 5000, pollMs = 150 }) {
+    const start = Date.now();
+    let last = { ok: false, reason: "no_url_pid", ids: { urlPid: null, dataPid: null, expectedPid: expectedPid || null } };
+    while (Date.now() - start < timeoutMs) {
+      const urlPid = getPuzzleId();
+      const qq = getQqdata();
+      const dataPid = qq && qq.publicid ? Number(qq.publicid) : null;
+      last = evaluateCaptureGate({ urlPid, dataPid, expectedPid });
+      if (last.ok) return last;
+      const wait = await waitMs(pollMs);
+      if (wait === "aborted" || !running) return last;
+    }
+    return last;
+  }
+
+  // Self-tests — run once per page load. Logs to console at WARN
+  // if the pure gate logic regresses. Cheap, no DOM, no network.
+  (function _testCaptureGate() {
+    const cases = [
+      { input: { urlPid: 137, dataPid: 137 }, want: "ok" },
+      { input: { urlPid: 137, dataPid: 137, expectedPid: 137 }, want: "ok" },
+      { input: { urlPid: 137, dataPid: 136 }, want: "url_data_mismatch" },
+      { input: { urlPid: 137, dataPid: 137, expectedPid: 138 }, want: "manifest_data_mismatch" },
+      { input: { urlPid: null, dataPid: 137 }, want: "no_url_pid" },
+      { input: { urlPid: 137, dataPid: null }, want: "no_data_pid" },
+      { input: { urlPid: "137", dataPid: 137 }, want: "ok" }, // string/number tolerance
+    ];
+    for (const c of cases) {
+      const r = evaluateCaptureGate(c.input);
+      const got = r.ok ? "ok" : r.reason;
+      if (got !== c.want) {
+        console.warn(
+          `[YENGO][gate-self-test] FAIL ${JSON.stringify(c.input)} -> ${got} (expected ${c.want})`,
+        );
+      }
+    }
+  })();
 
   // -- Wait for qqdata (may load async) ---------------------------
   function waitForQqdata() {
@@ -960,11 +3047,24 @@
 
   // -- Main capture logic -----------------------------------------
   async function capture() {
+    // Pause is atomic: once running=false, no new captures fire even if
+    // the navigation watcher or a deferred handler queued one. Without
+    // this gate, Resume often produced double-captures (one from a stale
+    // scheduled capture(), one from autoStart→Case1) which raced goNext
+    // and double-advanced current_seq_idx.
+    if (!running && (isBookCaptureActive() || isQdaySweepActive())) {
+      plog("INFO", "capture() suppressed: paused");
+      return;
+    }
+    captureStartedAt = Date.now(); // Track start for interval-based pacing
     const pageId = getPuzzleId();
     const qday = isQdaySweepActive();
+    const book = isBookCaptureActive();
     const label = qday
       ? `qday ${qdayPlan.currentDate} #${qdayPlan.currentNum}`
-      : (pageId ? `puzzle ${pageId}` : location.pathname);
+      : book
+        ? `book "${bookPlan.book_name}" puzzle ${pageId} (${bookPlan.captured_count || bookPlan.captured_ids.length}/${bookPlan.total_puzzles || bookPlan.puzzle_ids.length || '?'})`
+        : (pageId ? `puzzle ${pageId}` : location.pathname);
     plog("LOAD", `${label} — waiting for data`);
 
     // CAPTCHA
@@ -1005,6 +3105,29 @@
         if (running) goNext();
         return;
       }
+    }
+
+    // Identity gate (readiness): wait for URL pid and qqdata pid to
+    // converge — catches the AJAX race where URL flipped to puzzle N+1
+    // but qqdata still holds N. We deliberately DO NOT pass an
+    // expectedPid here: chapter-mode manifest mismatch is now handled
+    // by the reconciler below (which can salvage a captured puzzle
+    // even when it differs from the manifest cursor — see
+    // reconcileAttribution + drift_from_active).
+    const gate = await awaitCaptureGate({ expectedPid: null });
+    if (!gate.ok) {
+      issueStreak += 1;
+      stats.error++;
+      GM_setValue(KEY_STATS, stats);
+      const ids = gate.ids;
+      plog(
+        "WARN",
+        `${label} — capture refused: ${gate.reason} ` +
+          `(url=${ids.urlPid} data=${ids.dataPid}). Skipping.`,
+      );
+      updateStatus(`Skipped (${gate.reason})`, "#ff9800");
+      if (running) goNext();
+      return;
     }
 
     // Decode content field in JS (same algorithm as the site's own JS)
@@ -1054,6 +3177,58 @@
       await waitForBookSection(3000);
       const pageBooks = scrapePageBooks();
 
+      // Multi-layer harvest + reconciliation. Replaces the old strict
+      // url==data==expected gate with quorum + best-effort attribution.
+      // Result: never throw away a successful fetch — file the captured
+      // puzzle under whatever book/chapter the page actually displayed,
+      // not whatever the manifest cursor expected.
+      const facts = harvestPageFacts();
+      const pidResult = reconcilePid(facts);
+      if (!pidResult.ok) {
+        issueStreak += 1;
+        stats.error++;
+        GM_setValue(KEY_STATS, stats);
+        const c = pidResult.candidates;
+        plog(
+          "WARN",
+          `${label} — pid quorum failed (${pidResult.reason}): ` +
+            `qq=${c.qqdata} url=${c.url} visible=${c.visible}. Skipping.`,
+        );
+        updateStatus(`Skipped (pid_quorum)`, "#ff9800");
+        if (running) goNext();
+        return;
+      }
+      const reconciledPid = pidResult.pid;
+      const activeBookId = (bookPlan && bookPlan.book_id) || null;
+      const manifestSeq = (bookPlan && bookPlan.chapter_seq) || null;
+      const att = reconcileAttribution(facts, {
+        activeBookId: activeBookId,
+        manifestSeq: manifestSeq,
+      });
+
+      // What did the manifest cursor expect? Used for provenance only.
+      let expectedPidFromManifest = null;
+      if (isChapterMode() && Array.isArray(manifestSeq)) {
+        const _e = manifestSeq[(bookPlan && bookPlan.current_seq_idx) || 0];
+        if (_e && _e.pid) expectedPidFromManifest = Number(_e.pid);
+      }
+
+      // Drift detection: 3 consecutive captures landing on a different
+      // book than the active capture target → log ERR but continue.
+      // (User-confirmed policy: salvage rather than stop.)
+      if (att.drift_from_active) {
+        driftBookStreak += 1;
+        if (driftBookStreak >= 3) {
+          plog(
+            "ERR",
+            `Capture drift: ${driftBookStreak} consecutive captures routed to ` +
+              `book ${att.book_id} (active=${activeBookId}). Saving anyway; review log.`,
+          );
+        }
+      } else if (isBookCaptureActive()) {
+        driftBookStreak = 0;
+      }
+
       plog("SEND", `${label} — posting to backend`);
       const capturePayload = {
         qqdata: payload,
@@ -1063,26 +3238,126 @@
       if (pageBooks.length > 0) {
         capturePayload._page_books = pageBooks;
       }
+
+      // Build _book_context from reconciled attribution. We use the
+      // *detected* book — not the active book — so the receiver routes
+      // cross-book salvages into the correct book directory (auto-
+      // creating it if unknown via _resolve_book_dir).
+      if (att.book_id) {
+        const bookNameVisible = (typeof document !== "undefined" && document.title)
+          ? document.title.replace(/\s*-\s*101WEIQI.*$/i, "").trim()
+          : (att.book_name || "");
+        capturePayload._book_context = {
+          book_id: att.book_id,
+          book_name: att.book_name || (bookPlan && bookPlan.book_name) || "",
+          book_name_raw: att.book_name || (bookPlan && bookPlan.book_name) || "",
+          book_name_visible: bookNameVisible,
+          chapter_id: att.chapter_id || 0,
+          chapter_number: att.chapter_number || 0,
+          chapter_name: att.chapter_name || "",
+          chapter_name_raw: att.chapter_name || "",
+          chapter_name_visible: att.chapter_name || "",
+          chapter_position: att.position || 0,
+          global_position: att.global_position || 0,
+          puzzle_id: reconciledPid,
+          // Use chapter-style naming whenever we have a chapter id —
+          // even for cross-book salvages — so the file lands at
+          // chXX_PPP_slug_pid.sgf and is easy to re-file later.
+          capture_mode: att.chapter_id ? "chapter" : (isChapterMode() ? "chapter" : "book"),
+        };
+      }
+
+      // Always attach provenance — auditable record of which layers
+      // agreed, which conflicted, and what the routing decision was.
+      // Receiver appends this to capture-log.jsonl.
+      capturePayload._capture_provenance = {
+        reconciled_pid: reconciledPid,
+        pid_agreed_layers: pidResult.agreed_layers,
+        pid_conflicts: pidResult.conflicts,
+        pid_candidates: pidResult.candidates,
+        book_id: att.book_id,
+        book_source: att.book_source,
+        chapter_id: att.chapter_id,
+        chapter_source: att.chapter_source,
+        chapter_number: att.chapter_number,
+        chapter_number_source: att.chapter_number_source,
+        position: att.position,
+        position_source: att.position_source,
+        all_known_books: att.all_known_books,
+        active_book_id: activeBookId,
+        expected_pid_from_manifest: expectedPidFromManifest,
+        drift_from_active: att.drift_from_active,
+        drift_streak: driftBookStreak,
+      };
       const result = await http("POST", "/capture", capturePayload);
       if (result.status === "ok") {
         issueStreak = 0;
         stats.ok++;
+        lastCaptureWasDuplicate = false;
         plog("DONE", `${label} — saved as ${result.puzzle_id} (ok:${stats.ok} skip:${stats.skipped} err:${stats.error})`);
         updateStatus(`Saved ${result.puzzle_id}`, "#81c784");
       } else if (result.status === "skipped") {
         issueStreak = 0;
         stats.skipped++;
-        plog("SKIP", `${label} — duplicate ${result.puzzle_id} (ok:${stats.ok} skip:${stats.skipped} err:${stats.error})`);
-        updateStatus(`Skipped ${result.puzzle_id} (duplicate)`, "#ffb74d");
+        lastCaptureWasDuplicate = true;
+        // Surface the same context the backend now logs to the JSONL so
+        // the in-page console matches the source-of-truth log.
+        const ctx = capturePayload._book_context || {};
+        const ctxParts = [];
+        if (ctx.book_id) {
+          ctxParts.push(`book=${ctx.book_id}`);
+        }
+        if (ctx.chapter_number) {
+          ctxParts.push(`ch${ctx.chapter_number}${ctx.chapter_name ? ` '${ctx.chapter_name}'` : ""}`);
+        }
+        if (ctx.section_id) {
+          ctxParts.push(`sec=${ctx.section_id}${ctx.section_name ? ` '${ctx.section_name}'` : ""}`);
+        }
+        if (ctx.chapter_position) {
+          ctxParts.push(`ch_pos=${ctx.chapter_position}`);
+        }
+        if (ctx.section_position) {
+          ctxParts.push(`sec_pos=${ctx.section_position}`);
+        }
+        if (ctx.global_position) {
+          ctxParts.push(`gpos=${ctx.global_position}`);
+        }
+        const ctxStr = ctxParts.length ? ` [${ctxParts.join(" ")}]` : "";
+        const reason = result.message || "duplicate";
+        plog("SKIP", `${label} — ${reason} ${result.puzzle_id}${ctxStr} (ok:${stats.ok} skip:${stats.skipped} err:${stats.error})`);
+        updateStatus(`Skipped ${result.puzzle_id} (${reason})`, "#ffb74d");
       } else {
         issueStreak += 1;
         stats.error++;
+        lastCaptureWasDuplicate = false;
         plog("ERR", `${label} — server error: ${result.message}`);
         updateStatus(`Error: ${result.message}`, "#f44336");
+        // Mark the pid as permanently failed for this book so the
+        // chapter-mode skip-walk advances past it. Without this the
+        // walk re-targets the same uncaptured pid forever (typically
+        // the last entry in its chapter), producing the observed
+        // "stuck on Ch.X pos N" loop.
+        //
+        // Trust the receiver's explicit `permanent` flag (added with
+        // the validation-rejection path). Fall back to the implicit
+        // rule (non-null puzzle_id ⇒ parsed-then-rejected ⇒ permanent)
+        // for backward compat with older receiver versions.
+        const isPermanent = (typeof result.permanent === "boolean")
+          ? result.permanent
+          : Boolean(result.puzzle_id);
+        if (isPermanent && result.puzzle_id && bookPlan && bookPlan.book_id) {
+          bookPlan.failed_ids = bookPlan.failed_ids || [];
+          if (!bookPlan.failed_ids.includes(Number(result.puzzle_id))) {
+            bookPlan.failed_ids.push(Number(result.puzzle_id));
+            saveBookPlan(bookPlan);
+            plog("SKIP", `Marked pid ${result.puzzle_id} as permanently failed (will skip future occurrences)`);
+          }
+        }
       }
     } catch (err) {
       issueStreak += 1;
       stats.error++;
+      lastCaptureWasDuplicate = false;
       plog("ERR", `${label} — capture failed: ${err.message}, stopping`);
       stopRunning("server unreachable");
       updateStatus("Server unreachable! Start: python -m tools.weiqi101 receive", "#f44336");
@@ -1187,6 +3462,8 @@
   async function startBook(bookId) {
     // startBook always claims — it's an explicit user action in this tab
     clearQdayPlan();
+    clearBookDiscovery();
+    clearBookPlan();
     issueStreak = 0;
 
     // Capture current page before navigating away (don't lose it)
@@ -1232,6 +3509,7 @@
   // -- Auto-detect: check server queue on page load ---------------
   let lastCapturedUrl = null;
   let lastCapturedId = null;
+  let lastCaptureWasDuplicate = false; // Fast-skip flag for goNext()
 
   async function autoStart() {
     // Tab ownership check: only the owner tab drives sweep/queue.
@@ -1249,6 +3527,108 @@
       if (location.href !== planUrl) {
         updateStatus(`Resuming qday sweep at ${qdayPlan.currentDate} #${qdayPlan.currentNum}`, "#4fc3f7");
         location.href = planUrl;
+        return;
+      }
+    }
+
+    // Book discovery: continue navigating book/chapter pages
+    if (isBookDiscoveryActive() && isBookPage()) {
+      if (ownerIsOther) {
+        updateStatus(`Observing \u2014 discovery running in another tab`, "#888");
+        return;
+      }
+      claimOwnership();
+      continueDiscovery();
+      return;
+    }
+
+    // Book page with no active discovery: do NOT auto-popup any modal.
+    // The user explicitly requested that capture only starts when they
+    // click "[Book] Start / Resume" from the menu — no nag dialogs on
+    // page navigation. We just leave a passive status badge and store the
+    // current book_id so the menu command can pick it up without
+    // re-prompting.
+    if (isBookPage() && !isBookDiscoveryActive() && !isBookCaptureActive()) {
+      const bookPath = parseBookPath();
+      if (bookPath && bookPath.book_id) {
+        try { GM_setValue("pendingBookId", bookPath.book_id); } catch (_) {}
+        updateStatus(
+          `Idle on book ${bookPath.book_id} — use [Book] Start / Resume in menu`,
+          "#888"
+        );
+      }
+      return;
+    }
+
+    // Book capture: resume
+    if (isBookCaptureActive()) {
+      if (ownerIsOther) {
+        updateStatus(`Observing \u2014 book capture running in another tab`, "#888");
+        return;
+      }
+      if (!startRunning()) return;
+
+      if (isChapterMode()) {
+        // Chapter mode: skip already-captured entries from the saved
+        // index forward, then resume via the chapter-listing route.
+        // We never use /q/{pid}/ directly (see clickPuzzleInChapterListing).
+        const captured = new Set((bookPlan.captured_ids || []).map(Number));
+        let idx = bookPlan.current_seq_idx || 0;
+        while (
+          idx < bookPlan.chapter_seq.length &&
+          captured.has(Number(bookPlan.chapter_seq[idx].pid))
+        ) {
+          idx++;
+        }
+        if (idx >= bookPlan.chapter_seq.length) {
+          const name = bookPlan.book_name || `Book ${bookPlan.book_id}`;
+          plog("DONE", `Chapter capture: "${name}" already complete`);
+          updateStatus(`"${name}" — already complete`, "#4caf50");
+          stopRunning();
+          clearBookPlan();
+          return;
+        }
+        if (idx !== bookPlan.current_seq_idx) {
+          bookPlan.current_seq_idx = idx;
+          bookPlan.current_idx = idx;
+          saveBookPlan(bookPlan);
+        }
+        const entry = bookPlan.chapter_seq[idx];
+        const progressStr = `Ch.${entry.chapter_number} pos ${entry.pos_in_chapter} (${bookPlan.captured_count || 0}/${bookPlan.total_puzzles})`;
+        const bp = parseBookPath();
+        const curPid = Number(getPuzzleId());
+
+        // Case 1: already on the puzzle page — just capture.
+        if (curPid === Number(entry.pid)) {
+          plog("RESUME", `[case1/on-puzzle] pid ${entry.pid} — capturing`);
+          updateStatus(`Resuming chapter at ${progressStr}`, "#4fc3f7");
+          capture();
+          return;
+        }
+
+        // Case 2: on the right chapter listing — click the entry.
+        if (
+          bp
+          && bp.type === "chapter"
+          && bp.book_id === bookPlan.book_id
+          && bp.chapter_id === entry.chapter_id
+        ) {
+          plog("RESUME", `[case2/on-listing] Ch.${entry.chapter_id} p.${bp.page || 1} — clicking pid ${entry.pid} (${progressStr})`);
+          updateStatus(`Resuming chapter at ${progressStr}`, "#4fc3f7");
+          await clickPuzzleInChapterListing(entry.pid);
+          return;
+        }
+
+        // Case 3: anywhere else — navigate to the chapter listing first.
+        if (!entry.chapter_id) {
+          plog("ERR", `Entry pid=${entry.pid} has no chapter_id — manifest needs re-discovery`);
+          stopRunning();
+          return;
+        }
+        const resumePage = targetChapterPageForEntry(entry);
+        plog("RESUME", `[case3/elsewhere] navigating to Ch.${entry.chapter_id} p.${resumePage} for ${progressStr} (from ${location.pathname})`);
+        updateStatus(`Resuming chapter at ${progressStr}`, "#4fc3f7");
+        location.href = buildChapterUrl(bookPlan.book_id, entry.chapter_id, resumePage);
         return;
       }
     }
@@ -1278,6 +3658,9 @@
     capture();
   }
 
+  //#endregion 7. NAVIGATION
+
+  //#region 8. CAPTURE LOOP
   // -- Navigation watcher (SPA detection) -------------------------
   // The site's next/prev buttons load new puzzles via AJAX without
   // changing the URL.  Three independent signals detect this:
@@ -1327,70 +3710,259 @@
     }, 1000);
   }
 
-  // -- Menu commands (simple) -------------------------------------
+  //#endregion 8. CAPTURE LOOP
 
-  GM_registerMenuCommand("Pick a Book", showBookPicker);
-  GM_registerMenuCommand("Start Daily Sweep to Today (1->8)", () => startQdaySweep("asc"));
-  GM_registerMenuCommand("Start Daily Sweep to Today (8->1)", () => startQdaySweep("desc"));
-  GM_registerMenuCommand("Show Daily Sweep State", () => {
-    if (!isQdaySweepActive()) {
-      alert("Daily sweep is not active.");
+  //#region 9. MENU COMMANDS
+  // -- Menu commands (consolidated) --------------------------------
+  // Grouped: Book | Daily | Control | Settings
+
+  // --- BOOK ---
+  GM_registerMenuCommand("[Book] Start / Resume", () => {
+    if (isBookCaptureActive()) {
+      // Already capturing — offer to resume
+      const progress = isChapterMode()
+        ? `Ch.${(chapterPlanCurrentEntry(bookPlan) || {}).chapter_number || "?"} pos ${(chapterPlanCurrentEntry(bookPlan) || {}).pos_in_chapter || "?"}, ${bookPlan.captured_count || bookPlan.captured_ids.length}/${bookPlan.total_puzzles}`
+        : `${bookPlan.captured_ids.length} captured`;
+      const ok = confirm(
+        `Chapter capture active: "${bookPlan.book_name}"\n` +
+        `${progress}\n\n` +
+        `Click OK to resume, Cancel to pick a new book.`
+      );
+      if (ok) { capture(); return; }
+      clearBookPlan();
+    }
+    if (isBookDiscoveryActive()) {
+      const ok = confirm(
+        `Discovery in progress: "${bookDiscovery.book_name}"\n` +
+        `Phase: ${bookDiscovery.phase}\n\n` +
+        `Click OK to resume, Cancel to start fresh.`
+      );
+      if (ok) { continueDiscovery(); return; }
+      clearBookDiscovery();
+    }
+    // Context-aware: if we're already on a /book/ page, open the
+    // discovery overlay directly without re-prompting.
+    const onPagePath = parseBookPath();
+    if (onPagePath && onPagePath.book_id) {
+      clearBookDiscovery();
+      clearBookPlan();
+      clearQdayPlan();
+      showBookDiscoveryOverlay(onPagePath.book_id);
       return;
     }
-    alert(
-      `Daily sweep active\n` +
-      `Date: ${qdayPlan.currentDate}\n` +
-      `Puzzle: ${qdayPlan.currentNum}\n` +
-      `Target: ${qdayPlan.targetDate}\n` +
-      `Order: ${qdayPlan.order === "desc" ? "8->1" : "1->8"}\n` +
-      `Direction: ${qdayPlan.dateDirection}`
-    );
+    // Fallback: prompt for book ID or show picker
+    const bookId = prompt("Enter 101weiqi book ID (e.g., 5121)\nor leave blank to browse:");
+    if (bookId === null) return; // cancelled
+    if (bookId.trim() === "") {
+      showBookPicker();
+      return;
+    }
+    const id = parseInt(bookId, 10);
+    if (isNaN(id)) { alert("Invalid book ID"); return; }
+    clearBookDiscovery();
+    clearBookPlan();
+    clearQdayPlan();
+    location.href = `https://www.101weiqi.com/book/${id}/`;
   });
 
-  GM_registerMenuCommand("Stop", () => {
+  GM_registerMenuCommand("[Book] Skip to Capture", async () => {
+    const bookId = prompt("Enter book ID to resume capture (manifest must exist).\nThis starts CHAPTER mode (walks chapters in order, skips already-captured puzzles):");
+    if (!bookId || isNaN(parseInt(bookId, 10))) return;
+    await startChapterCapture(parseInt(bookId, 10));
+  });
+
+  GM_registerMenuCommand("[Book] Chapter Capture", async () => {
+    const input = prompt("Enter book ID for chapter-mode capture\n(reads manifest.chapters[].puzzle_ids and walks them in order):");
+    if (!input || isNaN(parseInt(input, 10))) return;
+    const id = parseInt(input, 10);
+    clearBookDiscovery();
+    clearBookPlan();
     clearQdayPlan();
+    await startChapterCapture(id);
+  });
+
+  GM_registerMenuCommand("[Book] Jump To Chapter…", async () => {
+    // Manual override:
+    //   - In chapter-capture mode: jump current_seq_idx to the first
+    //     puzzle of the requested chapter number.
+    //   - In discovery mode: set current_chapter_idx and navigate to
+    //     that chapter's page 1 (skipping any chapters in between).
+    if (isBookCaptureActive() && isChapterMode() && Array.isArray(bookPlan.chapter_seq)) {
+      const chapters = [...new Set(bookPlan.chapter_seq.map((e) => e.chapter_number))].sort((a, b) => a - b);
+      const input = prompt(
+        `Chapter capture active for "${bookPlan.book_name}".\n` +
+        `Available chapters: ${chapters.join(", ")}\n\n` +
+        `Enter chapter number to jump to:`
+      );
+      if (input === null) return;
+      const target = parseInt(input, 10);
+      if (isNaN(target)) { alert("Invalid chapter number"); return; }
+      const idx = bookPlan.chapter_seq.findIndex((e) => e.chapter_number === target);
+      if (idx < 0) { alert(`Chapter ${target} not found in this book`); return; }
+      bookPlan.current_seq_idx = idx;
+      bookPlan.current_idx = idx;
+      saveBookPlan(bookPlan);
+      const entry = bookPlan.chapter_seq[idx];
+      plog("JUMP", `Manual jump -> Ch.${entry.chapter_number} pos ${entry.pos_in_chapter} (pid=${entry.pid})`);
+      updateStatus(`Jumping to Ch.${entry.chapter_number} pos ${entry.pos_in_chapter}`, "#ffb74d");
+      // Navigate via the chapter listing (autoStart will click the entry).
+      // Direct /q/{pid}/ jumps look like bot behavior — see startChapterCapture.
+      if (!entry.chapter_id) {
+        alert("This manifest is missing chapter_id; please re-run discovery before using Jump To Chapter.");
+        return;
+      }
+      const jumpPage = targetChapterPageForEntry(entry);
+      location.href = buildChapterUrl(bookPlan.book_id, entry.chapter_id, jumpPage);
+      return;
+    }
+    if (isBookDiscoveryActive() && Array.isArray(bookDiscovery.chapters)) {
+      const chapters = bookDiscovery.chapters.map((c) => c.chapter_number);
+      const input = prompt(
+        `Discovery active for "${bookDiscovery.book_name}".\n` +
+        `Available chapters: ${chapters.join(", ")}\n\n` +
+        `Enter chapter number to jump to (will skip past earlier chapters):`
+      );
+      if (input === null) return;
+      const target = parseInt(input, 10);
+      if (isNaN(target)) { alert("Invalid chapter number"); return; }
+      const idx = bookDiscovery.chapters.findIndex((c) => c.chapter_number === target);
+      if (idx < 0) { alert(`Chapter ${target} not found`); return; }
+      bookDiscovery.current_chapter_idx = idx;
+      bookDiscovery.current_page = 1;
+      bookDiscovery.phase = "chapter_puzzles";
+      saveBookDiscovery(bookDiscovery);
+      const ch = bookDiscovery.chapters[idx];
+      plog("JUMP", `Manual jump -> discovery Ch.${ch.chapter_number} "${ch.name}"`);
+      updateStatus(`Jumping discovery to Ch.${ch.chapter_number}`, "#ffb74d");
+      location.href = buildChapterUrl(bookDiscovery.book_id, ch.chapter_id, 1);
+      return;
+    }
+    alert("No active book capture or discovery to jump within.\nStart a capture/discovery first, then use this command.");
+  });
+
+  // --- DAILY ---
+  GM_registerMenuCommand("[Daily] Start Sweep", () => {
+    const order = prompt("Enter sweep order:\n  1 = ascending (1→8)\n  2 = descending (8→1)", "2");
+    if (order === null) return;
+    startQdaySweep(order === "1" ? "asc" : "desc");
+  });
+
+  // --- STATUS (combined) ---
+  GM_registerMenuCommand("[Status] Show All", async () => {
+    let msg = "";
+
+    // Book state
+    if (isBookDiscoveryActive()) {
+      const d = bookDiscovery;
+      const totalIds = d.chapters.reduce((s, c) => s + c.puzzle_ids.length, 0);
+      msg += `── Book Discovery ──\n` +
+        `"${d.book_name}" (ID: ${d.book_id})\n` +
+        `Phase: ${d.phase}  Ch: ${d.current_chapter_idx + 1}/${d.chapters.length}\n` +
+        `Chapter IDs: ${totalIds}\n\n`;
+    } else if (isBookCaptureActive()) {
+      const cur = chapterPlanCurrentEntry(bookPlan) || {};
+      const total = bookPlan.total_puzzles || (bookPlan.chapter_seq || []).length;
+      msg += `── Chapter Capture ──\n` +
+        `"${bookPlan.book_name}" (ID: ${bookPlan.book_id})\n` +
+        `Ch.${cur.chapter_number || "?"} pos ${cur.pos_in_chapter || "?"} (pid=${cur.pid || "?"})\n` +
+        `Captured: ${bookPlan.captured_count || bookPlan.captured_ids.length}/${total}\n` +
+        `Started: ${bookPlan.started_at}\n\n`;
+    }
+
+    // Daily state
+    if (isQdaySweepActive()) {
+      msg += `── Daily Sweep ──\n` +
+        `Date: ${qdayPlan.currentDate}  Puzzle: ${qdayPlan.currentNum}\n` +
+        `Target: ${qdayPlan.targetDate}  Order: ${qdayPlan.order === "desc" ? "8→1" : "1→8"}\n\n`;
+    }
+
+    // Session stats
+    msg += `── Session ──\n` +
+      `OK: ${stats.ok}  Skip: ${stats.skipped}  Err: ${stats.error}  CAPTCHA: ${stats.captcha || 0}\n` +
+      `Running: ${running}  Owner: ${isOwnerTab() ? "this tab" : "other"}\n` +
+      `Wake lock: ${wakeLockEnabled ? "on" : "off"}\n`;
+
+    // Server telemetry
+    try {
+      const t = await http("GET", "/telemetry");
+      msg += `\n── Server ──\n` +
+        `Total: ${t.total_processed}  Avg: ${t.avg_duration_ms}ms\n`;
+    } catch (_) {
+      msg += `\n── Server: unreachable ──\n`;
+    }
+
+    alert(msg || "Nothing active.");
+  });
+
+  // --- CONTROL ---
+  GM_registerMenuCommand("[Control] Pause / Resume", () => {
+    // Soft toggle: flips the same `running` flag the navigation watcher
+    // and capture loop already check. Does NOT clear bookPlan / discovery
+    // state, so this is the safe "breathing room" button (vs. Stop).
+    if (running) {
+      stopRunning("user paused");
+      updateStatus("Paused. Use [Control] Pause / Resume again to continue.", "#ff9800");
+      plog("INFO", "\u2550\u2550\u2550 PAUSED \u2014 capture loop suspended (state preserved) \u2550\u2550\u2550");
+      reportBookEvent("session_paused", {
+        captured_count: bookPlan ? (bookPlan.captured_count || 0) : 0,
+        total: bookPlan ? (bookPlan.total_puzzles || null) : null,
+      });
+    } else {
+      if (!startRunning()) return;
+      updateStatus("Resumed.", "#4fc3f7");
+      plog("INFO", "\u2550\u2550\u2550 RESUMED \u2014 capture loop restarting \u2550\u2550\u2550");
+      // Resume diagnostic: log enough state to debug stuck-resume reports.
+      try {
+        const cur = chapterPlanCurrentEntry(bookPlan) || {};
+        plog(
+          "RESUME",
+          `state: page=${location.pathname} curPid=${getPuzzleId()} ` +
+          `idx=${bookPlan ? bookPlan.current_seq_idx : "?"} ` +
+          `captured=${bookPlan ? (bookPlan.captured_ids || []).length : "?"} ` +
+          `target=Ch.${cur.chapter_number || "?"}/p${cur.pos_in_chapter || "?"}/pid${cur.pid || "?"}`,
+        );
+      } catch (_) {}
+      reportBookEvent("session_resumed", {});
+      // Kick the loop back into motion based on whatever state is active.
+      autoStart();
+    }
+  });
+
+  GM_registerMenuCommand("[Control] Stop", () => {
+    // Log session stop with stats before clearing state.
+    if (bookPlan && bookPlan.active) {
+      const durationMs = bookPlan.started_at
+        ? Date.now() - new Date(bookPlan.started_at).getTime() : 0;
+      const durationMin = (durationMs / 60000).toFixed(1);
+      const cur = chapterPlanCurrentEntry(bookPlan) || {};
+      plog("END", `════════════ SESSION STOPPED ════════════`);
+      plog("END", `Book: "${bookPlan.book_name}" — manually stopped`);
+      plog("END", `Last: Ch.${cur.chapter_number || "?"} pos ${cur.pos_in_chapter || "?"} (pid=${cur.pid || "?"})`);
+      plog("END", `Captured: ${stats.ok}, Skipped: ${stats.skipped}, Errors: ${stats.error}`);
+      plog("END", `Duration: ${durationMin} min | Time: ${new Date().toISOString()}`);
+    }
+    clearQdayPlan();
+    clearBookDiscovery();
+    clearBookPlan();
     stopRunning("user stopped");
     http("GET", "/queue/stop").catch(() => {});
     updateStatus("Stopped.", "#ff9800");
   });
 
-  GM_registerMenuCommand("Take Control in This Tab", () => {
+  GM_registerMenuCommand("[Control] Take Ownership", () => {
     claimOwnership();
     if (GM_getValue(KEY_RUNNING, false)) {
       running = true;
       if (wakeLockEnabled) acquireWakeLock();
       updateStatus(`This tab (${TAB_ID}) is now the active runner — resuming...`, "#4fc3f7");
-      // Actually resume the sweep loop
       capture();
     } else {
       updateStatus(`This tab (${TAB_ID}) claimed ownership (idle).`, "#4fc3f7");
     }
   });
 
-  GM_registerMenuCommand("Show Telemetry", async () => {
-    try {
-      const t = await http("GET", "/telemetry");
-      alert(
-        `Session: ${t.started_at}\n` +
-        `Book: ${t.book_name || "(none)"}\n` +
-        `OK: ${t.counts.ok}  Skip: ${t.counts.skipped}  Err: ${t.counts.error}\n` +
-        `Total: ${t.total_processed}  Avg: ${t.avg_duration_ms}ms\n` +
-        `Errors: ${t.recent_errors.length}`
-      );
-    } catch (err) {
-      alert("Server unreachable: " + err.message);
-    }
-  });
-
-  GM_registerMenuCommand("Reset Stats & Log", () => {
-    stats = { ...DEFAULT_STATS, session_start: new Date().toISOString() };
-    GM_setValue(KEY_STATS, stats);
-    _logTrail.length = 0;
-    _renderLogTrail();
-    updateStatus("Stats & log reset.", "#4fc3f7");
-  });
-
-  GM_registerMenuCommand("Toggle Wake Lock", () => {
+  // --- SETTINGS ---
+  GM_registerMenuCommand("[Settings] Toggle Wake Lock", () => {
     wakeLockEnabled = !wakeLockEnabled;
     GM_setValue(KEY_WAKE_LOCK, wakeLockEnabled);
     if (wakeLockEnabled && running) {
@@ -1401,13 +3973,21 @@
     updateStatus(`Wake lock ${wakeLockEnabled ? "enabled" : "disabled"}`, "#4fc3f7");
   });
 
-  GM_registerMenuCommand("Reset Delay to Default (4.5s)", () => {
+  GM_registerMenuCommand("[Settings] Reset Stats", () => {
+    stats = { ...DEFAULT_STATS, session_start: new Date().toISOString() };
+    GM_setValue(KEY_STATS, stats);
+    _logTrail.length = 0;
+    _renderLogTrail();
+    updateStatus("Stats & log reset.", "#4fc3f7");
+  });
+
+  GM_registerMenuCommand("[Settings] Reset Delay (4.5s)", () => {
     setBaseDelay(DEFAULT_BASE_DELAY_MS);
     updateStatus(`Base delay reset to ${(DEFAULT_BASE_DELAY_MS / 1000).toFixed(1)}s`, "#4fc3f7");
   });
 
   // -- Boot -------------------------------------------------------
-  log("INFO", `Script loaded: tab=${TAB_ID}, running=${running}, puzzle=${getPuzzleId()}, owner=${GM_getValue(KEY_OWNER_TAB, null)}`);
+  log("INFO", `Script loaded: tab=${TAB_ID}, running=${running}, puzzle=${getPuzzleId()}, owner=${GM_getValue(KEY_OWNER_TAB, null)}, bookDisc=${isBookDiscoveryActive()}, bookCap=${isBookCaptureActive()}`);
   setTimeout(autoStart, 500);
   startNavigationWatcher();
 
@@ -1418,4 +3998,5 @@
       acquireWakeLock();
     }
   });
+  //#endregion 9. MENU COMMANDS
 })();
