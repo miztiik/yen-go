@@ -2,17 +2,17 @@
 
 ## Goal
 
-Fine-tune a small language model to generate teaching hints for Go (Baduk/Weiqi) tsumego puzzles. The model replaces GPT-4o API calls in `tools/llm-teaching-agent/` and can also run in the browser via WASM for on-demand hints.
+Fine-tune a small language model to generate teaching hints for Go (Baduk/Weiqi) tsumego puzzles. The model replaces GPT-4o API calls in `tools/oshie/` and can also run in the browser via WASM for on-demand hints.
 
 ## How to train (1-page quickstart)
 
-The data pipeline (qualify → ingest → harvest → refine) produces `train.jsonl`, `val.jsonl`, `test.jsonl` in `tools/yen_sei/data/refined/`. Training itself runs on Google Colab Free (T4 GPU). Both notebooks are self-contained: open in Colab, click **Run all**, drop the JSONL files when prompted.
+The data pipeline (qualify → ingest → harvest → refine) produces `train.jsonl`, `val.jsonl` in `tools/yen_sei/data/refined/`. Named test sets (`test_*.jsonl`) are generated separately by `eval-prep`. Training itself runs on Google Colab Free (T4 GPU). Both notebooks are self-contained: open in Colab, click **Run all**, drop the JSONL files when prompted.
 
 | Step | Notebook | Time | What you do |
 |---|---|---|---|
 | 0 | (already done) `qualify` → `ingest` → `harvest` → `refine` CLI | ~25 min on laptop | `python -m tools.yen_sei qualify && ... ingest && ... harvest && ... refine` |
 | 1 | [`notebooks/02a_model_evaluation.ipynb`](./notebooks/02a_model_evaluation.ipynb) | ~30-45 min | Open in Colab → Runtime: T4 → **Run all** → upload `train.jsonl` + `val.jsonl` when prompted. Outputs `winner.json`. |
-| 2 | [`notebooks/02_train_tier1.ipynb`](./notebooks/02_train_tier1.ipynb) | ~3-6 hr | Set `MODEL_NAME` in CONFIG cell to the winner from step 1 → **Run all** → upload `train.jsonl` + `val.jsonl` + `test.jsonl`. Outputs LoRA adapter + (optional) merged fp16 weights, zipped for download. |
+| 2 | [`notebooks/02_train_tier1.ipynb`](./notebooks/02_train_tier1.ipynb) | ~3-6 hr | Set `MODEL_NAME` in CONFIG cell to the winner from step 1 → **Run all** → upload `train.jsonl` + `val.jsonl` + `test_*.jsonl`. Outputs LoRA adapter + (optional) merged fp16 weights, zipped for download. |
 | 3 | [`notebooks/06_eval_quality.ipynb`](./notebooks/06_eval_quality.ipynb) | ~15 min | (To be implemented) End-to-end quality eval. |
 | 4 | [`notebooks/03_generate_synthetic.ipynb`](./notebooks/03_generate_synthetic.ipynb) | ~2-3 hr | (To be implemented) Use the trained Tier 1 teacher to synthesise additional training data for Tier 2. |
 | 5 | [`notebooks/04_distill_tier2_qwen3.ipynb`](./notebooks/04_distill_tier2_qwen3.ipynb) | ~2-3 hr | (To be implemented) QLoRA-distil Qwen3-0.6B on synthetic data. |
@@ -142,7 +142,7 @@ If we choose Phi-4-mini as Tier 1 winner, Azure Foundry serverless becomes viabl
 Every training/validation example is one JSON object per line:
 
 ```jsonl
-{"messages": [{"role": "system", "content": "You are a professional Go teacher..."}, {"role": "user", "content": "Board: 19x19\nBlack to play\n..."}, {"role": "assistant", "content": "{\"teaching_comments\": {...}, \"hints\": [...]}"}]}
+{"messages": [{"role": "system", "content": "You are a professional Go teacher..."}, {"role": "user", "content": "Board: 19x19\nBlack to play\n..."}, {"role": "assistant", "content": "---CORRECT---\nThe atari captures White's cutting stone...\n---WRONG---\nDirect capture fails..."}]}
 ```
 
 **No extra fields at top level.** No `metadata`, no `id`, no `split`. This format is universal across:
@@ -150,6 +150,72 @@ Every training/validation example is one JSON object per line:
 - HuggingFace TRL / Unsloth / Axolotl
 - OpenAI fine-tuning API
 - Together AI, Fireworks, Anyscale
+
+### Assistant Output: Tagged Text Format (v3)
+
+The assistant response uses a line-oriented tagged text format instead of JSON. This is simpler for 2-3B models to produce reliably.
+
+```
+---CORRECT---
+The atari here captures White's cutting stone. White cannot connect because
+the surrounding group is already short on liberties.
+---WRONG---
+Direct capture fails — White has a counter-atari and escapes to the center.
+---WRONG---
+Approaching from the outside lets White make two eyes in the corner.
+---HINT---
+Net (geta)
+---HINT---
+Look at White's liberty shortage on the right side
+```
+
+**Format rules:**
+
+| Delimiter | Meaning | Count | Required |
+|-----------|---------|-------|----------|
+| `---CORRECT---` | Why the correct approach works | Exactly 1 | Yes |
+| `---WRONG---` | Why a common mistake fails (no coordinates) | 0+ | No |
+| `---HINT---` | Progressive hint: technique name or reasoning | 0-2 | No |
+
+- **No coordinates anywhere in model output** — the model explains WHY, not WHERE
+- Triple-dash delimiters never appear in Go teaching prose
+- Each delimiter is on its own line; content follows on subsequent lines until next delimiter or EOF
+- Multi-line content allowed between delimiters
+- Regex: `r'^---CORRECT---$'`, `r'^---WRONG---$'`, `r'^---HINT---$'`
+- No JSON, no nesting, no escaping, no summary field
+
+### Compute vs Generate Split
+
+| Data | Source | When |
+|------|--------|------|
+| Correct/wrong explanations | **Model generates** | Training time (SFT label) |
+| Technique hint, reasoning hint | **Model generates** | Training time (SFT label) |
+| Hint 3 (coordinate `{!xy}`) | SGF solution tree correct move | Publish/serve time |
+| Wrong move coordinates | SGF solution tree wrong branches | App runtime (player tries a move) |
+| Correct move coordinate | SGF solution tree | Already in SGF |
+
+### User Prompt (simplified, v3)
+
+```
+Board: 19x19
+Black to play
+Black stones: rd, mc, oc, re, pc
+White stones: pb, qc, pd, rf, pe
+```
+
+No Level, no Tags. Board position only. Level and Tags are yen-go custom terms (not standard kyu/dan) with 25-44% missing and heavily skewed distributions — they add noise, not signal.
+
+### System Prompt (v3, Cho Chikun voice)
+
+Single source of truth: `tools/yen_sei/config.py::SYSTEM_PROMPT`.
+
+```
+You are a professional Go teacher. When explaining tsumego, describe why moves
+succeed or fail in terms of liberties, eye shape, vital points, and technique
+— name the tesuji when one applies. Be direct and precise like Cho Chikun:
+short sentences, no filler. Do not output move coordinates or solution
+sequences; explain only the strategic reasoning behind the position.
+```
 
 ### Encoding
 
@@ -205,15 +271,16 @@ All thresholds live in `tools/yen_sei/curation_config.json`. Change a number →
 
 ```
 0.  qualify   — Scan ALL external-sources, classify each SGF as gold/silver/bronze/drop
-                per curation_config.json. Writes data/qualification_{TS}.jsonl +
-                qualification_latest.jsonl pointer (TS = YYYYMMDDTHHMM). Keeps
+                per curation_config.json. Writes data/{TS}_qualification.jsonl +
+                data/{TS}_qualification_latest.jsonl pointer (TS = YYYYMMDDHHMMSS). Keeps
                 last 3 timestamped runs; older ones are auto-deleted.
                 Also enforces two AI-contamination gates BEFORE classification:
                   • ai_enriched         — drop if SGF YQ.ac > 0
                   • ai_signature_prose  — drop if >=2 templated-LLM-prose hits
                 NO files copied. (Python, local, multiprocessing)
 1.  sample    — Print N random puzzles from a tier for human spot-check.
-2.  ingest    — Read qualification_latest.jsonl, copy selected tiers into data/sources/
+2.  ingest    — Read newest qualification run (or newest latest-pointer file),
+                copy selected tiers into data/sources/
                 with tier-prefixed filenames: {tier}_{source}_{stem}.sgf.
                 Writes data/sources/_manifest.jsonl with provenance. (Python, local)
 3.  harvest   — Extract (position, comment) pairs from data/sources/. Tier is parsed
@@ -260,8 +327,8 @@ All thresholds live in `tools/yen_sei/curation_config.json`. Change a number →
 
 **yen-sei NEVER reads from or writes to `external-sources/` directly** (except `qualify`).
 
-- `qualify` scans external-sources/ read-only to score puzzles and produce qualification_{TS}.jsonl + qualification_latest.jsonl pointer.
-- `ingest` reads qualification_latest.jsonl (NOT external-sources) and copies selected SGFs into `data/sources/` with tier-prefixed names. All persisted paths are POSIX, repo-root-relative (see `tools/yen_sei/data_paths.py`).
+- `qualify` scans external-sources/ read-only to score puzzles and produce `{TS}_qualification.jsonl` + `{TS}_qualification_latest.jsonl`.
+- `ingest` reads the newest qualification artefact (NOT external-sources) and copies selected SGFs into `data/sources/` with tier-prefixed names. All persisted paths are POSIX, repo-root-relative (see `tools/yen_sei/data_paths.py`).
 - All downstream stages read only from `data/`.
 - Original external-sources files are never modified, moved, or deleted.
 
@@ -332,26 +399,30 @@ tools/yen_sei/
     │   ├── sft_metadata.jsonl   # Sidecar: source, quality_score, etc.
     │   ├── train.jsonl
     │   ├── val.jsonl
-    │   └── test.jsonl
+    │   ├── test_{id}.jsonl          # Named test sets (from eval-prep)
+    │   └── test_{id}_metadata.jsonl # Sidecar for test sets
     ├── synthetic/               # generate output
     └── models/                  # trained model artifacts
 ```
 
-## Current Status (2026-04-17)
+## Current Status (2026-04-19)
 
 - **select**: Complete — 191,794 SGFs scanned, 20,154 Tier A identified
 - **ingest**: Complete — 20,780 Tier A puzzles copied to flat data/sources/
 - **harvest + refine + validate**: Hardened — shared schema from `tools.core.teaching_schema`, programmatic hint generation, validation stage added
+- **v3 format rewrite (2026-04-19)**: JSON → tagged text. CJK/MT text cleaning. Coordinates removed from model output. Level/Tags removed from user prompt. Summary field removed. System prompt revised (Cho Chikun voice). Eval scorers support dual format (tagged text + JSON backward compat).
 - **audit notebook**: Ready — runs on data/sources/ after ingest
-- **GPU notebooks (02-06)**: Stubs, awaiting GPU environment
+- **GPU notebooks (02-06)**: Updated with tagged text bundle and format_compliance_pct metric
 - **Training strategy research**: Complete (2026-04-17) — QLoRA SFT chosen, model evaluation phase added
-- **Data format**: Fixed — universal JSONL (messages only), utf-8-sig encoding
+- **Data format**: Fixed — universal JSONL (messages only), tagged text assistant responses, utf-8-sig encoding
 
-### Shared Components (consolidated 2026-04-17)
+### Shared Components (consolidated 2026-04-19)
 
-- `tools.core.teaching_schema` — canonical `TeachingOutput` / `TeachingComments` Pydantic models
+- `tools.core.teaching_schema` — canonical `TeachingOutput` / `TeachingComments` Pydantic models (JSON, for oshie) + `format_tagged_text` / `parse_tagged_text` (tagged text v3, for yen-sei SFT)
 - `tools.core.go_teaching_constants` — `GO_TECHNIQUES`, `MARKER_ONLY_PATTERNS`, `GO_TECHNIQUE_PATTERN`, `EXPLANATION_KEYWORDS`
-- Both `yen_sei` and `llm-teaching-agent` import from these shared modules
+- `tools.core.text_cleaner` — `sanitize_for_training()` strips CJK, slash-pairs, MT annotations
+- `tools.yen_sei.config` — `SYSTEM_PROMPT` (single source of truth for refine + eval_prep)
+- Both `yen_sei` and `oshie` import from `tools.core.*` shared modules
 
 ### Next Steps
 
@@ -366,26 +437,17 @@ python -m tools.yen_sei refine --stats             # Produce SFT JSONL with hint
 python -m tools.yen_sei validate                   # Check schema compliance
 ```
 
-## Target Output Format
+## Target Output Format (v3 Tagged Text)
 
-The refine stage produces ChatML JSONL matching the `TeachingOutput` schema from `tools/llm-teaching-agent/agent/response_parser.py`:
+The refine stage produces ChatML JSONL with tagged text assistant responses. The format is defined in `tools/core/teaching_schema.py` (`format_tagged_text` / `parse_tagged_text`).
 
-```json
-{
-  "teaching_comments": {
-    "correct_comment": "Explanation of why the correct move works",
-    "wrong_comments": {"cd": "Why this move fails"},
-    "summary": "One-line puzzle summary"
-  },
-  "hints": ["Technique name", "Reasoning hint", "Coordinate hint with {!xy}"]
-}
-```
+See "Assistant Output: Tagged Text Format (v3)" above for the full specification.
 
-The challenge: raw SGF comments are freeform text, not structured JSON. The normalization step maps freeform comments -> structured fields. The audit notebook will reveal how feasible this mapping is and what heuristics we need.
+The eval scorers (`tools/yen_sei/eval/scorers.py`) support both tagged text (v3+) and JSON (pre-v3 backward compat) output formats. `score_structural()` tries JSON first, falls back to tagged text.
 
 ## Integration Point
 
-The trained model slots into `tools/llm-teaching-agent/` by changing one config:
+The trained model slots into `tools/oshie/` by changing one config:
 
 ```python
 # Before (GPT-4o API, paid):
@@ -403,17 +465,18 @@ Helpers live in `tools/yen_sei/data_paths.py`. Every stage that writes a primary
 artefact MUST use them, and every stage that reads one MUST go through the
 `_latest` pointer.
 
-- **Filename format**: `{kind}_{YYYYMMDDTHHMM}.{ext}` (e.g. `qualification_20260418T2146.jsonl`).
-- **Pointer**: `{kind}_latest.{ext}` is a byte-copy of the most recent timestamped file (not a symlink — Windows-portable).
+- **Filename format**: `{YYYYMMDDHHMMSS}_{kind}.{ext}` (e.g. `20260418214600_qualification.jsonl`).
+- **Pointer format**: `{YYYYMMDDHHMMSS}_{kind}_latest.{ext}` (e.g. `20260418214600_qualification_latest.jsonl`).
 - **Retention**: `cleanup_old(keep=3)` after each successful run keeps the 3 most recent timestamps and deletes older ones.
 - **POSIX paths only**: all `file_path` / `source_path` fields persisted to JSONL go through `to_posix_rel(p)` (forward slashes, repo-root-relative). Readers use `from_posix_rel(rel)` to materialize an absolute `Path`.
+- **Stage run logs**: `qualify` / `ingest` / `harvest` now auto-write both `data/{TS}_{stage}_run.log` and `data/{TS}_{stage}_run_latest.log` (TS = `YYYYMMDDHHMMSS`). Retention also applies to these timestamped files.
+- **Human-readable path logs**: stage messages print repo-relative POSIX paths (e.g. `tools/yen_sei/data/sources`) instead of absolute Windows paths.
 
 This kills the `qualification_v2 / v2.1 / STALE / kano_239 / smoke` proliferation we accumulated in v2.
 
 ## AI-Contamination Filter (added 2026-04-18)
 
-Lives in `governance/teaching_signal.py`, runs inside `qualify`. Two cheap checks
-before sgfmill parses anything:
+Lives in `governance/teaching_signal.py`, runs inside `qualify`:
 
 1. **`ai_enriched`** — regex-extract the SGF root property `YQ[...]`, parse `ac:N`, drop if `N > 0` (the puzzle has been touched by enrichment / AI-solve / verification).
 2. **`ai_signature_prose`** — count hits across 6 patterns of templated LLM prose ("the correct move is", "as an AI", coordinate dumps `(B 3-4) → (W 5-2)`, etc.). Drop if `>= 2`.
@@ -429,10 +492,11 @@ to LEARN HUMAN TEACHING, so AI-touched puzzles must be excluded from training.
 ## Eval Methodology — Layer A / B / C (added 2026-04-18)
 
 Replaces the old "JSON-compliance %" metric, which was structural-only and
-silently passed prose like "I cannot help".
+silently passed prose like "I cannot help". Now renamed to `format_compliance_pct`
+and supports both tagged text (v3+) and JSON (backward compat).
 
 - **Layer A — Structural** (`eval/scorers.py::score_structural`)
-  - Free, deterministic. Does the output parse as JSON? Does it have non-empty `teaching_comments.correct_comment`, a `wrong_comments` block, and `hints`?
+  - Free, deterministic. Does the output parse as valid tagged text (v3+) or JSON (backward compat)? Does it have a non-empty `---CORRECT---` section, `---WRONG---` sections, and `---HINT---` sections? Metric: `format_compliance_pct`.
 
 - **Layer B — Grounded** (`eval/scorers.py::score_grounded`)
   - Free, deterministic, position-anchored. Does the output **mention the actual correct move** (extracted from the reference's `{!cg}` token)? Does it mention **at least one technique that actually applies to this puzzle's tags** (matched against `GO_TECHNIQUE_PATTERN`)? Does it avoid hallucinating off-board SGF coordinates? Is the text plausibly English?
@@ -455,8 +519,8 @@ SGF root comment frequently paraphrases the answer, and including it in the
 test prompt was leaking the label into the input — making val/test scores
 misleadingly high.
 
-The user prompt now contains only: board size, side to move, level, stones,
-tags. The reference assistant turn is the supervised target during training and
+The user prompt now contains only: board size, side to move, and setup stones.
+No Level, no Tags, no root comment. The reference assistant turn is the supervised target during training and
 the held-out gold during eval — never repeated back to the model in the prompt.
 
 ## v2.3 — Bronze Criteria, No Upsampling, Marker-Only Test Sets (added 2026-04-19)
@@ -511,7 +575,7 @@ the very thing we were grading the model on. Now:
   ```
 
 - New CLI stage `python -m tools.yen_sei eval-prep` reads
-  `qualification_latest.jsonl + test_sets[]` and writes per-set:
+  newest qualification jsonl + `test_sets[]` and writes per-set:
   - `data/refined/test_{id}.jsonl` — chat row with `[system, user]` only (no
     assistant), so the prompt-leak surface is zero.
   - `data/refined/test_{id}_metadata.jsonl` — sidecar with `correct_first_move`,

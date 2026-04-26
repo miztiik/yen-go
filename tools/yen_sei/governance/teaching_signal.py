@@ -192,7 +192,7 @@ def extract_signals(sgf_path: Path, source: str, cfg: CurationConfig) -> Teachin
         signals.gate_failures.append(f"unreadable:{type(e).__name__}")
         return signals
 
-    # AI-enrichment detection (cheap, runs before sgfmill parse).
+    # AI-enrichment detection
     yq_match = _YQ_PROP_RE.search(raw)
     if yq_match:
         ac_match = _YQ_AC_RE.search(yq_match.group(1))
@@ -201,8 +201,7 @@ def extract_signals(sgf_path: Path, source: str, cfg: CurationConfig) -> Teachin
     if signals.yq_ac > 0:
         signals.gate_failures.append("ai_enriched")
 
-    # Cheap structural gates BEFORE invoking sgfmill (which is slow on
-    # pathological deep trees from game records). Do these first.
+    # Cheap structural gates. Do these first.
     open_paren_count = raw.count("(;")
     if open_paren_count > 500:
         signals.variation_count = open_paren_count

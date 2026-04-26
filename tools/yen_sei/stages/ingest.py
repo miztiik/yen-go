@@ -23,10 +23,19 @@ from collections import Counter
 from pathlib import Path
 
 from tools.yen_sei.config import SOURCES_DIR
-from tools.yen_sei.data_paths import from_posix_rel, resolve_latest, to_posix_rel
+from tools.yen_sei.data_paths import (
+    from_posix_rel,
+    resolve_latest,
+    resolve_latest_pointer,
+    to_posix_rel,
+)
 from tools.yen_sei.governance.config_loader import load_config
 from tools.yen_sei.stages.qualify import QUALIFICATION_JSONL
-from tools.yen_sei.telemetry.logger import set_context, setup_logger
+from tools.yen_sei.telemetry.logger import (
+    configure_stage_file_logging,
+    set_context,
+    setup_logger,
+)
 
 logger = setup_logger(__name__)
 
@@ -122,19 +131,32 @@ def run_ingest(
     explicitly to override.
     """
     set_context(stage="ingest")
+    run_log, latest_log, deleted_logs = configure_stage_file_logging("ingest", logger=logger)
+    logger.info(
+        "Run logs: %s (latest: %s)",
+        to_posix_rel(run_log),
+        to_posix_rel(latest_log),
+    )
+    if deleted_logs:
+        logger.info("Run-log cleanup: removed %d old logs", len(deleted_logs))
+
     cfg = load_config(config_path)
     if qualification_jsonl:
         qual_path = Path(qualification_jsonl)
     else:
         latest = resolve_latest("qualification", "jsonl")
-        qual_path = latest if latest else QUALIFICATION_JSONL
+        latest_ptr = resolve_latest_pointer("qualification", "jsonl")
+        qual_path = latest or latest_ptr or QUALIFICATION_JSONL
 
     if not qual_path.exists():
-        logger.error("Qualification file not found: %s. Run 'yen-sei qualify' first.", qual_path)
+        logger.error(
+            "Qualification file not found: %s. Run 'yen-sei qualify' first.",
+            to_posix_rel(qual_path),
+        )
         return
 
     pattern = cfg.filename_pattern
-    logger.info("Reading qualification: %s", qual_path)
+    logger.info("Reading qualification: %s", to_posix_rel(qual_path))
     logger.info("Filename pattern: %s", pattern)
     logger.info("Tiers to ingest: %s", ", ".join(tiers))
 
@@ -188,7 +210,11 @@ def run_ingest(
     if clean:
         existing = list(SOURCES_DIR.glob("*.sgf"))
         if existing:
-            logger.info("Clearing %d existing files in %s", len(existing), SOURCES_DIR)
+            logger.info(
+                "Clearing %d existing files in %s",
+                len(existing),
+                to_posix_rel(SOURCES_DIR),
+            )
             for f in existing:
                 f.unlink()
         if MANIFEST_PATH.exists():
@@ -222,7 +248,12 @@ def run_ingest(
             try:
                 shutil.copyfile(src_path, dest_path)
             except OSError as e:
-                logger.warning("Copy failed %s -> %s: %s", src_path, dest_path, e)
+                logger.warning(
+                    "Copy failed %s -> %s: %s",
+                    to_posix_rel(src_path),
+                    to_posix_rel(dest_path),
+                    e,
+                )
                 continue
             copied[tier] += 1
             manifest.write(json.dumps({
@@ -244,8 +275,8 @@ def run_ingest(
     total = sum(copied.values())
     logger.info("Ingest complete: %d copied, %d missing, %d collisions",
                 total, skipped_missing, skipped_collision)
-    print(f"\nCopied {total:,} files into {SOURCES_DIR}:")
+    print(f"\nCopied {total:,} files into {to_posix_rel(SOURCES_DIR)}:")
     for tier in ("gold", "silver", "bronze"):
         if copied.get(tier):
             print(f"  {tier}: {copied[tier]:,}")
-    print(f"\nManifest: {MANIFEST_PATH}")
+    print(f"\nManifest: {to_posix_rel(MANIFEST_PATH)}")

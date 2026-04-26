@@ -2,8 +2,9 @@
 qualification report. NO files are copied or modified.
 
 Output:
-- data/qualification_v2.jsonl : one JSON line per scanned SGF with all signals
-- data/qualification_v2_report.txt : human-readable per-source tier breakdown
+- data/YYYYMMDDHHMMSS_qualification.jsonl : one JSON line per scanned SGF
+- data/YYYYMMDDHHMMSS_qualification.report.txt : human-readable report
+- data/YYYYMMDDHHMMSS_qualification_latest.{jsonl,report.txt} : latest pointers
 """
 
 from __future__ import annotations
@@ -19,22 +20,29 @@ from tools.yen_sei.config import DATA_DIR, EXT_ROOT
 from tools.yen_sei.data_paths import (
     DEFAULT_KEEP,
     cleanup_old,
+    cleanup_old_latest_pointers,
+    legacy_latest_pointer,
     latest_pointer,
     now_stamp,
     resolve_latest,
+    resolve_latest_pointer,
     stamped_path,
     to_posix_rel,
 )
 from tools.yen_sei.governance.config_loader import CurationConfig, load_config
 from tools.yen_sei.governance.teaching_signal import extract_signals, signals_to_dict
 from tools.yen_sei.governance.tier_classifier import classify
-from tools.yen_sei.telemetry.logger import set_context, setup_logger
+from tools.yen_sei.telemetry.logger import (
+    configure_stage_file_logging,
+    set_context,
+    setup_logger,
+)
 
 logger = setup_logger(__name__)
 
-# Canonical pointer used by downstream stages. Always == newest stamped run.
-QUALIFICATION_JSONL = latest_pointer("qualification", "jsonl")
-QUALIFICATION_REPORT = latest_pointer("qualification", "report.txt")
+# Legacy static pointers kept as fallback for backward compatibility reads.
+QUALIFICATION_JSONL = legacy_latest_pointer("qualification", "jsonl")
+QUALIFICATION_REPORT = legacy_latest_pointer("qualification", "report.txt")
 
 
 # Worker globals (one per process, populated by _init_worker)
@@ -87,6 +95,15 @@ def run_qualify(
             main baseline is never overwritten by a single-folder run.
     """
     set_context(stage="qualify")
+    run_log, latest_log, deleted_logs = configure_stage_file_logging("qualify", logger=logger)
+    logger.info(
+        "Run logs: %s (latest: %s)",
+        to_posix_rel(run_log),
+        to_posix_rel(latest_log),
+    )
+    if deleted_logs:
+        logger.info("Run-log cleanup: removed %d old logs", len(deleted_logs))
+
     cfg = load_config(config_path)
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     run_stamp = now_stamp()
@@ -96,7 +113,7 @@ def run_qualify(
     # 2. Single-path preview (--path without --upsert) -> derived preview path
     #    so we NEVER overwrite the main baseline.
     # 3. Full-corpus or --upsert -> timestamped artefact under data/, plus
-    #    a refreshed `qualification_latest.jsonl` pointer used by ingest.
+    #    refreshed latest pointers used by ingest.
     if output_jsonl:
         out_jsonl = Path(output_jsonl)
         out_report = Path(output_report) if output_report else out_jsonl.with_name(out_jsonl.stem + "_report.txt")
@@ -105,8 +122,8 @@ def run_qualify(
         leaf = Path(scan_path).resolve().name
         # Sanitize: keep alnum, dash, underscore; replace others with "_"
         slug = "".join(c if (c.isalnum() or c in "-_") else "_" for c in leaf).strip("_") or "preview"
-        out_jsonl = DATA_DIR / f"qualification_preview_{slug}_{run_stamp}.jsonl"
-        out_report = DATA_DIR / f"qualification_preview_{slug}_{run_stamp}_report.txt"
+        out_jsonl = stamped_path(f"qualification_preview_{slug}", "jsonl", DATA_DIR, run_stamp)
+        out_report = stamped_path(f"qualification_preview_{slug}", "report.txt", DATA_DIR, run_stamp)
         write_pointer = False
     else:
         out_jsonl = stamped_path("qualification", "jsonl", DATA_DIR, run_stamp)
@@ -123,10 +140,14 @@ def run_qualify(
             raise SystemExit(f"--path does not exist: {scan_root}")
         if not scan_root.is_dir():
             raise SystemExit(f"--path is not a directory: {scan_root}")
-        logger.info("Scanning subtree %s with %d workers (single-path mode) ...", scan_root, nworkers)
+        logger.info(
+            "Scanning subtree %s with %d workers (single-path mode) ...",
+            to_posix_rel(scan_root),
+            nworkers,
+        )
     else:
         scan_root = EXT_ROOT
-        logger.info("Scanning %s with %d workers ...", EXT_ROOT, nworkers)
+        logger.info("Scanning %s with %d workers ...", to_posix_rel(EXT_ROOT), nworkers)
 
     # Build full work list with file-size pre-check; oversize files are flagged
     # as gate failures without ever being parsed (avoids stuck workers on game records).
@@ -291,12 +312,12 @@ def run_qualify(
                 total_done, elapsed, total_done / max(elapsed, 0.001))
 
     _write_report(out_report, cfg, tier_counts, gate_failures, total_done, elapsed)
-    logger.info("Wrote: %s", out_jsonl)
-    logger.info("Wrote: %s", out_report)
+    logger.info("Wrote: %s", to_posix_rel(out_jsonl))
+    logger.info("Wrote: %s", to_posix_rel(out_report))
 
     # Update canonical *_latest pointers + auto-cleanup older runs.
     if write_pointer:
-        _refresh_pointer_and_cleanup(out_jsonl, out_report)
+        _refresh_pointer_and_cleanup(run_stamp, out_jsonl, out_report)
 
 
 def _write_report(
@@ -360,24 +381,33 @@ def _write_report(
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def _refresh_pointer_and_cleanup(stamped_jsonl: Path, stamped_report: Path) -> None:
-    """Refresh `qualification_latest.{jsonl,report.txt}` pointers and prune old runs."""
+def _refresh_pointer_and_cleanup(run_stamp: str, stamped_jsonl: Path, stamped_report: Path) -> None:
+    """Refresh timestamp-prefixed latest pointers and prune old runs/pointers."""
     for kind, ext, src in [
         ("qualification", "jsonl", stamped_jsonl),
         ("qualification", "report.txt", stamped_report),
     ]:
-        ptr = latest_pointer(kind, ext)
-        if ptr.exists() or ptr.is_symlink():
+        ptr = latest_pointer(kind, ext, ts=run_stamp)
+        ptr.write_bytes(src.read_bytes())
+        legacy_ptr = legacy_latest_pointer(kind, ext)
+        if legacy_ptr.exists() or legacy_ptr.is_symlink():
             try:
-                ptr.unlink()
+                legacy_ptr.unlink()
             except OSError:
                 pass
-        ptr.write_bytes(src.read_bytes())
+
     deleted_jsonl = cleanup_old("qualification", "jsonl", keep=DEFAULT_KEEP)
     deleted_report = cleanup_old("qualification", "report.txt", keep=DEFAULT_KEEP)
-    if deleted_jsonl or deleted_report:
-        logger.info("Cleanup: removed %d old qualification jsonl + %d old reports",
-                    len(deleted_jsonl), len(deleted_report))
+    deleted_jsonl_ptr = cleanup_old_latest_pointers("qualification", "jsonl", keep=DEFAULT_KEEP)
+    deleted_report_ptr = cleanup_old_latest_pointers("qualification", "report.txt", keep=DEFAULT_KEEP)
+    if deleted_jsonl or deleted_report or deleted_jsonl_ptr or deleted_report_ptr:
+        logger.info(
+            "Cleanup: removed runs(jsonl=%d report=%d) + latest pointers(jsonl=%d report=%d)",
+            len(deleted_jsonl),
+            len(deleted_report),
+            len(deleted_jsonl_ptr),
+            len(deleted_report_ptr),
+        )
 
 
 def sample_tier(
@@ -392,7 +422,8 @@ def sample_tier(
         src_path = Path(jsonl_path)
     else:
         latest = resolve_latest("qualification", "jsonl")
-        src_path = latest if latest else QUALIFICATION_JSONL
+        latest_ptr = resolve_latest_pointer("qualification", "jsonl")
+        src_path = latest or latest_ptr or QUALIFICATION_JSONL
     if not src_path.exists():
         print(f"Run qualify first: {src_path} not found.")
         return

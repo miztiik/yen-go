@@ -112,6 +112,54 @@ def main() -> int:
     refine_parser.add_argument("--stats", action="store_true", help="Print statistics")
     refine_parser.add_argument("--config", type=str, help="Path to curation_config.json (for tier weights)")
 
+    # polish — P0-3 LLM-assisted English cleanup of broken comments
+    polish_parser = subparsers.add_parser(
+        "polish",
+        help="[P0-3] Classify raw comments (Stage A regex + Stage B language scoring); "
+             "with --llm, also rewrite flagged ones via Stage C. Default is dry-run.",
+    )
+    polish_parser.add_argument("--input", type=str, default=None,
+                               help="Input raw JSONL (default: data/raw/raw.jsonl)")
+    polish_parser.add_argument("--output", type=str, default=None,
+                               help="Output polished JSONL (default: data/raw/raw_polished.jsonl)")
+    polish_parser.add_argument("--llm", action="store_true",
+                               help="Run Stage C (LLM rewrite). Requires OSHIE_LLM_CONFIG env or default.")
+    polish_parser.add_argument("--cache-only", action="store_true",
+                               help="Run Stage C using only the local cache (no network). "
+                                    "Use after polish-load-batch has populated the cache. "
+                                    "Any cache miss raises an error.")
+    polish_parser.add_argument("--model", type=str, default="gpt-4o-mini",
+                               help="Model name for Stage C rewrite (default: gpt-4o-mini, ~10x cheaper than gpt-4o)")
+    polish_parser.add_argument("--sample", type=int, default=None,
+                               help="Print N flagged before/after pairs and exit (no file written)")
+    polish_parser.add_argument("--limit", type=int, default=None,
+                               help="Process at most N records (smoke testing)")
+
+    # polish dump-batch — emit pending Stage-C requests for any external backend
+    dump_parser = subparsers.add_parser(
+        "polish-dump-batch",
+        help="[P0-3] Dump pending (uncached) Stage-C rewrite requests as JSONL. "
+             "Use to feed an external backend (subagents, OpenAI Batch, manual review) "
+             "without coupling polish.py to a specific HTTP client.",
+    )
+    dump_parser.add_argument("--input", type=str, default=None,
+                             help="Input raw JSONL (default: data/raw/raw.jsonl)")
+    dump_parser.add_argument("--output", type=str, required=True,
+                             help="Output batch JSONL of pending requests")
+    dump_parser.add_argument("--limit", type=int, default=None,
+                             help="Process at most N source records")
+    dump_parser.add_argument("--include-cached", action="store_true",
+                             help="Include requests whose cache is already populated")
+
+    # polish load-batch — populate cache from external backend responses
+    load_parser = subparsers.add_parser(
+        "polish-load-batch",
+        help="[P0-3] Load Stage-C rewrite responses into the polish cache. "
+             "Each input line must be {cache_key, rewritten}.",
+    )
+    load_parser.add_argument("--input", type=str, required=True,
+                             help="Input responses JSONL")
+
     # validate
     validate_parser = subparsers.add_parser("validate", help="Validate refined SFT output")
     validate_parser.add_argument("--input", type=str, help="Input SFT JSONL path")
@@ -119,6 +167,17 @@ def main() -> int:
         "--max-failure-rate", type=float, default=0.05,
         help="Max allowed failure rate (default: 0.05)",
     )
+
+    # audit-corpus — pre-train data quality gate (P2-1)
+    audit_parser = subparsers.add_parser(
+        "audit-corpus",
+        help="Pre-train data quality audit. Reports CN→EN markers, coord leaks, "
+             "templated dominance, prompt↔target overlap. --strict fails the build.",
+    )
+    audit_parser.add_argument("--input", type=str, default=None,
+                              help="Path to refined JSONL (default: data/refined/train.jsonl)")
+    audit_parser.add_argument("--strict", action="store_true",
+                              help="Exit non-zero on threshold breach")
 
     # eval_prep
     eval_prep_parser = subparsers.add_parser(
@@ -236,6 +295,49 @@ def main() -> int:
             config_path=args.config,
         )
 
+    elif args.command == "polish":
+        from tools.yen_sei.stages.polish import run_polish
+
+        # Stage C is opt-in. We construct an LLM client only if --llm is set,
+        # so dry-run users don't need an API key.
+        client = None
+        if args.llm:
+            if args.cache_only:
+                from tools.yen_sei.stages.polish import NullLLMClient
+                client = NullLLMClient()
+            else:
+                from tools.oshie.agent.llm_client import LLMConfig, TeachingLLMClient
+                client = TeachingLLMClient(LLMConfig(model=args.model))
+        return run_polish(
+            input_path=args.input,
+            output_path=args.output,
+            use_llm=args.llm,
+            sample=args.sample,
+            limit=args.limit,
+            llm_client=client,
+        )
+
+    elif args.command == "polish-dump-batch":
+        from pathlib import Path
+        from tools.yen_sei.stages.polish import dump_batch
+
+        n = dump_batch(
+            input_path=Path(args.input) if args.input else None,
+            output_path=Path(args.output),
+            limit=args.limit,
+            skip_cached=not args.include_cached,
+        )
+        print(f"Wrote {n} pending requests to {args.output}")
+        return 0
+
+    elif args.command == "polish-load-batch":
+        from pathlib import Path
+        from tools.yen_sei.stages.polish import load_batch
+
+        loaded, skipped = load_batch(input_path=Path(args.input))
+        print(f"Loaded {loaded} responses into cache ({skipped} skipped)")
+        return 0
+
     elif args.command == "validate":
         from tools.yen_sei.stages.validate import run_validate
 
@@ -243,6 +345,11 @@ def main() -> int:
             input_path=args.input,
             max_failure_rate=args.max_failure_rate,
         )
+
+    elif args.command == "audit-corpus":
+        from tools.yen_sei.stages.audit import run_audit
+
+        return run_audit(input_path=args.input, strict=args.strict)
 
     elif args.command == "eval-prep":
         from tools.yen_sei.stages.eval_prep import run_eval_prep

@@ -1,7 +1,7 @@
 """refine stage: Filter, normalize, and format into SFT-ready JSONL.
 
 Reads raw harvest output, applies quality filters, restructures
-comments into ChatML conversations matching the TeachingOutput schema.
+comments into ChatML conversations with tagged text assistant responses.
 """
 
 from __future__ import annotations
@@ -13,15 +13,17 @@ from hashlib import sha256
 from pathlib import Path
 
 from tools.core.go_teaching_constants import GO_TECHNIQUE_PATTERN, MARKER_ONLY_PATTERNS
-from tools.core.teaching_schema import TeachingComments, TeachingOutput
+from tools.core.teaching_schema import format_tagged_text, parse_tagged_text
+from tools.yen_sei.governance.text_normalizer import normalize_section_body
 from tools.yen_sei.config import (
     DEFAULT_MIN_COMMENT_LENGTH,
     RAW_JSONL,
+    RAW_POLISHED_JSONL,
     REFINED_DIR,
     SFT_JSONL,
     SFT_METADATA_JSONL,
     SPLIT_RATIOS,
-    TEST_JSONL,
+    SYSTEM_PROMPT,
     TRAIN_JSONL,
     VAL_JSONL,
 )
@@ -31,13 +33,6 @@ from tools.yen_sei.models.training_example import ChatMessage, ExampleMetadata, 
 from tools.yen_sei.telemetry.logger import set_context, setup_logger
 
 logger = setup_logger(__name__)
-
-# System prompt for SFT training — voice/tone only; training examples teach the JSON structure.
-SYSTEM_PROMPT = (
-    "You are a professional Go teacher. Explain why moves work or fail by describing "
-    "board consequences — liberties, shape, technique. Be concise and strategic. "
-    "Respond in JSON."
-)
 
 
 def _is_marker_only(text: str) -> bool:
@@ -67,18 +62,59 @@ def _compute_quality_score(record: RawExtract) -> float:
     return min((teaching_ratio * 0.6 + length_score * 0.4), 1.0)
 
 
+# Concept-level fallback hints derived from tags. The OLD hint #2
+# implementation copied a 50-char prefix of the correct-move comment
+# into the hint, which trained the model to copy answer prefixes
+# instead of reasoning. We now emit a *concept* (vital point, eye shape,
+# liberty race, etc.) drawn from tags; if no tag matches we omit hint #2
+# entirely rather than leak the answer.
+#
+# See IMPROVEMENT_PLAN.md §1.1 [P0-4].
+_TAG_TO_CONCEPT: dict[str, str] = {
+    "life-and-death": "Eye shape and vital point",
+    "life": "Make two eyes",
+    "death": "Destroy the eye shape",
+    "kill": "Find the vital point",
+    "alive": "Make two eyes",
+    "ko": "Ko fight — timing and threats",
+    "semeai": "Capturing race — count liberties",
+    "liberty": "Liberty count decides this",
+    "liberties": "Liberty count decides this",
+    "shortage": "Shortage of liberties",
+    "ladder": "Ladder reading",
+    "net": "Net the cutting stone",
+    "snapback": "Snapback — sacrifice and recapture",
+    "throw-in": "Throw-in tesuji",
+    "placement": "Vital-point placement",
+    "hane": "Hane at the head",
+    "connect": "Connection problem",
+    "cut": "Cutting point matters",
+    "endgame": "Endgame — sente vs gote",
+    "tesuji": "Find the tesuji",
+    "seki": "Seki — mutual life",
+    "capture": "Capture sequence",
+    "sacrifice": "Sacrifice for shape",
+    "nakade": "Nakade — dead shape inside",
+}
+
+
 def _extract_hints(record: RawExtract) -> list[str]:
-    """Extract up to 3 progressive hints from raw puzzle data.
+    """Extract up to 2 progressive hints from raw puzzle data.
 
     Hint 1 (technique): Go technique name found in comments or tags.
-    Hint 2 (reasoning): Short reasoning phrase from correct-move comment.
-    Hint 3 (coordinate): First correct move as {!xy} coordinate token.
+    Hint 2 (concept): Concept phrase derived from tags.
+
+    Coordinate hints ({!xy}) are NOT generated — they are computed from the
+    SGF solution tree at publish/serve time.
+
+    Hint 2 used to copy a 50-char prefix of the correct-move comment, which
+    trained the model to leak answer prefixes. Now it emits a concept from
+    tags or is omitted entirely. See IMPROVEMENT_PLAN.md §1.1 [P0-4].
     """
     hints: list[str] = []
 
-    # Hint 1: Technique name
+    # Hint 1: Technique name (from comments first, then tags)
     technique = ""
-    # Check comments first
     all_comments = [record.root_comment] + [n.comment for n in record.solution_nodes]
     for comment in all_comments:
         if not comment or _is_marker_only(comment):
@@ -87,7 +123,6 @@ def _extract_hints(record: RawExtract) -> list[str]:
         if match:
             technique = match.group(1).capitalize()
             break
-    # Fallback: check tags
     if not technique and record.tags:
         for tag in record.tags:
             tag_clean = tag.strip().lower().replace("-", " ")
@@ -95,34 +130,16 @@ def _extract_hints(record: RawExtract) -> list[str]:
             if match:
                 technique = match.group(1).capitalize()
                 break
-    hints.append(technique if technique else "Tactical reading")
+    if technique:
+        hints.append(technique)
 
-    # Hint 2: Reasoning phrase from correct-move comment
-    reasoning = ""
-    for node in record.solution_nodes:
-        if node.is_correct and node.comment and not _is_marker_only(node.comment):
-            # Take the first sentence or clause (up to first period, comma, or dash)
-            text = node.comment.strip()
-            for sep in (".", "—", " - ", ", "):
-                idx = text.find(sep)
-                if 10 < idx < 80:
-                    reasoning = text[:idx].strip()
-                    break
-            if not reasoning and len(text) <= 80:
-                reasoning = text
-            elif not reasoning:
-                reasoning = text[:80].strip()
-            break
-    hints.append(reasoning if reasoning else "Read the forcing sequence carefully.")
-
-    # Hint 3: First correct move coordinate as {!xy}
-    for node in record.solution_nodes:
-        if node.is_correct and node.move:
-            hints.append(f"The first move is at {{!{node.move}}}.")
-            break
-    else:
-        # No correct move found — omit this hint
-        pass
+    # Hint 2: Concept derived from tags. NEVER copy from the answer.
+    if record.tags:
+        for tag in record.tags:
+            concept = _TAG_TO_CONCEPT.get(tag.strip().lower())
+            if concept and concept != (hints[0] if hints else ""):
+                hints.append(concept)
+                break
 
     return hints
 
@@ -132,9 +149,11 @@ def _build_user_prompt(record: RawExtract) -> str:
 
     EVAL HONESTY: we deliberately do NOT include `record.root_comment` here.
     The root comment often paraphrases the answer; including it leaks the
-    label into the prompt and inflates val/test scores. The model sees only
-    board + side-to-move + setup stones + level + tags. It must generate the
-    teaching commentary from the position alone.
+    label into the prompt and inflates val/test scores.
+
+    SIMPLICITY: Level and Tags are omitted — they are yen-go custom terms
+    (not standard Go kyu/dan) and add noise (25-44% missing, heavily skewed).
+    The model sees only board + side-to-move + setup stones.
     """
     lines = [
         f"Board: {record.board_size}x{record.board_size}",
@@ -144,23 +163,20 @@ def _build_user_prompt(record: RawExtract) -> str:
         lines.append(f"Black stones: {', '.join(record.setup_black[:20])}")
     if record.setup_white:
         lines.append(f"White stones: {', '.join(record.setup_white[:20])}")
-    if record.level:
-        lines.append(f"Level: {record.level}")
-    if record.tags:
-        lines.append(f"Tags: {', '.join(record.tags)}")
     return "\n".join(lines)
 
 
 def _build_assistant_response(record: RawExtract) -> str:
-    """Build the assistant response from existing comments.
+    """Build the assistant response as tagged text.
 
-    Maps freeform SGF comments into a validated TeachingOutput JSON structure.
+    Maps freeform SGF comments into a structured tagged text format.
     Picks the LONGEST teaching comment on the correct path (not just the first)
     so deep teaching nodes aren't lost when the first correct node is just a marker.
+
+    No summary field. No JSON. No coordinates in output.
     """
     correct_candidates: list[str] = []
     wrong_comments: dict[str, str] = {}
-    summary = record.root_comment if not _is_marker_only(record.root_comment) else ""
 
     for node in record.solution_nodes:
         if _is_marker_only(node.comment):
@@ -175,19 +191,22 @@ def _build_assistant_response(record: RawExtract) -> str:
             if node.move not in wrong_comments:
                 wrong_comments[node.move] = node.comment
 
-    correct_comment = max(correct_candidates, key=len) if correct_candidates else ""
+    correct_raw = max(correct_candidates, key=len) if correct_candidates else ""
+
+    # P0-1 + P0-2: deterministic inner-content normalization. Strips
+    # boilerplate (Correct!, **->**, (;Correct), etc.), CN→EN markers,
+    # coordinates, and ordinal-move references BEFORE the text reaches
+    # the SFT target. Idempotent.
+    correct_comment = normalize_section_body(correct_raw)
+    wrong_comments = {
+        coord: normalized
+        for coord, raw in wrong_comments.items()
+        if (normalized := normalize_section_body(raw))
+    }
 
     hints = _extract_hints(record)
 
-    output = TeachingOutput(
-        teaching_comments=TeachingComments(
-            correct_comment=correct_comment,
-            wrong_comments=wrong_comments,
-            summary=summary[:200] if summary else "",
-        ),
-        hints=hints,
-    )
-    return output.model_dump_json()
+    return format_tagged_text(correct_comment, wrong_comments, hints)
 
 
 def _position_hash(record: RawExtract) -> str:
@@ -206,7 +225,15 @@ def run_refine(
     """Run the refine stage with tier-aware weighted upsampling."""
     set_context(stage="refine")
     cfg = load_config(config_path)
-    raw_path = Path(input_path) if input_path else RAW_JSONL
+    # Prefer the polished raw if present (P0-3). Falls through to RAW_JSONL
+    # otherwise, so this is a no-op for runs that haven't polished yet.
+    if input_path:
+        raw_path = Path(input_path)
+    elif RAW_POLISHED_JSONL.exists():
+        raw_path = RAW_POLISHED_JSONL
+        logger.info("Using polished raw input: %s", raw_path)
+    else:
+        raw_path = RAW_JSONL
     out_path = Path(output_path) if output_path else SFT_JSONL
 
     if not raw_path.exists():
@@ -272,14 +299,12 @@ def run_refine(
         if weight <= 0.0:
             excluded_zero_weight += 1
             continue
-        assistant_json = _build_assistant_response(record)
+        assistant_text = _build_assistant_response(record)
         try:
-            payload = json.loads(assistant_json)
-            tc = payload.get("teaching_comments", {})
-            cc_len = len((tc.get("correct_comment") or "").strip())
-            wc = tc.get("wrong_comments") or {}
-            max_wc_len = max((len(v.strip()) for v in wc.values()), default=0)
-        except (ValueError, AttributeError):
+            correct, wrongs, _ = parse_tagged_text(assistant_text)
+            cc_len = len(correct.strip())
+            max_wc_len = max((len(w.strip()) for w in wrongs), default=0)
+        except ValueError:
             excluded_thin_response += 1
             continue
         if cc_len < MIN_CORRECT_RESPONSE_CHARS and max_wc_len < MIN_WRONG_RESPONSE_CHARS:
@@ -290,7 +315,7 @@ def run_refine(
             messages=[
                 ChatMessage(role="system", content=SYSTEM_PROMPT),
                 ChatMessage(role="user", content=_build_user_prompt(record)),
-                ChatMessage(role="assistant", content=assistant_json),
+                ChatMessage(role="assistant", content=assistant_text),
             ],
             metadata=ExampleMetadata(
                 source=record.source,
@@ -307,31 +332,64 @@ def run_refine(
     if excluded_thin_response:
         logger.info("Excluded %d examples with thin assembled response", excluded_thin_response)
 
-    # Stratified splits per tier (so val/test contain proportional gold/silver/bronze)
+    # P0-5: Cap any single templated `correct_comment` cluster to <=15% of corpus.
+    # After P0-1 normalization, templated rows like "Black has formed two eyes
+    # and is alive." collapse to identical text, so exact-text grouping is
+    # sufficient (no SimHash needed). Excess rows are dropped, not reweighted.
+    # See IMPROVEMENT_PLAN.md §1.1 [P0-5].
+    TEMPLATE_CAP_RATIO = 0.15
+    cap = max(1, int(len(examples) * TEMPLATE_CAP_RATIO))
+    by_correct: dict[str, list[TrainingExample]] = {}
+    for ex in examples:
+        # Last message is assistant; parse out the CORRECT body for clustering
+        try:
+            correct, _, _ = parse_tagged_text(ex.messages[-1].content)
+        except ValueError:
+            continue
+        by_correct.setdefault(correct.strip().lower(), []).append(ex)
+    capped: list[TrainingExample] = []
+    capped_dropped = 0
+    capped_clusters: list[tuple[str, int, int]] = []
+    for key, group in by_correct.items():
+        if len(group) > cap:
+            capped_dropped += len(group) - cap
+            capped_clusters.append((key[:60], len(group), cap))
+            random.Random(42).shuffle(group)
+            capped.extend(group[:cap])
+        else:
+            capped.extend(group)
+    if capped_dropped:
+        logger.info(
+            "Template cap (<=%d, %.0f%% of %d): dropped %d duplicate-target rows across %d clusters",
+            cap, TEMPLATE_CAP_RATIO * 100, len(examples), capped_dropped, len(capped_clusters),
+        )
+        for preview, n_before, n_after in capped_clusters[:3]:
+            logger.info("  cluster %r: %d -> %d", preview, n_before, n_after)
+    examples = capped
+
+    # Stratified splits per tier (so val contains proportional gold/silver/bronze).
+    # No test split — test sets are built separately by eval_prep from marker-only pools.
     random.seed(42)
-    split_buckets: dict[str, list[TrainingExample]] = {"train": [], "val": [], "test": []}
+    split_buckets: dict[str, list[TrainingExample]] = {"train": [], "val": []}
     by_tier: dict[str, list[TrainingExample]] = {}
     for ex in examples:
         by_tier.setdefault(ex.metadata.tier, []).append(ex)
     for tier, group in by_tier.items():
         random.shuffle(group)
         n = len(group)
-        n_train = int(n * SPLIT_RATIOS["train"])
         n_val = int(n * SPLIT_RATIOS["val"])
+        n_train = n - n_val
         for i, ex in enumerate(group):
             if i < n_train:
                 ex.metadata.split = "train"
-            elif i < n_train + n_val:
-                ex.metadata.split = "val"
             else:
-                ex.metadata.split = "test"
+                ex.metadata.split = "val"
             split_buckets[ex.metadata.split].append(ex)
 
     REFINED_DIR.mkdir(parents=True, exist_ok=True)
     split_files = {
         "train": TRAIN_JSONL,
         "val": VAL_JSONL,
-        "test": TEST_JSONL,
     }
 
     # Write outputs. NO upsampling — each unique example is written exactly
@@ -342,7 +400,7 @@ def run_refine(
          SFT_METADATA_JSONL.open("w", encoding="utf-8-sig") as f_meta:
         writers = {split: path.open("w", encoding="utf-8-sig") for split, path in split_files.items()}
         try:
-            written_per_split: dict[str, int] = {"train": 0, "val": 0, "test": 0}
+            written_per_split: dict[str, int] = {"train": 0, "val": 0}
             written_per_tier: dict[str, int] = {}
             for split_name, group in split_buckets.items():
                 for ex in group:

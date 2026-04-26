@@ -6,6 +6,7 @@ import re
 from dataclasses import asdict, dataclass
 
 from tools.core.go_teaching_constants import GO_TECHNIQUE_PATTERN
+from tools.core.teaching_schema import parse_tagged_text
 
 _JSON_BLOCK_RE = re.compile(r"\{.*\}", re.DOTALL)
 # Coords like "ab", "cg" embedded in prose. SGF coords are 2 lowercase a-s letters.
@@ -32,17 +33,34 @@ class GroundedScore:
     correct_move_coord: str          # echoed for debugging
 
 
-def score_structural(generated: str) -> StructuralScore:
-    """Layer A: did the model emit a parseable JSON object with the right shape?"""
+def _score_structural_tagged(generated: str) -> StructuralScore:
+    """Score tagged text format (---CORRECT---/---WRONG---/---HINT---)."""
+    try:
+        correct, wrongs, hints = parse_tagged_text(generated)
+    except ValueError:
+        return StructuralScore(False, False, False, 0, 0, 0)
+
+    wc_text = " ".join(wrongs)
+    return StructuralScore(
+        parsed_ok=True,
+        has_correct=bool(correct.strip()),
+        has_wrong=bool(wc_text.strip()),
+        n_hints=len(hints),
+        n_chars_correct=len(correct),
+        n_chars_wrong=len(wc_text),
+    )
+
+
+def _score_structural_json(generated: str) -> StructuralScore | None:
+    """Try to score as JSON format. Returns None if not JSON."""
     blob = _JSON_BLOCK_RE.search(generated or "")
     if not blob:
-        return StructuralScore(False, False, False, 0, 0, 0)
+        return None
     try:
         obj = json.loads(blob.group(0))
     except json.JSONDecodeError:
-        return StructuralScore(False, False, False, 0, 0, 0)
+        return None
 
-    # Schema: {"teaching_comments": {"correct_comment": str, "wrong_comments": dict|list, ...}, "hints": [...]}
     tc = obj.get("teaching_comments") or {}
     cc = (tc.get("correct_comment") or "").strip() if isinstance(tc, dict) else ""
     wc = tc.get("wrong_comments") if isinstance(tc, dict) else None
@@ -61,6 +79,21 @@ def score_structural(generated: str) -> StructuralScore:
         n_chars_correct=len(cc),
         n_chars_wrong=len(wc_text),
     )
+
+
+def score_structural(generated: str) -> StructuralScore:
+    """Layer A: did the model emit a parseable response with the right shape?
+
+    Supports both JSON (backward compat) and tagged text (v3+) formats.
+    Tries JSON first; falls back to tagged text.
+    """
+    # Try JSON first (backward compat with pre-v3 models)
+    json_result = _score_structural_json(generated)
+    if json_result is not None:
+        return json_result
+
+    # Try tagged text (v3+ format)
+    return _score_structural_tagged(generated)
 
 
 def _flatten_text(parsed_obj: dict) -> str:

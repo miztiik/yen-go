@@ -40,11 +40,11 @@ Specifically:
   appears verbatim in both prompt and target, it's a leak.
 
 **Applied**:
-- New `tools/yen_sei/data_paths.py` enforces `{kind}_{YYYYMMDDTHHMM}.{ext}` +
-  `{kind}_latest.{ext}` pointer + `cleanup_old(keep=3)`. All stages use it.
+- New `tools/yen_sei/data_paths.py` enforces `{YYYYMMDDHHMMSS}_{kind}.{ext}` +
+   `{YYYYMMDDHHMMSS}_{kind}_latest.{ext}` pointers + `cleanup_old(keep=3)`. All stages use it.
 - New `governance/teaching_signal.py` gates: `ai_enriched` (parses `YQ[ac:N]`,
   drops if N>0) and `ai_signature_prose` (6 templated-LLM-prose regexes,
-  drops if >=2 hits). Both run before sgfmill parse.
+  drops if >=2 hits).
 - New `eval/{scorers,judges,runner}.py` module with three layers (Structural /
   Grounded / Judge). Headline metric is `useful_answer_pct` not raw JSON%.
 - `_build_user_prompt` in `stages/refine.py` no longer emits the `Context:` line.
@@ -193,7 +193,7 @@ weeks of Colab Free quota. The fix took one afternoon.
 
 ## 12. Pre-Parse Gates Save Worker Pools From Going Stuck
 
-**What happened**: First parallel scan of all 209K SGFs got stuck at 75K because a few enormous game-record SGFs (>100KB, thousands of branches) caused `sgfmill.parse` to hang for minutes. With `pool.map(chunksize=100)`, the slow worker blocked the whole chunk.
+**What happened**: First parallel scan of all 209K SGFs got stuck at 75K because a few enormous game-record SGFs (>100KB, thousands of branches) caused  to hang for minutes. With `pool.map(chunksize=100)`, the slow worker blocked the whole chunk.
 
 **Lesson**: For multiprocessing pools over heterogeneous file collections, add cheap pre-parse gates BEFORE invoking expensive parsers. File-size and structural-shape checks (`(` count) catch outliers without spinning up the parser.
 
@@ -261,3 +261,115 @@ weeks of Colab Free quota. The fix took one afternoon.
 
 **Heuristic**: If a tool ships a "config-driven rule engine" — commit it. The whole point of config-driven is that you can audit/revert/diff changes. Without git, you've recreated the problem you set out to solve.
 
+
+---
+
+## 16. JSON Output Format Competes With Content Quality in Small Models (the v3 rewrite)
+
+**What happened**: The v2 SFT training data used nested JSON as the assistant output format:
+```json
+{"teaching_comments": {"correct_comment": "...", "wrong_comments": {"cd": "..."}}, "hints": ["...", "...", "{!cg}"]}
+```
+Three independent issues made this a poor fit for 2-3B models:
+
+1. **JSON overhead steals tokens from teaching content.** The JSON wrapper (`teaching_comments`, braces, quotes, escaping) consumed ~40% of the assistant turn's token budget. A 384-token `max_new_tokens` leaves maybe 230 tokens for actual teaching prose after JSON structure. For a 2-3B model, every token spent on structure is a token NOT spent on "this creates a shortage of liberties."
+
+2. **Coordinates in model output are unverifiable.** The format included `wrong_comments: {"cd": "Why this fails"}` — but the model has NO way to know that `cd` is the wrong-move coordinate. That information comes from the SGF solution tree, which isn't in the prompt. The model was being asked to generate data it fundamentally cannot know, and the only way it could "succeed" was by memorizing coordinate-to-puzzle mappings from training — pure overfitting.
+
+3. **Noisy fields inflated the format.** `summary` was 68% empty or trivial ("A life and death problem"). `Level:` in the user prompt was missing 25% of the time and used yen-go custom terms (not standard kyu/dan). `Tags:` was missing 44% of the time and 70% were `life-and-death`. These added noise without signal.
+
+**What we found in the data**: CJK characters mixed in English prose ("赚", "黑A的確是"), machine-translation slash-pairs ("must/want"), parenthetical annotations ("(possessive)"), and stuck tokenizer garbage ("AIconfirmation"). These came from source SGF files with mixed-language content.
+
+**Applied** (v3 tagged text format):
+1. **Replaced JSON with tagged text delimiters**: `---CORRECT---`, `---WRONG---`, `---HINT---`. Line-oriented, no nesting, no escaping. Triple-dash delimiters never appear in Go teaching prose.
+2. **Removed coordinates from model output entirely.** Model generates WHY (teaching prose), pipeline computes WHERE (coordinates from SGF tree). Wrong move coordinates dropped from wrong_comments. Hint 3 (`{!xy}` coordinate) computed at publish/serve time, not generated.
+3. **Removed summary field.** 68% noise — not worth the tokens.
+4. **Removed Level and Tags from user prompt.** Board position only.
+5. **Added text sanitization**: `strip_cjk()`, slash-pair removal, MT annotation stripping to `sanitize_for_training()`.
+6. **Revised system prompt**: Cho Chikun voice (direct, precise, short sentences). Explicitly forbids coordinate generation — critical for small models that drift into solution narration without it.
+7. **Eval scorers updated to dual-format**: tries JSON first (backward compat for pre-v3 models), falls back to tagged text. Metric renamed `json_compliance_pct` → `format_compliance_pct`.
+
+**Lessons**:
+- **Don't ask the model to generate what can be computed.** If the answer is already in a data structure (SGF solution tree), compute it. The model should explain the reasoning, not reproduce metadata.
+- **Explicitly forbid unwanted behavior in the system prompt for small models.** Large models infer "don't output coordinates" from context. Small models need it spelled out: "Do not output move coordinates or solution sequences."
+- **Validate field utility before including.** summary was 68% noise — we should have checked this before designing the format around it.
+- **CJK mixed in English training data must be stripped, not preserved.** The model will reproduce whatever patterns it sees in training.
+- **Stuck characters (tokenizer garbage) are far worse than double spaces.** Tokenizers normalize whitespace; they do NOT recover from `AIconfirmation` or `赚capture`.
+
+**Cost of NOT doing this**: Models trained on v2 JSON would spend ~40% of their capacity on JSON structure compliance, learn to hallucinate coordinates, and reproduce CJK/MT artifacts. The v3 format lets the model focus entirely on teaching prose quality.
+
+
+---
+
+
+## 12. Loss Floor Is the Data Floor (2026-04-20)
+
+**What happened**: First Azure Foundry full-SFT run on `qwen3-32b`
+(3 epochs, batch 32, LR×1.0, ~2.5M tokens) finished with `train_loss=1.53`
+and `eval_loss=1.48`. The train curve dropped fast then plateaued noisy
+in 1.5–1.7 for two-thirds of training. The eval curve was nearly
+useless — only ~3 evaluation points across 270 steps because eval ran
+per-epoch, so it looked like a step function from 0 → 1.65 → 1.48.
+
+**Why each thing mattered**:
+
+1. A loss floor of ~1.5 on an SFT generation task means the model is
+   doing its best against targets it cannot reasonably predict. Looking
+   at random samples from `train.jsonl` made the cause obvious:
+   - Machine-translated CN→EN garbage like
+     `"enter work to this,not can avoid (adverb marker) shape form ko fight"`.
+     A 32B model cannot learn coherent teaching from incoherent targets.
+   - Templated trivial life/death rows dominate the corpus
+     (`"Black has formed two eyes and is alive"` × N). The model
+     memorizes the template and learns nothing about Go.
+   - System prompt forbids coordinates but ~30% of targets contain
+     `Black 1`, `White 2`, `{!cg}`, etc. The model is being trained
+     against its own instruction → loss can never reach floor.
+   - `Hint #2` is just the first ~50 chars of the answer field — the
+     "hint" is a prefix of the answer, training a copy behaviour.
+2. The eval-curve artefact (flat-zero then step) was a configuration
+   miss: per-epoch eval gives you 3 data points on a 270-step run.
+   Indistinguishable from "model not learning" vs "we didn't measure".
+3. The instinct to fix this with hyperparameters (lower LR, more epochs)
+   is correct *as a secondary lever* but cannot move a data-bound floor.
+   The 32B model has plenty of capacity; what it lacks is a coherent
+   target distribution to fit.
+
+**Lesson**: When SFT loss plateaus high with `eval ≈ train` and noisy
+train curve, **the ceiling is target quality, not hyperparameters**.
+Diagnostic order:
+
+1. Sample 50 random targets and **read them out loud**. If you
+   wouldn't accept them as a teacher, the model can't learn to write
+   them either.
+2. Diff system prompt rules vs. target content. Any instruction the
+   targets violate is a permanent loss floor.
+3. Cluster targets by SimHash; if the top cluster covers >20% of rows,
+   you're training a template-copier.
+4. Only after 1–3 are clean: revisit LR, epochs, eval cadence.
+
+**Lesson**: **Eval cadence is a first-class hyperparameter.**
+Per-epoch eval is fine for runs of dozens of epochs. For a 3-epoch
+fine-tune, set `eval_steps=20` so you actually have a curve to read.
+Cost is negligible compared to running blind.
+
+**Lesson** (process): an automated **pre-train data audit** would have
+caught all of this in seconds. The script doesn't exist yet — see
+[`IMPROVEMENT_PLAN.md`](./IMPROVEMENT_PLAN.md) §1.3 [P2-1]. Until it
+does, manually run: `% rows with CN→EN markers`, `% rows with
+coordinate tokens`, `top-20 most-duplicated targets`, `prompt↔target
+token overlap`. If any of those is alarming, **do not submit the run**.
+
+**Applied**:
+
+- `IMPROVEMENT_PLAN.md` lays out the ordered backlog: data
+  normalization (P0-1, P0-2, P0-4, P0-5), LLM-assisted English polish
+  stage (P0-3), then training-config tweaks (P1-1 lower LR, P1-2
+  eval-every-N-steps, P1-3 holdout test set), with `eval_loss ≤ 1.0`
+  as the acceptance gate (P2-2) for the next run.
+
+**Cost of NOT doing this**: each Azure full-SFT run on 32B costs real
+money + ~1 hour wall-clock. The current corpus would cap *every* such
+run at ~1.5 loss regardless of hyperparameters. Two more blind runs
+before someone reads the data = wasted budget plus a false conclusion
+that "the model isn't good enough." It is. The data isn't.

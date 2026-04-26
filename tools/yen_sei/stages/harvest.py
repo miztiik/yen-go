@@ -13,8 +13,13 @@ from pathlib import Path
 from tools.core.sgf_parser import parse_sgf, read_sgf_file
 from tools.core.text_cleaner import sanitize_for_training
 from tools.yen_sei.config import RAW_DIR, RAW_JSONL, SOURCES_DIR
+from tools.yen_sei.data_paths import to_posix_rel
 from tools.yen_sei.models.raw_extract import RawExtract, SolutionNode
-from tools.yen_sei.telemetry.logger import set_context, setup_logger
+from tools.yen_sei.telemetry.logger import (
+    configure_stage_file_logging,
+    set_context,
+    setup_logger,
+)
 
 logger = setup_logger(__name__)
 
@@ -87,6 +92,15 @@ def run_harvest(
 ) -> None:
     """Run the harvest stage. Reads from flat data/sources/ directory."""
     set_context(stage="harvest")
+    run_log, latest_log, deleted_logs = configure_stage_file_logging("harvest", logger=logger)
+    logger.info(
+        "Run logs: %s (latest: %s)",
+        to_posix_rel(run_log),
+        to_posix_rel(latest_log),
+    )
+    if deleted_logs:
+        logger.info("Run-log cleanup: removed %d old logs", len(deleted_logs))
+
     output = Path(output_path) if output_path else RAW_JSONL
     RAW_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -98,7 +112,7 @@ def run_harvest(
         return
 
     sgf_files = sorted(p for p in SOURCES_DIR.glob("*.sgf") if not p.name.startswith("_"))
-    logger.info("Harvesting %d SGF files from %s", len(sgf_files), SOURCES_DIR)
+    logger.info("Harvesting %d SGF files from %s", len(sgf_files), to_posix_rel(SOURCES_DIR))
 
     total_extracted = 0
     total_skipped = 0
@@ -130,5 +144,5 @@ def run_harvest(
         "Harvest complete: %d extracted, %d skipped → %s",
         total_extracted,
         total_skipped,
-        output,
+        to_posix_rel(output),
     )

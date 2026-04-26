@@ -166,7 +166,7 @@ def _aggregate(results: list[dict]) -> dict:
 
     summary = {
         "structural": {
-            "json_compliance_pct": pct([x["parsed_ok"] for x in s]),
+            "format_compliance_pct": pct([x["parsed_ok"] for x in s]),
             "has_correct_pct": pct([x["has_correct"] for x in s]),
             "has_wrong_pct": pct([x["has_wrong"] for x in s]),
             "avg_hints": round(sum(x["n_hints"] for x in s) / n, 2),
@@ -236,7 +236,7 @@ def evaluate_test_sets(
         ts_id: {
             "n": s.get("n"),
             "useful_answer_pct": s.get("useful_answer_pct"),
-            "json_compliance_pct": s.get("structural", {}).get("json_compliance_pct"),
+            "format_compliance_pct": s.get("structural", {}).get("format_compliance_pct"),
             "mentions_correct_move_pct": s.get("grounded", {}).get("mentions_correct_move_pct"),
             "mentions_tag_technique_pct": s.get("grounded", {}).get("mentions_tag_technique_pct"),
             "no_off_board_coords_pct": s.get("grounded", {}).get("no_off_board_coords_pct"),
@@ -248,7 +248,7 @@ def evaluate_test_sets(
         json.dumps(cmp, indent=2), encoding="utf-8",
     )
     print("\n=== TEST-SET COMPARISON ===")
-    cols = ["n", "useful_answer_pct", "json_compliance_pct",
+    cols = ["n", "useful_answer_pct", "format_compliance_pct",
             "mentions_correct_move_pct", "mentions_tag_technique_pct",
             "no_off_board_coords_pct", "looks_english_pct"]
     header = f"{'test_set':<32}" + "".join(f"{c:>12}" for c in cols)

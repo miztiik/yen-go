@@ -1,7 +1,7 @@
 """eval_prep stage: build named evaluation test sets.
 
 Reads:
-  - qualification_latest.jsonl (output of `qualify`)
+    - latest qualification jsonl (timestamp-prefixed run or latest pointer)
   - curation_config.json -> test_sets[]
 
 Writes one file per test_set into data/refined/:
@@ -33,19 +33,18 @@ from hashlib import sha256
 from pathlib import Path
 
 from tools.core.sgf_parser import parse_sgf
-from tools.yen_sei.config import REFINED_DIR
-from tools.yen_sei.data_paths import from_posix_rel, resolve_latest, to_posix_rel
+from tools.yen_sei.config import REFINED_DIR, SYSTEM_PROMPT
+from tools.yen_sei.data_paths import (
+    from_posix_rel,
+    resolve_latest,
+    resolve_latest_pointer,
+    to_posix_rel,
+)
 from tools.yen_sei.governance.config_loader import load_config
 from tools.yen_sei.stages.qualify import QUALIFICATION_JSONL
 from tools.yen_sei.telemetry.logger import set_context, setup_logger
 
 logger = setup_logger(__name__)
-
-SYSTEM_PROMPT = (
-    "You are a professional Go teacher. Explain why moves work or fail by describing "
-    "board consequences — liberties, shape, technique. Be concise and strategic. "
-    "Respond in JSON."
-)
 
 
 def _is_marker_only_candidate(row: dict) -> bool:
@@ -98,18 +97,16 @@ def _puzzle_hash(file_path: str, correct_first_move: str, board_size: int) -> st
 
 
 def _build_user_prompt(board_size: int, side_to_move: str,
-                       black_stones: list[str], white_stones: list[str],
-                       level: str = "", tags: list[str] | None = None) -> str:
-    """Same shape as refine.py's _build_user_prompt — board + side + setup only."""
+                       black_stones: list[str], white_stones: list[str]) -> str:
+    """Same shape as refine.py's _build_user_prompt — board + side + setup only.
+
+    Level and Tags are omitted (yen-go custom terms, noisy, not useful for model).
+    """
     lines = [f"Board: {board_size}x{board_size}", f"{side_to_move} to play"]
     if black_stones:
         lines.append(f"Black stones: {', '.join(black_stones[:20])}")
     if white_stones:
         lines.append(f"White stones: {', '.join(white_stones[:20])}")
-    if level:
-        lines.append(f"Level: {level}")
-    if tags:
-        lines.append(f"Tags: {', '.join(tags)}")
     return "\n".join(lines)
 
 
@@ -139,9 +136,8 @@ def _row_to_test_example(row: dict, test_set_id: str, has_reference_prose: bool)
         return None
 
     black, white, side = _stones_from_tree(tree)
-    # Tags from YT property if present
+    # Tags and level still extracted for sidecar metadata (used by grounded scorer)
     tags: list[str] = list(getattr(tree.yengo_props, "tags", []) or [])
-    # Level slug from YG property if present
     level = getattr(tree.yengo_props, "level_slug", "") or ""
 
     user_prompt = _build_user_prompt(
@@ -149,8 +145,6 @@ def _row_to_test_example(row: dict, test_set_id: str, has_reference_prose: bool)
         side_to_move=side,
         black_stones=black,
         white_stones=white,
-        level=level,
-        tags=tags,
     )
     chat_row = {
         "messages": [
@@ -191,9 +185,10 @@ def run_eval_prep(
         qual_path = Path(qualification_jsonl)
     else:
         latest = resolve_latest("qualification", "jsonl")
-        qual_path = latest if latest else QUALIFICATION_JSONL
+        latest_ptr = resolve_latest_pointer("qualification", "jsonl")
+        qual_path = latest or latest_ptr or QUALIFICATION_JSONL
     if not qual_path.exists():
-        logger.error("Qualification file not found: %s", qual_path)
+        logger.error("Qualification file not found: %s", to_posix_rel(qual_path))
         return
 
     rng = random.Random(seed)
@@ -201,7 +196,7 @@ def run_eval_prep(
     with qual_path.open("r", encoding="utf-8") as f:
         for line in f:
             rows.append(json.loads(line))
-    logger.info("eval_prep: loaded %d qualification rows from %s", len(rows), qual_path)
+    logger.info("eval_prep: loaded %d qualification rows from %s", len(rows), to_posix_rel(qual_path))
 
     # Pre-bucket by source kind
     marker_pool = [r for r in rows if _is_marker_only_candidate(r)]
