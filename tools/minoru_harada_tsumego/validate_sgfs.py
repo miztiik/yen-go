@@ -1,14 +1,14 @@
 """Comprehensive SGF validation for Harada tsumego collection.
 
-Checks every generated SGF for structural correctness:
-  1. Board position — has AB[]/AW[] setup stones
-  2. Solution tree — has at least one move branch
-  3. Color alternation — B-W-B-W in every branch
-  4. BM markers — only on first wrong move, not continuations
-  5. Comment quality — no mid-sentence newlines, no HTML artifacts
-  6. SGF spec compliance — valid properties, no stray attributes
-  7. Move validity — coordinates within board bounds
-  8. No phantom/noise moves — flag branches with suspiciously many moves
+Delegates shared structural checks (setup stones, solution moves, board
+bounds, PL mismatch, move-on-occupied) to ``tools.core.sgf_structural_checks``
+and adds Harada-specific rules on top:
+  1. Color alternation — B-W-B-W in every branch
+  2. BM markers — only on first wrong move, not continuations
+  3. Comment quality — no mid-sentence newlines, no HTML artifacts
+  4. SGF spec compliance — valid properties, no stray attributes
+  5. No phantom/noise moves — flag branches with suspiciously many moves
+  6. Outlier moves — far from setup area bounding box
 
 Run:
     python -m tools.minoru_harada_tsumego.validate_sgfs [--dir PATH] [--sample N] [--verbose]
@@ -17,7 +17,6 @@ Run:
 from __future__ import annotations
 
 import argparse
-import glob
 import json
 import random
 import re
@@ -25,6 +24,11 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from tools.core.sgf_structural_checks import (
+    IssueCode,
+    StructuralCheckResult,
+    run_structural_checks,
+)
 
 # ---------------------------------------------------------------------------
 # Validation result types
@@ -62,7 +66,32 @@ class FileResult:
 
 
 # ---------------------------------------------------------------------------
-# Individual validation rules
+# Core → Harada adapter
+# ---------------------------------------------------------------------------
+
+# Harada treats PL_MISMATCH as an error (stricter than core's default WARNING)
+_SEVERITY_ESCALATIONS: dict[IssueCode, str] = {
+    IssueCode.PL_MISMATCH: "error",
+}
+
+
+def _adapt_core_issues(core: StructuralCheckResult) -> list[Issue]:
+    """Convert core structural issues to Harada Issue format."""
+    adapted: list[Issue] = []
+    for ci in core.issues:
+        severity = _SEVERITY_ESCALATIONS.get(
+            ci.code, ci.severity.value,
+        )
+        adapted.append(Issue(
+            rule=ci.code.name,
+            severity=severity,
+            detail=ci.message,
+        ))
+    return adapted
+
+
+# ---------------------------------------------------------------------------
+# Harada-specific validation rules
 # ---------------------------------------------------------------------------
 
 # Valid SGF root properties we expect
@@ -83,36 +112,6 @@ _FOOTER_PATTERNS = re.compile(
     r"(?i)(page top|term of use|all rights reserved|hitachi|"
     r"problems/answers|copyright|\u00a9|powered by)",
 )
-
-
-def _check_setup(content: str, result: FileResult) -> None:
-    """Rule 1: Board has setup stones."""
-    has_ab = "AB[" in content
-    has_aw = "AW[" in content
-    result.has_setup = has_ab or has_aw
-    if not result.has_setup:
-        result.issues.append(Issue(
-            "NO_SETUP_STONES", "error",
-            "SGF has no AB[] or AW[] — empty board",
-        ))
-
-
-def _check_solution_tree(content: str, result: FileResult) -> None:
-    """Rule 2: Has at least one solution branch with moves."""
-    # Count branches: (;B[...] or (;W[...]
-    branches = re.findall(r"\(;[BW]\[", content)
-    result.branch_count = len(branches)
-
-    # Count total moves
-    moves = re.findall(r";[BW]\[[a-s]{2}\]", content)
-    result.move_count = len(moves)
-
-    result.has_solution = result.move_count > 0
-    if not result.has_solution:
-        result.issues.append(Issue(
-            "NO_SOLUTION_MOVES", "warning",
-            "SGF has no solution moves — setup-only puzzle",
-        ))
 
 
 def _check_color_alternation(content: str, result: FileResult) -> None:
@@ -178,45 +177,6 @@ def _check_comments(content: str, result: FileResult) -> None:
             ))
 
 
-def _check_move_bounds(content: str, result: FileResult) -> None:
-    """Rule 6: All move coordinates are within board bounds."""
-    sz_match = re.search(r"SZ\[(\d+)\]", content)
-    if not sz_match:
-        return
-    size = int(sz_match.group(1))
-    max_coord = chr(ord("a") + size - 1)  # 'a' + 18 = 's' for 19x19
-
-    for move_match in re.finditer(r";[BW]\[([a-z])([a-z])\]", content):
-        col, row = move_match.group(1), move_match.group(2)
-        if col > max_coord or row > max_coord:
-            result.issues.append(Issue(
-                "MOVE_OUT_OF_BOUNDS", "error",
-                f"Move [{col}{row}] exceeds board size {size}",
-            ))
-
-
-def _check_player_first_move(content: str, result: FileResult) -> None:
-    """Rule 7: PL[] matches the first move color in the SGF.
-
-    Checks the very first B[]/W[] move in the file (which is the main
-    line's first move, regardless of branch structure).
-    """
-    pl_match = re.search(r"PL\[([BW])\]", content)
-    if not pl_match:
-        return
-    player = pl_match.group(1)
-
-    # Find the first move in the entire SGF (main line starts before branches)
-    first_move = re.search(r";([BW])\[[a-s]{2}\]", content)
-    if first_move:
-        if first_move.group(1) != player:
-            result.issues.append(Issue(
-                "PL_MISMATCH", "error",
-                f"PL[{player}] but first move is "
-                f"{first_move.group(1)}",
-            ))
-
-
 def _check_suspicious_move_count(content: str, result: FileResult) -> None:
     """Rule 8: Flag branches with suspiciously many moves (noise)."""
     for branch_match in re.finditer(r"\(;([^()]+)\)", content):
@@ -228,31 +188,6 @@ def _check_suspicious_move_count(content: str, result: FileResult) -> None:
                 "EXCESSIVE_MOVES", "warning",
                 f"Branch has {len(moves)} moves — possible noise",
             ))
-
-
-def _check_move_on_occupied(content: str, result: FileResult) -> None:
-    """Rule 10: No move plays on an intersection already occupied at setup."""
-    # Parse setup stones
-    occupied: set[str] = set()
-    for m in re.finditer(r"A[BW]\[([a-s]{2})\]", content):
-        occupied.add(m.group(1))
-
-    if not occupied:
-        return
-
-    # Check each branch for moves on occupied points
-    # Note: some are legitimate capture-replays (ko, snapback)
-    # where a stone is captured then the same point replayed.
-    for branch_match in re.finditer(r"\(;([^()]+)\)", content):
-        branch = branch_match.group(1)
-        for move_match in re.finditer(r";[BW]\[([a-s]{2})\]", branch):
-            coord = move_match.group(1)
-            if coord in occupied:
-                result.issues.append(Issue(
-                    "MOVE_ON_OCCUPIED", "warning",
-                    f"Move at [{coord}] plays on a setup stone "
-                    f"(may be capture-replay)",
-                ))
 
 
 def _check_outlier_moves(content: str, result: FileResult) -> None:
@@ -314,27 +249,44 @@ def _check_stray_properties(content: str, result: FileResult) -> None:
 # Orchestration
 # ---------------------------------------------------------------------------
 
-ALL_CHECKS = [
-    _check_setup,
-    _check_solution_tree,
+# ---------------------------------------------------------------------------
+# Harada-specific checks (run after core delegation)
+# ---------------------------------------------------------------------------
+
+_HARADA_CHECKS = [
     _check_color_alternation,
     _check_bm_markers,
     _check_comments,
-    _check_move_bounds,
-    _check_player_first_move,
     _check_suspicious_move_count,
-    _check_move_on_occupied,
     _check_outlier_moves,
     _check_stray_properties,
 ]
 
 
 def validate_file(filepath: Path) -> FileResult:
-    """Run all validation checks on one SGF file."""
+    """Run all validation checks on one SGF file.
+
+    Phase 1: Core structural checks (setup stones, solution moves,
+    board bounds, PL mismatch, move-on-occupied, stone overlap).
+    Phase 2: Harada-specific checks (color alternation, BM markers,
+    comment quality, suspicious moves, outlier moves, stray properties).
+    """
     content = filepath.read_text(encoding="utf-8")
     result = FileResult(filename=filepath.name)
 
-    for check in ALL_CHECKS:
+    # Phase 1: Core structural checks
+    core = run_structural_checks(content, min_stones=1)
+    result.issues.extend(_adapt_core_issues(core))
+    result.has_setup = core.total_stone_count > 0
+    result.has_solution = core.has_solution_tree
+    result.move_count = core.solution_move_count
+
+    # Branch counting (core doesn't compute this)
+    branches = re.findall(r"\(;[BW]\[", content)
+    result.branch_count = len(branches)
+
+    # Phase 2: Harada-specific checks
+    for check in _HARADA_CHECKS:
         check(content, result)
 
     return result
