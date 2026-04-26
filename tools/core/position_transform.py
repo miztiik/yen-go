@@ -251,12 +251,14 @@ def transform_node(
 
 _COORDINATE_PROPERTIES = frozenset({
     "AB", "AW", "AE",  # setup stones
-    "TR", "SQ", "CR", "MA",  # markup
+    "TR", "SQ", "CR", "MA", "SL",  # markup
     "TB", "TW",  # territory
     "DD", "VW",  # dim/view
 })
 
 _LABEL_PROPERTIES = frozenset({"LB"})
+
+_COMPOSED_POINT_PROPERTIES = frozenset({"AR", "LN"})  # point:point markup
 
 
 def _transform_node_recursive(
@@ -275,6 +277,8 @@ def _transform_node_recursive(
             new_props[key] = _transform_coord_property(value, board_size, transform)
         elif key in _LABEL_PROPERTIES:
             new_props[key] = _transform_label_property(value, board_size, transform)
+        elif key in _COMPOSED_POINT_PROPERTIES:
+            new_props[key] = _transform_composed_point_property(value, board_size, transform)
         else:
             new_props[key] = value
 
@@ -338,6 +342,36 @@ def _transform_label_property(
                 transformed.append(f"{tp.to_sgf()}:{label}")
             else:
                 transformed.append(part)
+        else:
+            transformed.append(part)
+    return ",".join(transformed)
+
+
+def _transform_composed_point_property(
+    value: str, board_size: int, transform: PositionTransform,
+) -> str:
+    """Transform a composed point:point property value (AR/LN).
+
+    Format: "cd:ef,gh:ij" — both sides of the colon are coordinates.
+    """
+    if not value:
+        return value
+    parts = value.split(",")
+    transformed = []
+    for part in parts:
+        if ":" in part:
+            coord1, coord2 = part.split(":", 1)
+            coord1 = coord1.strip()
+            coord2 = coord2.strip()
+            t1 = coord1
+            t2 = coord2
+            if len(coord1) == 2 and coord1.isalpha():
+                p = Point.from_sgf(coord1)
+                t1 = transform_point(p, board_size, transform).to_sgf()
+            if len(coord2) == 2 and coord2.isalpha():
+                p = Point.from_sgf(coord2)
+                t2 = transform_point(p, board_size, transform).to_sgf()
+            transformed.append(f"{t1}:{t2}")
         else:
             transformed.append(part)
     return ",".join(transformed)

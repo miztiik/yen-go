@@ -64,12 +64,14 @@ def load_index(index_path: Path) -> set[str]:
 def extract_ids(entries: set[str]) -> set[int]:
     """Extract numeric IDs from index entries.
 
-    Handles both "{id}.sgf" and "prefix-{id}.sgf" naming conventions.
-    Entry format: "batch-NNN/{name}.sgf"
+    Handles both "{id}.sgf" and "prefix-{id}.sgf" naming conventions,
+    plus the colon-pid suffix used by qday and book entries.
 
     Examples:
         "batch-001/12345.sgf" -> 12345
         "batch-001/ogs-12345.sgf" -> 12345
+        "qday/2026/04/20260414-3-354411.sgf:354411" -> 354411
+        "books/197-ld/sgf/ch01_005_ld_9538.sgf:9538" -> 9538
 
     Args:
         entries: Set of index entry strings.
@@ -79,6 +81,15 @@ def extract_ids(entries: set[str]) -> set[int]:
     """
     ids: set[int] = set()
     for entry in entries:
+        # Colon-pid suffix (qday / book entries): extract pid after last colon
+        if ":" in entry:
+            _, _, pid_str = entry.rpartition(":")
+            try:
+                ids.add(int(pid_str))
+            except ValueError:
+                pass
+            continue
+        # Batch format: extract from filename
         filename = entry.rsplit("/", 1)[-1] if "/" in entry else entry
         m = _ID_PATTERN.search(filename)
         if m:
@@ -117,6 +128,12 @@ def sort_and_rewrite(index_path: Path) -> int:
         return 0
 
     def sort_key(entry: str) -> int:
+        # Colon-pid suffix (qday / book entries): use pid for sorting
+        if ":" in entry:
+            try:
+                return int(entry.rpartition(":")[2])
+            except ValueError:
+                pass
         filename = entry.rsplit("/", 1)[-1] if "/" in entry else entry
         m = _ID_PATTERN.search(filename)
         return int(m.group(1)) if m else 0

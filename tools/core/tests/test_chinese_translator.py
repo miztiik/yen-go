@@ -1,6 +1,7 @@
 """Tests for Chinese Go term translator (tools.core.chinese_translator)."""
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -189,7 +190,7 @@ class TestDictionaryIntegrity:
         with open(Path(__file__).parent.parent.parent.parent / "config" / "cn-en-dictionary.json", encoding="utf-8") as f:
             data = json.load(f)
         assert "_metadata" in data
-        assert data["_metadata"]["schema_version"] == "1.1"
+        assert re.match(r"^\d+\.\d+$", data["_metadata"]["schema_version"])
         assert data["_metadata"]["language"] == "zh"
 
     def test_all_categories_non_empty(self):

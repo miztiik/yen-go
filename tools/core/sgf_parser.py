@@ -242,7 +242,7 @@ class SgfTree:
     board_size: int = 19
     black_stones: list[Point] = field(default_factory=list)
     white_stones: list[Point] = field(default_factory=list)
-    player_to_move: Color = Color.BLACK
+    player_to_move: Color | None = None
     solution_tree: SgfNode = field(default_factory=SgfNode)
     metadata: dict[str, Any] = field(default_factory=dict)
     yengo_props: YenGoProperties = field(default_factory=YenGoProperties)

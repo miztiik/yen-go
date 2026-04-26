@@ -2,10 +2,10 @@
 
 Canonical definitions for marker patterns, technique vocabulary, and
 explanation keywords used by both the yen-sei SFT pipeline and the
-llm-teaching-agent.
+llm-teaching-agent (now tools/oshie/).
 
 These constants were originally defined in multiple places
-(yen_sei/config.py, yen_sei/selector.py, llm-teaching-agent). This
+(yen_sei/config.py, yen_sei/selector.py, oshie). This
 module is the single source of truth.
 """
 

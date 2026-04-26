@@ -63,6 +63,8 @@ _MULTI_VALUE_PROPERTIES = frozenset({
     "AB", "AW", "AE",          # Add Black/White/Empty stones
     "LB",                       # Labels: LB[cd:A][ef:B]
     "TR", "SQ", "CR", "MA",    # Markup: triangles, squares, circles, marks
+    "SL",                       # Selected points
+    "AR", "LN",                 # Arrows, lines: AR[cd:ef] LN[cd:ef]
     "TB", "TW",                 # Territory
     "DD", "VW",                 # Dim points, view
 })
@@ -90,7 +92,7 @@ class SGFBuilder:
         self.board_size = board_size
         self.black_stones: list[Point] = []
         self.white_stones: list[Point] = []
-        self.player_to_move: Color = Color.BLACK
+        self.player_to_move: Color | None = None
         self.metadata: dict[str, str] = {}
         self.root_comment: str = ""
         self.yengo_props = YenGoProperties()

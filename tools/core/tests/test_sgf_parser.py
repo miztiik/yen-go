@@ -109,7 +109,7 @@ class TestParseBasics:
 
     def test_player_to_move_black_default(self):
         tree = parse_sgf("(;SZ[19](;B[cd]))")
-        assert tree.player_to_move == Color.BLACK
+        assert tree.player_to_move is None
 
     def test_initial_stones(self):
         tree = parse_sgf("(;SZ[19]AB[aa][bb][cc]AW[dd][ee](;B[ff]))")

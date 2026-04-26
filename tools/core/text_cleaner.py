@@ -42,6 +42,30 @@ _WHITESPACE_PATTERN = re.compile(r"\s+")
 # SGF escapes colons as \:, so we also match http\:// and https\://.
 _URL_PATTERN = re.compile(r"https?\\?://\S+", re.IGNORECASE)
 
+# Geometric Unicode shapes used as Go board annotations (triangle on stone,
+# square marker, filled circle, etc.). Stripped — they are visual diagram
+# markup with no meaning in plain text.
+#   U+25A0-25FF Geometric Shapes
+#   U+2605-2606 black/white star
+#   U+25B2/25BC/25C0/25B6 (already in 25A0-25FF block)
+_GEOMETRIC_MARKER_PATTERN = re.compile(r"[\u25A0-\u25FF\u2605\u2606]+")
+
+# Fullwidth ASCII punctuation common in Chinese SGF translations
+# (e.g. U+FF0C "，" → ASCII ","). NFKC normalization handles these in bulk;
+# this pattern is for callers that want detection without normalization.
+_FULLWIDTH_PUNCT_PATTERN = re.compile(r"[\uFF01-\uFF5E]")
+
+# Vietnamese-specific characters (Latin Extended Additional precomposed
+# diacritics + đĐ + ơưăâ). Used to detect Vietnamese-translated SGF
+# comments harvested from mixed-language sources.
+#   U+1E00-1EFF Latin Extended Additional (covers ắ ớ ế ể ợ etc.)
+#   U+0110/0111 Đ/đ
+#   U+01A0/01A1 Ơ/ơ
+#   U+01AF/01B0 Ư/ư
+_VIETNAMESE_PATTERN = re.compile(
+    r"[\u1E00-\u1EFF\u0110\u0111\u01A0\u01A1\u01AF\u01B0]"
+)
+
 # Numbered problem/question/exercise labels (noise in training sets)
 _NUMBERING_PATTERN = re.compile(
     r"\b(?:question|problem|exercise|puzzle)\s*#?\s*\d+\.?",
@@ -66,6 +90,46 @@ def strip_cjk(text: str) -> str:
     return _CJK_PATTERN.sub(" ", text)
 
 
+def strip_geometric_markers(text: str) -> str:
+    """Remove Unicode geometric shapes used as Go board diagram annotations.
+
+    Strips characters like ▲ △ ■ □ ● ○ ▼ ◆ ★ that appear in CJK SGF
+    comments to mark stones/intersections in inline ASCII diagrams.
+    Replaced with a single space so adjacent words don't run together.
+    """
+    return _GEOMETRIC_MARKER_PATTERN.sub(" ", text)
+
+
+def normalize_fullwidth_punct(text: str) -> str:
+    """Convert fullwidth ASCII punctuation (U+FF01-FF5E) to their ASCII equivalents.
+
+    Handles "，" → ",", "。" → "." (already in CJK punct block), "：" → ":",
+    etc. Common in Chinese-translated SGF prose. Uses NFKC normalization
+    on the matching range only — does not touch other characters.
+    """
+    if not _FULLWIDTH_PUNCT_PATTERN.search(text):
+        return text
+    return _FULLWIDTH_PUNCT_PATTERN.sub(
+        lambda m: unicodedata.normalize("NFKC", m.group(0)),
+        text,
+    )
+
+
+def contains_vietnamese(text: str) -> bool:
+    """Detect Vietnamese-script characters in a text snippet.
+
+    Returns True if any precomposed Vietnamese diacritic or Đđ/Ơơ/Ưư
+    appears. Used to flag SGF comments harvested from Vietnamese
+    translations (which the English-only training corpus must exclude).
+    """
+    return bool(_VIETNAMESE_PATTERN.search(text))
+
+
+def strip_vietnamese(text: str) -> str:
+    """Remove Vietnamese-specific characters (replacing with space)."""
+    return _VIETNAMESE_PATTERN.sub(" ", text)
+
+
 def strip_boilerplate(text: str) -> str:
     """Remove common SGF comment boilerplate (numbered labels)."""
     return _NUMBERING_PATTERN.sub(" ", text)
@@ -83,23 +147,45 @@ _MULTI_NEWLINE = re.compile(r"\n{3,}")
 _MULTI_SPACE = re.compile(r"[^\S\n]{2,}")  # 2+ non-newline whitespace
 
 
-def sanitize_for_training(text: str | None) -> str:
-    """Light sanitization for SFT training data.
+# Machine-translation artifacts: slash-separated word pairs ("must/want", "work/feasible")
+_SLASH_PAIR_PATTERN = re.compile(r"\b(\w+)/(\w+)\b")
 
-    Removes web artifacts (HTML tags, URLs, carriage returns) while preserving
-    teaching prose — case, CJK content, and paragraph structure are kept intact.
+# Known grammatical annotations from CJK→English machine translation
+_MT_ANNOTATION_PATTERN = re.compile(
+    r"\((?:possessive|classifier|aspect|particle|auxiliary|passive)\)",
+    re.IGNORECASE,
+)
+
+
+def sanitize_for_training(text: str | None) -> str:
+    """Sanitization for SFT training data.
+
+    Removes web artifacts, CJK characters, and machine-translation noise
+    to produce clean English teaching prose suitable for model fine-tuning.
 
     Pipeline:
         1. Normalize \\r\\n → \\n, strip lone \\r
         2. strip_html — remove tags, decode entities
         3. strip_urls — remove http/https URLs
-        4. Collapse excessive whitespace (preserve paragraph breaks)
+        4. strip_cjk — remove CJK/Hangul/Kana character blocks
+        5. strip_vietnamese — remove Vietnamese-specific diacritics
+        6. strip_geometric_markers — remove Go-board diagram glyphs (▲ ■ ◯)
+        7. normalize_fullwidth_punct — fullwidth → ASCII (， → ,)
+        8. Strip slash-separated word pairs (keep first word)
+        9. Strip machine-translation parenthetical annotations
+        10. Collapse excessive whitespace (preserve paragraph breaks)
     """
     if not text:
         return ""
     result = text.replace("\r\n", "\n").replace("\r", "\n")
     result = strip_html(result)
     result = strip_urls(result)
+    result = strip_cjk(result)
+    result = strip_vietnamese(result)
+    result = strip_geometric_markers(result)
+    result = normalize_fullwidth_punct(result)
+    result = _SLASH_PAIR_PATTERN.sub(r"\1", result)
+    result = _MT_ANNOTATION_PATTERN.sub("", result)
     result = _MULTI_SPACE.sub(" ", result)
     result = _MULTI_NEWLINE.sub("\n\n", result)
     return result.strip()

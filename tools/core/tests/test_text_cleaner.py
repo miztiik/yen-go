@@ -6,12 +6,82 @@ from tools.core.text_cleaner import (
     GO_TERMS,
     NON_LATIN_RE,
     clean_name,
+    contains_vietnamese,
     extract_english_portion,
     generate_slug,
     infer_curator,
     infer_type,
+    normalize_fullwidth_punct,
     sanitize_for_training,
+    strip_geometric_markers,
+    strip_vietnamese,
 )
+
+
+# ==============================
+# Unicode-script utilities
+# ==============================
+
+class TestStripGeometricMarkers:
+    def test_triangle_on_stone(self) -> None:
+        assert "▲" not in strip_geometric_markers("Black ▲ captures.")
+        assert strip_geometric_markers("Black ▲ captures.").split() == ["Black", "captures."]
+
+    def test_keeps_ordinary_text(self) -> None:
+        assert strip_geometric_markers("plain text") == "plain text"
+
+    def test_strips_filled_circle_and_square(self) -> None:
+        out = strip_geometric_markers("White ● and ■ are marked.")
+        assert "●" not in out and "■" not in out
+
+
+class TestNormalizeFullwidthPunct:
+    def test_fullwidth_comma(self) -> None:
+        # U+FF0C → ASCII ","
+        assert normalize_fullwidth_punct("Black,White") == "Black,White"
+        assert normalize_fullwidth_punct("Black\uff0cWhite") == "Black,White"
+
+    def test_fullwidth_colon_and_semicolon(self) -> None:
+        out = normalize_fullwidth_punct("a\uff1ab\uff1bc")
+        assert out == "a:b;c"
+
+    def test_no_op_on_ascii(self) -> None:
+        assert normalize_fullwidth_punct("hello, world.") == "hello, world."
+
+
+class TestVietnamese:
+    def test_detect_precomposed_diacritic(self) -> None:
+        # "ắ" U+1EAF, "ớ" U+1EDB — common in Vietnamese Go translations
+        assert contains_vietnamese("đắng cay")
+        assert contains_vietnamese("trắc nghiệm cờ vây")
+
+    def test_no_false_positive_on_english(self) -> None:
+        assert not contains_vietnamese("Black plays at the corner.")
+
+    def test_no_false_positive_on_chinese(self) -> None:
+        # Chinese chars do not match the Vietnamese ranges
+        assert not contains_vietnamese("黑棋活")
+
+    def test_strip_replaces_with_space(self) -> None:
+        out = strip_vietnamese("đen ắ trắng")
+        # Diacritic-bearing letters removed; ASCII letters preserved
+        assert "ắ" not in out
+        assert "đ" not in out
+        assert "trng" in out or "tr" in out  # depending on how many chars stripped
+
+
+class TestSanitizeForTrainingNewArtifacts:
+    def test_strips_board_markers(self) -> None:
+        out = sanitize_for_training("Black ▲ ■ captures.")
+        assert "▲" not in out and "■" not in out
+
+    def test_normalizes_fullwidth_comma(self) -> None:
+        out = sanitize_for_training("Black\uff0cWhite")
+        assert "," in out and "\uff0c" not in out
+
+    def test_strips_vietnamese(self) -> None:
+        out = sanitize_for_training("Black plays đắng then captures.")
+        assert "đ" not in out and "ắ" not in out
 
 # ==============================
 # clean_name Tests
@@ -249,10 +319,43 @@ class TestSanitizeForTraining:
         result = sanitize_for_training("Black is ALIVE in the corner.")
         assert "ALIVE" in result
 
-    def test_preserves_cjk(self) -> None:
-        """Unlike clean_comment_text, CJK characters are preserved."""
+    def test_strips_cjk(self) -> None:
+        """CJK characters are stripped for SFT training data."""
         result = sanitize_for_training("\u56f2\u7881 is Go in Japanese")
-        assert "\u56f2\u7881" in result
+        assert "\u56f2\u7881" not in result
+        assert "is Go in Japanese" in result
+
+    def test_strips_mixed_cjk_english(self) -> None:
+        """Real pattern: CJK mixed inline with English prose."""
+        result = sanitize_for_training("\u9ed1A\u7684\u4f4d\u7f6e\u6bd4X\u597d\u591a\u4e86 The position of A is much better than X")
+        assert "\u9ed1" not in result
+        assert "The position of A is much better than X" in result
+
+    def test_strips_slash_separated_pairs(self) -> None:
+        """Machine-translation slash-pairs: keep first word."""
+        result = sanitize_for_training("Black must/want capture the stone")
+        assert "must" in result
+        assert "must/want" not in result
+
+    def test_strips_slash_pairs_multiple(self) -> None:
+        result = sanitize_for_training("work/feasible block/prevent")
+        assert result.strip() == "work block"
+
+    def test_strips_parenthetical_annotations(self) -> None:
+        """Machine-translation grammatical annotations."""
+        result = sanitize_for_training("White (possessive) stone is dead")
+        assert "(possessive)" not in result
+        assert "White" in result
+        assert "stone is dead" in result
+
+    def test_strips_classifier_annotation(self) -> None:
+        result = sanitize_for_training("obtain (classifier) white stone")
+        assert "(classifier)" not in result
+
+    def test_preserves_meaningful_parentheses(self) -> None:
+        """Parenthetical content that is NOT a MT annotation is preserved."""
+        result = sanitize_for_training("Net (geta) is the correct technique")
+        assert "(geta)" in result
 
     def test_none_returns_empty(self) -> None:
         assert sanitize_for_training(None) == ""
