@@ -1,7 +1,0 @@
-(;SZ[19]FF[4]GM[1]PL[W]PB[Black]PW[White]C[white-to-capture]YV[10]YG[beginner]YQ[q:3;rc:0;hc:0]YL[ladder-problems]AB[gc][hc][ed][fe][ff]AW[fd][de][ee](;W[ec];B[dd](;W[cd];B[dc](;W[db];B[cc];W[bc];B[cb](;W[bb]C[RIGHT
-ladder
-])(;W[ca];B[bb](;W[ab]C[RIGHT
-ladder
-])(;W[ba]C[RIGHT
-ladder
-])))(;W[cc];B[db](;W[eb];B[fc])(;W[cb];B[fc](;W[gd];B[eb])(;W[eb];B[gd]))))(;W[dc];B[cd];W[fc];B[ce]))(;W[dd];B[ec](;W[fc];B[fb])(;W[dc];B[fc]))(;W[dc];B[fc])(;W[gd];B[ec]))

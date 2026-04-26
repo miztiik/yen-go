@@ -2,7 +2,7 @@
 
 ## Status: Stable, Post-Cleanup (2026-04-12)
 
-Core KataGo pipeline (stages 1-7) is stable and well-tested. Heuristic teaching system (stages 8-11) works but is scheduled for eventual replacement by the LLM Teaching Agent (`tools/llm-teaching-agent/`).
+Core KataGo pipeline (stages 1-7) is stable and well-tested. Heuristic teaching system (stages 8-11) works but is scheduled for eventual replacement by oshie (`tools/oshie/`).
 
 ## Recent Changes (2026-04-12 Audit)
 

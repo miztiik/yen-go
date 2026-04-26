@@ -1,9 +1,0 @@
-(;FF[4]GM[1]SZ[9]PL[B]
-YT[double-atari]
-C[Beginner double atari. Black threatens two White groups simultaneously. Source: Sensei's Library — DoubleAtari.]
-PC[https://senseis.xmp.net/?DoubleAtari]
-AB[cb][db][cc][ec][cd][dd]AW[eb][bc][dc][bd][ed]
-;B[de]C[Correct! Black plays the double atari — both White groups at D7 and E6 are in atari.]
-(;W[ce];B[ee]C[Black captures the E6 group.])
-(;W[ee];B[ce]C[Black captures the B6 group.])
-(;W[pass]C[If White ignores, Black captures both.]))

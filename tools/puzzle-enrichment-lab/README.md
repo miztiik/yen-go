@@ -129,30 +129,30 @@ python cli.py enrich \
   --emit-sgf .lab-runtime/outputs/prob0193_enriched.sgf
 ```
 
-### Example: End-to-End with LLM Teaching (Phase 2)
+### Example: End-to-End with oshie (Phase 2)
 
-After KataGo enrichment, chain the [LLM Teaching Agent](../llm-teaching-agent/) to generate
+After KataGo enrichment, chain [oshie](../oshie/) to generate
 human-quality teaching comments from the enrichment signals:
 
 ```bash
 # 3. Generate teaching comments via LLM (requires API key)
-python ../llm-teaching-agent/teach.py \
+python ../oshie/teach.py \
   --input .lab-runtime/outputs/prob0193_result.json \
   --output .lab-runtime/outputs/prob0193_teaching.json \
   --persona cho_chikun
 
 # 4. Merge LLM comments back into enrichment JSON
-python ../llm-teaching-agent/merge.py \
+python ../oshie/merge.py \
   --enrichment .lab-runtime/outputs/prob0193_result.json \
   --teaching .lab-runtime/outputs/prob0193_teaching.json
 
 # Preview prompts without calling the API (--dry-run):
-python ../llm-teaching-agent/teach.py \
+python ../oshie/teach.py \
   --input .lab-runtime/outputs/prob0193_result.json \
   --dry-run --persona lee_sedol
 ```
 
-See [`../llm-teaching-agent/PLAN.md`](../llm-teaching-agent/PLAN.md) for LLM agent details.
+See [`../oshie/PLAN.md`](../oshie/PLAN.md) for oshie details.
 
 ### Quick Reference: Copy-Paste Examples
 
