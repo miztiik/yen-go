@@ -122,7 +122,3 @@ Every document includes a "See also" section linking related docs:
 | Frontend       | [frontend/README.md](../frontend/README.md)                             | Preact app setup    |
 | Puzzle Manager | [backend/puzzle_manager/README.md](../backend/puzzle_manager/README.md) | Python pipeline     |
 | Configuration  | [config/README.md](../config/README.md)                                 | Shared config files |
-
----
-
-_For contribution guidelines, see [CONTRIBUTING.md](../CONTRIBUTING.md)._
