@@ -519,9 +519,7 @@ export function CollectionViewPage({
 
     // Phase 2: count surfaces on the Filters trigger badge.
     const activeCount =
-      filterState.activeFilterCount +
-      (selectedChapter ? 1 : 0) +
-      (contentType > 0 ? 1 : 0);
+      filterState.activeFilterCount + (selectedChapter ? 1 : 0) + (contentType > 0 ? 1 : 0);
 
     return (
       <PuzzleSetHeader

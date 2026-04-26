@@ -49,16 +49,8 @@ export function KeyboardHelp({
   return (
     <>
       <KBShortcut shortcut="?" action={handleOpen} enabled={enabled} />
-      <BottomSheet
-        isOpen={open}
-        onClose={handleClose}
-        title="Keyboard shortcuts"
-        testId={testId}
-      >
-        <ul
-          className="keyboard-help-list"
-          data-testid={`${testId}-list`}
-        >
+      <BottomSheet isOpen={open} onClose={handleClose} title="Keyboard shortcuts" testId={testId}>
+        <ul className="keyboard-help-list" data-testid={`${testId}-list`}>
           {shortcuts.map((entry) => (
             <li key={entry.keys} className="keyboard-help-row">
               <kbd className="keyboard-help-key">{entry.keys}</kbd>

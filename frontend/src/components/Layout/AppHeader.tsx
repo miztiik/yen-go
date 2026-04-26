@@ -68,9 +68,9 @@ export function AppHeader({
         {/* Streak badge — hidden on solving routes (compact mode) under
          * UI_COMPACT_HEADER_HIDE_STREAK because ProblemNav already shows the
          * current streak in the sidebar. Avoids duplicate chrome. */}
-        {showStreak &&
-          streak > 0 &&
-          !(UI_COMPACT_HEADER_HIDE_STREAK && compact) && <StreakBadge streak={streak} />}
+        {showStreak && streak > 0 && !(UI_COMPACT_HEADER_HIDE_STREAK && compact) && (
+          <StreakBadge streak={streak} />
+        )}
 
         <SettingsGear />
         <UserProfile {...(onClickProfile ? { onClick: onClickProfile } : {})} />

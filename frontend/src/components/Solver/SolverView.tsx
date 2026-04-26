@@ -754,8 +754,9 @@ export function SolverView({
                     {rankRange ?? metadata.level.replace(/-/g, ' ')}
                   </span>
                 )}
-                {metadata.tags && metadata.tags.length > 0 && (
-                  tagsRevealed || isSolved || isWrong || isReviewMode ? (
+                {metadata.tags &&
+                  metadata.tags.length > 0 &&
+                  (tagsRevealed || isSolved || isWrong || isReviewMode ? (
                     metadata.tags.map((tag: string) => (
                       <span
                         key={tag}
@@ -776,8 +777,7 @@ export function SolverView({
                     >
                       Reveal hints · {metadata.tags.length}
                     </button>
-                  )
-                )}
+                  ))}
                 {collectionNames.map((name: string, i: number) => (
                   <span
                     key={`col-${i}`}
@@ -815,25 +815,25 @@ export function SolverView({
              * When UI_COLLAPSE_TRANSFORM_BAR is ON, the same controls render at the bottom
              * of the sidebar inside a collapsible "View options" panel. */}
             {!UI_COLLAPSE_TRANSFORM_BAR && (
-            <div className="py-1.5" data-section="transforms">
-              <TransformBar
-                settings={transformSettings}
-                onToggleFlipH={toggleFlipH}
-                onToggleFlipV={toggleFlipV}
-                onToggleFlipDiag={toggleFlipDiag}
-                onRotateCW={rotateCW}
-                onRotateCCW={rotateCCW}
-                onToggleSwapColors={toggleSwapColors}
-                coordinateLabels={settings.coordinateLabels}
-                onToggleCoordinates={() =>
-                  updateSettings({ coordinateLabels: !settings.coordinateLabels })
-                }
-                disabled={isReviewMode}
-                zoomEnabled={zoomEnabled}
-                isZoomable={isZoomable}
-                onToggleZoom={() => setZoomEnabled((z) => !z)}
-              />
-            </div>
+              <div className="py-1.5" data-section="transforms">
+                <TransformBar
+                  settings={transformSettings}
+                  onToggleFlipH={toggleFlipH}
+                  onToggleFlipV={toggleFlipV}
+                  onToggleFlipDiag={toggleFlipDiag}
+                  onRotateCW={rotateCW}
+                  onRotateCCW={rotateCCW}
+                  onToggleSwapColors={toggleSwapColors}
+                  coordinateLabels={settings.coordinateLabels}
+                  onToggleCoordinates={() =>
+                    updateSettings({ coordinateLabels: !settings.coordinateLabels })
+                  }
+                  disabled={isReviewMode}
+                  zoomEnabled={zoomEnabled}
+                  isZoomable={isZoomable}
+                  onToggleZoom={() => setZoomEnabled((z) => !z)}
+                />
+              </div>
             )}
 
             {/* Section 2: Hint display + comments — no fixed reserve. Only

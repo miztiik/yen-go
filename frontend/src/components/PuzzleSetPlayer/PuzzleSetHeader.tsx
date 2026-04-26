@@ -119,9 +119,7 @@ export function PuzzleSetHeader({
             type="button"
             onClick={() => setFiltersOpen(true)}
             className="filters-trigger"
-            aria-label={
-              filterCount > 0 ? `Filters, ${filterCount} active` : 'Open filters'
-            }
+            aria-label={filterCount > 0 ? `Filters, ${filterCount} active` : 'Open filters'}
             aria-haspopup="dialog"
             aria-expanded={filtersOpen}
             data-active={filterCount > 0}

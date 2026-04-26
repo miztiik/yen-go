@@ -352,12 +352,8 @@ export function PuzzleSetPlayer({
                 if (typeof localStorage !== 'undefined') {
                   localStorage.setItem(AUTO_ADV_HINT_KEY, '1');
                 }
-                if (autoAdvanceHintTimerRef.current)
-                  clearTimeout(autoAdvanceHintTimerRef.current);
-                autoAdvanceHintTimerRef.current = setTimeout(
-                  () => setAutoAdvanceHint(null),
-                  6000
-                );
+                if (autoAdvanceHintTimerRef.current) clearTimeout(autoAdvanceHintTimerRef.current);
+                autoAdvanceHintTimerRef.current = setTimeout(() => setAutoAdvanceHint(null), 6000);
               }
             } catch {
               // localStorage unavailable (private mode etc.) — silently skip.
