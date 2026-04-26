@@ -7,10 +7,10 @@
  * Read-only — does not modify progress or database state.
  */
 
-import type { PuzzleCompletion } from '../models/progress';
-import { loadProgress } from './progressTracker';
-import { query } from './sqliteService';
-import { getTagsConfig } from './tagsService';
+import type { PuzzleCompletion } from '@/models/progress';
+import { loadProgress } from '@services/progressTracker';
+import { query } from '@services/sqliteService';
+import { getTagsConfig } from '@services/tagsService';
 
 // ---------------------------------------------------------------------------
 // Types

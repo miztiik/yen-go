@@ -1,4 +1,4 @@
-import { query } from './sqliteService';
+import { query } from '@services/sqliteService';
 
 // --- Types ---
 

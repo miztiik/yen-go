@@ -5,7 +5,7 @@
  * yengo-search.db via sqliteService. No additional network requests needed.
  */
 
-import { query } from './sqliteService';
+import { query } from '@services/sqliteService';
 
 // --- Types ---
 

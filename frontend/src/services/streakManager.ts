@@ -7,8 +7,8 @@
  * Covers: FR-023 to FR-026, US4
  */
 
-import type { StreakData } from '../models/progress';
-import { getStreakData, updateStreakData, type ProgressResult } from './progressTracker';
+import type { StreakData } from '@/models/progress';
+import { getStreakData, updateStreakData, type ProgressResult } from '@services/progressTracker';
 
 /** Streak milestones for achievements */
 export const STREAK_MILESTONES = [3, 7, 14, 30, 60, 100, 365] as const;
