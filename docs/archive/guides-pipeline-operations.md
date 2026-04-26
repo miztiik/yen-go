@@ -29,16 +29,16 @@ Each pipeline run generates a unique `run_id` (format: `YYYYMMDD-xxxxxxxx`) that
 
 ```bash
 # Run full pipeline for a source (--source is REQUIRED)
-python -m backend.puzzle_manager run --source sanderland
+python -m backend.puzzle_manager run --source yengo-source
 
 # Run specific stage only
-python -m backend.puzzle_manager run --source sanderland --stage ingest
+python -m backend.puzzle_manager run --source yengo-source --stage ingest
 
 # Run with custom batch size
-python -m backend.puzzle_manager run --source sanderland --batch-size 50
+python -m backend.puzzle_manager run --source yengo-source --batch-size 50
 
 # Dry run (preview without writing files)
-python -m backend.puzzle_manager run --source sanderland --dry-run
+python -m backend.puzzle_manager run --source yengo-source --dry-run
 ```
 
 > **Important**: The `--source` flag is **required** (per spec 043). This ensures consistent log correlation and publish-log entries.
@@ -68,7 +68,7 @@ Every log entry includes the `run_id` for tracing:
   "timestamp": "2026-01-30T10:15:30.123456Z",
   "level": "INFO",
   "run_id": "20260130-abc12345",
-  "source_id": "sanderland",
+  "source_id": "yengo-source",
   "message": "Processing puzzle",
   "puzzle_id": "gp-12345"
 }
@@ -111,12 +111,12 @@ python -m backend.puzzle_manager publish-log search --run-id 20260130-abc12345
 python -m backend.puzzle_manager publish-log search --puzzle-id gp-12345
 
 # Search by source
-python -m backend.puzzle_manager publish-log search --source sanderland
+python -m backend.puzzle_manager publish-log search --source yengo-source
 ```
 
 Publish log entry format:
 ```json
-{"run_id":"20260130-abc12345","puzzle_id":"gp-12345","source_id":"sanderland","path":"sgf/beginner/2026/01/batch-001/gp-12345.sgf"}
+{"run_id":"20260130-abc12345","puzzle_id":"gp-12345","source_id":"yengo-source","path":"sgf/beginner/2026/01/batch-001/gp-12345.sgf"}
 ```
 
 ---
@@ -146,7 +146,7 @@ State is persisted in `.pm-runtime/state/`:
     "publish": {"status": "skipped"}
   },
   "config_snapshot": {
-    "source_id": "sanderland",
+    "source_id": "yengo-source",
     "batch_size": 100,
     "stages": ["ingest"]
   }

@@ -48,14 +48,14 @@ tools/puzzle-enrichment-lab/tests/fixtures/instinct-calibration/
 ### 1. Find candidates
 
 ```bash
-python tools/puzzle_search.py --source "kisvadim-goproblems" --pattern "*.sgf" --board-size 19
+python tools/puzzle_search.py --source "yengo-source" --pattern "*.sgf" --board-size 19
 ```
 
 ### 2. Copy and rename
 
 ```bash
 python tools/puzzle_copy_rename.py --dry-run \
-  --input "external-sources/kisvadim-goproblems/SOME COLLECTION/puzzle.sgf" \
+  --input "external-sources/yengo-source/SOME COLLECTION/puzzle.sgf" \
   --target "tools/puzzle-enrichment-lab/tests/fixtures/instinct-calibration" \
   --instinct cut --level intermediate --serial 22
 ```
@@ -73,7 +73,7 @@ Add an entry under `"puzzles"` keyed by the new filename:
   "technique_tag": "cutting",
   "objective": "life-and-death",
   "human_difficulty": "intermediate",
-  "source": "kisvadim-goproblems/SOME COLLECTION",
+  "source": "yengo-source/SOME COLLECTION",
   "original_filename": "puzzle.sgf",
   "labeled_by": "expert",
   "notes": ""

@@ -91,7 +91,7 @@ python -m backend.puzzle_manager rollback --run-id X --verify
 Find puzzles by source:
 
 ```bash
-python -m backend.puzzle_manager publish-log search --source sanderland
+python -m backend.puzzle_manager publish-log search --source yengo-source
 ```
 
 Find puzzles by date:

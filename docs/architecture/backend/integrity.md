@@ -39,7 +39,7 @@ Per-run `trace_id` mapping replaces the heavy trace registry. Trace IDs flow via
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ INGEST STAGE                                                            │
-│   source_file: sanderland-problems-...-102                              │
+│   source_file: yengo-source-problems-...-102                              │
 │   trace_id:    a1b2c3d4e5f67890     (NEW - generated here)              │
 │   run_id:      20260202-abc12345                                        │
 │   original_filename: 102.sgf        (extracted from source_link)        │
@@ -73,8 +73,8 @@ Per-run `trace_id` mapping replaces the heavy trace registry. Trace IDs flow via
 
 ```json
 {
-  "sanderland-problems-2c-103": "a1b2c3d4e5f67890",
-  "sanderland-problems-2c-104": "b2c3d4e5f6789012"
+  "yengo-source-problems-2c-103": "a1b2c3d4e5f67890",
+  "yengo-source-problems-2c-104": "b2c3d4e5f6789012"
 }
 ```
 
@@ -86,14 +86,14 @@ After publish, the **publish log** is the permanent trace record:
 {
   "run_id": "20260202-abc12345",
   "puzzle_id": "YENGO-fe50f720e43be8cc",
-  "source_id": "sanderland",
+  "source_id": "yengo-source",
   "path": "sgf/0015/fe50f720e43be8cc.sgf",
   "trace_id": "a1b2c3d4e5f67890",
-  "source_file": "sanderland-problems-2c-103",
+  "source_file": "yengo-source-problems-2c-103",
   "original_filename": "103.sgf",
   "level": "intermediate",
   "tags": ["life-and-death"],
-  "collections": ["sanderland-collection"],
+  "collections": ["yengo-source-collection"],
   "quality": 2
 }
 ```
@@ -117,8 +117,8 @@ Puzzle validation is config-driven from `config/puzzle-validation.json` (schema 
 
 | Validator               | Location                                          | Used By                                           |
 | ----------------------- | ------------------------------------------------- | ------------------------------------------------- |
-| `tools.core.validation` | `tools/core/validation.py`                        | Download tools (t-dragon, tsumego_hero, 101weiqi) |
-| `PuzzleValidator`       | `backend/puzzle_manager/core/puzzle_validator.py` | Pipeline adapters (OGS, GoProblems, Sanderland)   |
+| `tools.core.validation` | `tools/core/validation.py`                        | Download tools (t-dragon, tsumego_hero, yengo-source) |
+| `PuzzleValidator`       | `backend/puzzle_manager/core/puzzle_validator.py` | Pipeline adapters (yengo-source, yengo-source, yengo-source)   |
 
 **Validation checks (in order):**
 
@@ -185,7 +185,7 @@ JSONL files in `yengo-puzzle-collections/.puzzle-inventory-state/publish-log/`:
 {
   "run_id": "20260130-abc12345",
   "puzzle_id": "a1b2c3d4e5f67890",
-  "source_id": "sanderland",
+  "source_id": "yengo-source",
   "path": "sgf/0001/a1b2c3d4e5f67890.sgf",
   "quality": 2,
   "tags": ["ladder", "snapback"],

@@ -1,51 +1,42 @@
-# Puzzle Sources Catalog
+﻿# Puzzle Sources Catalog
 
-Complete catalog of external puzzle sources used in Yen-Go.
-
----
-
-## Primary Sources
-
-### 1. travisgk/tsumego-pdf
-
-| Field               | Value                                     |
-| ------------------- | ----------------------------------------- |
-| **Repository**      | _(redacted)_                              |
-| **Format**          | Custom text + SGF                         |
-| **Solutions**       | ✅ Embedded                               |
-| **Estimated Count** | ~4,000                                    |
-| **License**         | Check repository                          |
-
-**Collections**:
-
-| Collection       | File                   | Count | Level |
-| ---------------- | ---------------------- | ----- | ----- |
-| Cho Elementary   | `cho-elementary.txt`   | 900   | 1-2   |
-| Cho Intermediate | `cho-intermediate.txt` | 900   | 2-3   |
-| Cho Advanced     | `cho-advanced.txt`     | 900   | 3-4   |
-| Gokyo Shumyo     | `gokyo-shumyo.txt`     | ~500  | 3-5   |
-| Xuanxuan Qijing  | `xuanxuan-qijing.txt`  | 347   | 4-5   |
-| Igo Hatsuyoron   | `igo-hatsuyoron.txt`   | 183   | 5     |
-
-**Reusable Code**:
-
-- `load_sgf.py` - SGF parsing
-- `problems_json.py` - Problem loading
-- `playout.py` - Solution validation
+This document describes the schema and metadata format used to catalog puzzle sources in Yen-Go. Specific external source identities are intentionally not enumerated here; consult internal source configuration (`config/sources.json`) for the authoritative list of integrated adapters.
 
 ---
 
-### 2. sanderland/tsumego
+## Source Schema
 
-| Field               | Value                                   |
-| ------------------- | --------------------------------------- |
-| **Repository**      | _(redacted)_                            |
-| **Format**          | JSON (SGF-derived)                      |
-| **Solutions**       | ✅ SOL field                            |
-| **Estimated Count** | ~10,000+                                |
-| **License**         | Check repository                        |
+Every source registered in the pipeline is described with the following metadata:
 
-**JSON Structure**:
+| Field               | Description                                                                  |
+| ------------------- | ---------------------------------------------------------------------------- |
+| **Source ID**       | Stable slug used by the pipeline (e.g., `yengo-source`)                      |
+| **Format**          | Raw input format (SGF, JSON, custom text, etc.)                              |
+| **Solutions**       | Whether solutions are embedded and in what shape                             |
+| **Estimated Count** | Approximate puzzle count                                                     |
+| **License**         | License of the source data (or "Check repository")                           |
+| **Adapter**         | Adapter class in `backend/puzzle_manager/adapters/` that ingests this source |
+
+---
+
+## Exemplar Source
+
+The following is a generic example showing all schema fields. Real source identities are not disclosed in documentation.
+
+### `yengo-source`
+
+| Field               | Value                                            |
+| ------------------- | ------------------------------------------------ |
+| **Source ID**       | `yengo-source`                                   |
+| **Repository**      | _(redacted)_                                     |
+| **Format**          | SGF / JSON                                       |
+| **Solutions**       | ✅ Embedded (variations or `SOL` field)          |
+| **Estimated Count** | varies                                           |
+| **License**         | Check upstream repository                        |
+| **Adapter**         | `YengoSourceAdapter`                             |
+| **Ingestion**       | `python -m backend.puzzle_manager run --source yengo-source --stage ingest` |
+
+**Typical JSON payload shape** (when source uses JSON):
 
 ```json
 {
@@ -57,108 +48,15 @@ Complete catalog of external puzzle sources used in Yen-Go.
 }
 ```
 
-**Collections**:
-
-| Folder                           | Contents                | Level |
-| -------------------------------- | ----------------------- | ----- |
-| `1a. Tsumego Beginner/`          | Cho, Fujisawa, Ishigure | 1     |
-| `1b. Tsumego Intermediate/`      | Mid-level               | 2-3   |
-| `1c. Tsumego Advanced/`          | Hard                    | 3-4   |
-| `1d. Hashimoto Utaro/`           | Classic                 | 3-4   |
-| `2a. Tesuji/`                    | Techniques              | 2-4   |
-| `2b. Lee Changho Tesuji/`        | Modern                  | 2-4   |
-| `2c. Great Tesuji Encyclopedia/` | Comprehensive           | 2-5   |
-
----
-
-### 3. kisvadim/goproblems
-
-| Field               | Value                                    |
-| ------------------- | ---------------------------------------- |
-| **Repository**      | _(redacted)_                             |
-| **Format**          | SGF                                      |
-| **Solutions**       | ✅ Full trees                            |
-| **Estimated Count** | 18,276                                   |
-| **License**         | Check repository                         |
-
-**Features**: 63 collections from professional masters.
-
----
-
-### 4. gogameguru/go-problems
-
-| Field               | Value                                       |
-| ------------------- | ------------------------------------------- |
-| **Repository**      | _(redacted)_                                |
-| **Format**          | SGF with variations                         |
-| **Solutions**       | ✅ Rich trees + comments                    |
-| **Estimated Count** | 422                                         |
-| **License**         | Creative Commons                            |
-
-**Quality**: Curated by An Younggil 8 dan pro.
-
-**Structure**:
+**Typical directory layout** (when source ships SGF files):
 
 ```text
-weekly-go-problems/
-├── easy/           # ~140 SGF
-├── intermediate/   # ~140 SGF
-├── hard/           # ~140 SGF
+collection-name/
+├── easy/
+├── intermediate/
+├── hard/
 └── other/
 ```
-
----
-
-### 5. blacktoplay.com
-
-| Field               | Value                                                |
-| ------------------- | ---------------------------------------------------- |
-| **Website**         | _(redacted)_                                         |
-| **Format**          | Proprietary JSON API                                 |
-| **Solutions**       | ✅ Full trees                                        |
-| **Estimated Count** | ~2,400                                               |
-| **Features**        | Crowd-validated, 167 technique tags, position hashes |
-
----
-
-### 6. Online-Go.com (OGS)
-
-| Field               | Value                                               |
-| ------------------- | --------------------------------------------------- |
-| **Website**         | _(redacted)_                                        |
-| **API**             | _(redacted)_                                        |
-| **Format**          | JSON API (SGF via puzzle_data)                      |
-| **Solutions**       | ✅ Full variation trees                             |
-| **Estimated Count** | 58,000+                                             |
-| **License**         | Check individual puzzle attribution                 |
-| **Ingestion**       | Via standalone tool: `tools/ogs/` (adapter retired) |
-
-**API Features**:
-
-- RESTful pagination with `page` and `page_size` params
-- Filter by `type` (life_and_death, fuseki, tesuji, best_move, joseki, endgame)
-- Filter by `collection` ID
-- Public access (no API key required)
-- Rate limit: ~60 requests/minute
-
-**Tool Usage** (replaces former adapter):
-
-```bash
-python -m tools.ogs --help
-```
-
-**Checkpointing**: Supports resume on interruption via checkpoint files.
-
----
-
-### 7. 101books/101books.github.io
-
-| Field               | Value                                            |
-| ------------------- | ------------------------------------------------ |
-| **Repository**      | _(redacted)_                                     |
-| **Format**          | SGF extracted from upstream HTML                 |
-| **Estimated Count** | ~13,000 (60 books)                               |
-| **License**         | Check repository                                 |
 
 ---
 
@@ -189,53 +87,9 @@ python -m tools.ogs --help
 
 ---
 
-## Potential Future Sources
-
-### smargo (Sun-Yize/smargo)
-
-| Field             | Value                                |
-| ----------------- | ------------------------------------ |
-| **Repository**    | _(redacted)_                         |
-| **Format**        | JSON                                 |
-| **Purpose**       | MCTS-based tsumego solver + dataset  |
-| **Dataset Count** | smargo_30 (~30k), smargo_50 (~50k)   |
-
----
-
-## Reference Sites
-
-_External reference URLs have been redacted. See internal source configuration for details._
-
----
-
-## Classical Collections (Reference)
-
-_External classical collection URLs have been redacted. See internal source configuration for details._
-
----
-
 ## Difficulty Mapping
 
-| Source Difficulty | YenGo Level | Rank Range  |
-| ----------------- | ----------- | ----------- |
-| Elementary/Easy   | 1-2         | DDK30-DDK20 |
-| Low-Intermediate  | 3-4         | DDK20-DDK10 |
-| High-Intermediate | 5-6         | DDK10-SDK   |
-| Advanced          | 7-8         | SDK-Dan     |
-| Expert/Hard       | 9           | Dan-Pro     |
-
----
-
-## Solutions Status
-
-| Source      | Has Solutions | Format           |
-| ----------- | ------------- | ---------------- |
-| travisgk    | ✅            | Custom notation  |
-| sanderland  | ✅            | JSON SOL array   |
-| gogameguru  | ✅            | Full SGF tree    |
-| blacktoplay | ✅            | API response     |
-| ogs         | ✅            | JSON puzzle_data |
-| kisvadim    | ✅            | SGF variations   |
+External source difficulty labels are mapped to Yen-Go levels by the classification stage. See [`docs/concepts/quality.md`](../concepts/quality.md) and `config/puzzle-levels.json` for the canonical level taxonomy.
 
 ---
 
@@ -243,18 +97,17 @@ _External classical collection URLs have been redacted. See internal source conf
 
 When adding a new source:
 
-1. Add entry to this document with all metadata
-2. Create adapter in `backend/puzzle_manager/adapters/`
-3. Register in `backend/puzzle_manager/config/sources.json`
-4. Test with `python -m backend.puzzle_manager sources`
-5. Run import: `python -m backend.puzzle_manager run --source <id> --stage ingest`
+1. Implement an adapter in `backend/puzzle_manager/adapters/`
+2. Register in `config/sources.json`
+3. Verify with `python -m backend.puzzle_manager sources`
+4. Run import: `python -m backend.puzzle_manager run --source <id> --stage ingest`
 
-See [How-To: Create Adapter](../how-to/backend/create-adapter.md) for details.
+See [How-To: Create Adapter](../how-to/backend/create-adapter.md) for the full procedure.
 
 ---
 
 ## See Also
 
 - [How-To: Create Adapter](../how-to/backend/create-adapter.md) — Add sources guide
-- [Architecture: Adapters](../architecture/backend/adapters.md) — Adapter architecture
-- [Concepts: Tags](../concepts/tags.md) — Tag reference
+- [Architecture: Adapter Design Standards](../architecture/backend/adapter-design-standards.md) — Adapter architecture
+- [Concepts: Quality](../concepts/quality.md) — Quality and difficulty taxonomy

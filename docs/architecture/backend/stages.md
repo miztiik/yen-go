@@ -139,4 +139,4 @@ python -m backend.puzzle_manager run --stage publish
 
 ## Note: Removed Stages
 
-The solve/verify stages from the old 11-stage pipeline were removed in v3.2 (Spec 013). Curated puzzle sources are pre-validated, so KataGo/Smargo verification is no longer needed.
+The solve/verify stages from the old 11-stage pipeline were removed in v3.2 (Spec 013). Curated puzzle sources are pre-validated, so KataGo/yengo-source verification is no longer needed.

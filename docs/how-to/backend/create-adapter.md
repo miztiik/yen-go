@@ -389,8 +389,8 @@ class MySourceAdapter(BaseAdapter):
 | Adapter       | Type          | Resume | Notes                    |
 | ------------- | ------------- | ------ | ------------------------ |
 | `local`       | File system   | No     | Reference implementation |
-| `sanderland`  | File (GitHub) | No     | Sanderland collection    |
-| `blacktoplay` | API           | Yes    | BlackToPlay.com          |
+| `yengo-source`  | File (GitHub) | No     | yengo-source collection    |
+| `yengo-source` | API           | Yes    | yengo-source          |
 
 See [Reference: Adapters](../../reference/adapters/) for configuration details.
 

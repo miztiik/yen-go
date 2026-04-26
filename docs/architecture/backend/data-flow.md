@@ -18,8 +18,8 @@ How puzzles flow from external sources to the browser.
 
 ```
 external-sources/           adapters/
-├── kisvadim-goproblems/   ──▶ LocalSgfAdapter
-├── sanderland/            ──▶ UrlSgfAdapter
+├── yengo-source/   ──▶ LocalSgfAdapter
+├── yengo-source/            ──▶ UrlSgfAdapter
 └── manual-imports/        ──▶ LocalSgfAdapter
                                │
                                ▼

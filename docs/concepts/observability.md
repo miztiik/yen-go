@@ -40,7 +40,7 @@ The pipeline uses several identifiers to track puzzles through processing:
 
 ### source_file
 
-- **Format**: Adapter-specific (e.g., `sanderland-problems-2c-103`)
+- **Format**: Adapter-specific (e.g., `yengo-source-problems-2c-103`)
 - **Scope**: Identifies file within a source adapter
 - **Generation**: Set by adapter during ingest
 - **Usage**: Filename in staging directories
@@ -100,7 +100,7 @@ python -m backend.puzzle_manager publish-log search --puzzle-id fe50f720e43be8cc
 python -m backend.puzzle_manager publish-log search --run-id 20260202-abc12345
 
 # By source
-python -m backend.puzzle_manager publish-log search --source sanderland
+python -m backend.puzzle_manager publish-log search --source yengo-source
 ```
 
 > **Historical note**: The trace-registry JSONL system (Spec 110) was removed in favor
@@ -119,7 +119,7 @@ Every log entry includes identifiers for correlation:
   "level": "INFO",
   "run_id": "20260202-abc12345",
   "trace_id": "a1b2c3d4e5f67890",
-  "source_id": "sanderland",
+  "source_id": "yengo-source",
   "message": "Puzzle analyzed",
   "level_assigned": "intermediate"
 }

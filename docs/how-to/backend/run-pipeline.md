@@ -29,19 +29,19 @@ Each pipeline run generates a unique `run_id` (format: `YYYYMMDD-xxxxxxxx`) that
 
 ```bash
 # Run full pipeline for a source (--source is REQUIRED)
-python -m backend.puzzle_manager run --source sanderland
+python -m backend.puzzle_manager run --source yengo-source
 
 # Run specific stage only
-python -m backend.puzzle_manager run --source sanderland --stage ingest
+python -m backend.puzzle_manager run --source yengo-source --stage ingest
 
 # Run with custom batch size
-python -m backend.puzzle_manager run --source sanderland --batch-size 50
+python -m backend.puzzle_manager run --source yengo-source --batch-size 50
 
 # Process all pending files (overrides batch size)
-python -m backend.puzzle_manager run --source sanderland --drain
+python -m backend.puzzle_manager run --source yengo-source --drain
 
 # Dry run (preview without writing files)
-python -m backend.puzzle_manager run --source sanderland --dry-run
+python -m backend.puzzle_manager run --source yengo-source --dry-run
 ```
 
 > **Important**: The `--source` flag is **required**. This ensures consistent log correlation and publish-log entries.
@@ -62,7 +62,7 @@ Use `--drain` to process **all** pending files regardless of batch size. This is
 When the batch size is smaller than the total pending files, the pipeline processes **one batch and exits**. A per-file checkpoint is saved so the next run with `--resume` continues from exactly where it stopped. The CLI output shows how many remain:
 
 ```
-[OK] Pipeline completed successfully for 'ogs'
+[OK] Pipeline completed successfully for 'yengo-source'
   Processed: 50 (analyze: 50, publish: 50)
   Remaining: 150 in staging
   Duration: 12.34s
@@ -78,9 +78,9 @@ When importing a source with more files than the batch size (e.g., 10,000 files 
 
 ```bash
 # Each run processes one batch, saves checkpoint, exits
-python -m backend.puzzle_manager run --source ogs --stage ingest           # files 1–2000
-python -m backend.puzzle_manager run --source ogs --stage ingest --resume  # files 2001–4000
-python -m backend.puzzle_manager run --source ogs --stage ingest --resume  # files 4001–6000
+python -m backend.puzzle_manager run --source yengo-source --stage ingest           # files 1–2000
+python -m backend.puzzle_manager run --source yengo-source --stage ingest --resume  # files 2001–4000
+python -m backend.puzzle_manager run --source yengo-source --stage ingest --resume  # files 4001–6000
 # ... repeat until "Remaining: 0", then analyze + publish
 python -m backend.puzzle_manager run --stage analyze --drain
 python -m backend.puzzle_manager run --stage publish --drain
@@ -89,13 +89,13 @@ python -m backend.puzzle_manager run --stage publish --drain
 **Option B — Drain everything at once:**
 
 ```bash
-python -m backend.puzzle_manager run --source ogs --drain
+python -m backend.puzzle_manager run --source yengo-source --drain
 ```
 
 **Option C — Script a loop:**
 
 ```bash
-while python -m backend.puzzle_manager run --source ogs --stage ingest --resume; do
+while python -m backend.puzzle_manager run --source yengo-source --stage ingest --resume; do
   echo "Batch complete, continuing..."
 done
 ```
@@ -135,12 +135,12 @@ The publish stage is designed for **crash safety**:
 
 ```bash
 # Run stages separately
-python -m backend.puzzle_manager run --source ogs --stage ingest    # Step 1
+python -m backend.puzzle_manager run --source yengo-source --stage ingest    # Step 1
 python -m backend.puzzle_manager run --stage analyze                 # Step 2
 python -m backend.puzzle_manager run --stage publish                 # Step 3
 
 # Or combine stages
-python -m backend.puzzle_manager run --source ogs --stage analyze --stage publish
+python -m backend.puzzle_manager run --source yengo-source --stage analyze --stage publish
 ```
 
 ---
@@ -187,7 +187,7 @@ Every log entry includes the `run_id` for tracing:
   "timestamp": "2026-01-30T10:15:30.123456Z",
   "level": "INFO",
   "run_id": "20260130-abc12345",
-  "source_id": "ogs",
+  "source_id": "yengo-source",
   "message": "Processing puzzle",
   "puzzle_id": "gp-12345"
 }
@@ -226,7 +226,7 @@ State is persisted in `.pm-runtime/state/`:
     "publish": { "status": "completed", "processed": 95, "failed": 0 }
   },
   "config_snapshot": {
-    "source_id": "ogs",
+    "source_id": "yengo-source",
     "batch_size": 100,
     "stages": ["ingest", "analyze", "publish"]
   }
@@ -259,7 +259,7 @@ Override the default runtime directory:
 
 ```bash
 export YENGO_RUNTIME_DIR=/custom/path
-python -m backend.puzzle_manager run --source ogs
+python -m backend.puzzle_manager run --source yengo-source
 ```
 
 This creates:
@@ -299,7 +299,7 @@ jobs:
           YENGO_RUNTIME_DIR: ${{ runner.temp }}/yengo
           OGS_API_KEY: ${{ secrets.OGS_API_KEY }}
         run: |
-          python -m backend.puzzle_manager run --source ogs --batch-size 50
+          python -m backend.puzzle_manager run --source yengo-source --batch-size 50
 
       - name: Upload results
         uses: actions/upload-artifact@v4
@@ -322,7 +322,7 @@ RUN pip install -e /app/backend/puzzle_manager
 ENV YENGO_RUNTIME_DIR=/app/runtime
 ENV YENGO_CONFIG_DIR=/app/config
 
-CMD ["python", "-m", "backend.puzzle_manager", "run", "--source", "ogs"]
+CMD ["python", "-m", "backend.puzzle_manager", "run", "--source", "yengo-source"]
 ```
 
 Run with:
@@ -344,7 +344,7 @@ docker run -v $(pwd)/output:/app/yengo-puzzle-collections \
 python -m backend.puzzle_manager sources
 
 # Run full pipeline
-python -m backend.puzzle_manager run --source ogs
+python -m backend.puzzle_manager run --source yengo-source
 
 # Check results
 python -m backend.puzzle_manager status

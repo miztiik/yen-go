@@ -1,7 +1,7 @@
 # Go Board JavaScript Libraries — Comprehensive Analysis
 
 > **Last Updated**: 2026-01-28  
-> **Purpose**: Research analysis of how goproblems.com renders Go boards and solution trees, plus a comparison of major Go board JS libraries.
+> **Purpose**: Research analysis of how yengo-source.com renders Go boards and solution trees, plus a comparison of major Go board JS libraries.
 
 > **See also**:
 >
@@ -13,14 +13,14 @@
 
 ## Table of Contents
 
-1. [goproblems.com Deep Dive](#1-goproblemcom-deep-dive)
+1. [yengo-source.com Deep Dive](#1-goproblemcom-deep-dive)
 2. [Library Comparison Matrix](#2-library-comparison-matrix)
 3. [Individual Library Profiles](#3-individual-library-profiles)
 4. [Relevance to Yen-Go](#4-relevance-to-yen-go)
 
 ---
 
-## 1. goproblems.com Deep Dive
+## 1. yengo-source.com Deep Dive
 
 ### 1.1 Technology Stack
 
@@ -52,7 +52,7 @@ The site loads 8 JavaScript bundles from `/build/`:
 | `148.518c57f7.js`     | ~706 KB | Configuration, themes, KataGo |
 | `react.82c35494.js`   | ~804 KB | Main React application        |
 
-**Key finding**: All known Go board libraries (WGo.js, Glift, EidoGo, BesoGo, Sabaki/Shudan, jGoBoard) were searched for across every bundle — **none were found**. goproblems.com uses a completely **custom, proprietary implementation**.
+**Key finding**: All known Go board libraries (WGo.js, Glift, EidoGo, BesoGo, Sabaki/Shudan, jGoBoard) were searched for across every bundle — **none were found**. yengo-source.com uses a completely **custom, proprietary implementation**.
 
 ### 1.3 Board Rendering Architecture
 
@@ -169,7 +169,7 @@ new Ct.T2(rootNode).toSgf();
 }
 ```
 
-### 1.9 Key Takeaways for goproblems.com
+### 1.9 Key Takeaways for yengo-source.com
 
 1. **Fully custom implementation** — No external Go board library dependency
 2. **Canvas 2D, not SVG** — Performance-oriented choice with layered canvases
@@ -183,7 +183,7 @@ new Ct.T2(rootNode).toSgf();
 
 ## 2. Library Comparison Matrix
 
-| Feature            | goproblems.com         | WGo.js          | Glift        | BesoGo            | Shudan               | EidoGo       | jGoBoard          | goban (OGS)        |
+| Feature            | yengo-source.com         | WGo.js          | Glift        | BesoGo            | Shudan               | EidoGo       | jGoBoard          | goban (yengo-source)        |
 | ------------------ | ---------------------- | --------------- | ------------ | ----------------- | -------------------- | ------------ | ----------------- | ------------------ |
 | **Rendering**      | Canvas 2D (layered)    | Canvas 2D       | SVG          | SVG + CSS         | CSS (React)          | DOM/CSS      | Canvas 2D         | Canvas 2D + SVG    |
 | **SGF Parse**      | Custom                 | Yes             | Yes          | Yes (editor)      | No (use @sabaki/sgf) | Yes          | Yes               | Yes                |
@@ -250,7 +250,7 @@ new Ct.T2(rootNode).toSgf();
 
 **SGF Support**: Full SGF parsing with variation navigation.
 
-**Puzzle Support**: **Yes** — dedicated problem-solving mode with RIGHT/WRONG path detection. Uses SGF `GB` and `GW` properties plus `C[]` comment annotations (similar to goproblems.com).
+**Puzzle Support**: **Yes** — dedicated problem-solving mode with RIGHT/WRONG path detection. Uses SGF `GB` and `GW` properties plus `C[]` comment annotations (similar to yengo-source.com).
 
 **Strengths**:
 
@@ -412,7 +412,7 @@ import { createPlayer } from "jgoboard/player";
 - Relatively young v5 rewrite
 - Small user base (477 weekly npm downloads)
 
-### 3.7 goban (OGS)
+### 3.7 goban (yengo-source)
 
 **Repository**: [github.com/online-go/goban](https://github.com/online-go/goban)  
 **npm**: `goban` (v8.3.147)  
@@ -423,9 +423,9 @@ import { createPlayer } from "jgoboard/player";
 
 **Rendering**: Canvas 2D with SVG fallback. Full theme system with stone textures.
 
-**SGF Support**: Full — part of the complete OGS game engine.
+**SGF Support**: Full — part of the complete yengo-source game engine.
 
-**Puzzle Support**: **Yes** — Core feature. OGS has a full puzzle system with `PuzzleObject` format, `initial_state` + `move_tree` architecture.
+**Puzzle Support**: **Yes** — Core feature. yengo-source has a full puzzle system with `PuzzleObject` format, `initial_state` + `move_tree` architecture.
 
 **Tree Support**: Full game tree with variation navigation, move tree visualization.
 
@@ -441,7 +441,7 @@ import { createPlayer } from "jgoboard/player";
 **Weaknesses**:
 
 - Heavy (11.2 MB unpacked)
-- Tightly coupled to OGS architecture
+- Tightly coupled to yengo-source architecture
 - Creates its own DOM element (not a React/Preact component)
 - API documentation is sparse
 - Required `GobanContainer` pattern for mounting
@@ -454,17 +454,17 @@ import { createPlayer } from "jgoboard/player";
 
 Yen-Go already uses the **goban** (OGS) library with the `GobanContainer` mounting pattern. The frontend uses `sgfToPuzzle()` to convert SGF to OGS-native `PuzzleObject` format, with `parseSgfToTree` for metadata extraction.
 
-### 4.2 What goproblems.com Does Differently
+### 4.2 What yengo-source.com Does Differently
 
-| Aspect                  | goproblems.com                      | Yen-Go                                           |
+| Aspect                  | yengo-source.com                      | Yen-Go                                           |
 | ----------------------- | ----------------------------------- | ------------------------------------------------ |
-| **Board Library**       | Custom Canvas 2D                    | goban (OGS)                                      |
-| **Solution Encoding**   | Compressed paths (string tokens)    | SGF move tree (OGS native)                       |
+| **Board Library**       | Custom Canvas 2D                    | goban (yengo-source)                                      |
+| **Solution Encoding**   | Compressed paths (string tokens)    | SGF move tree (yengo-source native)                       |
 | **Correctness Markers** | `C[RIGHT]` / `C[WRONG]` in SGF      | Pre-computed solution trees                      |
 | **Tree Visualization**  | Visual tree component (lazy-loaded) | Solution tree gating (hidden until wrong/review) |
-| **Themes**              | 11 PNG-based themes                 | OGS theme system                                 |
+| **Themes**              | 11 PNG-based themes                 | yengo-source theme system                                 |
 
-### 4.3 Lessons from goproblems.com
+### 4.3 Lessons from yengo-source.com
 
 1. **Multi-layer Canvas** — Separating board, cursor, markup, and effects into distinct canvas layers improves rendering performance and enables independent updates
 2. **Compressed path encoding** — Efficient representation of solution paths as string tokens rather than full tree objects could reduce payload size
@@ -473,10 +473,10 @@ Yen-Go already uses the **goban** (OGS) library with the `GobanContainer` mounti
 
 ### 4.4 Library Recommendations for Yen-Go
 
-**Keep using goban (OGS)** — It is the best fit for Yen-Go's requirements:
+**Keep using goban (yengo-source)** — It is the best fit for Yen-Go's requirements:
 
 1. **Apache 2.0 license** — permissive, compatible with open source
-2. **Puzzle mode built-in** — core OGS feature, battle-tested
+2. **Puzzle mode built-in** — core yengo-source feature, battle-tested
 3. **Active maintenance** — 252 npm releases
 4. **TypeScript** — matches Yen-Go's strict TypeScript requirement
 5. **Already integrated** — switching would be a massive refactor with zero benefit

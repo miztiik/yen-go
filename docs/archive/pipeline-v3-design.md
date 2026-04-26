@@ -17,7 +17,7 @@ The original pipeline design (specs 002 + 003) proposed an 11-stage sequential p
 5. Classify — Assign difficulty levels
 6. Tag — Detect techniques (ko, ladder, etc.)
 7. Enrich — Generate hints, quality metrics
-8. Solve — KataGo/smargo validation
+8. Solve — KataGo/yengo-source validation
 9. Serialize — Write enriched SGF
 10. Index — Build view indexes
 11. Publish — Write final output
@@ -27,8 +27,8 @@ Each stage was a separate class with its own configuration, and the `PipelineOrc
 ## Why It Was Simplified
 
 - **Over-segmented**: Most stages were 20–50 lines of code. The overhead of stage configuration, inter-stage data contracts, and orchestration exceeded the actual logic.
-- **Deduplication unnecessary**: Curated sources (Cho Chikun, Gokyo Shumyo, OGS collections) don't have duplicates. The D8 hashing was solving a problem that didn't exist.
-- **Solve stage removed**: KataGo/smargo validation was abandoned (see [ai-puzzle-validation.md](./ai-puzzle-validation.md)) because sources are pre-validated.
+- **Deduplication unnecessary**: Curated sources (Cho Chikun, Gokyo Shumyo, yengo-source collections) don't have duplicates. The D8 hashing was solving a problem that didn't exist.
+- **Solve stage removed**: KataGo/yengo-source validation was abandoned (see [ai-puzzle-validation.md](./ai-puzzle-validation.md)) because sources are pre-validated.
 - **Orchestrator brittle**: Stage constructors expected `PipelineConfig + StateManager` but the orchestrator passed `StageConfig`, causing runtime initialization failures (spec 003).
 
 ## What Replaced It

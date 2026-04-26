@@ -55,10 +55,10 @@ Run the 3-stage pipeline (INGEST → ANALYZE → PUBLISH).
 
 ```bash
 # Run full pipeline (--source is REQUIRED)
-python -m backend.puzzle_manager run --source sanderland
+python -m backend.puzzle_manager run --source yengo-source
 
 # Run specific stage(s)
-python -m backend.puzzle_manager run --source sanderland --stage ingest
+python -m backend.puzzle_manager run --source yengo-source --stage ingest
 python -m backend.puzzle_manager run --stage analyze
 python -m backend.puzzle_manager run --stage publish
 python -m backend.puzzle_manager run --stage analyze --stage publish
@@ -67,16 +67,16 @@ python -m backend.puzzle_manager run --stage analyze --stage publish
 python -m backend.puzzle_manager run --resume
 
 # Preview mode (no file changes)
-python -m backend.puzzle_manager run --source sanderland --dry-run
+python -m backend.puzzle_manager run --source yengo-source --dry-run
 
 # Custom batch size
-python -m backend.puzzle_manager run --source sanderland --batch-size 50
+python -m backend.puzzle_manager run --source yengo-source --batch-size 50
 
 # Process all pending files (overrides batch size)
-python -m backend.puzzle_manager run --source sanderland --drain
+python -m backend.puzzle_manager run --source yengo-source --drain
 
 # Custom flush interval for crash recovery checkpoints
-python -m backend.puzzle_manager run --source sanderland --flush-interval 200
+python -m backend.puzzle_manager run --source yengo-source --flush-interval 200
 ```
 
 | Option               | Description                                                                                   |
@@ -279,7 +279,7 @@ python -m backend.puzzle_manager publish-log search --run-id 20260130-abc12345
 python -m backend.puzzle_manager publish-log search --puzzle-id gp-12345
 
 # Search by source
-python -m backend.puzzle_manager publish-log search --source sanderland
+python -m backend.puzzle_manager publish-log search --source yengo-source
 ```
 
 ---

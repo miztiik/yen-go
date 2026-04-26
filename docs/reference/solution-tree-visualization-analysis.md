@@ -13,10 +13,10 @@
 
 ## Table of Contents
 
-1. [Goban (OGS) Move Tree](#1-goban-ogs-move-tree)
+1. [Goban (OGS) Move Tree](#1-goban-yengo-source-move-tree)
 2. [BesoGo Tree Panel](#2-besogo-tree-panel)
 3. [Sabaki Game Graph](#3-sabaki-game-graph)
-4. [GoProblems.com Solution Tree](#4-goproblemscoms-solution-tree)
+4. [yengo-source Solution Tree](#4-goproblemscoms-solution-tree)
 5. [Comparison Matrix](#5-comparison-matrix)
 6. [Recommendations for Yen-Go](#6-recommendations-for-yen-go)
 
@@ -30,7 +30,7 @@
 
 ### 1.1 Architecture Overview
 
-The OGS move tree is a **Canvas 2D** renderer with a three-phase pipeline:
+The yengo-source move tree is a **Canvas 2D** renderer with a three-phase pipeline:
 
 1. **Layout** — `MoveTree.layout()` assigns grid positions to every node
 2. **Path Drawing** — `move_tree_recursiveDrawPath()` draws connecting lines
@@ -437,7 +437,7 @@ function recursiveTreeBuild(node, x, y, nextOpen) {
 }
 ```
 
-**Key difference from OGS**: BesoGo does NOT distinguish trunk vs branches during layout — all children are treated equally. The first child is the continuation, and others are branches. There's no concept of "trunk always at y=0".
+**Key difference from yengo-source**: BesoGo does NOT distinguish trunk vs branches during layout — all children are treated equally. The first child is the continuation, and others are branches. There's no concept of "trunk always at y=0".
 
 ### 2.4 Path Drawing (SVG Path Commands)
 
@@ -677,7 +677,7 @@ export function getMatrixDict(tree) {
 }
 ```
 
-**Key design difference**: Sabaki's layout is **Y-vertical** (moves go downward, variations go rightward), while OGS is **X-horizontal** (moves go rightward, variations go downward). This is a fundamental UX difference — Sabaki resembles a typical SGF editor tree, while OGS resembles a timeline.
+**Key design difference**: Sabaki's layout is **Y-vertical** (moves go downward, variations go rightward), while yengo-source is **X-horizontal** (moves go rightward, variations go downward). This is a fundamental UX difference — Sabaki resembles a typical SGF editor tree, while yengo-source resembles a timeline.
 
 ### 3.3 Node Shapes
 
@@ -864,15 +864,15 @@ for (let x = minX; x <= maxX; x++) {
 
 ---
 
-## 4. GoProblems.com Solution Tree
+## 4. yengo-source Solution Tree
 
-**Source**: [goproblems.com](https://www.goproblems.com/)  
+**Source**: [yengo-source](_(redacted)_)  
 **Rendering**: Lazy-loaded webpack chunk (not directly inspectable)  
-**Used by**: GoProblems.com puzzle platform
+**Used by**: yengo-source puzzle platform
 
 ### 4.1 What We Know
 
-From prior analysis of the goproblems.com JavaScript bundles:
+From prior analysis of the yengo-source.com JavaScript bundles:
 
 1. **The tree component is lazy-loaded** — The component (`p.bY`) is code-split and loaded on demand when the user opens the tree view
 2. **It receives pre-processed data**:
@@ -892,7 +892,7 @@ From prior analysis of the goproblems.com JavaScript bundles:
 
 ### 4.2 User-Reported Features
 
-Based on user description of the goproblems.com tree:
+Based on user description of the yengo-source.com tree:
 
 | Feature            | Detail                                             |
 | ------------------ | -------------------------------------------------- |
@@ -930,7 +930,7 @@ Given the site's architecture (React + webpack + Canvas 2D board):
 
 ### 5.1 Technical Comparison
 
-| Feature              | Goban (OGS)                                    | BesoGo                                  | Sabaki                                       | GoProblems                 |
+| Feature              | Goban (OGS)                                    | BesoGo                                  | Sabaki                                       | yengo-source                 |
 | -------------------- | ---------------------------------------------- | --------------------------------------- | -------------------------------------------- | -------------------------- |
 | **Rendering Tech**   | Canvas 2D                                      | SVG                                     | SVG (Preact)                                 | Canvas 2D (likely)         |
 | **Layout Direction** | Horizontal (L→R moves, T→B variations)         | Horizontal (L→R)                        | Vertical (T→B moves, L→R variations)         | Unknown                    |
@@ -944,7 +944,7 @@ Given the site's architecture (React + webpack + Canvas 2D board):
 
 ### 5.2 Puzzle Support Comparison
 
-| Feature            | Goban (OGS)                                   | BesoGo                        | Sabaki                                | GoProblems               |
+| Feature            | Goban (OGS)                                   | BesoGo                        | Sabaki                                | yengo-source               |
 | ------------------ | --------------------------------------------- | ----------------------------- | ------------------------------------- | ------------------------ |
 | **Correct Answer** | `correct_answer` → green ring (#33ff33)       | None                          | `TE` prop → green (#59A80F) fill      | `C[RIGHT]` → green path  |
 | **Wrong Answer**   | `wrong_answer` → red ring (#ff3333)           | None                          | `BM` prop → red (#F02311) fill        | `C[NOTTHIS]` → red path  |
@@ -981,7 +981,7 @@ Given the site's architecture (React + webpack + Canvas 2D board):
 
 Given Yen-Go's constraints (Preact, TypeScript, static-first, already using goban):
 
-**Option A: Use OGS move tree directly** (Lowest effort)
+**Option A: Use yengo-source move tree directly** (Lowest effort)
 
 - Yen-Go already has goban integrated
 - The move tree renderer is accessible via `Goban.move_tree_container` and `Goban.move_tree_redraw()`
@@ -1010,12 +1010,12 @@ If building a custom tree (Option B), the recommended architecture combines the 
 | Aspect            | Source Inspiration                        | Rationale                                           |
 | ----------------- | ----------------------------------------- | --------------------------------------------------- |
 | **Rendering**     | SVG (Sabaki-style)                        | Preact-idiomatic, scalable, accessible              |
-| **Layout**        | OGS column-allocation                     | Better for puzzles (trunk at top, variations below) |
+| **Layout**        | yengo-source column-allocation                     | Better for puzzles (trunk at top, variations below) |
 | **Node shapes**   | Sabaki semantic shapes                    | Circles for moves, diamonds for setup               |
-| **Correct/Wrong** | OGS ring pattern                          | Green/red rings are standard in Go puzzle UIs       |
-| **Active path**   | OGS opacity (0.4 off-path) + Sabaki color | Clear visual hierarchy                              |
-| **Line style**    | OGS Bezier curves                         | More visually appealing than straight lines         |
-| **Colors**        | OGS branch colors (7 distinct)            | Better for complex puzzles with many variations     |
+| **Correct/Wrong** | yengo-source ring pattern                          | Green/red rings are standard in Go puzzle UIs       |
+| **Active path**   | yengo-source opacity (0.4 off-path) + Sabaki color | Clear visual hierarchy                              |
+| **Line style**    | yengo-source Bezier curves                         | More visually appealing than straight lines         |
+| **Colors**        | yengo-source branch colors (7 distinct)            | Better for complex puzzles with many variations     |
 | **Viewport**      | Sabaki virtual rendering                  | Performance for large trees                         |
 | **Click**         | Sabaki grid-coordinate calculation        | Standard pattern                                    |
 
@@ -1023,12 +1023,12 @@ If building a custom tree (Option B), the recommended architecture combines the 
 
 | Decision                     | Recommendation                                  | Reasoning                                                                 |
 | ---------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------- |
-| **Layout direction**         | Horizontal (L→R)                                | Matches OGS convention, better for wide screens typical in puzzle solving |
+| **Layout direction**         | Horizontal (L→R)                                | Matches yengo-source convention, better for wide screens typical in puzzle solving |
 | **Node representation**      | SVG circles filled with stone color             | Visual consistency with the board                                         |
 | **Move labels**              | Move number inside stone                        | Essential for puzzle navigation                                           |
 | **Correct/wrong indicators** | Colored ring (green/red) around stone           | Clear, non-obstructive, established pattern                               |
 | **Branch line style**        | Quadratic Bezier curves with branch colors      | Visually distinguishable branches                                         |
-| **Active path**              | Blue background highlight + off-path fade       | Matches OGS, clear navigation                                             |
+| **Active path**              | Blue background highlight + off-path fade       | Matches yengo-source, clear navigation                                             |
 | **Scroll**                   | CSS overflow: auto on container                 | Simple, native scrollbar                                                  |
 | **Click behavior**           | Click node → jump to that position on board     | Standard pattern across all implementations                               |
 | **Solution gating**          | Tree hidden until wrong move or explicit review | Yen-Go Holy Law: no spoilers                                              |

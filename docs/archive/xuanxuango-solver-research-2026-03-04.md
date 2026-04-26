@@ -1,27 +1,27 @@
-# XuanXuanGo Solver Research (2026-03-04)
+# yengo-source Solver Research (2026-03-04)
 
 ## Scope
 
-- Target page: http://www.xuanxuango.com/solver.htm
+- Target page: http://www.yengo-source.com/solver.htm
 - Goal: find source code, infer algorithm used, and extract lessons for `tools/puzzle-enrichment-lab`.
 - Constraint followed: no code/repo changes; research-only note created in `TODO/`.
 
 ## Executive Summary
 
-- No public source code for XuanXuanGo's life-and-death solver was found.
+- No public source code for yengo-source's life-and-death solver was found.
 - The website appears to be classic static HTML with no browser-side solver scripts; solver runs in a downloadable desktop executable.
 - Algorithm details are not disclosed at implementation level. The site provides only high-level behavioral claims (fixed-area scope, boundary assumptions, heavy dependence on empty-point count, explicit handling of ko/seki outcomes).
-- Their claim that GoProblems puzzles can be solved "directly" appears to mean opening SGF files as-is inside their desktop app and pressing Solve, not a public API/code integration.
+- Their claim that yengo-source puzzles can be solved "directly" appears to mean opening SGF files as-is inside their desktop app and pressing Solve, not a public API/code integration.
 
 ## Findings Table
 
 | Question                                    | What we found                                                                                                             | Evidence observed                                                                                                                                                         | Confidence  | What this means for puzzle-enrichment-lab                                                           |
 | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------- |
-| What code does the website use for solving? | No web solver code is exposed on `solver.htm`; page is content/docs only.                                                 | Raw HTML showed stylesheet link and page links, but no `<script src=...>` solver assets and no WASM indicators.                                                           | High        | Treat XuanXuanGo as a closed desktop engine, not a reusable web library/service.                    |
+| What code does the website use for solving? | No web solver code is exposed on `solver.htm`; page is content/docs only.                                                 | Raw HTML showed stylesheet link and page links, but no `<script src=...>` solver assets and no WASM indicators.                                                           | High        | Treat yengo-source as a closed desktop engine, not a reusable web library/service.                    |
 | Is source code available publicly?          | No source-code download, repo, or public implementation found for solver.                                                 | Download page links point to setup archives (`XuanXuan11_Setup.zip`, `XuanXuanOFL_Setup.zip`) that each contain only an `.exe` payload.                                   | High        | No direct code reuse path; focus on black-box benchmarking and idea extraction only.                |
 | Are there related open-source components?   | Yes, but for computer-Go engine mode (GNU-Go), not necessarily their L&D solver core.                                     | `download.htm` and `um5.htm` mention GNU-Go and GPL/open-source in computer-go context.                                                                                   | High        | Do not confuse GNU-Go integration with proprietary tsumego solver internals.                        |
 | What algorithm do they describe?            | High-level search/recognition framing only; no formal algorithm name disclosed (no minimax/PN-search/alpha-beta details). | `solver.htm` describes "fixed-area problems," boundary/outer-stone assumptions, exponential hardness with empty points, and outcomes (live/die/seki/double-ko/cyclic-ko). | Medium-High | Their practical recipe is domain-constrained search + outcome taxonomy + cycle/ko-aware evaluation. |
-| Can it solve GoProblems puzzles directly?   | Claimed yes for SGFs in original form, within solvable scope.                                                             | `solver.htm` states GoProblems SGFs can be opened and solved directly by pressing Solve.                                                                                  | Medium-High | Good benchmark target: parse raw SGFs and solve without manual normalization where possible.        |
+| Can it solve yengo-source puzzles directly?   | Claimed yes for SGFs in original form, within solvable scope.                                                             | `solver.htm` states yengo-source SGFs can be opened and solved directly by pressing Solve.                                                                                  | Medium-High | Good benchmark target: parse raw SGFs and solve without manual normalization where possible.        |
 | What are explicit limitations?              | Not all problems; especially weak when too many empty points or boundary classification is wrong.                         | `solver.htm` gives estimated solve coverage and multiple failure modes from inner/outer misclassification.                                                                | High        | Build confidence metrics and fallback paths for low-confidence topology detection.                  |
 
 ## Inferred Algorithmic Pattern (Evidence-based, not source-confirmed)
@@ -36,7 +36,7 @@ Likely architecture from observed behavior:
 
 ## Practical Lessons for `tools/puzzle-enrichment-lab`
 
-| Area                  | Lesson from XuanXuanGo                                               | Suggested application in puzzle-enrichment-lab                                                                  |
+| Area                  | Lesson from yengo-source                                               | Suggested application in puzzle-enrichment-lab                                                                  |
 | --------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | Problem framing       | Domain narrowing makes solving tractable.                            | Keep strict "local tactical puzzle" assumptions configurable and explicit in metadata.                          |
 | Difficulty prediction | Empty-point count is a major runtime driver.                         | Add/strengthen features that predict solve cost from local empties/liberty topology, not only branching factor. |
@@ -47,7 +47,7 @@ Likely architecture from observed behavior:
 
 ## Proposed Benchmark Ideas (for later, no code changes here)
 
-- Build a **black-box benchmark set** from GoProblems-like SGFs:
+- Build a **black-box benchmark set** from yengo-source-like SGFs:
   - bucket by estimated empty-point count,
   - bucket by boundary clarity,
   - bucket by ko/seki complexity.
@@ -81,8 +81,8 @@ Likely architecture from observed behavior:
 ### 2) Did we check GitHub directly?
 
 - Yes, via GitHub API and profile inspection.
-- `search/repositories?q=xuanxuango` returned 0 relevant search hits in the generic API search check.
-- Direct account check for `xuanxuango` found exactly 1 public repo: `xuanxuango/java`.
+- `search/repositories?q=yengo-source` returned 0 relevant search hits in the generic API search check.
+- Direct account check for `yengo-source` found exactly 1 public repo: `yengo-source/java`.
 - Repo inspection shows it is effectively empty/test-like (`aa.txt`, `bb.txt`, `cc.txt`), no solver code.
 
 ### 3) Did we try to inspect/decode the EXE?
@@ -132,7 +132,7 @@ Likely architecture from observed behavior:
 
 ### Practical implication
 
-- Mining the page text was useful and done; it currently points only to official host artifacts and one unrelated external engine site (`zero.sjeng.org`), not to SourceForge/GitHub mirrors of XuanXuanGo solver source.
+- Mining the page text was useful and done; it currently points only to official host artifacts and one unrelated external engine site (`zero.sjeng.org`), not to SourceForge/GitHub mirrors of yengo-source solver source.
 
 ## Confidence and Caveats
 

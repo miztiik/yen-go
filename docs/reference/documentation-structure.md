@@ -88,7 +88,7 @@ docs/concepts/sgf-properties.md                      ✅
 
 **Forbidden:**
 ```
-docs/how-to/backend/adapters/ogs/config.md           ❌  (4 levels)
+docs/how-to/backend/adapters/yengo-source/config.md           ❌  (4 levels)
 docs/architecture/frontend/testing/vitest/unit.md    ❌  (5 levels)
 ```
 
@@ -214,7 +214,7 @@ Archive docs must include a deprecation header:
 | Don't place docs at `docs/` root | `docs/sgf-format-analysis.md` | `docs/archive/sgf-format-analysis.md` |
 | Don't maintain parallel guide systems | `docs/guides/` + `docs/how-to/` | Just `docs/how-to/` |
 | Don't put frontend guides in how-to root | `docs/how-to/playwright-visual-testing.md` | `docs/how-to/frontend/playwright-visual-testing.md` |
-| Don't exceed 3 directory levels | `docs/how-to/backend/adapters/ogs.md` | `docs/architecture/backend/adapters/ogs-adapter.md` |
+| Don't exceed 3 directory levels | `docs/how-to/backend/adapters/yengo-source.md` | `docs/architecture/backend/adapters/yengo-source-adapter.md` |
 | Don't duplicate concepts across tiers | Tag definitions in both arch + concepts | Single source in `docs/concepts/tags.md` |
 | Don't skip See Also callouts | Doc with no cross-references | Every doc links to ≥1 related doc in another tier |
 | Don't omit Last Updated date | No date on doc | `**Last Updated**: 2026-03-24` |

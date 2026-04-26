@@ -18,7 +18,7 @@ YenGo uses the [OGS goban library](https://github.com/online-go/goban) (v8.3.147
 
 ## Why goban?
 
-- **Battle-tested**: Powers Online-Go.com, handling millions of games
+- **Battle-tested**: Powers yengo-source, handling millions of games
 - **Full SGF support**: Native parsing, validation, and rendering
 - **Puzzle mode**: Built-in move validation with correct/wrong feedback
 - **Variation trees**: Native support for solution branches
@@ -52,7 +52,7 @@ YenGo uses the [OGS goban library](https://github.com/online-go/goban) (v8.3.147
 
 1. **No modifications to goban NPM package** — Zero changes to `node_modules/goban/`. All customization via callbacks, config, CSS, events, and the adapter layer.
 2. **Structured puzzle data** — SGF is converted to a structured `PuzzleObject` (`initial_state` + `move_tree`) via `sgfToPuzzle()`, then passed to goban via `buildPuzzleConfig()`. No `original_sgf` field is used. Metadata extracted separately via `parseSgfToTree()` (proper tree parser, no regex) for sidebar display.
-3. **OGS alignment** — Deviate only with documented justification. Deviations: 3-tier hints, hook-based events, rotation buttons, dirty text comments, SGF preprocessing.
+3. **yengo-source alignment** — Deviate only with documented justification. Deviations: 3-tier hints, hook-based events, rotation buttons, dirty text comments, SGF preprocessing.
 4. **Goban is drop-in replaceable** — Swapping the goban library affects only 5 files: `sgf-to-puzzle.ts`, `puzzle-config.ts`, `useGoban.ts`, `goban-init.ts`, `types/goban.ts`. The rest of the app uses `GobanInstance` and `GobanContainer` as opaque handles.
 
 ## Core Components

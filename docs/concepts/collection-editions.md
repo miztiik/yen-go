@@ -84,7 +84,7 @@ Edition sub-collections are hidden from browse/search queries via `json_extract(
 ## Known Limitations
 
 - **Progress orphaning**: When a collection splits into editions, progress data keyed to the parent's ID is not migrated. Users start fresh on each edition.
-- **Generic labels**: Edition labels are functional (`"Edition 1 (42 puzzles)"`) but don't indicate the source origin, as raw source IDs (e.g., "kisvadim") are meaningless to Go players.
+- **Generic labels**: Edition labels are functional (`"Edition 1 (42 puzzles)"`) but don't indicate the source origin, as raw source IDs (e.g., "yengo-source") are meaningless to Go players.
 - **Single-slug detection**: `collection_slug` stores only the first slug for multi-collection puzzles (`YL[a,b]`). Collision detection triggers on any shared slug, not all.
 - **Legacy entries**: Pre-existing entries without `collection_slug` (NULL) are excluded from collision detection.
 

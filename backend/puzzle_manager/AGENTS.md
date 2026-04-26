@@ -68,10 +68,10 @@
 | `core/atomic_write.py` | `atomic_write_text/json()` — crash-safe file writes |
 | `adapters/_base.py` | `BaseAdapter` protocol + `ResumableAdapter` + `FetchResult` |
 | `adapters/_registry.py` | `register_adapter()` decorator, `discover_adapters()`, `get_adapter(name)` |
-| `adapters/sanderland/` | `SanderlandAdapter` — JSON collection → SGF (HTTP) |
+| `adapters/yengo-source/` | `YengoSourceAdapter` — JSON collection → SGF (HTTP) |
 | `adapters/local/` | `LocalAdapter` — filesystem SGF import with checkpoint |
-| `adapters/kisvadim/` | `KisvadimAdapter` — local puzzle import |
-| `adapters/travisgk/` | `TravisGKAdapter` — local collection import |
+| `adapters/yengo-source/` | `YengoSourceAdapter` — local puzzle import |
+| `adapters/yengo-source/` | `YengoSourceAdapter` — local collection import |
 | `stages/ingest.py` | `IngestStage.run()` — fetch + parse + validate; generates `trace_id`; `_check_dedup(conn, sgf, source_id=)` allows cross-source duplicates |
 | `stages/analyze.py` | `AnalyzeStage.run()` — classify + tag + enrich; reads/preserves `trace_id` |
 | `stages/publish.py` | `PublishStage.run()` — batch output + DB build + publish log append |

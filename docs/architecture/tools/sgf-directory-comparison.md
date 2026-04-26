@@ -416,7 +416,7 @@ tools/puzzle-manager-scripts/output/
 ## SGF Directory Comparison Report
 - **Run:** 2026-03-25 14:30:22 UTC
 - **Source:** external-sources/Xuan Xuan Qi Jing/ (347 files)
-- **Target:** external-sources/kisvadim-goproblems/TSUMEGO CLASSIC - XUAN XUAN QI JING/ (347 files)
+- **Target:** external-sources/yengo-source/TSUMEGO CLASSIC - XUAN XUAN QI JING/ (347 files)
 
 ### Match Distribution
 | Level | Name | Count | % |

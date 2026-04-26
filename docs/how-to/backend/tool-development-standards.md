@@ -1,6 +1,6 @@
 # Tool Development Standards
 
-Normative standards for puzzle download tools in `tools/`. The OGS tool (`tools/ogs/`) is the reference implementation.
+Normative standards for puzzle download tools in `tools/`. The yengo-source tool (`tools/yengo-source/`) is the reference implementation.
 
 > **See also**: [TEMPLATE.md](../../../tools/core/TEMPLATE.md) — Quick-start scaffolding with copy-paste file stubs for creating a new tool. This document is the authority; the template is the skeleton.
 
@@ -384,7 +384,7 @@ Validation rules are config-driven via `config/puzzle-validation.json` (schema v
 
 ### Design Decisions (v2.0 Consolidation)
 
-1. **`min_solution_depth` replaces `require_solution`**: A single integer range `[min_solution_depth, max_solution_depth]` expresses both "solution must exist" (depth >= 1) and "solution not too deep" (depth <= 30). `min_solution_depth=0` allows puzzles without solutions (OGS use case). This eliminates the boolean `require_solution` flag.
+1. **`min_solution_depth` replaces `require_solution`**: A single integer range `[min_solution_depth, max_solution_depth]` expresses both "solution must exist" (depth >= 1) and "solution not too deep" (depth <= 30). `min_solution_depth=0` allows puzzles without solutions (yengo-source use case). This eliminates the boolean `require_solution` flag.
 
 2. **`min_stones` replaces `require_initial_stones`**: An integer count is strictly more informative than a boolean presence check. `min_stones=2` is the Go-valid minimum (attacker + defender). Count also enables future quality filters (e.g., "reject trivially simple puzzles with < 5 stones").
 
@@ -538,7 +538,7 @@ The `puzzle_save()` / `item_save()` log line includes `[saved=N skip=N err=N]` c
 that are written to both console and JSONL log. **You MUST pass the stats values from
 the main download loop.** Omitting them causes all counters to show zero.
 
-**Correct pattern** (from OGS and Tsumego Hero):
+**Correct pattern** (from yengo-source and Tsumego Hero):
 
 ```python
 # In the main download loop — NOT in _process_puzzle()
@@ -589,7 +589,7 @@ This ensures:
 
 ## 16. Tool README Standard
 
-Every tool MUST have a `README.md` in its directory (`tools/{tool-name}/README.md`). The OGS tool (`tools/ogs/README.md`) is the reference implementation.
+Every tool MUST have a `README.md` in its directory (`tools/{tool-name}/README.md`). The yengo-source tool (`tools/yengo-source/README.md`) is the reference implementation.
 
 ### Required Sections
 
@@ -646,7 +646,7 @@ Every download tool MUST persist state **after each successful file save**. If t
 5. Save checkpoint to {output_dir}/.checkpoint.json  ← MANDATORY after every file
 ```
 
-**Reference implementation** (from OGS `orchestrator.py`):
+**Reference implementation** (from yengo-source `orchestrator.py`):
 
 ```python
 # Step 3: Save puzzle file
@@ -729,11 +729,11 @@ from tools.core.paths import rel_path
 
 # ✅ CORRECT: Relative POSIX path
 logger.info(f"Output: {rel_path(output_dir)}")
-# → Output: external-sources/ogs/sgf/batch-001/12345.sgf
+# → Output: external-sources/yengo-source/sgf/batch-001/12345.sgf
 
 # ❌ WRONG: Absolute path
 logger.info(f"Output: {output_dir}")
-# → Output: C:\Users\dev\yen-go\external-sources\ogs\sgf\batch-001\12345.sgf
+# → Output: C:\Users\dev\yen-go\external-sources\yengo-source\sgf\batch-001\12345.sgf
 ```
 
 ### Console Banner Paths
@@ -744,7 +744,7 @@ The startup banner (§2) MUST display relative paths:
 from tools.core.paths import rel_path
 
 print(f"Output directory: {rel_path(output_dir)}")
-# → Output directory: external-sources/ogs
+# → Output directory: external-sources/yengo-source
 ```
 
 ### Path Configuration Rules

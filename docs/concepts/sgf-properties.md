@@ -304,7 +304,7 @@ The standard SGF `N[]` property labels nodes in the game tree (e.g., `N[正解]`
 | `N[text]` only        | Convert: `C[text]`, remove `N[]`          | `N[variation]` → `C[variation]`              |
 | No `N[]`              | No change                                 | —                                            |
 
-**Tool**: `python -m tools.kisvadim_goproblems merge-node-names --source-dir <dir>`
+**Tool**: `python -m tools.yengo-source merge-node-names --source-dir <dir>`
 
 This is a general-purpose operation applicable to any source collection that uses `N[]` for branch labeling. The merged text is then preserved through the pipeline via the standard `C[]` property handling (root comments preserved by default, move comments standardized).
 

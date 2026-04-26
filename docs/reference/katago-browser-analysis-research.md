@@ -6,14 +6,14 @@ Last Updated: 2026-02-17
 
 This research summarizes what is feasible for live Go puzzle analysis in browser-only mode, based on:
 
-- External signals from KataGo training network distribution and GoProblems runtime behavior.
+- External signals from KataGo training network distribution and yengo-source runtime behavior.
 - Existing Yen-Go architecture constraints.
 - Review of Feature 134 draft artifacts in `TODO/134-score-estimation-wasm/`.
 
 ## Executive Summary
 
 - Browsers can run Go analysis engines or estimators, but this is workload- and device-dependent.
-- A full GoProblems-like, deep, responsive analysis experience for all devices is not reliable in pure client mode.
+- A full yengo-source-like, deep, responsive analysis experience for all devices is not reliable in pure client mode.
 
 
 ## Findings From Feature 134 Files
@@ -54,7 +54,7 @@ This research summarizes what is feasible for live Go puzzle analysis in browser
 ## Not Possible (Under Current Constraints)
 
 - Runtime Monte Carlo/KataGo-like inference in browser for live arbitrary positions.
-- Deep off-path exploratory engine analysis entirely in client at GoProblems-like parity.
+- Deep off-path exploratory engine analysis entirely in client at yengo-source-like parity.
 - Guaranteeing equal latency and depth across low/mid/high-end devices.
 
 ## Limitations (Even If Browser Compute Is Allowed)

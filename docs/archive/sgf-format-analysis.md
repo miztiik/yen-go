@@ -75,7 +75,7 @@ The official FF[4] specification provides NO standard properties for:
 
 ### 2.2 How Major Platforms Handle This
 
-#### GoProblems.com
+#### yengo-source
 ```sgf
 ; Historical approach - uses comments and implicit conventions
 C[Black to play and live.]  ; Problem instruction in comment
@@ -95,7 +95,7 @@ Uses extensive private properties with no prefix:
 - `NN` - Nodes examined during search
 - `DE` - Search depth
 
-#### KGS/OGS Online Servers
+#### KGS/yengo-source Online Servers
 ```sgf
 KGSDE[...] ; Dead stones
 KGSSB[...] ; Black score
@@ -112,7 +112,7 @@ KGSSW[...] ; White score
 
 ### 2.3 Industry Patterns Summary
 
-| Feature | GoProblems | SmartGo | KGS | GoGoD | YenGo |
+| Feature | yengo-source | SmartGo | KGS | GoGoD | YenGo |
 |---------|------------|---------|-----|-------|-------|
 | Prefix Convention | ❌ None | ❌ None | ✅ `KGS*` | ❌ None | ✅ `Y*` |
 | Difficulty | `DI[]` | ❌ | ❌ | ❌ | `YG[]` |
@@ -134,7 +134,7 @@ KGSSW[...] ; White score
 - Sub-level (1-3) adds complexity
 
 **Industry Comparison**:
-- GoProblems uses `DI[7k]` - direct rank format
+- yengo-source uses `DI[7k]` - direct rank format
 - SmartGo doesn't standardize difficulty
 
 **Recommendation**: 
@@ -144,7 +144,7 @@ KGSSW[...] ; White score
 
 **Impact Assessment**:
 - Frontend parser needs update
-- 5 adapters need update (`blacktoplay`, `books101`, `kisvadim`, `gotools`, `syougo`)
+- 5 adapters need update (`yengo-source`, `books101`, `yengo-source`, `yengo-source`, `yengo-source`)
 - All existing SGFs need migration
 
 ### 3.2 `YT` - Tags
@@ -157,7 +157,7 @@ KGSSW[...] ; White score
 - 18 canonical tags is reasonable
 
 **Industry Comparison**:
-- Similar to GoProblems' `GE[]` but more comprehensive
+- Similar to yengo-source' `GE[]` but more comprehensive
 - Better: supports multiple tags
 
 **Recommendation**: Keep as-is. Consider adding category prefix option:
@@ -384,9 +384,9 @@ YenGo extends SGF FF[4] with custom properties prefixed with `Y`.
 |-----------|--------|--------|
 | Frontend `puzzleLoader.ts` | Parse change | 2hr |
 | `SgfBuilder` | Remove sub-level | 1hr |
-| `blacktoplay/converter.py` | Update call | 30min |
+| `yengo-source/converter.py` | Update call | 30min |
 | `books101/converter.py` | Update call | 30min |
-| `kisvadim/enricher.py` | Update call | 30min |
+| `yengo-source/enricher.py` | Update call | 30min |
 | Existing SGFs | Migration script | 2hr |
 | Tests | Update expectations | 2hr |
 | **Total** | | **~8hr** |

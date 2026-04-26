@@ -29,15 +29,15 @@ INGEST → ANALYZE → PUBLISH
 
 ```bash
 # Run all 3 stages for a source
-python -m backend.puzzle_manager run --source ogs
+python -m backend.puzzle_manager run --source yengo-source
 
 # Or run stages separately:
-python -m backend.puzzle_manager run --source ogs --stage ingest    # Step 1
-python -m backend.puzzle_manager run --source ogs --stage analyze   # Step 2
-python -m backend.puzzle_manager run --source ogs --stage publish   # Step 3
+python -m backend.puzzle_manager run --source yengo-source --stage ingest    # Step 1
+python -m backend.puzzle_manager run --source yengo-source --stage analyze   # Step 2
+python -m backend.puzzle_manager run --source yengo-source --stage publish   # Step 3
 
 # Or combine stages:
-python -m backend.puzzle_manager run --source ogs --stage analyze --stage publish
+python -m backend.puzzle_manager run --source yengo-source --stage analyze --stage publish
 ```
 
 ### Runtime Directory
@@ -98,36 +98,36 @@ Run the 3-stage pipeline (INGEST → ANALYZE → PUBLISH).
 python -m backend.puzzle_manager run
 
 # Run full pipeline for a specific source
-python -m backend.puzzle_manager run --source sanderland
+python -m backend.puzzle_manager run --source yengo-source
 
 # Run specific source with batch limit
-python -m backend.puzzle_manager run --source sanderland --batch-size 5
+python -m backend.puzzle_manager run --source yengo-source --batch-size 5
 
 # Run specific stage(s)
-python -m backend.puzzle_manager run --source sanderland --stage ingest
-python -m backend.puzzle_manager run --source sanderland --stage analyze
-python -m backend.puzzle_manager run --source sanderland --stage publish
-python -m backend.puzzle_manager run --source sanderland --stage analyze --stage publish
+python -m backend.puzzle_manager run --source yengo-source --stage ingest
+python -m backend.puzzle_manager run --source yengo-source --stage analyze
+python -m backend.puzzle_manager run --source yengo-source --stage publish
+python -m backend.puzzle_manager run --source yengo-source --stage analyze --stage publish
 
 # Resume interrupted run (restores source_id from saved state)
 python -m backend.puzzle_manager run --resume
 
 # Preview mode (no file changes)
-python -m backend.puzzle_manager run --source sanderland --dry-run
+python -m backend.puzzle_manager run --source yengo-source --dry-run
 
 # Custom batch size
-python -m backend.puzzle_manager run --source sanderland --batch-size 50
+python -m backend.puzzle_manager run --source yengo-source --batch-size 50
 
 # Verbose output
-python -m backend.puzzle_manager run --source sanderland -vv
+python -m backend.puzzle_manager run --source yengo-source -vv
 
 # Skip cleanup after run
-python -m backend.puzzle_manager run --source sanderland --skip-cleanup
+python -m backend.puzzle_manager run --source yengo-source --skip-cleanup
 ```
 
 | Option | Description |
 |--------|-------------|
-| `--source SOURCE_ID` | **REQUIRED**: Source adapter to run. Examples: sanderland, goproblems, blacktoplay, ogs. Must be specified for ingest stage. |
+| `--source SOURCE_ID` | **REQUIRED**: Source adapter to run. Examples: yengo-source, yengo-source, yengo-source, yengo-source. Must be specified for ingest stage. |
 | `--stage STAGE` | Run specific stage(s) only. Can be repeated. |
 | `--batch-size N` | Override batch size (default: 100) |
 | `--resume` | Resume from last checkpoint if pipeline was interrupted |
@@ -138,30 +138,30 @@ python -m backend.puzzle_manager run --source sanderland --skip-cleanup
 
 | Option | Adapters | Description |
 |--------|----------|-------------|
-| `--puzzle-id ID` | ogs | Import single puzzle by ID |
-| `--type TYPE` | ogs | Filter by puzzle type (life_and_death, tesuji, fuseki, joseki, endgame, best_move) |
-| `--collection ID` | ogs | Filter by collection ID |
-| `--fetch-only` | ogs | Two-phase mode: fetch raw JSON to `.pm-runtime/raw/` only |
-| `--transform-only` | ogs | Two-phase mode: transform raw JSON to SGF only |
-| `--strict-translation` | ogs | Skip puzzles that can't be cleanly translated |
+| `--puzzle-id ID` | yengo-source | Import single puzzle by ID |
+| `--type TYPE` | yengo-source | Filter by puzzle type (life_and_death, tesuji, fuseki, joseki, endgame, best_move) |
+| `--collection ID` | yengo-source | Filter by collection ID |
+| `--fetch-only` | yengo-source | Two-phase mode: fetch raw JSON to `.pm-runtime/raw/` only |
+| `--transform-only` | yengo-source | Two-phase mode: transform raw JSON to SGF only |
+| `--strict-translation` | yengo-source | Skip puzzles that can't be cleanly translated |
 
-**Example: OGS Adapter Usage**:
+**Example: yengo-source Adapter Usage**:
 ```bash
 # Import single puzzle
-python -m backend.puzzle_manager run --source ogs --puzzle-id 12345
+python -m backend.puzzle_manager run --source yengo-source --puzzle-id 12345
 
 # Batch import life-and-death puzzles
-python -m backend.puzzle_manager run --source ogs --type life_and_death
+python -m backend.puzzle_manager run --source yengo-source --type life_and_death
 
 # Two-phase import for large batches (supports resume)
-python -m backend.puzzle_manager run --source ogs --fetch-only
-python -m backend.puzzle_manager run --source ogs --transform-only
+python -m backend.puzzle_manager run --source yengo-source --fetch-only
+python -m backend.puzzle_manager run --source yengo-source --transform-only
 
 # Import from specific collection
-python -m backend.puzzle_manager run --source ogs --collection 456
+python -m backend.puzzle_manager run --source yengo-source --collection 456
 
 # Combined filters
-python -m backend.puzzle_manager run --source ogs --type tesuji --collection 789
+python -m backend.puzzle_manager run --source yengo-source --type tesuji --collection 789
 ```
 
 **Pipeline Stages**:
@@ -175,26 +175,26 @@ python -m backend.puzzle_manager run --source ogs --type tesuji --collection 789
 
 ```bash
 # Workflow 1: Full pipeline (recommended)
-python -m backend.puzzle_manager run --source ogs
+python -m backend.puzzle_manager run --source yengo-source
 
 # Workflow 2: Stage-by-stage execution
 # Step 1: Ingest puzzles to staging
-python -m backend.puzzle_manager run --source ogs --stage ingest
+python -m backend.puzzle_manager run --source yengo-source --stage ingest
 # Check staging: ls .pm-runtime/staging/ingest/
 
 # Step 2: Analyze and enrich
-python -m backend.puzzle_manager run --source ogs --stage analyze
+python -m backend.puzzle_manager run --source yengo-source --stage analyze
 # Check staging: ls .pm-runtime/staging/analyzed/
 
 # Step 3: Publish to collection
-python -m backend.puzzle_manager run --source ogs --stage publish
+python -m backend.puzzle_manager run --source yengo-source --stage publish
 # Check output: ls yengo-puzzle-collections/sgf/
 
 # Workflow 3: Continue from interrupted run
 python -m backend.puzzle_manager run --resume
 
 # Workflow 4: Re-analyze without re-ingesting
-python -m backend.puzzle_manager run --source ogs --stage analyze --stage publish
+python -m backend.puzzle_manager run --source yengo-source --stage analyze --stage publish
 ```
 
 ---
@@ -264,12 +264,12 @@ The `sources` command shows the `active_adapter` setting and all configured sour
 
 ```bash
 $ python -m backend.puzzle_manager sources
-Active Adapter: ogs
+Active Adapter: yengo-source
 
 Configured Sources:
-  ogs          Online-Go.com Puzzles
-  sanderland   Sanderland Collection
-  goproblems   GoProblems.com
+  yengo-source          yengo-source Puzzles
+  yengo-source   yengo-source collection
+  yengo-source   yengo-source
   ...
 ```
 
@@ -279,7 +279,7 @@ The `active_adapter` in `backend/puzzle_manager/config/sources.json` sets the de
 
 ```json
 {
-  "active_adapter": "ogs",
+  "active_adapter": "yengo-source",
   "sources": [...]
 }
 ```
@@ -288,7 +288,7 @@ To change the default, use CLI commands (preferred) or edit `sources.json` direc
 
 ```bash
 # Set active adapter via CLI
-python -m backend.puzzle_manager enable-adapter sanderland
+python -m backend.puzzle_manager enable-adapter yengo-source
 
 # Disable active adapter (requires --source for all commands)
 python -m backend.puzzle_manager disable-adapter
@@ -309,17 +309,17 @@ python -m backend.puzzle_manager run  # Uses active_adapter
 Set the active adapter in `sources.json`.
 
 ```bash
-# Set active adapter to sanderland
-python -m backend.puzzle_manager enable-adapter sanderland
+# Set active adapter to yengo-source
+python -m backend.puzzle_manager enable-adapter yengo-source
 
-# Set active adapter to ogs
-python -m backend.puzzle_manager enable-adapter ogs
+# Set active adapter to yengo-source
+python -m backend.puzzle_manager enable-adapter yengo-source
 ```
 
 After setting, commands without `--source` will use this adapter:
 
 ```bash
-python -m backend.puzzle_manager run  # Uses sanderland
+python -m backend.puzzle_manager run  # Uses yengo-source
 ```
 
 ---
@@ -335,7 +335,7 @@ python -m backend.puzzle_manager disable-adapter
 After disabling, you MUST specify `--source` for all pipeline commands:
 
 ```bash
-python -m backend.puzzle_manager run --source sanderland
+python -m backend.puzzle_manager run --source yengo-source
 ```
 
 ---
@@ -345,13 +345,13 @@ python -m backend.puzzle_manager run --source sanderland
 When `--source` is specified and differs from `active_adapter`, the pipeline requires explicit confirmation:
 
 ```bash
-# If active_adapter is "ogs" but you want to run "sanderland":
-python -m backend.puzzle_manager run --source sanderland
-# ERROR: source 'sanderland' differs from active_adapter 'ogs'
+# If active_adapter is "yengo-source" but you want to run "yengo-source":
+python -m backend.puzzle_manager run --source yengo-source
+# ERROR: source 'yengo-source' differs from active_adapter 'yengo-source'
 
 # Use --source-override to explicitly confirm:
-python -m backend.puzzle_manager run --source sanderland --source-override
-# WARNING: Source overridden to 'sanderland' (active_adapter is 'ogs')
+python -m backend.puzzle_manager run --source yengo-source --source-override
+# WARNING: Source overridden to 'yengo-source' (active_adapter is 'yengo-source')
 ```
 
 | Scenario | Behavior |

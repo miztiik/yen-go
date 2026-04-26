@@ -108,10 +108,10 @@ When no SGF markers are present, the parser checks the `C[]` comment text using 
 | Comment Pattern                          | Inferred | Sources               |
 | ---------------------------------------- | -------- | --------------------- |
 | Starts with `Wrong` (case-insensitive)   | Wrong    | All sources           |
-| Starts with `Incorrect`                  | Wrong    | OGS, goproblems       |
+| Starts with `Incorrect`                  | Wrong    | yengo-source, yengo-source       |
 | Starts with `Correct` (case-insensitive) | Correct  | All sources           |
-| Starts with `Right`                      | Correct  | goproblems            |
-| Exactly `+`                              | Correct  | ambak-tsumego, t-hero |
+| Starts with `Right`                      | Correct  | yengo-source            |
+| Exactly `+`                              | Correct  | yengo-source-tsumego, yengo-source |
 
 **Not matched** (too ambiguous): `bad`, `fail`, `lose`, `dead`, `oops`, `good`, `win`, `live`, non-English text.
 
@@ -271,9 +271,9 @@ Source credibility affects overall quality:
 ```json
 {
   "sources": {
-    "ogs": { "trust_level": 4, "verification": "community" },
-    "goproblems": { "trust_level": 3, "verification": "community" },
-    "sanderland": { "trust_level": 5, "verification": "curated" }
+    "yengo-source": { "trust_level": 4, "verification": "community" },
+    "yengo-source": { "trust_level": 3, "verification": "community" },
+    "yengo-source": { "trust_level": 5, "verification": "curated" }
   }
 }
 ```

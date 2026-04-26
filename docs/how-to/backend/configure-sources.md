@@ -255,8 +255,8 @@ CMD ["python", "-m", "backend.puzzle_manager", "run", "--source", "source_name"]
 python -m backend.puzzle_manager sources
 
 # Output shows configured sources
-# sanderland (enabled)
-# kisvadim (enabled)
+# yengo-source (enabled)
+# yengo-source (enabled)
 ```
 
 ### Adapter Not Registered

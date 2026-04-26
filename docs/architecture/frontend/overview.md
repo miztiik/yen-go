@@ -22,7 +22,7 @@ The Yen-Go frontend is a **static-first PWA** built with Preact + TypeScript + V
 | Build     | Vite                             | Fast HMR, optimized builds                          |
 | State     | `@preact/signals` + localStorage | Reactive settings, no backend                       |
 | Styling   | Tailwind CSS v4                  | Utility-first, JIT compiled via `@tailwindcss/vite` |
-| Go Board  | `goban` ^8.3.147                 | OGS Go library (untouched per FR-012)               |
+| Go Board  | `goban` ^8.3.147                 | yengo-source Go library (untouched per FR-012)               |
 | Testing   | Vitest + Playwright              | Unit + visual regression tests                      |
 
 ---

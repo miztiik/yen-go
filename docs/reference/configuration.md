@@ -156,8 +156,8 @@ logs/
 │   ├── parse.log
 │   └── ...
 └── tools/
-    ├── 101weiqi/
-    └── gotools/
+    ├── yengo-source/
+    └── yengo-source/
 ```
 
 ---
@@ -217,7 +217,7 @@ Puzzle manager local configuration:
   },
   "solve": {
     "solver": "katago",
-    "fallback_solver": "smargo",
+    "fallback_solver": "yengo-source",
     "skip_on_unavailable": true,
     "timeout_seconds": 60,
     "visits": 200
@@ -230,7 +230,7 @@ Puzzle manager local configuration:
 | Option | Default | Description |
 |--------|---------|-------------|
 | `solver` | "katago" | Primary solver |
-| `fallback_solver` | "smargo" | Fallback solver |
+| `fallback_solver` | "yengo-source" | Fallback solver |
 | `skip_on_unavailable` | true | Skip if no solver |
 | `timeout_seconds` | 60 | Per-puzzle timeout |
 | `visits` | 200 | MCTS visits |
@@ -275,9 +275,9 @@ Puzzle source definitions:
 
 ## Adapter Configuration
 
-### OGS Adapter (`config/adapters/ogs.json`)
+### yengo-source Adapter (`config/adapters/yengo-source.json`)
 
-Configuration for importing from Online-Go.com:
+Configuration for importing from yengo-source:
 
 ```json
 {
@@ -311,7 +311,7 @@ Configuration for importing from Online-Go.com:
 | `user_agent` | `YenGo-PuzzleManager/1.0` | HTTP User-Agent header |
 | `timeout_seconds` | 30 | HTTP request timeout |
 
-#### OGS Runtime Options (CLI)
+#### yengo-source Runtime Options (CLI)
 
 | Option | Type | Description |
 |--------|------|-------------|
@@ -323,9 +323,9 @@ Configuration for importing from Online-Go.com:
 | `strict_translation` | bool | Skip puzzles that can't be cleanly translated |
 | `verbose` | bool | Enable verbose logging |
 
-#### OGS Type to YenGo Tag Mapping
+#### yengo-source Type to YenGo Tag Mapping
 
-| OGS Type | YenGo Tag |
+| yengo-source Type | YenGo Tag |
 |----------|-----------|
 | life_and_death | life-and-death |
 | tesuji | tesuji |
@@ -334,16 +334,16 @@ Configuration for importing from Online-Go.com:
 | endgame | endgame |
 | best_move | best-move |
 
-#### OGS Two-Phase Architecture
+#### yengo-source Two-Phase Architecture
 
 For large imports (thousands of puzzles), use two-phase mode:
 
 ```bash
 # Phase 1: Fetch raw JSON (supports checkpoint/resume)
-python -m backend.puzzle_manager run --source ogs --fetch-only
+python -m backend.puzzle_manager run --source yengo-source --fetch-only
 
 # Phase 2: Transform to SGF (offline, no API calls)
-python -m backend.puzzle_manager run --source ogs --transform-only
+python -m backend.puzzle_manager run --source yengo-source --transform-only
 ```
 
 **Checkpoint Files**:
@@ -351,8 +351,8 @@ python -m backend.puzzle_manager run --source ogs --transform-only
 - `.pm-runtime/state/ogs_transform_checkpoint.json` - Tracks transformed files
 
 **Runtime Directories**:
-- `.pm-runtime/raw/ogs/` - Raw JSON puzzle data
-- `.pm-runtime/staging/ogs/{level}/` - Generated SGF files
+- `.pm-runtime/raw/yengo-source/` - Raw JSON puzzle data
+- `.pm-runtime/staging/yengo-source/{level}/` - Generated SGF files
 
 ---
 

@@ -23,7 +23,7 @@ python -m backend.puzzle_manager sources
 
 ## Source Selection Behavior
 
-The puzzle manager uses a **source adapter** to fetch puzzles from external sources (OGS, GoProblems, Sanderland, etc.). Understanding how source selection works is essential for effective pipeline operations.
+The puzzle manager uses a **source adapter** to fetch puzzles from external sources (yengo-source, yengo-source, yengo-source, etc.). Understanding how source selection works is essential for effective pipeline operations.
 
 ### Key Concepts
 
@@ -59,8 +59,8 @@ The puzzle manager has 3 stages:
 
 The override requirement prevents accidental data mixing:
 
-- **Scenario**: Active adapter is `ogs`, you run `--source sanderland` by mistake
-- **Without safety**: Sanderland puzzles get ingested, but analyze/publish might process OGS leftovers
+- **Scenario**: Active adapter is `yengo-source`, you run `--source yengo-source` by mistake
+- **Without safety**: yengo-source puzzles get ingested, but analyze/publish might process yengo-source leftovers
 - **With safety**: CLI stops you with clear error message
 
 ## Command Reference
@@ -76,8 +76,8 @@ python -m backend.puzzle_manager run --stage ingest
 python -m backend.puzzle_manager run --stage analyze --stage publish
 
 # With different source (requires override if different from active)
-python -m backend.puzzle_manager run --source ogs
-python -m backend.puzzle_manager run --source sanderland --source-override
+python -m backend.puzzle_manager run --source yengo-source
+python -m backend.puzzle_manager run --source yengo-source --source-override
 
 # Dry run (no file changes)
 python -m backend.puzzle_manager run --dry-run
@@ -90,8 +90,8 @@ python -m backend.puzzle_manager run --dry-run
 python -m backend.puzzle_manager ingest
 
 # Ingest from specific source
-python -m backend.puzzle_manager ingest ogs
-python -m backend.puzzle_manager ingest sanderland --source-override
+python -m backend.puzzle_manager ingest yengo-source
+python -m backend.puzzle_manager ingest yengo-source --source-override
 
 # Limited batch size
 python -m backend.puzzle_manager ingest --batch-size 50
@@ -100,11 +100,11 @@ python -m backend.puzzle_manager ingest --batch-size 50
 ### enable-adapter - Set Active Adapter
 
 ```bash
-# Set OGS as the active adapter
-python -m backend.puzzle_manager enable-adapter ogs
+# Set yengo-source as the active adapter
+python -m backend.puzzle_manager enable-adapter yengo-source
 
-# Set Sanderland as the active adapter  
-python -m backend.puzzle_manager enable-adapter sanderland
+# Set yengo-source as the active adapter  
+python -m backend.puzzle_manager enable-adapter yengo-source
 
 # Verify change
 python -m backend.puzzle_manager sources
@@ -117,7 +117,7 @@ python -m backend.puzzle_manager sources
 python -m backend.puzzle_manager disable-adapter
 
 # Now --source is required
-python -m backend.puzzle_manager run --source ogs
+python -m backend.puzzle_manager run --source yengo-source
 ```
 
 ### sources - List Configured Sources
@@ -155,14 +155,14 @@ python -m backend.puzzle_manager status
 When you want to test a different source without changing the default:
 
 ```bash
-# Current active: ogs
-# Want to test: goproblems
+# Current active: yengo-source
+# Want to test: yengo-source
 
 # This requires --source-override since it differs from active
-python -m backend.puzzle_manager run --source goproblems --source-override --dry-run
+python -m backend.puzzle_manager run --source yengo-source --source-override --dry-run
 
 # See the warning in output
-⚠️  Source overridden to 'goproblems' (active_adapter is 'ogs'). --source-override flag present.
+⚠️  Source overridden to 'yengo-source' (active_adapter is 'yengo-source'). --source-override flag present.
 ```
 
 ### Permanently Changing Adapters
@@ -171,11 +171,11 @@ When switching to a different source for ongoing work:
 
 ```bash
 # Change the active adapter
-python -m backend.puzzle_manager enable-adapter sanderland
+python -m backend.puzzle_manager enable-adapter yengo-source
 
 # Verify
 python -m backend.puzzle_manager sources
-# Output: Active adapter: sanderland
+# Output: Active adapter: yengo-source
 
 # Now run normally (no --source needed)
 python -m backend.puzzle_manager run
@@ -193,7 +193,7 @@ python -m backend.puzzle_manager disable-adapter
 python -m backend.puzzle_manager run
 # ERROR: No --source specified and no active_adapter configured
 
-python -m backend.puzzle_manager run --source ogs
+python -m backend.puzzle_manager run --source yengo-source
 # Works!
 ```
 
@@ -204,8 +204,8 @@ python -m backend.puzzle_manager run --source ogs
 ```
 ❌ ERROR: No --source specified and no active_adapter configured
    To proceed, either:
-   1. Specify a source: run --source ogs
-   2. Set an active adapter: enable-adapter ogs
+   1. Specify a source: run --source yengo-source
+   2. Set an active adapter: enable-adapter yengo-source
 ```
 
 **Solution**: Either specify `--source` explicitly or set an active adapter with `enable-adapter`.
@@ -213,10 +213,10 @@ python -m backend.puzzle_manager run --source ogs
 ### "Source differs from active_adapter"
 
 ```
-❌ ERROR: --source 'sanderland' differs from active_adapter 'ogs'
+❌ ERROR: --source 'yengo-source' differs from active_adapter 'yengo-source'
    To proceed, either:
-   1. Add --source-override flag: run --source sanderland --source-override
-   2. Change active adapter: enable-adapter sanderland
+   1. Add --source-override flag: run --source yengo-source --source-override
+   2. Change active adapter: enable-adapter yengo-source
 ```
 
 **Solution**: Either add `--source-override` for a one-time override, or change the active adapter if you want to switch permanently.
@@ -224,7 +224,7 @@ python -m backend.puzzle_manager run --source ogs
 ### "Warning: --source only affects ingest stage"
 
 ```
-⚠️  --source 'ogs' only affects 'ingest' stage; ignored for ['analyze', 'publish']
+⚠️  --source 'yengo-source' only affects 'ingest' stage; ignored for ['analyze', 'publish']
 ```
 
 **Explanation**: This warning appears when you use `--source` with non-ingest stages. The source flag only affects which adapter fetches puzzles; analyze and publish process existing staging files.
@@ -237,18 +237,18 @@ Located at `backend/puzzle_manager/config/sources.json`:
 
 ```json
 {
-  "active_adapter": "ogs",
+  "active_adapter": "yengo-source",
   "sources": [
     {
-      "id": "ogs",
-      "name": "OGS Puzzles",
-      "adapter": "ogs",
+      "id": "yengo-source",
+      "name": "yengo-source Puzzles",
+      "adapter": "yengo-source",
       "config": { ... }
     },
     {
-      "id": "sanderland",
-      "name": "Sanderland Collection",
-      "adapter": "sanderland",
+      "id": "yengo-source",
+      "name": "yengo-source collection",
+      "adapter": "yengo-source",
       "config": { ... }
     }
   ]

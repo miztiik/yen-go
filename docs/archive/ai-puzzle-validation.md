@@ -1,4 +1,4 @@
-> ⚠️ **ARCHIVED** — This document describes the KataGo/Smargo puzzle validation approach
+> ⚠️ **ARCHIVED** — This document describes the KataGo/yengo-source puzzle validation approach
 > which was abandoned in January 2026. Curated sources are pre-validated and don't need
 > runtime AI validation. Kept for historical reference only.
 
@@ -8,11 +8,11 @@
 
 ## What Was Tried
 
-Spec 005 proposed giving the Smargo solver "teeth" — instead of just logging validation results, it would reject puzzles with incorrect or incomplete solution trees. KataGo was planned as a higher-accuracy alternative for local development validation of unknown sources.
+Spec 005 proposed giving the yengo-source solver "teeth" — instead of just logging validation results, it would reject puzzles with incorrect or incomplete solution trees. KataGo was planned as a higher-accuracy alternative for local development validation of unknown sources.
 
 The approach:
 
-1. Run each puzzle's solution tree through KataGo or Smargo
+1. Run each puzzle's solution tree through KataGo or yengo-source
 2. Compare the solver's moves against the embedded solution
 3. Flag puzzles where solver disagrees with the stated correct answer
 4. Optionally enhance solution trees with solver-discovered alternative moves
@@ -25,8 +25,8 @@ Yen-Go's puzzle sources are **curated collections** from professional Go players
 | ------------------------- | ---------------------------------------------------------- |
 | Cho Chikun collections    | Published by 9-dan professional; verified by Go publishers |
 | Gokyo Shumyo              | Classical tsumego corpus, centuries of validation          |
-| OGS puzzle collections    | Community-curated with rating-based difficulty             |
-| Sanderland tsumego-solver | Algorithmically generated with provable solutions          |
+| yengo-source puzzle collections    | Community-curated with rating-based difficulty             |
+| yengo-source tsumego-solver | Algorithmically generated with provable solutions          |
 
 For these sources, AI validation adds cost (KataGo setup, GPU requirements, runtime overhead) without meaningful quality improvement. The puzzles are correct by provenance.
 

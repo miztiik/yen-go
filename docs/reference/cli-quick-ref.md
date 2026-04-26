@@ -15,26 +15,26 @@ One-page cheat sheet for common pipeline commands.
 
 ```bash
 # Run full pipeline (--source is REQUIRED)
-python -m backend.puzzle_manager run --source sanderland
+python -m backend.puzzle_manager run --source yengo-source
 
 # Run specific stage(s)
-python -m backend.puzzle_manager run --source sanderland --stage ingest
+python -m backend.puzzle_manager run --source yengo-source --stage ingest
 python -m backend.puzzle_manager run --stage analyze
 python -m backend.puzzle_manager run --stage publish
 
 # With options
-python -m backend.puzzle_manager run --source sanderland --batch-size 50
-python -m backend.puzzle_manager run --source sanderland --dry-run
+python -m backend.puzzle_manager run --source yengo-source --batch-size 50
+python -m backend.puzzle_manager run --source yengo-source --dry-run
 python -m backend.puzzle_manager run --resume
 
 # Skip enrichment sub-stages
-python -m backend.puzzle_manager run --source sanderland --no-enrichment  # Skip all enrichment
-python -m backend.puzzle_manager run --source sanderland --no-hints       # Skip hint generation
-python -m backend.puzzle_manager run --source sanderland --no-region      # Skip region detection
-python -m backend.puzzle_manager run --source sanderland --no-ko          # Skip ko detection
+python -m backend.puzzle_manager run --source yengo-source --no-enrichment  # Skip all enrichment
+python -m backend.puzzle_manager run --source yengo-source --no-hints       # Skip hint generation
+python -m backend.puzzle_manager run --source yengo-source --no-region      # Skip region detection
+python -m backend.puzzle_manager run --source yengo-source --no-ko          # Skip ko detection
 
 # Source override (use different adapter for existing staging files)
-python -m backend.puzzle_manager run --source kisvadim --source-override
+python -m backend.puzzle_manager run --source yengo-source --source-override
 ```
 
 ## Status Commands
@@ -98,7 +98,7 @@ python -m backend.puzzle_manager publish-log list
 
 # Search by criteria
 python -m backend.puzzle_manager publish-log search --run-id 20260130-abc12345
-python -m backend.puzzle_manager publish-log search --source sanderland
+python -m backend.puzzle_manager publish-log search --source yengo-source
 python -m backend.puzzle_manager publish-log search --puzzle-id puz-001
 python -m backend.puzzle_manager publish-log search --date 2026-02-20
 ```

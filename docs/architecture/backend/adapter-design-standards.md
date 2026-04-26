@@ -31,18 +31,18 @@ backend/puzzle_manager/adapters/
 ├── local/
 │   ├── __init__.py
 │   └── adapter.py    # LocalAdapter
-├── ogs/
+├── yengo-source/
 │   ├── __init__.py
-│   ├── adapter.py    # OGSAdapter (ResumableAdapter)
+│   ├── adapter.py    # YengoSourceAdapter (ResumableAdapter)
 │   ├── converter.py
 │   ├── models.py
 │   └── translator.py
-├── sanderland/
+├── yengo-source/
 │   ├── __init__.py
-│   └── adapter.py    # SanderlandAdapter
-└── goproblems/
+│   └── adapter.py    # YengoSourceAdapter
+└── yengo-source/
     ├── __init__.py
-    ├── adapter.py    # GoProblemsAdapter (ResumableAdapter)
+    ├── adapter.py    # YengoSourceAdapter (ResumableAdapter)
     ├── converter.py
     ├── checkpoint.py
     └── mappers.py
@@ -79,7 +79,7 @@ class BaseAdapter(Protocol):
     def name(self) -> str: ...          # Human-readable name
     
     @property  
-    def source_id(self) -> str: ...     # Unique ID (e.g., "ogs", "sanderland")
+    def source_id(self) -> str: ...     # Unique ID (e.g., "yengo-source", "yengo-source")
     
     def configure(self, config: dict) -> None: ...
     def fetch(self, batch_size: int = 100) -> Iterator[FetchResult]: ...
@@ -97,8 +97,8 @@ class ResumableAdapter(BaseAdapter, Protocol):
 
 | Adapter | Protocol | Rationale |
 |---------|----------|----------|
-| local, sanderland, kisvadim | `BaseAdapter` | File-based, no checkpoint needed |
-| ogs, goproblems | `ResumableAdapter` | API-based, large datasets |
+| local, yengo-source, yengo-source | `BaseAdapter` | File-based, no checkpoint needed |
+| yengo-source, yengo-source | `ResumableAdapter` | API-based, large datasets |
 
 ### FetchResult
 
@@ -140,12 +140,12 @@ All adapter configuration lives in `backend/puzzle_manager/config/sources.json`:
 
 ```json
 {
-  "active_adapter": "ogs",
+  "active_adapter": "yengo-source",
   "sources": [
     {
-      "id": "ogs",
-      "name": "Online-Go.com Puzzles",
-      "adapter": "ogs",
+      "id": "yengo-source",
+      "name": "yengo-source Puzzles",
+      "adapter": "yengo-source",
       "config": {
         "base_url": "https://example.com/api/v1",
         "request_timeout_seconds": 30,

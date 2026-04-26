@@ -140,8 +140,8 @@ Validation rejections are logged at **INFO** level in the ingest log:
   "ts": "2026-02-02 12:00:00",
   "msg": "Skipped puzzle",
   "action": "skip",
-  "puzzle_id": "ogs-12345",
-  "source_id": "ogs",
+  "puzzle_id": "yengo-source-12345",
+  "source_id": "yengo-source",
   "reason": "Board width 4 is below minimum 5"
 }
 ```
@@ -154,7 +154,7 @@ The ingest completion log includes rejection reason breakdown:
 {
   "ts": "2026-02-02 12:00:30",
   "msg": "Ingest complete",
-  "source_id": "ogs",
+  "source_id": "yengo-source",
   "processed": 85,
   "failed": 0,
   "skipped": 15,

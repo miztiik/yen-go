@@ -166,7 +166,7 @@ jobs:
     steps:
       - name: Run pipeline
         run: |
-          python -m backend.puzzle_manager run --source ogs
+          python -m backend.puzzle_manager run --source yengo-source
 
       - name: Cleanup staging
         if: always() # Run even if pipeline fails
@@ -183,7 +183,7 @@ FROM python:3.11-slim
 # ... setup ...
 
 # Cleanup hook on container exit
-CMD ["sh", "-c", "python -m backend.puzzle_manager run --source ogs && python -m backend.puzzle_manager clean --target staging --force"]
+CMD ["sh", "-c", "python -m backend.puzzle_manager run --source yengo-source && python -m backend.puzzle_manager clean --target staging --force"]
 ```
 
 ---

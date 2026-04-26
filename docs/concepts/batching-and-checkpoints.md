@@ -54,7 +54,7 @@ The adapter checkpoint is updated **after every single file**, regardless of out
 ```json
 {
   "schema_version": 2,
-  "adapter_id": "sanderland",
+  "adapter_id": "yengo-source",
   "timestamp": "2026-01-15T10:30:00Z",
   "state": {
     "current_folder": "1a-tsumego-beginner",
@@ -153,13 +153,13 @@ When importing a source with more files than the batch size (e.g., 10,000 files 
 
 ```bash
 # Run 1: processes files 1–2000, saves checkpoint
-python -m backend.puzzle_manager run --source ogs --stage ingest
+python -m backend.puzzle_manager run --source yengo-source --stage ingest
 
 # Run 2: processes files 2001–4000
-python -m backend.puzzle_manager run --source ogs --stage ingest --resume
+python -m backend.puzzle_manager run --source yengo-source --stage ingest --resume
 
 # Run 3: processes files 4001–6000
-python -m backend.puzzle_manager run --source ogs --stage ingest --resume
+python -m backend.puzzle_manager run --source yengo-source --stage ingest --resume
 
 # ... repeat until "Remaining: 0"
 # Then analyze and publish
@@ -171,14 +171,14 @@ python -m backend.puzzle_manager run --stage publish --drain
 
 ```bash
 # Process all files in one run (may take a long time)
-python -m backend.puzzle_manager run --source ogs --drain
+python -m backend.puzzle_manager run --source yengo-source --drain
 ```
 
 ### Option C: Script It
 
 ```bash
 # Loop until all files are processed
-while python -m backend.puzzle_manager run --source ogs --stage ingest --resume; do
+while python -m backend.puzzle_manager run --source yengo-source --stage ingest --resume; do
   echo "Batch complete, continuing..."
 done
 ```

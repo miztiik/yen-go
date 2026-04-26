@@ -142,7 +142,7 @@ python -m backend.puzzle_manager clean --target all --dry-run
 python -m backend.puzzle_manager clean --target all
 
 # Re-run pipeline from scratch
-python -m backend.puzzle_manager run --source ogs
+python -m backend.puzzle_manager run --source yengo-source
 ```
 
 ---
@@ -290,7 +290,7 @@ Override with environment variable:
 
 ```bash
 export YENGO_RUNTIME_DIR=/custom/path
-python -m backend.puzzle_manager run --source ogs
+python -m backend.puzzle_manager run --source yengo-source
 ```
 
 ---

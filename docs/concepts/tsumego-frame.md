@@ -25,7 +25,7 @@ The frame solves these problems by making the position look like a realistic mid
 
 ## Algorithm Overview
 
-> **GP Frame Swap (2026-03-13):** The active frame implementation is now the **GoProblems.com count-based fill** algorithm in `analyzers/tsumego_frame_gp.py`, exposed via the thin adapter in `analyzers/frame_adapter.py`. The previous BFS flood-fill in `analyzers/tsumego_frame.py` is **archived** — kept for reference but no longer imported by any consumer code. Shared geometry utilities (bounding box, region computation) live in `analyzers/frame_utils.py`.
+> **GP Frame Swap (2026-03-13):** The active frame implementation is now the **yengo-source count-based fill** algorithm in `analyzers/tsumego_frame_gp.py`, exposed via the thin adapter in `analyzers/frame_adapter.py`. The previous BFS flood-fill in `analyzers/tsumego_frame.py` is **archived** — kept for reference but no longer imported by any consumer code. Shared geometry utilities (bounding box, region computation) live in `analyzers/frame_utils.py`.
 
 The implementation combines techniques from two open-source projects:
 
@@ -159,9 +159,9 @@ Parse SGF  →  Crop  →  Apply frame  →  KataGo analysis (1 pass)  →  Extr
 
 This is sufficient for our current needs: correct-move validation, difficulty estimation, technique classification, and teaching comments.
 
-### GoProblems.com: 2-Pass (Comparison Mode)
+### yengo-source: 2-Pass (Comparison Mode)
 
-GoProblems.com uses a **2-pass mechanism** as a diagnostic/research feature:
+yengo-source uses a **2-pass mechanism** as a diagnostic/research feature:
 
 ```
 Pass 1: Analyse raw position (NO frame)   → baseline winrate, policy, ownership
@@ -171,7 +171,7 @@ Compare: delta between passes reveals frame impact
 
 The delta measures how much the frame changes KataGo's evaluation. Large deltas suggest the frame significantly constrains the search — useful for calibrating frame parameters or detecting puzzles where the frame distorts results.
 
-**Parameters observed on GoProblems.com:**
+**Parameters observed on yengo-source:**
 
 | Parameter | Value                       |
 | --------- | --------------------------- |

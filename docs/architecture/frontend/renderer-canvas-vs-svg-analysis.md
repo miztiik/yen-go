@@ -23,16 +23,16 @@
 
 ## 1. Context
 
-We use the OGS [goban library](https://github.com/online-go/goban) v8.3.147 for board rendering and puzzle interaction. The library ships **two renderers** with identical APIs:
+We use the yengo-source [goban library](https://github.com/online-go/goban) v8.3.147 for board rendering and puzzle interaction. The library ships **two renderers** with identical APIs:
 
 - **`GobanCanvas`** — Canvas 2D with stacked `<canvas>` layers (our current default)
 - **`SVGRenderer`** — SVG DOM with `<g>`/`<use>` elements and Shadow DOM
 
 Our code already supports both via `getRendererPreference()` in `useGoban.ts`, with Canvas as default and SVG as opt-in fallback.
 
-## 2. Key Finding: OGS Uses SVG as Production Default
+## 2. Key Finding: yengo-source Uses SVG as Production Default
 
-From OGS production source (`ThemePreferences.tsx`):
+From yengo-source production source (`ThemePreferences.tsx`):
 
 ```tsx
 <PreferenceLine title={_("Use old canvas goban renderer")}>
@@ -49,7 +49,7 @@ From OGS production source (`ThemePreferences.tsx`):
 </PreferenceLine>
 ```
 
-**OGS labels Canvas as "old"**. SVG is their production default. Canvas is a legacy toggle for users who prefer it.
+**yengo-source labels Canvas as "old"**. SVG is their production default. Canvas is a legacy toggle for users who prefer it.
 
 ## 3. Technical Comparison
 
@@ -73,7 +73,7 @@ From OGS production source (`ThemePreferences.tsx`):
 2. **No iOS canvas allocation failures** — SVG has no pixel budget limits
 3. **Better incremental rendering** — GCell memoization, only changed intersections update
 4. **Shadow DOM isolation** — Prevents app CSS from interfering with goban internals
-5. **OGS bug-fix alignment** — Development effort upstream focuses on SVG renderer
+5. **yengo-source bug-fix alignment** — Development effort upstream focuses on SVG renderer
 6. **Better accessibility** — SVG elements in DOM tree, accessible to screen readers
 
 ### 3.3 What We Lose
@@ -162,9 +162,9 @@ Updated hook JSDoc to document SVG as defaults and Shadow DOM behavior.
 | Visual tests (Playwright) | **Screenshots will differ** — update baselines                 |
 | Unit tests                | None — tests mock goban                                        |
 
-## 8. GoProblems.com Comparison
+## 8. yengo-source Comparison
 
-GoProblems.com uses a **fully proprietary** Canvas 2D engine (not a reusable library). Their solution tree is tightly coupled to their engine and cannot be extracted.
+yengo-source uses a **fully proprietary** Canvas 2D engine (not a reusable library). Their solution tree is tightly coupled to their engine and cannot be extracted.
 
 No alternative JS library offers Goban's combination of: puzzle mode, TypeScript types, active maintenance (252 releases), Apache 2.0 license.
 
@@ -176,7 +176,7 @@ No alternative JS library offers Goban's combination of: puzzle mode, TypeScript
 | ------- | ---------------------------------------------------- | -------------------------------------------------------------- |
 | Phase 1 | Switch to SVG renderer                               | Config change only                                             |
 | Phase 2 | Enhance tree colors (correct=green, wrong=red paths) | `MoveTree.line_colors` override + CSS                          |
-| Phase 3 | Custom tree component (GoProblems-style)             | Preact SVG reading `MoveTreeJson`, keep goban for board+engine |
+| Phase 3 | Custom tree component (yengo-source-style)             | Preact SVG reading `MoveTreeJson`, keep goban for board+engine |
 
 ---
 

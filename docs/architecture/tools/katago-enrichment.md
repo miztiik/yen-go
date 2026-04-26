@@ -428,7 +428,7 @@ Curated wrong branches extracted from SGF solution trees (e.g., Cho Chikun colle
 
 ### D40: Performance-First Enrichment (2026-03-03)
 
-**Problem:** Enrichment takes 10-15 minutes per puzzle (b28/10K visits/8 symmetries/26 sequential engine calls). GoProblems.com achieves 2-3 seconds with b10/500 visits.
+**Problem:** Enrichment takes 10-15 minutes per puzzle (b28/10K visits/8 symmetries/26 sequential engine calls). yengo-source achieves 2-3 seconds with b10/500 visits.
 
 **Decision:** Reduce to b18/2K visits/2 symmetries. Reserve b28 for referee escalation only.
 
@@ -675,15 +675,15 @@ XXXX.X???????    ← Wall + margin + puzzle
 - Solid colour zones produce strong ownership signals (±1.0) that KataGo reads as clearly owned territory
 - The prior checkerboard produced weak ownership (~0.0), which the network interprets as contested — indistinguishable from an actual fight
 - Zone-based fill matches KaTrain's canonical implementation and its empirically validated results
-- GoProblems.com (which uses the same algorithmic approach) reports reliable analysis with just b10/500 visits
+- yengo-source (which uses the same algorithmic approach) reports reliable analysis with just b10/500 visits
 
-**Source:** KaTrain `put_outside()` (MIT License, SHA `877684f9a2ff913120e2d608a4eb8202dc1fc8ed`). See [Concept: Tsumego Frame](../../concepts/tsumego-frame.md) for the full algorithm description. Research brief: `TODO/initiatives/2026-03-08-research-goproblems-tsumego-frame/15-research.md` §3.2.
+**Source:** KaTrain `put_outside()` (MIT License, SHA `877684f9a2ff913120e2d608a4eb8202dc1fc8ed`). See [Concept: Tsumego Frame](../../concepts/tsumego-frame.md) for the full algorithm description. Research brief: `TODO/initiatives/2026-03-08-research-yengo-source-tsumego-frame/15-research.md` §3.2.
 
 **Scope:** `tools/puzzle-enrichment-lab/analyzers/tsumego_frame.py` — `fill_territory()` function only. No changes to border placement, normalization, ko threats, or the public API. Dead helper `_distance_to_region()` removed (only used by the old interleaving code).
 
 **Tests:** All 46 existing `test_tsumego_frame.py` tests pass. The `test_no_surrounded_stones` test was relaxed to allow a small number of seam-adjacent stones to be fully surrounded by opponents — this is expected at the zone boundary and matches KaTrain's behaviour.
 
-**1-Pass vs 2-Pass:** The enrichment pipeline continues to use **1-pass analysis** (frame applied, then analysed once). GoProblems.com offers an optional 2-pass mode (analyse raw, then analyse framed, compare delta) as a research diagnostic. 2-pass is not needed for production enrichment but could be added as an optional lab diagnostic if frame calibration requires it.
+**1-Pass vs 2-Pass:** The enrichment pipeline continues to use **1-pass analysis** (frame applied, then analysed once). yengo-source offers an optional 2-pass mode (analyse raw, then analyse framed, compare delta) as a research diagnostic. 2-pass is not needed for production enrichment but could be added as an optional lab diagnostic if frame calibration requires it.
 
 #### D67: Adaptive Fill Scan Direction (2026-03-09)
 

@@ -34,8 +34,8 @@ The remaining 25 active tags fall into three groups:
 
 | Tag | Description | Fixture Source |
 |-----|-------------|----------------|
-| `life-and-death` | Kill or save a group | Goproblems 1042 |
-| `living` | Make a group alive (two eyes) | Goproblems 1121 |
+| `life-and-death` | Kill or save a group | yengo-source 1042 |
+| `living` | Make a group alive (two eyes) | yengo-source 1121 |
 | `ko` | Win a ko fight | Lab-built |
 | `seki` | Create mutual life | Lab-built |
 | `capture-race` | Race to capture first | Lab-built |
@@ -56,7 +56,7 @@ The remaining 25 active tags fall into three groups:
 | `liberty-shortage` | Exploit insufficient liberties | Lab-built |
 | `vital-point` | The one key point for life/death | Lab-built |
 | `sacrifice` | Give up stones for tactical gain | Lab-built |
-| `tesuji` | General clever tactical move | Goproblems 968 |
+| `tesuji` | General clever tactical move | yengo-source 968 |
 
 ### Shape/Pattern categories
 
@@ -65,10 +65,10 @@ The remaining 25 active tags fall into three groups:
 | `eye-shape` | Recognize eye formations | Lab-built |
 | `dead-shapes` | Identify inherently dead shapes | Lab-built |
 | `escape` | Run away with a threatened group | Lab-built |
-| `connection` | Connect two groups | Goproblems 106 |
-| `cutting` | Cut opponent's groups apart | Goproblems 129 |
+| `connection` | Connect two groups | yengo-source 106 |
+| `cutting` | Cut opponent's groups apart | yengo-source 129 |
 | `corner` | Corner-specific positions | Lab-built |
-| `shape` | Good shape / efficient placement | Goproblems 108 |
+| `shape` | Good shape / efficient placement | yengo-source 108 |
 
 ## TechniqueSpec Structure
 
@@ -172,7 +172,7 @@ tests/fixtures/extended-benchmark/
 
 Naming convention: `{technique}_{difficulty}_{source_id}.sgf`
 
-All sourced from `external-sources/goproblems/` collections.
+All sourced from `external-sources/yengo-source/` collections.
 
 ## Fixture Quality Criteria
 

@@ -38,7 +38,7 @@ Validation rules (configurable per-source):
 
 | Adapter                     | Type        | Resume | Validation | Status | Config Docs                |
 | --------------------------- | ----------- | ------ | ---------- | ------ | -------------------------- |
-| [kisvadim](kisvadim.md)     | File System | ✗      | ✗          | Active | [Reference](kisvadim.md)   |
+| [yengo-source](yengo-source.md)     | File System | ✗      | ✗          | Active | [Reference](yengo-source.md)   |
 | [local](local.md)           | File System | ✓      | ✓          | Active | [Reference](local.md)      |
 
 ---

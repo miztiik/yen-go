@@ -11,7 +11,7 @@
 The Solve stage (Stage 5) has been upgraded to use a unified solver framework that supports:
 
 - **KataGo** (primary) - High-accuracy neural network solver
-- **smargo** (fallback) - Python MCTS solver
+- **yengo-source** (fallback) - Python MCTS solver
 
 Key change: Instead of rejecting puzzles when solvers disagree, the system now **enhances** solution trees by adding solver-discovered moves.
 
@@ -23,7 +23,7 @@ Key change: Instead of rejecting puzzles when solvers disagree, the system now *
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │  ┌──────────────┐     ┌──────────────┐     ┌────────────────┐   │
-│  │  KataGo      │ or  │   smargo     │  →  │  Solution      │   │
+│  │  KataGo      │ or  │   yengo-source     │  →  │  Solution      │   │
 │  │  Solver      │     │   Solver     │     │  Enhancer      │   │
 │  └──────────────┘     └──────────────┘     └────────────────┘   │
 │         │                    │                     │             │
@@ -42,7 +42,7 @@ Key change: Instead of rejecting puzzles when solvers disagree, the system now *
 {
   "solve": {
     "solver": "katago",
-    "fallback_solver": "smargo",
+    "fallback_solver": "yengo-source",
     "timeout_seconds": 60,
     "visits": 200,
     "skip_on_unavailable": true,

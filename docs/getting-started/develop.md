@@ -135,7 +135,7 @@ ruff check .               # Lint code
 
 # Pipeline commands
 python -m backend.puzzle_manager sources              # List sources
-python -m backend.puzzle_manager run --source ogs     # Run import
+python -m backend.puzzle_manager run --source yengo-source     # Run import
 python -m backend.puzzle_manager status               # Check status
 ```
 

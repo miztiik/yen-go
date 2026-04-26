@@ -295,8 +295,8 @@ Use the hydration script:
 
 ```bash
 python scripts/hydrate_calibration_fixtures.py \
-    --source-dir ../../external-sources/sanderland/sgf \
-    --target-dir tests/fixtures/calibration/sanderland-elementary \
+    --source-dir ../../external-sources/yengo-source/sgf \
+    --target-dir tests/fixtures/calibration/yengo-source-elementary \
     --level elementary \
     --count 10
 ```
@@ -318,7 +318,7 @@ Add new directories to `config/katago-enrichment.json` → `calibration.fixture_
       "cho-elementary",
       "cho-intermediate",
       "cho-advanced",
-      "sanderland-elementary"
+      "yengo-source-elementary"
     ],
     "sample_size": 5,
     "randomize_fixtures": true,

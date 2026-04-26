@@ -327,7 +327,7 @@ To see per-puzzle quality assignment:
 ```bash
 # Set logging level to DEBUG
 export YENGO_LOG_LEVEL=DEBUG
-python -m backend.puzzle_manager run --source ogs --stage analyze
+python -m backend.puzzle_manager run --source yengo-source --stage analyze
 ```
 
 ## See Also

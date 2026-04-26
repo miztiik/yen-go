@@ -163,7 +163,7 @@ Every log entry includes the `run_id` for tracing:
   "timestamp": "2026-01-30T10:15:30.123456Z",
   "level": "INFO",
   "run_id": "20260130-abc12345",
-  "source_id": "sanderland",
+  "source_id": "yengo-source",
   "message": "Processing puzzle",
   "puzzle_id": "puz-12345"
 }
@@ -198,7 +198,7 @@ python -m backend.puzzle_manager publish-log search --run-id 20260130-abc12345
 python -m backend.puzzle_manager publish-log search --puzzle-id gp-12345
 
 # Search by source
-python -m backend.puzzle_manager publish-log search --source sanderland
+python -m backend.puzzle_manager publish-log search --source yengo-source
 ```
 
 Publish log entry format:
@@ -207,7 +207,7 @@ Publish log entry format:
 {
   "run_id": "20260130-abc12345",
   "puzzle_id": "puz-12345",
-  "source_id": "sanderland",
+  "source_id": "yengo-source",
   "path": "sgf/beginner/batch-0001/puz-12345.sgf",
   "tags": ["life-and-death"],
   "level": "beginner",
