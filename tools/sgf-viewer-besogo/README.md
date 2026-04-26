@@ -30,9 +30,21 @@ Then navigate to `http://localhost:8000`
 
 Append `?sgf=<url>` to load a specific SGF file:
 
-```
+```text
 index.html?sgf=https://example.com/puzzle.sgf
 ```
+
+### Coordinate Style
+
+The viewer defaults to SGF-style coordinates (`a, b, c, ...`) on both axes.
+
+You can override the coordinate style via query param:
+
+```text
+index.html?coord=western
+```
+
+Supported values include `sgf`, `western`, `numeric`, `eastern`, `pierre`, `corner`, `eastcor`, and `none`.
 
 **Note**: The SGF URL must be CORS-enabled or from the same origin.
 
@@ -62,12 +74,12 @@ index.html?sgf=https://example.com/puzzle.sgf
 - **Realistic rendering** - Wood board theme with realistic stone textures
 - **Variation support** - Navigate complex game trees
 - **Comments display** - View move commentary and game info
+- **Improved panel usability** - Larger Paste SGF area, better tree visibility, and scrollable info/comment sections
 - **Zero dependencies** - Self-contained; no installation required
 
 ## Directory Structure
 
-```
-
+```text
 sgf-viewer-besogo/
 ├── index.html          # Main viewer page
 ├── sample.sgf          # Demo tsumego puzzle

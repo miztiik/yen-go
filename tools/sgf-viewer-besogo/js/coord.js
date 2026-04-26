@@ -21,6 +21,18 @@ besogo.coord.western = function(sizeX, sizeY) {
     return labels;
 };
 
+// SGF-style coordinate system (letters on both axes)
+besogo.coord.sgf = function(sizeX, sizeY) {
+    var labels = { x: [], y: [] }, i;
+    for (i = 1; i <= sizeX; i++) {
+        labels.x[i] = numberToSgfLetter(i);
+    }
+    for (i = 1; i <= sizeY; i++) {
+        labels.y[i] = numberToSgfLetter(i);
+    }
+    return labels;
+};
+
 // Simple purely numeric coordinate system
 besogo.coord.numeric = function(sizeX, sizeY) {
     var labels = { x: [], y: [] }, i;
@@ -119,6 +131,11 @@ besogo.coord.eastern = function(sizeX, sizeY) {
 // Helper for converting numeric coord to letter (skipping I)
 function numberToLetter(number) {
     return 'ABCDEFGHJKLMNOPQRSTUVWXYZ'.charAt((number - 1) % 25);
+}
+
+// Helper for converting numeric coord to SGF letter index
+function numberToSgfLetter(number) {
+    return 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.charAt(number - 1);
 }
 
 // Helper for converting numeric coord to CJK symbol

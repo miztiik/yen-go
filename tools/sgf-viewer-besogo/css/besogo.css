@@ -40,12 +40,17 @@
 .besogo-panels {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     padding: 0px 5px;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .besogo-panels > * {
     margin: 3px 0px;
+    width: 100%;
+    min-width: 0;
 }
 
 .besogo-control {
@@ -100,7 +105,9 @@
 
 
     overflow: auto;
-    flex: 1 1 40%;
+    flex: 0 1 130px;
+    min-height: 72px;
+    max-height: 220px;
     width: 100%;
 }
 
@@ -111,11 +118,17 @@
 .besogo-comment textarea {
     height: 100%;
     width: 100%;
+    min-height: 120px;
+    resize: vertical;
 }
 
 .besogo-gameInfo {
     padding: 5px;
     border-collapse: collapse;
+    display: block;
+    max-height: 180px;
+    overflow: auto;
+    width: 100%;
 }
 
 .besogo-gameInfo td, tr {
@@ -135,12 +148,14 @@
 
 .besogo-tree {
     overflow: auto;
-    flex: 1 1 30%;
+    flex: 1 1 220px;
+    min-height: 170px;
     width: 100%;
 }
 
 .besogo-file {
     flex: 0 0 auto;
+    width: 100%;
 }
 
 .besogo-paste {
@@ -164,11 +179,13 @@
 }
 
 .besogo-paste-textarea {
-    height: 120px;
+    height: 160px;
+    min-height: 160px;
+    max-height: 260px;
     width: 100%;
     font-family: monospace;
     font-size: 10pt;
-    resize: none;
+    resize: vertical;
     border: 1px solid #999;
     padding: 4px;
     box-sizing: border-box;

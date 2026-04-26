@@ -25,7 +25,7 @@ besogo.create = function(container, options) {
     // Process options and set defaults
     options = options || {}; // Makes option checking simpler
     options.size = besogo.parseSize(options.size || 19);
-    options.coord = options.coord || 'none';
+    options.coord = options.coord || 'sgf';
     options.tool = options.tool || 'auto';
     if (options.panels === '') {
         options.panels = [];
