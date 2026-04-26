@@ -8,27 +8,27 @@
  * @module services/puzzleLoaders
  */
 
-import { fetchSGFContent, type LoaderResult } from './puzzleLoader';
-import { init as initDb } from './sqliteService';
+import { fetchSGFContent, type LoaderResult } from '@services/puzzleLoader';
+import { init as initDb } from '@services/sqliteService';
 import {
   getPuzzlesByCollection,
   getPuzzlesByTag,
   getPuzzlesByLevel,
   getPuzzlesFiltered,
   type PuzzleRow,
-} from './puzzleQueryService';
-import { expandPath } from './entryDecoder';
-import { levelIdToSlug, levelSlugToId, tagSlugToId } from './configService';
-import { getNextRushPuzzle } from './puzzleRushService';
+} from '@services/puzzleQueryService';
+import { expandPath } from '@services/entryDecoder';
+import { levelIdToSlug, levelSlugToId, tagSlugToId } from '@services/configService';
+import { getNextRushPuzzle } from '@services/puzzleRushService';
 import {
   resolveCollectionDirId,
   ensureCollectionIdsLoaded,
   getCollectionTypeBySlug,
-} from './collectionService';
+} from '@services/collectionService';
 import type { CollectionType, SkillLevel } from '@/models/collection';
 import { SHUFFLE_POLICY, shuffleArray } from '@/constants/collectionConfig';
-import { extractPuzzleIdFromPath } from '../lib/puzzle/utils';
-import type { DailyPuzzleEntry } from '../types/indexes';
+import { extractPuzzleIdFromPath } from '@lib/puzzle/utils';
+import type { DailyPuzzleEntry } from '@/types/indexes';
 
 // ============================================================================
 // Types
@@ -199,7 +199,7 @@ export class CollectionPuzzleLoader implements PuzzleSetLoader {
       let rows: PuzzleRow[];
       if (hasFilters) {
         // Use filtered query for multi-dimension filtering
-        const filters: import('./puzzleQueryService').QueryFilters = isTagBased
+        const filters: import('@services/puzzleQueryService').QueryFilters = isTagBased
           ? { tagIds: [numericId] }
           : isLevelBased
             ? { levelId: numericId }
@@ -355,7 +355,7 @@ export class TrainingPuzzleLoader implements PuzzleSetLoader {
 
       let rows: PuzzleRow[];
       if (hasFilters) {
-        const filters: import('./puzzleQueryService').QueryFilters = { levelId: numericId };
+        const filters: import('@services/puzzleQueryService').QueryFilters = { levelId: numericId };
         if (this.tagIds.length > 0) filters.tagIds = [...this.tagIds];
         if (this.contentTypeId > 0) filters.contentType = this.contentTypeId;
         rows = getPuzzlesFiltered(filters);
@@ -448,7 +448,7 @@ export class DailyPuzzleLoader implements PuzzleSetLoader {
     try {
       await initDb();
 
-      const { getDailySchedule, getDailyPuzzles } = await import('./dailyQueryService');
+      const { getDailySchedule, getDailyPuzzles } = await import('@services/dailyQueryService');
       const schedule = getDailySchedule(this.date);
       if (!schedule) {
         this.status = 'error';
