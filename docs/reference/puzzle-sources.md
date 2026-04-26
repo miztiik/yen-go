@@ -10,7 +10,7 @@ Complete catalog of external puzzle sources used in Yen-Go.
 
 | Field               | Value                                     |
 | ------------------- | ----------------------------------------- |
-| **Repository**      | <https://github.com/travisgk/tsumego-pdf> |
+| **Repository**      | _(redacted)_                              |
 | **Format**          | Custom text + SGF                         |
 | **Solutions**       | ✅ Embedded                               |
 | **Estimated Count** | ~4,000                                    |
@@ -39,7 +39,7 @@ Complete catalog of external puzzle sources used in Yen-Go.
 
 | Field               | Value                                   |
 | ------------------- | --------------------------------------- |
-| **Repository**      | <https://github.com/sanderland/tsumego> |
+| **Repository**      | _(redacted)_                            |
 | **Format**          | JSON (SGF-derived)                      |
 | **Solutions**       | ✅ SOL field                            |
 | **Estimated Count** | ~10,000+                                |
@@ -75,7 +75,7 @@ Complete catalog of external puzzle sources used in Yen-Go.
 
 | Field               | Value                                    |
 | ------------------- | ---------------------------------------- |
-| **Repository**      | <https://github.com/kisvadim/goproblems> |
+| **Repository**      | _(redacted)_                             |
 | **Format**          | SGF                                      |
 | **Solutions**       | ✅ Full trees                            |
 | **Estimated Count** | 18,276                                   |
@@ -89,7 +89,7 @@ Complete catalog of external puzzle sources used in Yen-Go.
 
 | Field               | Value                                       |
 | ------------------- | ------------------------------------------- |
-| **Repository**      | <https://github.com/gogameguru/go-problems> |
+| **Repository**      | _(redacted)_                                |
 | **Format**          | SGF with variations                         |
 | **Solutions**       | ✅ Rich trees + comments                    |
 | **Estimated Count** | 422                                         |
@@ -113,7 +113,7 @@ weekly-go-problems/
 
 | Field               | Value                                                |
 | ------------------- | ---------------------------------------------------- |
-| **Website**         | <https://blacktoplay.com>                            |
+| **Website**         | _(redacted)_                                         |
 | **Format**          | Proprietary JSON API                                 |
 | **Solutions**       | ✅ Full trees                                        |
 | **Estimated Count** | ~2,400                                               |
@@ -125,8 +125,8 @@ weekly-go-problems/
 
 | Field               | Value                                               |
 | ------------------- | --------------------------------------------------- |
-| **Website**         | <https://online-go.com>                             |
-| **API**             | <https://online-go.com/api/v1/puzzles/>             |
+| **Website**         | _(redacted)_                                        |
+| **API**             | _(redacted)_                                        |
 | **Format**          | JSON API (SGF via puzzle_data)                      |
 | **Solutions**       | ✅ Full variation trees                             |
 | **Estimated Count** | 58,000+                                             |
@@ -155,8 +155,8 @@ python -m tools.ogs --help
 
 | Field               | Value                                            |
 | ------------------- | ------------------------------------------------ |
-| **Repository**      | <https://github.com/101books/101books.github.io> |
-| **Format**          | SGF extracted from 101weiqi.com                  |
+| **Repository**      | _(redacted)_                                     |
+| **Format**          | SGF extracted from upstream HTML                 |
 | **Estimated Count** | ~13,000 (60 books)                               |
 | **License**         | Check repository                                 |
 
@@ -195,7 +195,7 @@ python -m tools.ogs --help
 
 | Field             | Value                                |
 | ----------------- | ------------------------------------ |
-| **Repository**    | <https://github.com/Sun-Yize/smargo> |
+| **Repository**    | _(redacted)_                         |
 | **Format**        | JSON                                 |
 | **Purpose**       | MCTS-based tsumego solver + dataset  |
 | **Dataset Count** | smargo_30 (~30k), smargo_50 (~50k)   |
@@ -204,24 +204,13 @@ python -m tools.ogs --help
 
 ## Reference Sites
 
-| URL                                               | Description           |
-| ------------------------------------------------- | --------------------- |
-| <https://senseis.xmp.net>                         | Go encyclopedia       |
-| <https://www.red-bean.com/sgf/>                   | SGF FF4 specification |
-| <https://senseis.xmp.net/?XuanxuanQijingProblems> | Xuanxuan Qijing wiki  |
-| <https://senseis.xmp.net/?GokyoShumyoTsumego>     | Gokyo Shumyo wiki     |
+_External reference URLs have been redacted. See internal source configuration for details._
 
 ---
 
 ## Classical Collections (Reference)
 
-| URL                                    | Description                    |
-| -------------------------------------- | ------------------------------ |
-| <http://www.u-go.net/classic/>         | Classical SGF collections      |
-| <http://dl.u-go.net/problems/xxqj.zip> | Xuanxuan Qijing (347 problems) |
-| <http://tsumego.tasuki.org/xxqj.pdf>   | Xuanxuan Qijing PDF            |
-| <http://tsumego.tasuki.org/gksy.pdf>   | Gokyo Shumyo (520 problems)    |
-| <http://eidogo.com/problems>           | EidoGo interactive             |
+_External classical collection URLs have been redacted. See internal source configuration for details._
 
 ---
 

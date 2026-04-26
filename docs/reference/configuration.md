@@ -281,7 +281,7 @@ Configuration for importing from Online-Go.com:
 
 ```json
 {
-  "base_url": "https://online-go.com/api/v1",
+  "base_url": "https://example.com/api/v1",
   "puzzles_endpoint": "/puzzles/",
   "batch_size": 50,
   "page_delay_seconds": 3,
@@ -295,11 +295,11 @@ Configuration for importing from Online-Go.com:
 }
 ```
 
-#### OGS Configuration Options
+#### Source Configuration Options
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `base_url` | `https://online-go.com/api/v1` | OGS API base URL |
+| `base_url` | `https://example.com/api/v1` | Source API base URL |
 | `puzzles_endpoint` | `/puzzles/` | Puzzles endpoint path |
 | `batch_size` | 50 | Puzzles per page request |
 | `page_delay_seconds` | 3 | Delay between page fetches |

@@ -147,7 +147,7 @@ All adapter configuration lives in `backend/puzzle_manager/config/sources.json`:
       "name": "Online-Go.com Puzzles",
       "adapter": "ogs",
       "config": {
-        "base_url": "https://online-go.com/api/v1",
+        "base_url": "https://example.com/api/v1",
         "request_timeout_seconds": 30,
         "max_retries": 5,
         "collections": [123, 456]
