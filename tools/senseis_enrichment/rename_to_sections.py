@@ -60,7 +60,10 @@ def _section_pad_width(config: SenseisConfig) -> int:
 
 def _build_rename_map_gokyo(config: SenseisConfig) -> dict[str, str]:
     """Build old->new filename mapping for Gokyo Shumyo using position mapping."""
-    mapping_path = config.working_dir() / "_position_mapping.json"
+    # Check _results/ first (new location), fall back to _working/ (legacy)
+    mapping_path = config.results_dir() / "_position_mapping.json"
+    if not mapping_path.exists():
+        mapping_path = config.working_dir() / "_position_mapping.json"
     if not mapping_path.exists():
         logger.error("Position mapping not found: %s", mapping_path)
         return {}
@@ -77,7 +80,7 @@ def _build_rename_map_gokyo(config: SenseisConfig) -> dict[str, str]:
         section_name = _sanitize_section_name(m["section_name"])
         section_pos = m["section_pos"]
         old_name = config.local_filename_pattern.replace("{N:04d}", f"{local_n:04d}").replace("{N}", str(local_n))
-        new_name = f"{section_name}-{section_pos:0{pad}d}.sgf"
+        new_name = f"{section_name}_{section_pos:0{pad}d}.sgf"
         rename_map[old_name] = new_name
 
     # Unmapped locals: derive section from config ranges
@@ -145,16 +148,27 @@ def _build_rename_map_gokyo(config: SenseisConfig) -> dict[str, str]:
 
         clean_section = _sanitize_section_name(section_name)
         old_name = f"{local_n:04d}.sgf"
-        new_name = f"{clean_section}-{pos:0{pad}d}.sgf"
+        new_name = f"{clean_section}_{pos:0{pad}d}.sgf"
         rename_map[old_name] = new_name
 
     return rename_map
 
 
+def _global_pad_width(config: SenseisConfig) -> int:
+    """Determine zero-padding width for global prefix based on problem_count."""
+    count = config.problem_count
+    if count >= 1000:
+        return 4
+    if count >= 100:
+        return 3
+    return 2
+
+
 def _build_rename_map_hatsuyo(config: SenseisConfig) -> dict[str, str]:
-    """Build old->new filename mapping for Igo Hatsuyo-ron using config ranges."""
+    """Build old->new filename mapping for range-based sections."""
     sections = config.sections or ()
     pad = _section_pad_width(config)
+    gpad = _global_pad_width(config) if config.global_prefix else 0
     rename_map: dict[str, str] = {}
 
     for s in sections:
@@ -172,7 +186,11 @@ def _build_rename_map_hatsuyo(config: SenseisConfig) -> dict[str, str]:
             old_name = config.local_filename_pattern.replace(
                 "{N:04d}", f"{n:04d}"
             ).replace("{N}", str(n))
-            new_name = f"{clean_name}-{section_pos:0{pad}d}.sgf"
+            section_part = f"{clean_name}_{section_pos:0{pad}d}.sgf"
+            if gpad:
+                new_name = f"{n:0{gpad}d}_{section_part}"
+            else:
+                new_name = section_part
             rename_map[old_name] = new_name
 
     return rename_map
@@ -197,13 +215,14 @@ def rename_files(
     # Determine which collection and build appropriate rename map
     slug = config.collection_slug
 
-    if "gokyo" in slug:
-        rename_map = _build_rename_map_gokyo(config)
+    if _has_range_sections(config):
+        # Any collection with range-based sections (Hatsuyo-ron, Gokyo Shumyo, Xian Ji Wu Ku, etc.)
+        rename_map = _build_rename_map_hatsuyo(config)
         if target_dir is None:
             target_dir = config.enriched_dir()
-    elif _has_range_sections(config):
-        # Any collection with range-based sections (Hatsuyo-ron, Xian Ji Wu Ku, etc.)
-        rename_map = _build_rename_map_hatsuyo(config)
+    elif "gokyo" in slug:
+        # Legacy: Gokyo without range fields, uses position mapping
+        rename_map = _build_rename_map_gokyo(config)
         if target_dir is None:
             target_dir = config.enriched_dir()
     else:

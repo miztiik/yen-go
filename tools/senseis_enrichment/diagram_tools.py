@@ -1,8 +1,8 @@
 """Diagram SGF parsing, branch matching, and coordinate resolution.
 
-Extracts move sequences and LB[] labels from Senseis diagram SGFs,
-matches them against local solution tree branches, and resolves
-label/move references in commentary text to SGF coordinates.
+Extracts move sequences, LB[] labels, and visual markup from Senseis
+diagram SGFs, matches them against local solution tree branches, and
+resolves label/move references in commentary text to SGF coordinates.
 """
 
 from __future__ import annotations
@@ -17,10 +17,19 @@ from tools.senseis_enrichment.position_matcher import transform_point
 
 logger = logging.getLogger("senseis_enrichment.diagram_tools")
 
+# SGF markup properties that take a list of point coordinates.
+_POINT_MARKERS = frozenset({"SQ", "TR", "CR", "MA", "SL"})
+
+# SGF markup properties that take composed point:point pairs.
+_COMPOSED_MARKERS = frozenset({"AR", "LN"})
+
+# All visual markup properties (excluding LB, handled separately).
+ALL_MARKER_PROPERTIES = _POINT_MARKERS | _COMPOSED_MARKERS
+
 
 @dataclass
 class DiagramMoveSequence:
-    """Parsed move sequence and labels from a Senseis diagram SGF."""
+    """Parsed move sequence, labels, and markers from a Senseis diagram SGF."""
 
     moves: list[tuple[str, str]] = field(default_factory=list)
     """[(color, sgf_coord), ...] e.g. [("B", "ap"), ("W", "bo")]"""
@@ -30,6 +39,12 @@ class DiagramMoveSequence:
 
     move_comments: dict[int, str] = field(default_factory=dict)
     """move_index -> C[] comment text from that move node"""
+
+    markers: dict[str, set[str]] = field(default_factory=dict)
+    """SGF marker properties aggregated from all nodes.
+    Maps property name (SQ, TR, CR, MA, SL, AR, LN) to set of raw values.
+    Point markers: bare coords ("db", "fb").
+    Composed markers: "coord:coord" pairs ("ab:cd")."""
 
 
 def extract_labels_from_property(lb_value: str) -> dict[str, str]:
@@ -67,11 +82,27 @@ def _collect_labels(root: SgfNode) -> dict[str, str]:
     return labels
 
 
+def _collect_markers_from_node(
+    node: SgfNode, markers: dict[str, set[str]],
+) -> None:
+    """Collect visual markup properties (SQ/TR/CR/MA/SL/AR/LN) from a node."""
+    for prop in ALL_MARKER_PROPERTIES:
+        value = node.properties.get(prop, "")
+        if not value:
+            continue
+        if prop not in markers:
+            markers[prop] = set()
+        for item in value.split(","):
+            item = item.strip()
+            if item:
+                markers[prop].add(item)
+
+
 def parse_diagram_sgf(sgf_content: str) -> DiagramMoveSequence:
     """Parse a Senseis diagram SGF into structured move data.
 
     Walks the linear diagram (no branching expected) to extract
-    the move sequence, LB[] labels, and per-move comments.
+    the move sequence, LB[] labels, visual markers, and per-move comments.
     """
     result = DiagramMoveSequence()
 
@@ -87,17 +118,23 @@ def parse_diagram_sgf(sgf_content: str) -> DiagramMoveSequence:
     # Collect labels from all nodes (root + moves + trailing label nodes)
     result.labels = _collect_labels(tree.solution_tree)
 
+    # Collect markers from root node
+    markers: dict[str, set[str]] = {}
+    _collect_markers_from_node(tree.solution_tree, markers)
+
     # Walk the linear move sequence
     node = tree.solution_tree
     move_index = 0
     while node.children:
         node = node.children[0]
+        _collect_markers_from_node(node, markers)
         if node.move and node.color:
             result.moves.append((node.color.value, node.move.to_sgf()))
             if node.comment:
                 result.move_comments[move_index] = node.comment
             move_index += 1
 
+    result.markers = markers
     return result
 
 

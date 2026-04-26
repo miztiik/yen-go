@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 
 from tools.core.checkpoint import (
@@ -70,7 +71,10 @@ class MappedProblem:
 
 def _load_position_mapping(config: SenseisConfig) -> list[MappedProblem] | None:
     """Load position mapping if available. Returns None if not found."""
-    mapping_path = config.working_dir() / "_position_mapping.json"
+    # Check _results/ first (new location), fall back to _working/ (legacy)
+    mapping_path = config.results_dir() / "_position_mapping.json"
+    if not mapping_path.exists():
+        mapping_path = config.working_dir() / "_position_mapping.json"
     if not mapping_path.exists():
         return None
 
@@ -100,6 +104,43 @@ def _load_position_mapping(config: SenseisConfig) -> list[MappedProblem] | None:
     result.sort(key=lambda x: x.senseis_n)
     logger.info("Loaded position mapping: %d entries", len(result))
     return result
+
+
+def _sanitize_section_name(name: str) -> str:
+    """Convert section name to PascalCase filename component."""
+    import re
+    parts = re.split(r"[\s-]+", name)
+    return "".join(p.capitalize() for p in parts if p)
+
+
+def _resolve_local_file(config: SenseisConfig, mapped: MappedProblem) -> Path | None:
+    """Resolve the actual local file for a mapped problem.
+
+    Tries multiple naming conventions in order:
+    1. Numbered: {N:04d}.sgf (original)
+    2. Section-hyphen: {Section}-{pos:0Xd}.sgf (old rename format)
+    3. Global-prefix-underscore: {N:0Xd}_{Section}_{pos:0Xd}.sgf (new format)
+    """
+    local_dir = Path(__file__).parent.parent.parent / config.local_dir
+    ln = mapped.local_n
+    section = _sanitize_section_name(mapped.section_name)
+    pos = mapped.section_pos
+    pad = 3 if config.problem_count >= 100 else 2
+
+    candidates = [
+        f"{ln:04d}.sgf",
+        f"{section}-{pos:0{pad}d}.sgf",
+        f"{section}_{pos:0{pad}d}.sgf",
+        f"{ln:0{pad}d}_{section}_{pos:0{pad}d}.sgf",
+    ]
+
+    for name in candidates:
+        p = local_dir / name
+        if p.exists():
+            return p
+
+    logger.warning("Cannot resolve local file for L%d (tried: %s)", ln, candidates)
+    return None
 
 
 # --- Download mode helpers ---
@@ -346,8 +387,20 @@ def _run_mapped_enrichment(
             )
 
             if not dry_run:
-                # Merge using LOCAL file number for file paths
-                success = merge_problem(config, ln, page_data, solution_data, match_result)
+                # Resolve actual source file (handles renamed files)
+                source = _resolve_local_file(config, mapped)
+                if source is None:
+                    checkpoint.total_failed += 1
+                    checkpoint.failed_problems.append(sn)
+                    logger.warning("  S%d->L%d: source file not found", sn, ln)
+                    checkpoint.last_completed = sn
+                    save_checkpoint(checkpoint, ckpt_dir)
+                    continue
+
+                success = merge_problem(
+                    config, ln, page_data, solution_data, match_result,
+                    source_path=source,
+                )
                 if success:
                     checkpoint.total_enriched += 1
                 else:
@@ -496,10 +549,12 @@ def _finish_enrichment(config: SenseisConfig, checkpoint: EnrichmentCheckpoint) 
     if checkpoint.skipped_problems:
         logger.info("Skipped problems: %s", checkpoint.skipped_problems)
 
-    results_path = config.working_dir() / "_enrichment_results.json"
+    results_path = config.results_dir() / "_enrichment_results.json"
     with open(results_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)
     logger.info("Results saved to %s", results_path)
+
+    _update_metadata(config, summary)
 
     return summary
 
@@ -514,3 +569,36 @@ def _summary(checkpoint: EnrichmentCheckpoint) -> dict:
         "failed_problems": checkpoint.failed_problems,
         "skipped_problems": checkpoint.skipped_problems,
     }
+
+
+_TOOL_DIR = Path(__file__).parent
+_METADATA_PATH = _TOOL_DIR / "_enrichment_metadata.json"
+
+
+def _update_metadata(config: SenseisConfig, summary: dict) -> None:
+    """Auto-update _enrichment_metadata.json after enrichment completes."""
+    if not _METADATA_PATH.exists():
+        logger.warning("Metadata file not found: %s", _METADATA_PATH)
+        return
+
+    with open(_METADATA_PATH, encoding="utf-8") as f:
+        metadata = json.load(f)
+
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    slug = config.collection_slug
+
+    for entry in metadata.get("collections", []):
+        if entry.get("slug") == slug:
+            entry["last_enriched"] = today
+            entry["enriched_count"] = summary["enriched"]
+            entry["status"] = "v2 (current)"
+            break
+    else:
+        logger.warning("Collection '%s' not found in metadata", slug)
+        return
+
+    metadata["_generated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+
+    with open(_METADATA_PATH, "w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=2, ensure_ascii=False)
+    logger.info("Updated metadata: %s", _METADATA_PATH)

@@ -41,7 +41,10 @@ class EvalPair(NamedTuple):
 
 def _load_eval_mapping(config: SenseisConfig) -> list[EvalPair] | None:
     """Load position mapping for eval. Returns None if not position-mapped."""
-    mapping_path = config.working_dir() / "_position_mapping.json"
+    # Check _results/ first (new location), fall back to _working/ (legacy)
+    mapping_path = config.results_dir() / "_position_mapping.json"
+    if not mapping_path.exists():
+        mapping_path = config.working_dir() / "_position_mapping.json"
     if not mapping_path.exists():
         return None
 
@@ -552,7 +555,7 @@ def run_eval(
 
 def _write_report(report: EvalReport, config: SenseisConfig) -> None:
     """Write JSON evaluation report."""
-    out_dir = config.working_dir()
+    out_dir = config.results_dir()
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Aggregate check stats

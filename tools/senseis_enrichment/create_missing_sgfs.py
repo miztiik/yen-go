@@ -25,7 +25,10 @@ logger = logging.getLogger("senseis_enrichment.create_missing")
 
 
 def _load_senseis_hashes(config: SenseisConfig) -> dict:
-    path = config.working_dir() / "_senseis_hashes.json"
+    # Check _results/ first (new location), fall back to _working/ (legacy)
+    path = config.results_dir() / "_senseis_hashes.json"
+    if not path.exists():
+        path = config.working_dir() / "_senseis_hashes.json"
     if not path.exists():
         return {}
     with open(path, encoding="utf-8") as f:
@@ -41,7 +44,10 @@ def _load_page_cache(config: SenseisConfig, n: int) -> dict | None:
 
 
 def _load_position_mapping(config: SenseisConfig) -> dict:
-    path = config.working_dir() / "_position_mapping.json"
+    # Check _results/ first (new location), fall back to _working/ (legacy)
+    path = config.results_dir() / "_position_mapping.json"
+    if not path.exists():
+        path = config.working_dir() / "_position_mapping.json"
     if not path.exists():
         return {"mappings": []}
     with open(path, encoding="utf-8") as f:
@@ -57,12 +63,17 @@ def _find_unmatched_globals(config: SenseisConfig) -> list[int]:
     return sorted(all_globals - mapped_globals)
 
 
-def _parse_player_from_instruction(instruction: str) -> Color:
-    """Extract player to move from instruction text."""
+def _parse_player_from_instruction(instruction: str) -> Color | None:
+    """Extract player to move from instruction text.
+
+    Returns None if neither color is mentioned.
+    """
     lower = instruction.lower()
     if "black" in lower:
         return Color.BLACK
-    return Color.WHITE
+    if "white" in lower:
+        return Color.WHITE
+    return None
 
 
 def create_sgf_from_diagram(
@@ -102,6 +113,21 @@ def create_sgf_from_diagram(
     black_stones = list(tree.black_stones)
     white_stones = list(tree.white_stones)
 
+    # Walk diagram moves and include them as setup stones.
+    # Senseis problem diagrams often encode a "trigger move" as a B[]/W[] node
+    # rather than an AB/AW setup stone.  Solution diagrams treat these stones
+    # as part of the initial position (AB/AW), so we must include them here.
+    last_move_color: Color | None = None
+    node = tree.solution_tree
+    while node.children:
+        node = node.children[0]
+        if node.move and node.color:
+            if node.color == Color.BLACK:
+                black_stones.append(node.move)
+            else:
+                white_stones.append(node.move)
+            last_move_color = node.color
+
     if not black_stones and not white_stones:
         logger.warning("No stones in diagram for global %d", senseis_global)
         return None
@@ -111,12 +137,18 @@ def create_sgf_from_diagram(
     builder.add_black_stones(black_stones)
     builder.add_white_stones(white_stones)
 
-    # Set player to move from instruction
+    # Set player to move: instruction text takes priority, then infer from
+    # the last diagram move (opponent's turn after the trigger move).
     instruction = page_data.get("instruction", "")
     if instruction:
         player = _parse_player_from_instruction(instruction)
-        builder.set_player_to_move(player)
+        if player is not None:
+            builder.set_player_to_move(player)
         builder.root_comment = instruction
+    elif last_move_color is not None:
+        builder.set_player_to_move(
+            Color.WHITE if last_move_color == Color.BLACK else Color.BLACK
+        )
 
     # Set difficulty
     difficulty = page_data.get("difficulty", "")

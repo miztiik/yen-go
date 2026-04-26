@@ -30,6 +30,7 @@ class SenseisConfig:
     aliases: dict[str, str] | None = None
     sections: tuple[dict, ...] | None = None
     variants: dict[str, list[int]] | None = None
+    global_prefix: bool = False
 
     def problem_page_name(self, n: int) -> str:
         """Get the Senseis page name for problem N (handles aliases)."""
@@ -66,6 +67,7 @@ class SenseisConfig:
     def local_sgf_path(self, n: int) -> Path:
         """Path to local SGF file for problem N."""
         filename = self.local_filename_pattern.replace("{N:04d}", f"{n:04d}")
+        filename = filename.replace("{N:02d}", f"{n:02d}")
         filename = filename.replace("{N}", str(n))
         return _PROJECT_ROOT / self.local_dir / filename
 
@@ -77,6 +79,7 @@ class SenseisConfig:
     def enriched_sgf_path(self, n: int) -> Path:
         """Path to enriched SGF file for problem N."""
         filename = self.local_filename_pattern.replace("{N:04d}", f"{n:04d}")
+        filename = filename.replace("{N:02d}", f"{n:02d}")
         filename = filename.replace("{N}", str(n))
         return self.enriched_dir() / filename
 
@@ -97,6 +100,12 @@ class SenseisConfig:
     def working_dir(self) -> Path:
         """Return the _working/{slug}/ cache directory."""
         return _TOOL_DIR / "_working" / self.collection_slug
+
+    def results_dir(self) -> Path:
+        """Return the _results/{slug}/ directory for durable outputs."""
+        d = _TOOL_DIR / "_results" / self.collection_slug
+        d.mkdir(parents=True, exist_ok=True)
+        return d
 
     def page_cache_dir(self) -> Path:
         return self.working_dir() / "_page_cache"
@@ -124,6 +133,13 @@ def working_dir(slug: str = "") -> Path:
     if slug:
         return _TOOL_DIR / "_working" / slug
     return _TOOL_DIR / "_working"
+
+
+def results_dir(slug: str) -> Path:
+    """Return the _results/{slug}/ directory for durable outputs."""
+    d = _TOOL_DIR / "_results" / slug
+    d.mkdir(parents=True, exist_ok=True)
+    return d
 
 
 def page_cache_dir(slug: str = "") -> Path:

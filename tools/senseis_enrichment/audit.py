@@ -392,8 +392,8 @@ def _compute_summary(report: AuditReport) -> dict:
 
 
 def _write_report(report: AuditReport, config: SenseisConfig) -> None:
-    """Write the audit report to _working/{slug}/."""
-    out_dir = config.working_dir()
+    """Write the audit report to _results/{slug}/."""
+    out_dir = config.results_dir()
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Full ledger (JSON)

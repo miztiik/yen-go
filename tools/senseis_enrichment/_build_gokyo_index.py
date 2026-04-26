@@ -718,14 +718,14 @@ def main() -> None:
     local_hashes, all_local = build_local_hashes(config)
 
     # Save hash caches
-    save_hash_cache(entries, all_local, working)
+    save_hash_cache(entries, all_local, config.results_dir())
 
     # Step 4: Position match
     logger.info("=== Step 4: Position matching ===")
     mapping = match_positions(senseis_hashes, local_hashes, all_local, entries, config)
 
     # Save mapping
-    mapping_path = working / "_position_mapping.json"
+    mapping_path = config.results_dir() / "_position_mapping.json"
     save_mapping(mapping, mapping_path)
 
     # Report

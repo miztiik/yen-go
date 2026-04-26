@@ -17,6 +17,7 @@ from tools.core.sgf_types import Color, Point
 from tools.core.text_cleaner import strip_cjk
 
 from tools.senseis_enrichment.config import SenseisConfig
+from tools.senseis_enrichment.html_parser import strip_commentary_attributions
 from tools.senseis_enrichment.models import (
     MatchResult,
     SenseisPageData,
@@ -26,6 +27,9 @@ from tools.senseis_enrichment.diagram_tools import (
     find_matching_branch,
     parse_diagram_sgf,
     resolve_label_references,
+    ALL_MARKER_PROPERTIES,
+    _POINT_MARKERS,
+    _COMPOSED_MARKERS,
 )
 from tools.senseis_enrichment.position_matcher import transform_point
 
@@ -116,11 +120,87 @@ def build_root_comment(
         if page_data.cross_references:
             parts.append("See also: " + "; ".join(page_data.cross_references))
 
-    # Preserve existing comment if any
+    # Preserve existing comment if any, deduplicating paragraphs
+    # (some source files have the same paragraph repeated)
     if existing_comment:
-        parts.append(existing_comment)
+        normalized = existing_comment.replace("\r\n", "\n").replace("\r", "\n")
+        seen: set[str] = set()
+        for para in normalized.split("\n"):
+            stripped = para.strip()
+            if stripped and stripped not in seen:
+                seen.add(stripped)
+                parts.append(stripped)
 
     return "\n".join(parts)
+
+
+def _attach_markers(
+    node: SgfNode,
+    markers: dict[str, set[str]],
+    transform: "PositionTransform | None",
+    board_size: int,
+) -> None:
+    """Set visual markup properties on a node, transforming coordinates."""
+    for prop, values in markers.items():
+        if not values:
+            continue
+        transformed: list[str] = []
+        if prop in _POINT_MARKERS:
+            for sgf_coord in sorted(values):
+                if transform:
+                    p = Point.from_sgf(sgf_coord)
+                    p = transform_point(p, board_size, transform)
+                    transformed.append(p.to_sgf())
+                else:
+                    transformed.append(sgf_coord)
+        elif prop in _COMPOSED_MARKERS:
+            for pair in sorted(values):
+                if ":" in pair:
+                    c1, c2 = pair.split(":", 1)
+                    if transform:
+                        p1 = Point.from_sgf(c1.strip())
+                        p1 = transform_point(p1, board_size, transform)
+                        p2 = Point.from_sgf(c2.strip())
+                        p2 = transform_point(p2, board_size, transform)
+                        transformed.append(f"{p1.to_sgf()}:{p2.to_sgf()}")
+                    else:
+                        transformed.append(pair)
+        if transformed:
+            node.properties[prop] = ",".join(transformed)
+
+
+def _attach_labels(
+    node: SgfNode,
+    labels: dict[str, str],
+    transform: "PositionTransform | None",
+    board_size: int,
+) -> None:
+    """Set LB[] property on a node, transforming coordinates."""
+    if not labels:
+        return
+    pairs: list[str] = []
+    for letter, sgf_coord in sorted(labels.items()):
+        if transform:
+            p = Point.from_sgf(sgf_coord)
+            p = transform_point(p, board_size, transform)
+            pairs.append(f"{p.to_sgf()}:{letter}")
+        else:
+            pairs.append(f"{sgf_coord}:{letter}")
+    if pairs:
+        node.properties["LB"] = ",".join(pairs)
+
+
+def _attach_diagram_markup(
+    node: SgfNode,
+    seq: "DiagramMoveSequence",
+    transform: "PositionTransform | None",
+    board_size: int,
+) -> None:
+    """Attach visual markers and labels from a diagram to a node."""
+    if seq.markers:
+        _attach_markers(node, seq.markers, transform, board_size)
+    if seq.labels:
+        _attach_labels(node, seq.labels, transform, board_size)
 
 
 def add_solution_commentary(
@@ -158,6 +238,9 @@ def add_solution_commentary(
             # Normalize newlines from cached HTML paragraphs to spaces
             commentary = " ".join(diagram.commentary.split("\n"))
 
+            # Strip wiki user attributions (works on cached joined text)
+            commentary = strip_commentary_attributions(commentary)
+
             # Resolve label/move references to board coordinates
             commentary = resolve_label_references(
                 commentary, seq.labels, seq.moves, transform, board_size
@@ -180,6 +263,7 @@ def add_solution_commentary(
             # Full match — commentary describes this exact line
             if commentary:
                 _append_comment(target_node, commentary)
+            _attach_diagram_markup(target_node, seq, transform, board_size)
         elif target_node is not None and depth < len(seq.moves):
             # Partial match — build remaining moves as new variation
             leaf = _build_move_branch(
@@ -188,6 +272,7 @@ def add_solution_commentary(
             if commentary:
                 label = diagram.diagram_name or "Variation"
                 _append_comment(leaf, f"({label}) {commentary}")
+            _attach_diagram_markup(leaf, seq, transform, board_size)
         elif seq.moves:
             # No match at all — build entire sequence as new branch from root
             leaf = _build_move_branch(
@@ -196,6 +281,7 @@ def add_solution_commentary(
             if commentary:
                 label = diagram.diagram_name or "Note"
                 _append_comment(leaf, f"({label}) {commentary}")
+            _attach_diagram_markup(leaf, seq, transform, board_size)
 
 
 def _build_move_branch(
@@ -251,22 +337,49 @@ def _append_comment(node: SgfNode, text: str) -> None:
         node.comment = text
 
 
+def _compute_yl(config: SenseisConfig, problem_number: int) -> str:
+    """Compute YL[] value: slug or slug:chapter/position if sections exist."""
+    slug = config.collection_slug
+    if not config.sections:
+        return slug
+
+    for s in config.sections:
+        s_dict = s if isinstance(s, dict) else vars(s)
+        r = s_dict.get("range")
+        if not r or len(r) != 2:
+            continue
+        lo, hi = r
+        if lo <= problem_number <= hi:
+            chapter = s_dict.get("number", 0)
+            pos = problem_number - lo + 1
+            return f"{slug}:{chapter}/{pos}"
+
+    # Problem not in any section range — just use slug
+    return slug
+
+
 def merge_problem(
     config: SenseisConfig,
     problem_number: int,
     page_data: SenseisPageData | None,
     solution_data: SenseisSolutionData | None,
     match_result: MatchResult,
+    source_path: Path | None = None,
+    enriched_path: Path | None = None,
 ) -> bool:
     """Merge enrichment data into an enriched SGF copy.
 
     Always reads from the ORIGINAL file and writes to the enriched copy,
     ensuring idempotent re-runs without stacking content.
 
+    Args:
+        source_path: Explicit source file path (overrides local_sgf_path).
+        enriched_path: Explicit enriched output path (overrides enriched_sgf_path).
+
     Returns True if the file was successfully enriched.
     """
-    original_path = config.local_sgf_path(problem_number)
-    enriched_path = config.enriched_sgf_path(problem_number)
+    original_path = source_path or config.local_sgf_path(problem_number)
+    enriched_path = enriched_path or config.enriched_sgf_path(problem_number)
     if not original_path.exists():
         logger.warning("Original file not found: %s", original_path)
         return False
@@ -281,6 +394,8 @@ def merge_problem(
 
     # Build enriched root comment
     preamble = solution_data.preamble_text if solution_data else ""
+    if preamble:
+        preamble = strip_commentary_attributions(preamble)
     root_comment = build_root_comment(page_data, tree.root_comment, preamble)
 
     # Add solution commentary if we have solution data and position match
@@ -290,11 +405,26 @@ def merge_problem(
     # Rebuild SGF using the builder
     builder = SGFBuilder.from_tree(tree)
 
+    # Infer PL from first solution move if not already set in original SGF
+    if builder.player_to_move is None:
+        first_child = tree.solution_tree.children[0] if tree.solution_tree.children else None
+        if first_child and first_child.color:
+            builder.set_player_to_move(first_child.color)
+
     # Merge root comment: page metadata + any diagram commentary added to root
     # (diagrams with no moves attach commentary to tree.solution_tree)
+    # Deduplicate: diagram commentary often repeats the existing root comment
     root_commentary_from_diagrams = tree.solution_tree.comment
     if root_commentary_from_diagrams:
-        root_comment = root_comment + "\n" + root_commentary_from_diagrams
+        # Split into individual notes, only add ones not already present
+        existing_norm = root_comment.replace("\r\n", "\n").replace("\r", "\n")
+        new_parts: list[str] = []
+        for line in root_commentary_from_diagrams.split("\n"):
+            stripped = line.strip()
+            if stripped and stripped not in existing_norm:
+                new_parts.append(stripped)
+        if new_parts:
+            root_comment = root_comment + "\n" + "\n".join(new_parts)
     builder.root_comment = root_comment
 
     # Set YG[] difficulty from Senseis mapping
@@ -303,9 +433,18 @@ def merge_problem(
         if slug:
             builder.set_level_slug(slug)
 
-    # Add GN if we have a title (CJK-cleaned)
+    # Add GN if we have a title (CJK-cleaned), fallback to collection + number
     if page_data and page_data.title_english:
         builder.metadata["GN"] = _clean_cjk(page_data.title_english)
+    elif "GN" not in builder.metadata:
+        # Fallback: use collection slug + problem number as title
+        slug_title = config.collection_slug.replace("-", " ").title()
+        builder.metadata["GN"] = f"{slug_title} Problem {problem_number}"
+
+    # Set YL[] collection membership with chapter/position if sections exist
+    yl_value = _compute_yl(config, problem_number)
+    if yl_value:
+        builder.set_collections([yl_value])
 
     new_sgf = builder.build()
 

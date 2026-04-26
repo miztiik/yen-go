@@ -9,6 +9,7 @@
   "enriched_dir_suffix": "-enriched",
   "local_filename_pattern": "problem_{N:04d}_p{N}.sgf",
   "board_size": 19,
+  "global_prefix": true,
   "rate_limit_seconds": 3.0,
   "rate_limit_jitter": 1.0,
   "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",

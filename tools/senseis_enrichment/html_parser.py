@@ -278,4 +278,106 @@ def _clean_commentary(p_tag: Tag) -> str:
 
     text = p_tag.get_text()
     # Normalize whitespace
-    return re.sub(r"\s+", " ", text).strip()
+    text = re.sub(r"\s+", " ", text).strip()
+    # Strip Senseis wiki user attributions
+    return _strip_attribution(text)
+
+
+# Commentary labels that match the "Word: text" pattern but are NOT usernames.
+# Everything else matching ^[A-Z][a-zA-Z0-9_]+:\s is treated as a wiki username.
+_COMMENTARY_LABELS = frozenset({
+    "Alternative", "Analysis", "Answer", "Caution", "Comment", "Comparison",
+    "Conclusion", "Continuation", "Correction", "Diagram", "Example",
+    "Explanation", "Extension", "Failure", "Hint", "Illustration", "Note",
+    "Problem", "Question", "Reference", "Result", "Solution", "Summary",
+    "Update", "Variation",
+})
+
+# Suffix: "text -- Username" or "text --Username"
+_SUFFIX_RE = re.compile(r"\s*--\s*([A-Za-z][A-Za-z0-9_]*)\s*$")
+
+# Prefix: "Username: text" at start of paragraph
+_PREFIX_RE = re.compile(r"^([A-Za-z][A-Za-z0-9_]*)\s*:\s*")
+
+# Parenthetical: "(Username: text)" anywhere
+_PAREN_RE = re.compile(r"\(([A-Za-z][A-Za-z0-9_]*)\s*:\s*")
+
+
+def _strip_attribution(text: str) -> str:
+    """Strip Senseis wiki user attributions from a single paragraph.
+
+    Handles three patterns:
+    - Suffix:  "text -- Username"  → "text"
+    - Prefix:  "Username: text"    → "text"
+    - Parens:  "(Username: text)"  → "(text)"
+
+    Only strips if the name is NOT in _COMMENTARY_LABELS (e.g. "Caution:",
+    "Result:" are kept as legitimate section headings).
+    """
+    if not text:
+        return text
+
+    # 1. Suffix pattern: "-- Username" at end
+    m = _SUFFIX_RE.search(text)
+    if m:
+        text = text[: m.start()].rstrip()
+
+    # 2. Prefix pattern: "Username: text" at start
+    m = _PREFIX_RE.match(text)
+    if m and m.group(1) not in _COMMENTARY_LABELS:
+        text = text[m.end():]
+
+    # 3. Parenthetical: "(Username: text)" → "(text)"
+    def _paren_sub(match: re.Match) -> str:
+        name = match.group(1)
+        if name in _COMMENTARY_LABELS:
+            return match.group(0)  # keep labels
+        return "("
+    text = _PAREN_RE.sub(_paren_sub, text)
+
+    return text.strip()
+
+
+# Mid-text prefix: ". Username: " or "? Username: " or "! Username: "
+_MID_TEXT_PREFIX_RE = re.compile(
+    r"(?<=[.!?])\s+([A-Za-z][A-Za-z0-9_]*)\s*:\s+"
+)
+
+
+def strip_commentary_attributions(text: str) -> str:
+    """Strip Senseis wiki user attributions from already-joined commentary.
+
+    Use this on cached commentary where paragraphs are already joined with
+    spaces.  Handles the same patterns as ``_strip_attribution`` plus
+    mid-text attributions at sentence boundaries.
+    """
+    if not text:
+        return text
+
+    # 1. Suffix: "-- Username" at end
+    m = _SUFFIX_RE.search(text)
+    if m:
+        text = text[: m.start()].rstrip()
+
+    # 2. Start-of-text prefix: "Username: text"
+    m = _PREFIX_RE.match(text)
+    if m and m.group(1) not in _COMMENTARY_LABELS:
+        text = text[m.end():]
+
+    # 3. Mid-text prefix: ". Username: text"
+    def _mid_sub(match: re.Match) -> str:
+        name = match.group(1)
+        if name in _COMMENTARY_LABELS:
+            return match.group(0)
+        return " "
+    text = _MID_TEXT_PREFIX_RE.sub(_mid_sub, text)
+
+    # 4. Parenthetical: "(Username: text)" → "(text)"
+    def _paren_sub(match: re.Match) -> str:
+        name = match.group(1)
+        if name in _COMMENTARY_LABELS:
+            return match.group(0)
+        return "("
+    text = _PAREN_RE.sub(_paren_sub, text)
+
+    return text.strip()

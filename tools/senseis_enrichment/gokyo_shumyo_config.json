@@ -10,48 +10,55 @@
   "rate_limit_seconds": 3.0,
   "rate_limit_jitter": 1.0,
   "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+  "global_prefix": true,
   "sections": [
     {
       "number": 1,
       "name": "Live",
       "japanese": "生之部",
       "senseis_prefix": "GokyoShumyoSection1Problem",
-      "count": 103
+      "count": 103,
+      "range": [1, 103]
     },
     {
       "number": 2,
       "name": "Kill",
       "japanese": "死之部",
       "senseis_prefix": "GokyoShumyoSection2Problem",
-      "count": 71
+      "count": 71,
+      "range": [104, 174]
     },
     {
       "number": 3,
       "name": "Ko",
       "japanese": "劫之部",
       "senseis_prefix": "GokyoShumyoSection3Problem",
-      "count": 90
+      "count": 90,
+      "range": [175, 264]
     },
     {
       "number": 4,
       "name": "Attack",
       "japanese": "攻之部",
       "senseis_prefix": "GokyoShumyoSection4Problem",
-      "count": 96
+      "count": 96,
+      "range": [265, 360]
     },
     {
       "number": 5,
       "name": "Chasing",
       "japanese": "追落之部",
       "senseis_prefix": "GokyoShumyoSection5Problem",
-      "count": 40
+      "count": 40,
+      "range": [361, 400]
     },
     {
       "number": 6,
       "name": "Connect",
       "japanese": "盤之部",
       "senseis_prefix": "GokyoShumyoSection6Problem",
-      "count": 74
+      "count": 74,
+      "range": [401, 474]
     },
     {
       "number": 7,
@@ -59,6 +66,7 @@
       "japanese": "挟,点,続,断,征之部",
       "senseis_prefix": "GokyoShumyoSection7Problem",
       "count": 46,
+      "range": [475, 520],
       "number_list": [
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
         11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
