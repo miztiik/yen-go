@@ -1,0 +1,59 @@
+{
+  "puzzle_id": "YENGO-05588c12c4bd3ffc",
+  "validation": {
+    "status": "valid",
+    "correct_move_verified": true
+  },
+  "teaching_signals": {
+    "version": 2,
+    "correct_move": {
+      "move_gtp": "D7",
+      "move_sgf": "dg",
+      "score_before": -2.5,
+      "score_after": 42.1,
+      "policy_score": 0.82,
+      "log_policy_score": -0.20,
+      "visits": 500,
+      "winrate": 0.95
+    },
+    "position": {
+      "color_to_play": "B",
+      "total_legal_moves": 45,
+      "policy_entropy": 1.23,
+      "top_5_moves": [
+        {"move_gtp": "D7", "move_sgf": "dg", "policy": 0.82},
+        {"move_gtp": "J2", "move_sgf": "jb", "policy": 0.06},
+        {"move_gtp": "B5", "move_sgf": "be", "policy": 0.04}
+      ],
+      "board_size": 19
+    },
+    "context": {
+      "technique_tags": ["net", "capturing"],
+      "difficulty_level": "beginner",
+      "solution_depth": 1,
+      "board_size": 19,
+      "goal": "kill",
+      "goal_confidence": 0.95
+    },
+    "wrong_moves": [
+      {
+        "move_gtp": "J2",
+        "move_sgf": "jb",
+        "delta": -35.0,
+        "score_delta": -37.5,
+        "policy_score": 0.06,
+        "refutation_pv": ["J2", "C1", "D1", "B1"],
+        "refutation_type": "lives_in_seki"
+      },
+      {
+        "move_gtp": "B5",
+        "move_sgf": "be",
+        "delta": -28.0,
+        "score_delta": -30.5,
+        "policy_score": 0.04,
+        "refutation_pv": ["B5", "D8", "C9"],
+        "refutation_type": "escapes"
+      }
+    ]
+  }
+}
