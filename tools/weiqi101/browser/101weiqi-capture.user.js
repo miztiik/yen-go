@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         101weiqi Puzzle Capture for YenGo
 // @namespace    https://github.com/yengo
-// @version      5.47.0
+// @version      5.48.0
 // @description  Auto-captures puzzle data from 101weiqi.com and sends to local YenGo receiver. Start server, browse any puzzle page, it just works.
 // @match        *://www.101weiqi.com/q/*
 // @match        *://www.101weiqi.com/chessmanual/*
@@ -1097,14 +1097,25 @@
       return;
     }
     if (typeof document !== "undefined" && document.visibilityState !== "visible") {
-      log("DEBUG", "acquireWakeLock: tab hidden — deferring until visibilitychange");
+      // Silent: visibility deferral happens on every hide/show cycle and
+      // adds no actionable info — the visibilitychange listener will
+      // re-call us when the tab returns. (Was DEBUG, now muted entirely
+      // to suppress the v5.45.x wake-lock chatter the user flagged.)
       return;
     }
+    // No-op if we already hold a live sentinel — avoids spamming
+    // "Wake lock acquired" on every visibilitychange or autoStart.
+    if (wakeLockSentinel) return;
     try {
       wakeLockSentinel = await navigator.wakeLock.request("screen");
       wakeLockSentinel.addEventListener("release", () => {
-        log("INFO", "Wake lock released");
-        wakeLockSentinel = null;
+        // Only log if we hadn't already noticed this release. A
+        // released sentinel is replaced (set to null) immediately, so
+        // log-on-state-change is the natural dedup.
+        if (wakeLockSentinel) {
+          log("INFO", "Wake lock released");
+          wakeLockSentinel = null;
+        }
       });
       log("INFO", "Wake lock acquired");
     } catch (err) {
@@ -5760,7 +5771,20 @@
             `captured=${(bookPlan.captured_ids || []).length} ` +
             `target=Ch.${cur.chapter_number || "?"}/p${cur.pos_in_chapter || "?"}/pid${cur.pid || "?"}`,
         );
-        slog("RESUME", {
+        // Phase 6: ask the receiver whether the SGF for the current
+        // page's pid is actually on disk. Distinguishes a "real skip"
+        // (file present, captured_ids correctly remembers it) from a
+        // "phantom skip" (captured_ids has the pid but no file exists,
+        // i.e. potential lost work). Fire-and-forget so RESUME stays
+        // snappy even when the receiver is briefly slow.
+        //
+        // The /sgf/exists endpoint is currently being added on the
+        // receiver side in a separate change set; until that lands,
+        // the call will 404 and the catch branch records error="…".
+        // The phantom-skip detection still works once both sides ship.
+        const _curPidOnPage = Number(getPublicId() || cur.pid || 0) || null;
+        const _resumeCtx = buildPuzzleCtx({ bookPlanRef: bookPlan });
+        const _resumeFields = {
           mode: "book",
           page: location.pathname,
           url_token: getUrlRouteToken(),
@@ -5770,9 +5794,32 @@
           target_pid: cur.pid || null,
           target_chapter_number: cur.chapter_number || null,
           target_chapter_position: cur.pos_in_chapter || null,
-          // sgf_present_on_disk is filled in by the Phase 6 RESUME diagnostic
-          sgf_present_on_disk: null,
-        }, buildPuzzleCtx({ bookPlanRef: bookPlan }));
+          page_pid_in_captured_set: _curPidOnPage
+            ? (bookPlan.captured_ids || []).includes(_curPidOnPage)
+            : null,
+          sgf_present_on_disk: null, // filled in async below
+        };
+        slog("RESUME", _resumeFields, _resumeCtx);
+        if (_curPidOnPage) {
+          http("GET", `/sgf/exists?pid=${_curPidOnPage}`)
+            .then((r) => {
+              const exists = !!(r && r.exists);
+              slog("RESUME", {
+                kind: "sgf_check",
+                pid: _curPidOnPage,
+                sgf_present_on_disk: exists,
+                phantom_skip: _resumeFields.page_pid_in_captured_set === true && !exists,
+              }, _resumeCtx);
+            })
+            .catch((e) => {
+              slog("RESUME", {
+                kind: "sgf_check",
+                pid: _curPidOnPage,
+                sgf_present_on_disk: null,
+                error: e && e.message,
+              }, _resumeCtx);
+            });
+        }
       } else if (qdayPlan) {
         plog("RESUME", `state: qday ${qdayPlan.currentDate} #${qdayPlan.currentNum}`);
         slog("RESUME", {
@@ -5858,7 +5905,10 @@
   // Re-acquire wake lock when tab becomes visible again (browser releases it on hide)
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && running && isOwnerTab() && wakeLockEnabled && !wakeLockSentinel) {
-      log("INFO", "Tab visible again, re-acquiring wake lock");
+      // Silent re-acquire: acquireWakeLock() will emit a single
+      // "Wake lock acquired" line on success, which is enough — the
+      // separate "Tab visible again, re-acquiring..." line was pure
+      // chatter on every show/hide cycle.
       acquireWakeLock();
     }
   });
