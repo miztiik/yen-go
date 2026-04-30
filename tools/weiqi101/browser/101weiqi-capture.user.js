@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         101weiqi Puzzle Capture for YenGo
 // @namespace    https://github.com/yengo
-// @version      5.45.0
+// @version      5.46.0
 // @description  Auto-captures puzzle data from 101weiqi.com and sends to local YenGo receiver. Start server, browse any puzzle page, it just works.
 // @match        *://www.101weiqi.com/q/*
 // @match        *://www.101weiqi.com/chessmanual/*
@@ -64,7 +64,12 @@
   const MAX_BASE_DELAY_MS = 15000;
   const DELAY_STEP_MS = 500;
   const JITTER_RATIO = 0.45; // +/- 45% around base delay
-  const BURST_COOLDOWN_EVERY = 12;
+  // Phase 4 pacing: burst cooldown frequency is now itself randomised
+  // — a fixed "every Nth puzzle" cadence is exactly the kind of regular
+  // signature anti-bot heuristics latch onto. We pick a fresh trigger
+  // count from [MIN, MAX] each time the cooldown fires.
+  const BURST_COOLDOWN_EVERY_MIN = 8;
+  const BURST_COOLDOWN_EVERY_MAX = 16;
   const BURST_COOLDOWN_MIN_MS = 5000;
   const BURST_COOLDOWN_MAX_MS = 11000;
   const ERROR_BACKOFF_STEP_MS = 7000;
@@ -117,14 +122,55 @@
 
   // Chapter-mode pacing: single consistent interval per puzzle.
   // Final wait = max(3s, target - elapsed) — see goNext() chapter branch.
+  // Phase 4 pacing: max trimmed 15000 -> 10000 ms (still well within
+  // human-grade pacing), and session-break frequency is now randomised
+  // for the same anti-bot reason as BURST_COOLDOWN_EVERY above.
   const CHAPTER_INTERVAL_MIN_MS = 1000;
-  const CHAPTER_INTERVAL_MAX_MS = 15000;
-  const CHAPTER_SESSION_BREAK_EVERY = 40;
+  const CHAPTER_INTERVAL_MAX_MS = 10000;
+  const CHAPTER_SESSION_BREAK_EVERY_MIN = 30;
+  const CHAPTER_SESSION_BREAK_EVERY_MAX = 50;
   const CHAPTER_SESSION_BREAK_MIN_MS = 1800;
   const CHAPTER_SESSION_BREAK_MAX_MS = 4200;
 
   // Timestamp tracking for interval-based pacing
   let captureStartedAt = 0;
+
+  // Phase 4 pacing: per-trigger random thresholds. We pick a fresh
+  // count each time the trigger fires, so the cadence isn't a flat
+  // "every Nth" signature anti-bot can latch onto. -1 means "not yet
+  // initialised — seed on first call". `processed` snapshots are read
+  // from the global stats counter at the call site.
+  let _nextBurstAt = -1;
+  let _nextChapterBreakAt = -1;
+  function _seedTrigger(min, max, processed) {
+    return processed + randomBetween(min, max);
+  }
+  function _shouldFireBurst(processed) {
+    if (_nextBurstAt < 0) {
+      _nextBurstAt = _seedTrigger(BURST_COOLDOWN_EVERY_MIN, BURST_COOLDOWN_EVERY_MAX, processed);
+      return false;
+    }
+    if (processed >= _nextBurstAt) {
+      _nextBurstAt = _seedTrigger(BURST_COOLDOWN_EVERY_MIN, BURST_COOLDOWN_EVERY_MAX, processed);
+      return true;
+    }
+    return false;
+  }
+  function _shouldFireChapterBreak(processed) {
+    if (_nextChapterBreakAt < 0) {
+      _nextChapterBreakAt = _seedTrigger(
+        CHAPTER_SESSION_BREAK_EVERY_MIN, CHAPTER_SESSION_BREAK_EVERY_MAX, processed,
+      );
+      return false;
+    }
+    if (processed >= _nextChapterBreakAt) {
+      _nextChapterBreakAt = _seedTrigger(
+        CHAPTER_SESSION_BREAK_EVERY_MIN, CHAPTER_SESSION_BREAK_EVERY_MAX, processed,
+      );
+      return true;
+    }
+    return false;
+  }
 
   // Recovery state for the *current* puzzle. Set when a readiness-gate
   // retry succeeds; consumed by the next /capture POST so the receiver
@@ -787,7 +833,7 @@
       delayMs += Math.min(issueStreak * ERROR_BACKOFF_STEP_MS, ERROR_BACKOFF_MAX_MS);
     }
 
-    if (processed > 0 && processed % BURST_COOLDOWN_EVERY === 0) {
+    if (_shouldFireBurst(processed)) {
       delayMs += randomBetween(BURST_COOLDOWN_MIN_MS, BURST_COOLDOWN_MAX_MS);
     }
 
@@ -3263,7 +3309,7 @@
 
       // Optional session break to mimic human behavior.
       const totalCaptures = stats.ok + stats.skipped;
-      if (totalCaptures > 0 && totalCaptures % CHAPTER_SESSION_BREAK_EVERY === 0) {
+      if (_shouldFireChapterBreak(totalCaptures)) {
         const breakMs = randomBetween(CHAPTER_SESSION_BREAK_MIN_MS, CHAPTER_SESSION_BREAK_MAX_MS);
         const breakMin = (breakMs / 60000).toFixed(1);
         plog("WAIT", `Session break: ${breakMin} min pause (${totalCaptures} puzzles done)`);
@@ -5565,7 +5611,7 @@
     const burstHi = hi + BURST_COOLDOWN_MAX_MS;
     const perMinLo = Math.round(60000 / hi);
     const perMinHi = Math.round(60000 / lo);
-    log("INFO", `Pacing: base=${base}ms wait=${lo}-${hi}ms (burst peak ~${burstHi}ms every ${BURST_COOLDOWN_EVERY}); throughput ≈ ${perMinLo}-${perMinHi} puzzles/min (qday/general). Chapter mode uses ${CHAPTER_INTERVAL_MIN_MS}-${CHAPTER_INTERVAL_MAX_MS}ms target interval.`);
+    log("INFO", `Pacing: base=${base}ms wait=${lo}-${hi}ms (burst peak ~${burstHi}ms every ${BURST_COOLDOWN_EVERY_MIN}-${BURST_COOLDOWN_EVERY_MAX}); throughput ≈ ${perMinLo}-${perMinHi} puzzles/min (qday/general). Chapter mode uses ${CHAPTER_INTERVAL_MIN_MS}-${CHAPTER_INTERVAL_MAX_MS}ms target interval.`);
   })();
   setTimeout(autoStart, 500);
   startNavigationWatcher();
