@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         101weiqi Puzzle Capture for YenGo
 // @namespace    https://github.com/yengo
-// @version      5.48.0
+// @version      5.49.0
 // @description  Auto-captures puzzle data from 101weiqi.com and sends to local YenGo receiver. Start server, browse any puzzle page, it just works.
 // @match        *://www.101weiqi.com/q/*
 // @match        *://www.101weiqi.com/chessmanual/*
@@ -121,7 +121,9 @@
   const GOTOPIC_TIMEOUT_MS = 12000; // Max wait for AJAX puzzle change
 
   // Chapter-mode pacing: single consistent interval per puzzle.
-  // Final wait = max(3s, target - elapsed) — see goNext() chapter branch.
+  // Final wait = max(CHAPTER_INTERVAL_MIN_MS, target - elapsed) — see
+  // goNext() chapter branch. (Earlier versions hardcoded a 3000ms floor
+  // which collapsed the lower half of the random range to a constant 3s.)
   // Phase 4 pacing: max trimmed 15000 -> 10000 ms (still well within
   // human-grade pacing), and session-break frequency is now randomised
   // for the same anti-bot reason as BURST_COOLDOWN_EVERY_MIN/MAX above.
@@ -376,10 +378,15 @@
   // `key=value` shape) while remaining readable to humans skimming the
   // devtools console.
   //
-  //   ⏱ 21:23:45.123 [CAPTURE] pid=123456 progress=42/210 elapsed_ms=null
+  //   ⏱ 21:23:45.123 [CAPTURE] pid=123456 mode="book" progress="42/210" captured_session=41
   //     book_title="诘棋名家专著" book_number=201
   //     chapter_title="第三章 入门基础" chapter_number=3 chapter_position=12
   //     other_books=null
+  //
+  // Time-valued fields are emitted in seconds (e.g. wait_s, target_s,
+  // decode_s, backend_s, total_s) — millisecond resolution is rarely
+  // useful and bloats the line. Underlying code still computes in ms;
+  // _msToS() converts at log emission time.
   //
   // Phases used: CAPTURE | DATA | POST | DONE | SKIP | WAIT | PAUSE
   //              RESUME | ERROR.
@@ -440,6 +447,14 @@
     if (fields && fields.progress) head.push(`(${fields.progress})`);
     if (fields && fields.kind) head.push(`kind=${fields.kind}`);
     return `[${phase}] ${head.join(" ")}`;
+  }
+
+  // Convert milliseconds to seconds with 1 decimal for log readability.
+  // Returns null when the input isn't a finite number — keeps null-safe
+  // values flowing through structured log fields without coercing to "NaN".
+  function _msToS(ms) {
+    if (typeof ms !== "number" || !Number.isFinite(ms)) return null;
+    return Number((ms / 1000).toFixed(1));
   }
 
   function slog(phase, fields, ctx) {
@@ -3451,7 +3466,7 @@
         plog("WAIT", `Session break: ${breakMin} min pause (${totalCaptures} puzzles done)`);
         slog("WAIT", {
           kind: "session_break",
-          wait_ms: breakMs,
+          wait_s: _msToS(breakMs),
           captured_session: totalCaptures,
         });
         updateStatus(`Taking a break... ${breakMin} min (${totalCaptures} done)`, "#888");
@@ -3462,24 +3477,14 @@
       // Pacing: chapter mode interval, minus elapsed since capture.
       const targetInterval = randomBetween(CHAPTER_INTERVAL_MIN_MS, CHAPTER_INTERVAL_MAX_MS);
       const elapsed = Date.now() - captureStartedAt;
-      const remainingWait = Math.max(3000, targetInterval - elapsed);
+      const remainingWait = Math.max(CHAPTER_INTERVAL_MIN_MS, targetInterval - elapsed);
       const waitSec = (remainingWait / 1000).toFixed(0);
-      // Unified shape: see puzzleLabel(). Same prefix in [WAIT]/[NEXT]
-      // /[OK]/[SKIP] so a single grep gives the full puzzle timeline.
-      const nextLabel = puzzleLabel({
-        pid: next.pid,
-        chapter_number: next.chapter_number,
-        chapter_position: next.pos_in_chapter,
-        progress: `${bookPlan.captured_count}/${bookPlan.total_puzzles}`,
-      });
-      // Legacy short form retained for downstream `[NEXT]` lines that
-      // mix human + technical context (AJAX vs chapter-listing path).
+      // Short progress string used in updateStatus() banner only.
       const progressStr = `Ch.${next.chapter_number} pos ${next.pos_in_chapter} (${bookPlan.captured_count}/${bookPlan.total_puzzles})`;
-      plog("WAIT", `${waitSec}s -> ${nextLabel}`);
       slog("WAIT", {
         kind: "chapter_interval",
-        wait_ms: remainingWait,
-        target_ms: targetInterval,
+        wait_s: _msToS(remainingWait),
+        target_s: _msToS(targetInterval),
         next_pid: next.pid,
         next_chapter_number: next.chapter_number,
         next_chapter_position: next.pos_in_chapter,
@@ -4291,7 +4296,6 @@
 
     if (sectionContainer) {
       const anchors = sectionContainer.querySelectorAll("a");
-      log("INFO", `DOM scrape: found "Included in" section with ${anchors.length} link(s)`);
       for (const a of anchors) {
         const href = a.href || "";
         const bookId = extractBookIdFromHref(href);
@@ -4302,13 +4306,7 @@
             name: (a.textContent || "").trim(),
           });
         }
-        // Log unmatched hrefs for diagnostics
-        if (!bookId && href) {
-          log("INFO", `DOM scrape: unmatched href in section: ${href}`);
-        }
       }
-    } else {
-      log("INFO", "DOM scrape: no 'Included in' section found in page");
     }
 
     // Strategy 2 (fallback): Broad scan for any /book{id}/ links
@@ -4330,9 +4328,9 @@
       }
     }
 
-    if (books.length > 0) {
-      log("INFO", `DOM scrape: found ${books.length} book link(s)`, books);
-    }
+    // Per-puzzle book-link counts are not logged here — slog [DATA] emits
+    // agreed_layers (qqdata,visible,included…) which carries the same
+    // signal without spamming the console once per capture.
     return books;
   }
 
@@ -4426,7 +4424,6 @@
       progress: book ? `${bookPlan.captured_count || bookPlan.captured_ids.length}/${bookPlan.total_puzzles || bookPlan.puzzle_ids.length || '?'}` : null,
       captured_session: _capturedSoFar,
     }, buildPuzzleCtx({ bookPlanRef: book ? bookPlan : null }));
-    plog("LOAD", `${label} — waiting for data`);
 
     // CAPTCHA. We track the wait-poll on the module-level _captchaPoll
     // handle so stopRunning() can clear it. Clearing any prior poll
@@ -4613,7 +4610,6 @@
     // so getPublicId() returns the canonical pid. Status bar shows
     // the same number as the saved filename.
     const pid = getPublicId();
-    plog("GRAB", `${label} — decoding puzzle data`);
     updateStatus(`Capturing ${pid}...`, "#4fc3f7");
 
     try {
@@ -4622,7 +4618,6 @@
       const stones = decodeContentField(payload);
       if (stones) {
         payload.content = stones;
-        plog("GRAB", `${label} — decoded ${stones[0].length}B + ${stones[1].length}W stones`);
       } else {
         plog("WARN", `${label} — no content decoded, falling back to prepos`);
       }
@@ -4671,7 +4666,7 @@
         pid: reconciledPid,
         stones_b: stones ? stones[0].length : null,
         stones_w: stones ? stones[1].length : null,
-        decode_ms: _decodeMs,
+        decode_s: _msToS(_decodeMs),
         agreed_layers: pidResult.agreed_layers.join(",") || null,
       }, _puzzleCtx);
 
@@ -4698,7 +4693,6 @@
         driftBookStreak = 0;
       }
 
-      plog("SEND", `${label} — posting to backend`);
       slog("POST", {
         pid: reconciledPid,
         endpoint: "/capture",
@@ -4790,13 +4784,12 @@
         issueStreak = 0;
         stats.ok++;
         lastCaptureWasDuplicate = false;
-        plog("DONE", `${label} — saved as ${result.puzzle_id} (ok:${stats.ok} skip:${stats.skipped} err:${stats.error})`);
         slog("DONE", {
           pid: reconciledPid,
           puzzle_id: result.puzzle_id,
           status: "ok",
-          backend_ms: _backendMs,
-          total_ms: _totalMs,
+          backend_s: _msToS(_backendMs),
+          total_s: _msToS(_totalMs),
           ok: stats.ok, skip: stats.skipped, err: stats.error,
         }, _puzzleCtx);
         updateStatus(`Saved ${result.puzzle_id}`, "#81c784");
@@ -4828,14 +4821,14 @@
         }
         const ctxStr = ctxParts.length ? ` [${ctxParts.join(" ")}]` : "";
         const reason = result.message || "duplicate";
-        plog("SKIP", `${label} — ${reason} ${result.puzzle_id}${ctxStr} (ok:${stats.ok} skip:${stats.skipped} err:${stats.error})`);
         slog("SKIP", {
           pid: reconciledPid,
           puzzle_id: result.puzzle_id,
           status: "skipped",
           reason: reason,
-          backend_ms: _backendMs,
-          total_ms: _totalMs,
+          ctx: ctxStr || null,
+          backend_s: _msToS(_backendMs),
+          total_s: _msToS(_totalMs),
           ok: stats.ok, skip: stats.skipped, err: stats.error,
         }, _puzzleCtx);
         updateStatus(`Skipped ${result.puzzle_id} (${reason})`, "#ffb74d");
@@ -4843,14 +4836,13 @@
         issueStreak += 1;
         stats.error++;
         lastCaptureWasDuplicate = false;
-        plog("ERR", `${label} — server error: ${result.message}`);
         slog("ERROR", {
           pid: reconciledPid,
           phase: "POST",
           kind: "server_error",
           msg: result.message || null,
-          backend_ms: _backendMs,
-          total_ms: _totalMs,
+          backend_s: _msToS(_backendMs),
+          total_s: _msToS(_totalMs),
           ok: stats.ok, skip: stats.skipped, err: stats.error,
         }, _puzzleCtx);
         updateStatus(`Error: ${result.message}`, "#f44336");
@@ -4880,7 +4872,6 @@
       issueStreak += 1;
       stats.error++;
       lastCaptureWasDuplicate = false;
-      plog("ERR", `${label} — capture failed: ${err.message}, stopping`);
       slog("ERROR", {
         pid: pageId,
         phase: "POST",
