@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         101weiqi Puzzle Capture for YenGo
 // @namespace    https://github.com/yengo
-// @version      5.46.0
+// @version      5.47.0
 // @description  Auto-captures puzzle data from 101weiqi.com and sends to local YenGo receiver. Start server, browse any puzzle page, it just works.
 // @match        *://www.101weiqi.com/q/*
 // @match        *://www.101weiqi.com/chessmanual/*
@@ -320,6 +320,10 @@
     SEND: "\uD83D\uDCE4", DONE: "\u2705", NEXT: "\u23ED\uFE0F",
     SKIP: "\u23E9", WARN: "\u26A0\uFE0F", ERR: "\u274C",
     END: "\uD83C\uDFC1",
+    // Structured-log phases (slog) — distinct symbols so a console
+    // grep on the icon disambiguates new vs legacy lines.
+    CAPTURE: "\uD83D\uDD0D", DATA: "\uD83E\uDDEC", POST: "\u2197\uFE0F",
+    PAUSE: "\u23F8\uFE0F", RESUME: "\u25B6\uFE0F", ERROR: "\u274C",
   });
 
   // Log to the sandbox console (does NOT touch unsafeWindow, so no
@@ -363,6 +367,127 @@
     const line = `${icon} ${ts} [${phase}] ${msg}`;
     console.log(line);
     _pushTrail(line);
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // Structured per-puzzle logger.
+  //
+  // Designed to be parsed by the next coding agent (machine-readable
+  // `key=value` shape) while remaining readable to humans skimming the
+  // devtools console.
+  //
+  //   ⏱ 21:23:45.123 [CAPTURE] pid=123456 progress=42/210 elapsed_ms=null
+  //     book_title="诘棋名家专著" book_number=201
+  //     chapter_title="第三章 入门基础" chapter_number=3 chapter_position=12
+  //     other_books=null
+  //
+  // Phases used: CAPTURE | DATA | POST | DONE | SKIP | WAIT | PAUSE
+  //              RESUME | ERROR.
+  //
+  // - String values are JSON-encoded (preserves Chinese chars + escapes
+  //   embedded quotes/newlines), null/numbers/booleans pass through.
+  // - The `book`, `chapter`, `other_books` block is always emitted when
+  //   `ctx` is supplied (`null` when unknown — never elided), so a
+  //   downstream parser can rely on a fixed schema.
+  // - The trail panel only shows the header line to keep the UI tight.
+  // ──────────────────────────────────────────────────────────────────
+  function _slogVal(v) {
+    if (v === null || v === undefined) return "null";
+    if (typeof v === "number" || typeof v === "boolean") return String(v);
+    return JSON.stringify(String(v)); // double-quoted, Unicode-safe
+  }
+
+  function _slogKv(obj) {
+    if (!obj) return "";
+    const parts = [];
+    for (const k of Object.keys(obj)) {
+      parts.push(`${k}=${_slogVal(obj[k])}`);
+    }
+    return parts.join(" ");
+  }
+
+  // Build the multi-line context block (book / chapter / other_books).
+  // Returns an array of lines (without leading indent — caller prefixes).
+  function _slogCtxLines(ctx) {
+    if (!ctx) return [];
+    const lines = [];
+    const b = ctx.book || null;
+    const c = ctx.chapter || null;
+    const others = Array.isArray(ctx.other_books) ? ctx.other_books : null;
+    lines.push(`book_title=${_slogVal(b && b.title)} book_number=${_slogVal(b && b.id)}`);
+    lines.push(
+      `chapter_title=${_slogVal(c && c.title)} ` +
+      `chapter_number=${_slogVal(c && c.number)} ` +
+      `chapter_position=${_slogVal(c && c.position)}`
+    );
+    if (!others || others.length === 0) {
+      lines.push("other_books=null");
+    } else {
+      const enc = others.map(o => `${_slogVal(o.title || o.name)}:${_slogVal(o.id)}`).join(",");
+      lines.push(`other_books=[${enc}]`);
+    }
+    return lines;
+  }
+
+  // Build a one-line summary for the in-page status-bar trail.
+  function _slogTrailSummary(phase, ctx, fields) {
+    const head = [];
+    if (fields && fields.pid != null) head.push(`pid=${fields.pid}`);
+    if (ctx && ctx.book && ctx.book.id != null) head.push(`book=${ctx.book.id}`);
+    if (ctx && ctx.chapter && ctx.chapter.number != null) {
+      head.push(`Ch.${ctx.chapter.number}/${ctx.chapter.position ?? "?"}`);
+    }
+    if (fields && fields.progress) head.push(`(${fields.progress})`);
+    if (fields && fields.kind) head.push(`kind=${fields.kind}`);
+    return `[${phase}] ${head.join(" ")}`;
+  }
+
+  function slog(phase, fields, ctx) {
+    const ts = new Date().toLocaleTimeString("en-GB", { hour12: false });
+    const ms = String(Date.now() % 1000).padStart(3, "0");
+    const icon = _PHASE_ICONS[phase] || "\u2139\uFE0F";
+    const header = `${icon} ${ts}.${ms} [${phase}] ${_slogKv(fields)}`.trimEnd();
+    console.log(header);
+    if (ctx) {
+      for (const line of _slogCtxLines(ctx)) console.log("  " + line);
+    }
+    const trailTs = `${ts}`;
+    const summary = _slogTrailSummary(phase, ctx, fields);
+    _pushTrail(`${icon} ${trailTs} ${summary}`);
+  }
+
+  // Build the per-puzzle ctx block from reconciled attribution + harvest
+  // facts. Caller passes whichever pieces it has; missing pieces become
+  // `null` in the rendered block (schema-stable).
+  //
+  // - `att`   : object returned by reconcileAttribution() (book/chapter)
+  // - `facts` : harvestPageFacts() result (used for other_books list)
+  // - `bookPlanRef` : current bookPlan when active (for fallback names)
+  function buildPuzzleCtx({ att = null, facts = null, bookPlanRef = null } = {}) {
+    const ctx = { book: null, chapter: null, other_books: null };
+    if (att && att.book_id) {
+      ctx.book = {
+        id: att.book_id,
+        title: att.book_name || (bookPlanRef && bookPlanRef.book_name) || null,
+      };
+    } else if (bookPlanRef && bookPlanRef.book_id) {
+      ctx.book = { id: bookPlanRef.book_id, title: bookPlanRef.book_name || null };
+    }
+    if (att && (att.chapter_id || att.chapter_number)) {
+      ctx.chapter = {
+        number: att.chapter_number || null,
+        title: att.chapter_name || null,
+        position: att.position || null,
+      };
+    }
+    if (facts && Array.isArray(facts.included) && facts.included.length) {
+      const activeId = ctx.book && ctx.book.id;
+      ctx.other_books = facts.included
+        .filter(b => !activeId || Number(b.book_id) !== Number(activeId))
+        .map(b => ({ id: b.book_id, title: b.name || null }));
+      if (ctx.other_books.length === 0) ctx.other_books = null;
+    }
+    return ctx;
   }
 
   // -- Content field decoder --------------------------------------
@@ -3313,6 +3438,11 @@
         const breakMs = randomBetween(CHAPTER_SESSION_BREAK_MIN_MS, CHAPTER_SESSION_BREAK_MAX_MS);
         const breakMin = (breakMs / 60000).toFixed(1);
         plog("WAIT", `Session break: ${breakMin} min pause (${totalCaptures} puzzles done)`);
+        slog("WAIT", {
+          kind: "session_break",
+          wait_ms: breakMs,
+          captured_session: totalCaptures,
+        });
         updateStatus(`Taking a break... ${breakMin} min (${totalCaptures} done)`, "#888");
         await waitMs(breakMs);
         if (!running) { plog("INFO", "goNext: paused during chapter session break — abort"); return; }
@@ -3335,6 +3465,15 @@
       // mix human + technical context (AJAX vs chapter-listing path).
       const progressStr = `Ch.${next.chapter_number} pos ${next.pos_in_chapter} (${bookPlan.captured_count}/${bookPlan.total_puzzles})`;
       plog("WAIT", `${waitSec}s -> ${nextLabel}`);
+      slog("WAIT", {
+        kind: "chapter_interval",
+        wait_ms: remainingWait,
+        target_ms: targetInterval,
+        next_pid: next.pid,
+        next_chapter_number: next.chapter_number,
+        next_chapter_position: next.pos_in_chapter,
+        progress: `${bookPlan.captured_count}/${bookPlan.total_puzzles}`,
+      });
       updateStatus(`Chapter next in ${waitSec}s -> ${progressStr}`, "#81c784");
       await waitMs(remainingWait);
       if (!running) {
@@ -4265,6 +4404,17 @@
       : book
         ? `book "${bookPlan.book_name}" puzzle ${pageId} (${bookPlan.captured_count || bookPlan.captured_ids.length}/${bookPlan.total_puzzles || bookPlan.puzzle_ids.length || '?'})`
         : (pageId ? `puzzle ${pageId}` : location.pathname);
+    // Structured CAPTURE start. Context block (book/chapter/other_books)
+    // is filled in later once we have facts; here we emit only what we
+    // know from the active bookPlan so the parser still sees the schema.
+    const _captureMode = qday ? "qday" : (book ? "book" : "general");
+    const _capturedSoFar = stats.ok + stats.skipped + stats.error;
+    slog("CAPTURE", {
+      pid: pageId,
+      mode: _captureMode,
+      progress: book ? `${bookPlan.captured_count || bookPlan.captured_ids.length}/${bookPlan.total_puzzles || bookPlan.puzzle_ids.length || '?'}` : null,
+      captured_session: _capturedSoFar,
+    }, buildPuzzleCtx({ bookPlanRef: book ? bookPlan : null }));
     plog("LOAD", `${label} — waiting for data`);
 
     // CAPTCHA. We track the wait-poll on the module-level _captchaPoll
@@ -4481,8 +4631,7 @@
       // Phase 3 cleanup: pass `pageBooks` so harvestPageFacts() doesn't
       // re-walk the DOM for the "Included in" anchors a second time.
       const facts = harvestPageFacts({ included: pageBooks });
-      const pidResult = reconcilePid(facts);
-      if (!pidResult.ok) {
+      const pidResult = reconcilePid(facts);      if (!pidResult.ok) {
         const c = pidResult.candidates;
         failAndAdvance({
           logMsg: `${label} — pid quorum failed (${pidResult.reason}): qq=${c.qqdata} url=${c.url} visible=${c.visible}. Skipping.`,
@@ -4497,6 +4646,22 @@
         activeBookId: activeBookId,
         manifestSeq: manifestSeq,
       });
+
+      // Structured DATA log: payload decoded + facts reconciled. ctx is
+      // now fully known (book/chapter/other_books) and gets reused by
+      // POST/DONE/SKIP/ERROR below — every per-puzzle line carries the
+      // same context block so a parser can stream-process by pid.
+      const _puzzleCtx = buildPuzzleCtx({
+        att: att, facts: facts, bookPlanRef: bookPlan || null,
+      });
+      const _decodeMs = Date.now() - captureStartedAt;
+      slog("DATA", {
+        pid: reconciledPid,
+        stones_b: stones ? stones[0].length : null,
+        stones_w: stones ? stones[1].length : null,
+        decode_ms: _decodeMs,
+        agreed_layers: pidResult.agreed_layers.join(",") || null,
+      }, _puzzleCtx);
 
       // What did the manifest cursor expect? Used for provenance only.
       let expectedPidFromManifest = null;
@@ -4522,6 +4687,13 @@
       }
 
       plog("SEND", `${label} — posting to backend`);
+      slog("POST", {
+        pid: reconciledPid,
+        endpoint: "/capture",
+        recovered: !!(_pendingRecoveryAttempts > 0),
+        gate_source: _lastGateSource,
+      }, _puzzleCtx);
+      const _postStartedAt = Date.now();
       const capturePayload = {
         qqdata: payload,
         url: location.href,
@@ -4600,11 +4772,21 @@
         capturePayload._capture_meta = _meta;
       }
       const result = await http("POST", "/capture", capturePayload);
+      const _backendMs = Date.now() - _postStartedAt;
+      const _totalMs = Date.now() - captureStartedAt;
       if (result.status === "ok") {
         issueStreak = 0;
         stats.ok++;
         lastCaptureWasDuplicate = false;
         plog("DONE", `${label} — saved as ${result.puzzle_id} (ok:${stats.ok} skip:${stats.skipped} err:${stats.error})`);
+        slog("DONE", {
+          pid: reconciledPid,
+          puzzle_id: result.puzzle_id,
+          status: "ok",
+          backend_ms: _backendMs,
+          total_ms: _totalMs,
+          ok: stats.ok, skip: stats.skipped, err: stats.error,
+        }, _puzzleCtx);
         updateStatus(`Saved ${result.puzzle_id}`, "#81c784");
       } else if (result.status === "skipped") {
         issueStreak = 0;
@@ -4635,12 +4817,30 @@
         const ctxStr = ctxParts.length ? ` [${ctxParts.join(" ")}]` : "";
         const reason = result.message || "duplicate";
         plog("SKIP", `${label} — ${reason} ${result.puzzle_id}${ctxStr} (ok:${stats.ok} skip:${stats.skipped} err:${stats.error})`);
+        slog("SKIP", {
+          pid: reconciledPid,
+          puzzle_id: result.puzzle_id,
+          status: "skipped",
+          reason: reason,
+          backend_ms: _backendMs,
+          total_ms: _totalMs,
+          ok: stats.ok, skip: stats.skipped, err: stats.error,
+        }, _puzzleCtx);
         updateStatus(`Skipped ${result.puzzle_id} (${reason})`, "#ffb74d");
       } else {
         issueStreak += 1;
         stats.error++;
         lastCaptureWasDuplicate = false;
         plog("ERR", `${label} — server error: ${result.message}`);
+        slog("ERROR", {
+          pid: reconciledPid,
+          phase: "POST",
+          kind: "server_error",
+          msg: result.message || null,
+          backend_ms: _backendMs,
+          total_ms: _totalMs,
+          ok: stats.ok, skip: stats.skipped, err: stats.error,
+        }, _puzzleCtx);
         updateStatus(`Error: ${result.message}`, "#f44336");
         // Mark the pid as permanently failed for this book so the
         // chapter-mode skip-walk advances past it. Without this the
@@ -4669,6 +4869,13 @@
       stats.error++;
       lastCaptureWasDuplicate = false;
       plog("ERR", `${label} — capture failed: ${err.message}, stopping`);
+      slog("ERROR", {
+        pid: pageId,
+        phase: "POST",
+        kind: "network",
+        msg: err && err.message,
+        ok: stats.ok, skip: stats.skipped, err: stats.error,
+      });
       stopRunning("server unreachable");
       updateStatus("Server unreachable! Start: python -m tools.weiqi101 receive", "#f44336");
       GM_setValue(KEY_STATS, stats);
@@ -5452,6 +5659,20 @@
     }
     setUserPaused(true);
     stopRunning(`user ${reasonLabel}`);
+    // Structured PAUSE: emitted on every pause/stop so the trace is
+    // self-contained for the next agent.
+    try {
+      const _curForLog = bookPlan ? (chapterPlanCurrentEntry(bookPlan) || {}) : {};
+      slog("PAUSE", {
+        reason: reasonLabel,
+        captured_count: bookPlan ? (bookPlan.captured_count || 0) : null,
+        total: bookPlan ? (bookPlan.total_puzzles || null) : null,
+        last_pid: _curForLog.pid || null,
+        last_chapter_number: _curForLog.chapter_number || null,
+        last_chapter_position: _curForLog.pos_in_chapter || null,
+        ok: stats.ok, skip: stats.skipped, err: stats.error,
+      }, bookPlan ? buildPuzzleCtx({ bookPlanRef: bookPlan }) : null);
+    } catch (_) { /* never block pause on log shape */ }
     if (notifyServer) {
       // Best-effort: don't block.
       http("GET", "/queue/stop").catch(() => {});
@@ -5539,8 +5760,26 @@
             `captured=${(bookPlan.captured_ids || []).length} ` +
             `target=Ch.${cur.chapter_number || "?"}/p${cur.pos_in_chapter || "?"}/pid${cur.pid || "?"}`,
         );
+        slog("RESUME", {
+          mode: "book",
+          page: location.pathname,
+          url_token: getUrlRouteToken(),
+          publicid: getPublicId(),
+          idx: bookPlan.current_seq_idx,
+          captured_count: (bookPlan.captured_ids || []).length,
+          target_pid: cur.pid || null,
+          target_chapter_number: cur.chapter_number || null,
+          target_chapter_position: cur.pos_in_chapter || null,
+          // sgf_present_on_disk is filled in by the Phase 6 RESUME diagnostic
+          sgf_present_on_disk: null,
+        }, buildPuzzleCtx({ bookPlanRef: bookPlan }));
       } else if (qdayPlan) {
         plog("RESUME", `state: qday ${qdayPlan.currentDate} #${qdayPlan.currentNum}`);
+        slog("RESUME", {
+          mode: "qday",
+          date: qdayPlan.currentDate,
+          num: qdayPlan.currentNum,
+        });
       }
     } catch (e) {
       log("DEBUG", "RESUME diagnostic failed: " + e.message);
