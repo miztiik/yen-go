@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         101weiqi Puzzle Capture for YenGo
 // @namespace    https://github.com/yengo
-// @version      5.42.0
+// @version      5.43.0
 // @description  Auto-captures puzzle data from 101weiqi.com and sends to local YenGo receiver. Start server, browse any puzzle page, it just works.
 // @match        *://www.101weiqi.com/q/*
 // @match        *://www.101weiqi.com/chessmanual/*
@@ -85,7 +85,11 @@
   // can decide based on the response payload.
   const HTTP_RETRY_MAX = 3;
   const HTTP_RETRY_BASE_MS = 800;
-  const QQDATA_POLL_MS = 1000;
+  // Phase 1 throughput tuning: tighter poll cadence (1000 -> 250 ms)
+  // reclaims up to 750 ms of latency per puzzle when qqdata settles
+  // mid-poll-tick. Ceiling unchanged. Observer gate (below) exits even
+  // sooner via DOM mutation; poll remains as safety net.
+  const QQDATA_POLL_MS = 250;
   const QQDATA_MAX_WAIT = 10000;
   const DAILY_MIN_NUM = 1;
   const DAILY_MAX_NUM = 8;
@@ -3949,6 +3953,23 @@
       // Poll always runs as the unconditional safety net.
       pollOnce(); // eager first sample
       pollTimer = setInterval(pollOnce, pollMs);
+
+      // Phase 1 throughput tuning: rAF micro-poll for the first ~500 ms.
+      // Catches the common case where qqdata.publicid settles in <100 ms
+      // after gotopic AJAX returns — faster than the 250 ms setInterval
+      // poll, and faster than the text-node observer (which only fires
+      // if Alpine actually mutates the visible Q-NNN text). The poll path
+      // remains the unconditional safety net for slow settles.
+      let _rafCount = 0;
+      const _RAF_BUDGET = 30; // ~30 frames @ 60Hz ≈ 500 ms
+      const rafCheck = () => {
+        if (done) return;
+        _rafCount += 1;
+        pollOnce();
+        if (done) return;
+        if (_rafCount < _RAF_BUDGET) requestAnimationFrame(rafCheck);
+      };
+      requestAnimationFrame(rafCheck);
 
       timeoutTimer = setTimeout(() => {
         const qq = getQqdata();
