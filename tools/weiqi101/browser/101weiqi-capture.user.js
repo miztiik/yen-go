@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         101weiqi Puzzle Capture for YenGo
 // @namespace    https://github.com/yengo
-// @version      5.44.0
+// @version      5.45.0
 // @description  Auto-captures puzzle data from 101weiqi.com and sends to local YenGo receiver. Start server, browse any puzzle page, it just works.
 // @match        *://www.101weiqi.com/q/*
 // @match        *://www.101weiqi.com/chessmanual/*
@@ -812,16 +812,12 @@
         plog("WARN", "No Alpine nextUrl — site Next unavailable");
         return false;
       }
-      // Mark game as finished so Next button is rendered. Some site
-      // versions define `gameFinished` as a read-only/computed property
-      // on the Alpine store proxy — assignment then throws and would
-      // abort the whole dispatch. Swallow the failure: the gotopic
-      // event below is what actually drives navigation.
-      try {
-        store.gameFinished = true;
-      } catch (e) {
-        plog("DEBUG", `Site Next: cannot set gameFinished (${e.message}) — proceeding with gotopic dispatch anyway`);
-      }
+      // Phase 3 cleanup: previously we tried `store.gameFinished = true`
+      // here so the site renders the "Next" button. On site versions
+      // where `gameFinished` is a read-only/computed property the
+      // assignment threw, and we logged the failure on every navigation
+      // — pure noise. The gotopic dispatch below is what actually drives
+      // the AJAX swap; the assignment was never load-bearing. Removed.
 
       // Dispatch the gotopic event (same as clicking Next button)
       const topicEl = document.querySelector('[x-data]');
@@ -3603,7 +3599,7 @@
     }
   }
 
-  function harvestPageFacts() {
+  function harvestPageFacts(opts) {
     const url = parseUrlPath(location.pathname);
     const qq = getQqdata() || {};
     const qqdata = {
@@ -3617,7 +3613,13 @@
       }).filter(function (b) { return b.book_id; }) : [],
     };
     const breadcrumb = scrapeBreadcrumb();
-    const included = (typeof scrapePageBooks === "function") ? scrapePageBooks() : [];
+    // Phase 3 cleanup: callers may pass a pre-scraped `included` list to
+    // avoid a duplicate DOM walk + duplicate "DOM scrape: found …" log
+    // pair on every puzzle. capture() always passes one in; ad-hoc
+    // callers that don't pass anything still get the live scrape.
+    const included = (opts && Array.isArray(opts.included))
+      ? opts.included
+      : ((typeof scrapePageBooks === "function") ? scrapePageBooks() : []);
     const title = extractTitleFacts();
     const visiblePid = extractVisiblePid();
     return { url: url, qqdata: qqdata, breadcrumb: breadcrumb, included: included, title: title, visiblePid: visiblePid };
@@ -4430,7 +4432,9 @@
       // Result: never throw away a successful fetch — file the captured
       // puzzle under whatever book/chapter the page actually displayed,
       // not whatever the manifest cursor expected.
-      const facts = harvestPageFacts();
+      // Phase 3 cleanup: pass `pageBooks` so harvestPageFacts() doesn't
+      // re-walk the DOM for the "Included in" anchors a second time.
+      const facts = harvestPageFacts({ included: pageBooks });
       const pidResult = reconcilePid(facts);
       if (!pidResult.ok) {
         const c = pidResult.candidates;
