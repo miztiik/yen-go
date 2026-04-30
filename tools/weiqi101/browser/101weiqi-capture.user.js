@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         101weiqi Puzzle Capture for YenGo
 // @namespace    https://github.com/yengo
-// @version      5.43.0
+// @version      5.44.0
 // @description  Auto-captures puzzle data from 101weiqi.com and sends to local YenGo receiver. Start server, browse any puzzle page, it just works.
 // @match        *://www.101weiqi.com/q/*
 // @match        *://www.101weiqi.com/chessmanual/*
@@ -4272,6 +4272,14 @@
       }
     }
 
+    // Phase 2 throughput tuning: kick off the "Included in" DOM-section
+    // wait NOW so it runs concurrently with the readiness gate, the
+    // payload clone/decode, etc. We await this promise just before
+    // scrapePageBooks() below — by then it's almost always already
+    // resolved, so the previous serial 3s wait is removed from the
+    // critical path.
+    const _bookSectionPromise = waitForBookSection(3000);
+
     // Capture readiness gate: wait for qqdata.publicid to settle (same
     // value across two consecutive polls — proves the AJAX gotopic swap
     // completed). In chapter mode, also require the settled publicid to
@@ -4411,8 +4419,10 @@
       }
 
       // Scrape book links from the page DOM (fallback for empty bookinfos).
-      // Wait briefly for the "Included in" section to render (it may load async).
-      await waitForBookSection(3000);
+      // Phase 2: the "Included in" section wait was kicked off at the top
+      // of capture() and ran concurrently with qqdata + the readiness
+      // gate; by now it's almost always already resolved.
+      await _bookSectionPromise;
       const pageBooks = scrapePageBooks();
 
       // Multi-layer harvest + reconciliation. Replaces the old strict
