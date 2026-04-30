@@ -124,7 +124,7 @@
   // Final wait = max(3s, target - elapsed) — see goNext() chapter branch.
   // Phase 4 pacing: max trimmed 15000 -> 10000 ms (still well within
   // human-grade pacing), and session-break frequency is now randomised
-  // for the same anti-bot reason as BURST_COOLDOWN_EVERY above.
+  // for the same anti-bot reason as BURST_COOLDOWN_EVERY_MIN/MAX above.
   const CHAPTER_INTERVAL_MIN_MS = 1000;
   const CHAPTER_INTERVAL_MAX_MS = 10000;
   const CHAPTER_SESSION_BREAK_EVERY_MIN = 30;
@@ -4642,7 +4642,8 @@
       // Phase 3 cleanup: pass `pageBooks` so harvestPageFacts() doesn't
       // re-walk the DOM for the "Included in" anchors a second time.
       const facts = harvestPageFacts({ included: pageBooks });
-      const pidResult = reconcilePid(facts);      if (!pidResult.ok) {
+      const pidResult = reconcilePid(facts);
+      if (!pidResult.ok) {
         const c = pidResult.candidates;
         failAndAdvance({
           logMsg: `${label} — pid quorum failed (${pidResult.reason}): qq=${c.qqdata} url=${c.url} visible=${c.visible}. Skipping.`,
