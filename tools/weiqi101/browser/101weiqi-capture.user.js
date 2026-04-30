@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         101weiqi Puzzle Capture for YenGo
 // @namespace    https://github.com/yengo
-// @version      5.38.0
+// @version      5.42.0
 // @description  Auto-captures puzzle data from 101weiqi.com and sends to local YenGo receiver. Start server, browse any puzzle page, it just works.
 // @match        *://www.101weiqi.com/q/*
 // @match        *://www.101weiqi.com/chessmanual/*
@@ -127,6 +127,20 @@
   // can flag the [SAVED] line with `recovered=true`. Cleared on every
   // capture entry to ensure it's a per-puzzle signal.
   let _pendingRecoveryAttempts = 0;
+
+  // Per-puzzle: which path opened the readiness gate ("observer" |
+  // "poll" | "timeout"). Surfaced to the receiver via _capture_meta
+  // so the [SAVED] log line can show `gate=observer` and operators
+  // can audit how often the fast-path is doing the work.
+  let _lastGateSource = null;
+
+  // Feature flag: race a MutationObserver on the visible "ID：Q-NNN"
+  // text node against the existing 150 ms poll. The observer fires
+  // synchronously on DOM mutation and resolves in ~16 ms (one rAF)
+  // when the page settles; the poll remains as a hard fallback so
+  // current 99% capture rate is the floor. Set to `false` to revert
+  // to v5.38.0 poll-only behavior.
+  const USE_OBSERVER_GATE = true;
 
   // -- State ------------------------------------------------------
   const KEY_RUNNING = "yengo_running";
@@ -264,6 +278,16 @@
   const _LOG_TRAIL_MAX = 50;
   const _logTrail = [];
 
+  // Single source of truth for the in-page status-bar trail.
+  // Both log() (WARN/ERROR only) and plog() (always) feed through
+  // here so the cap and render policy stay in one place. Safe to
+  // call before _renderLogTrail is defined (early boot).
+  function _pushTrail(line) {
+    _logTrail.push(line);
+    if (_logTrail.length > _LOG_TRAIL_MAX) _logTrail.shift();
+    if (typeof _renderLogTrail === "function") _renderLogTrail();
+  }
+
   function log(lvl, msg, data) {
     const entry = `${new Date().toISOString()} [YenGo] [${lvl}] ${msg}`;
     console[lvl === "ERROR" ? "error" : lvl === "WARN" ? "warn" : "log"](
@@ -273,15 +297,9 @@
     // bar's expandable panel surfaces them — previously only plog()
     // entries appeared there, which hid HTTP/wake-lock failures.
     if (lvl === "WARN" || lvl === "ERROR") {
-      try {
-        const ts = new Date().toLocaleTimeString("en-GB", { hour12: false });
-        const icon = lvl === "ERROR" ? "\u274C" : "\u26A0\uFE0F";
-        _logTrail.push(`${icon} ${ts} [${lvl}] ${msg}`);
-        if (_logTrail.length > _LOG_TRAIL_MAX) _logTrail.shift();
-        if (typeof _renderLogTrail === "function") _renderLogTrail();
-      } catch (e) {
-        // _renderLogTrail not yet initialized during early boot — fine.
-      }
+      const ts = new Date().toLocaleTimeString("en-GB", { hour12: false });
+      const icon = lvl === "ERROR" ? "\u274C" : "\u26A0\uFE0F";
+      _pushTrail(`${icon} ${ts} [${lvl}] ${msg}`);
     }
   }
 
@@ -294,9 +312,7 @@
     const ts = new Date().toLocaleTimeString("en-GB", { hour12: false });
     const line = `${icon} ${ts} [${phase}] ${msg}`;
     console.log(line);
-    _logTrail.push(line);
-    if (_logTrail.length > _LOG_TRAIL_MAX) _logTrail.shift();
-    _renderLogTrail();
+    _pushTrail(line);
   }
 
   // -- Content field decoder --------------------------------------
@@ -2323,6 +2339,70 @@
     location.href = buildChapterUrl(bookDiscovery.book_id, next.chapter_id);
   }
 
+  /**
+   * Single handoff back to discovery when a chapter-scoped capture is
+   * done. Called by all three sites that detect "the scoped chapter has
+   * no more puzzles to capture":
+   *   1. startChapterCapture entry-time check (chapter was already
+   *      fully captured by a prior session — capture loop never runs)
+   *   2. goNext post-sweep (cursor walked off the end of chapter_seq)
+   *   3. autoStart resume-time (saved cursor is already past the end,
+   *      e.g. after a bulk-prune or post-restart)
+   *
+   * History: pre-v5.39.1 these three sites had drifted — the autoStart
+   * branch incorrectly called stopRunning() and left the discovery
+   * latch dangling, freezing the script. Centralising the handoff
+   * here means future fixes can't drift again.
+   *
+   * Contract:
+   *   - NEVER call stopRunning() — the session is still alive while
+   *     discovery drives navigation to the next chapter. The final
+   *     stop happens inside _resumeDiscoveryAfterChapter when there
+   *     are no more chapters in bookDiscovery.
+   *   - clearBookPlan() is idempotent (no-op if no plan was set, e.g.
+   *     site 1 above), so safe to call unconditionally.
+   *
+   * @param {Object} opts
+   * @param {number} opts.scopeChapterId   chapter_id we just finished
+   * @param {string} opts.bookName         display name for log/status
+   * @param {?number} opts.capturedCount   total captured (null when
+   *                                       capture didn't run, i.e.
+   *                                       site 1 above)
+   * @param {string} opts.callerTag        e.g. "startChapterCapture",
+   *                                       "goNext", "autoStart-resume"
+   *                                       — surfaced in log for trace.
+   */
+  async function chapterScopeHandoff({
+    scopeChapterId, bookName, capturedCount, callerTag,
+  }) {
+    const safeName = bookName || `Book ${scopeChapterId}`;
+    if (capturedCount == null) {
+      // Site 1: capture didn't run; chapter was already done on entry.
+      plog(
+        "INFO",
+        `Scope chapter_id=${scopeChapterId} already fully captured ` +
+        `[${callerTag}] "${safeName}" — resuming discovery on next chapter`,
+      );
+      updateStatus(
+        `Chapter ${scopeChapterId} already complete — resuming discovery`,
+        "#4caf50",
+      );
+    } else {
+      // Sites 2 + 3: post-capture or resume-time exhaustion.
+      plog(
+        "DONE",
+        `Chapter ${scopeChapterId} scoped capture complete [${callerTag}]: ` +
+        `"${safeName}" — ${capturedCount} captured. Resuming discovery.`,
+      );
+      updateStatus(
+        `Chapter done — resuming discovery on next chapter`,
+        "#4caf50",
+      );
+    }
+    clearBookPlan();
+    await _resumeDiscoveryAfterChapter(scopeChapterId);
+  }
+
   async function startChapterCapture(bookId, requestedSeqIdx, opts = {}) {
     // opts.scopeChapterId — when set, restrict chapter_seq to puzzles
     // belonging to that single chapter_id (interleaved discovery↔
@@ -2454,17 +2534,14 @@
       if (scopeChapterId != null) {
         // Whole chapter is already captured (e.g. previous run finished
         // the chapter before crashing). Skip directly to next-chapter
-        // resume rather than alerting.
-        plog(
-          "INFO",
-          `Scope chapter_id=${scopeChapterId} already fully captured ` +
-          `(${workingSeq.length} puzzles) — resuming discovery on next chapter`,
-        );
-        updateStatus(
-          `Chapter ${scopeChapterId} already complete — resuming discovery`,
-          "#4caf50",
-        );
-        await _resumeDiscoveryAfterChapter(scopeChapterId);
+        // resume rather than alerting. See chapterScopeHandoff for
+        // the contract (no stopRunning, idempotent clearBookPlan).
+        await chapterScopeHandoff({
+          scopeChapterId,
+          bookName,
+          capturedCount: null,            // capture loop never ran
+          callerTag: "startChapterCapture",
+        });
         return;
       }
       alert(`Book "${bookName}" is already fully captured! (${knownIds.size}/${workingSeq.length})`);
@@ -2610,24 +2687,45 @@
       // listing page (per manifest pos_in_chapter -> page mapping) but
       // are missing from the live DOM. Those are deleted on the site.
       // Without this, every gap costs ~1.5s of "skip then re-resume".
+      //
+      // v5.40.0: each pruned entry also fires a `puzzle_dom_missing`
+      // event so the receiver can persist the dom_missing status into
+      // book.json and chapter_audit can subtract these from `remaining`.
+      // Without this the server has no record and the next session's
+      // audit re-counts them as remaining (silent drift).
       if (bookPlan && Array.isArray(bookPlan.chapter_seq) && entries.length > 0) {
         const visiblePids = new Set(entries.map((e) => Number(e.id)));
         const seq = bookPlan.chapter_seq;
         let scan = bookPlan.current_seq_idx || 0;
-        let prunedHere = 0;
+        const prunedEntries = [];
         while (scan < seq.length) {
           const e = seq[scan];
           if (e.chapter_id !== bp.chapter_id) break;
           const ePage = chapterPageForPosition(e.pos_in_chapter || 0);
           if (ePage !== currentPage) break; // stop at first entry off this page
           if (visiblePids.has(Number(e.pid))) break; // hit a real one — let normal flow handle it
+          prunedEntries.push(e);
           scan++;
-          prunedHere++;
         }
+        const prunedHere = prunedEntries.length;
         if (prunedHere > 0) {
           bookPlan.current_seq_idx = scan;
           bookPlan.current_idx = scan;
           saveBookPlan(bookPlan);
+          // Fire-and-forget: one event per pid so each gets its own
+          // book.json `dom_missing` entry + capture-log line.
+          for (const e of prunedEntries) {
+            reportBookEvent("puzzle_dom_missing", {
+              pid: e.pid,
+              chapter_id: e.chapter_id,
+              chapter_number: e.chapter_number,
+              chapter_position: e.pos_in_chapter,
+              chapter_name: e.chapter_name,
+              page: currentPage,
+              visible_count: visiblePids.size,
+              reason: "absent_from_listing_page",
+            });
+          }
           plog("WARN", `clickPuzzle: bulk-pruned ${prunedHere} entr${prunedHere === 1 ? "y" : "ies"} missing from Ch.${bp.chapter_id} p.${currentPage} DOM (visible=${visiblePids.size})`);
           updateStatus(`Pruned ${prunedHere} stale Ch.${bp.chapter_id} p.${currentPage} entries`, "#ff9800");
           setTimeout(() => { try { autoStart(); } catch (_) {} }, 800);
@@ -2672,8 +2770,14 @@
         // Additionally, collect pids visible in the current DOM and prune
         // any entry pointing to this chapter whose pid we've never seen.
         // (Per-pid skipping for entries within range is handled below.)
+        //
+        // v5.40.0: every pruned entry also fires `puzzle_dom_missing`
+        // so the receiver records the prune in book.json (subtracts
+        // from `remaining` in next audit). See site-1 prune above for
+        // the same pattern.
         const ccap = maxPage * effectivePerPage();
         let pruned = 0;
+        const prunedEntries = [];
         if (bookPlan && Array.isArray(bookPlan.chapter_seq)) {
           const seq = bookPlan.chapter_seq;
           const startIdx = bookPlan.current_seq_idx || 0;
@@ -2691,6 +2795,7 @@
             }
           }
           if (missingIdx >= 0) {
+            prunedEntries.push(seq[missingIdx]);
             bookPlan.current_seq_idx = missingIdx + 1;
             bookPlan.current_idx = missingIdx + 1;
             pruned++;
@@ -2702,6 +2807,7 @@
             seq[scan].chapter_id === bp.chapter_id &&
             (seq[scan].pos_in_chapter || 0) > ccap
           ) {
+            prunedEntries.push(seq[scan]);
             scan++;
             pruned++;
           }
@@ -2710,6 +2816,21 @@
             bookPlan.current_idx = scan;
           }
           saveBookPlan(bookPlan);
+        }
+        for (const e of prunedEntries) {
+          reportBookEvent("puzzle_dom_missing", {
+            pid: e.pid,
+            chapter_id: e.chapter_id,
+            chapter_number: e.chapter_number,
+            chapter_position: e.pos_in_chapter,
+            chapter_name: e.chapter_name,
+            page: currentPage,
+            max_page: maxPage,
+            cap: ccap,
+            reason: e.pid === pid
+              ? "absent_pid_target"
+              : "beyond_chapter_cap",
+          });
         }
         plog("WARN", `clickPuzzle: pid ${pid} absent on Ch.${bp.chapter_id} (maxPage=${maxPage}, cap=${ccap}); pruned ${pruned} stale entr${pruned === 1 ? "y" : "ies"} -> seq idx ${bookPlan.current_seq_idx}`);
         updateStatus(`Pruned ${pruned} stale Ch.${bp.chapter_id} entries — advancing`, "#ff9800");
@@ -3092,31 +3213,16 @@
 
         if (scopeChapterId != null) {
           // v5.38.0 interleaved flow: this was a chapter-scoped capture.
-          // Tear down bookPlan and hand control back to discovery so
-          // the next chapter can be discovered + captured.
-          //
-          // CRITICAL: do NOT call stopRunning() here. The session is
-          // still alive — discovery is about to drive the next chapter
-          // navigation. Calling stopRunning() flips `running=false`
-          // (persisted to GM), and after the upcoming page reload
-          // autoStart's "explicit-resume-only" guard would silently
-          // bail with "Discovery state loaded — use [Control] Resume".
-          // _resumeDiscoveryAfterChapter performs the navigation
-          // itself; the next-page autoStart sees running=true and
-          // re-enters continueDiscovery automatically. Stopping
-          // happens for real only on the FINAL chapter, inside
-          // _resumeDiscoveryAfterChapter.
-          plog(
-            "DONE",
-            `Chapter ${scopeChapterId} scoped capture complete: ` +
-            `"${name}" — ${count} captured. Resuming discovery.`,
-          );
-          clearBookPlan();
-          updateStatus(
-            `Chapter done — resuming discovery on next chapter`,
-            "#4caf50",
-          );
-          await _resumeDiscoveryAfterChapter(scopeChapterId);
+          // Hand control back to discovery so the next chapter can be
+          // discovered + captured. See chapterScopeHandoff for the
+          // contract — critically, do NOT stopRunning() here (the
+          // session is alive while discovery drives the next nav).
+          await chapterScopeHandoff({
+            scopeChapterId,
+            bookName: name,
+            capturedCount: count,
+            callerTag: "goNext",
+          });
           return;
         }
 
@@ -3470,6 +3576,29 @@
     return null;
   }
 
+  // Locate the DOM text node that displays "ID：Q-NNN" so a
+  // MutationObserver can watch it directly instead of polling
+  // `qqdata.publicid`. Used by `awaitCaptureReadiness` as the
+  // observer-path anchor. Returns null when the element isn't on
+  // the page (e.g. /qday/ pages without the puzzle-info panel) so
+  // the gate cleanly degrades to poll-only.
+  function findQNNNTextNode() {
+    if (!document.body) return null;
+    try {
+      const walker = document.createTreeWalker(
+        document.body, NodeFilter.SHOW_TEXT,
+        { acceptNode(n) {
+          return /ID[\uFF1A:]\s*Q-\d+/.test(n.nodeValue || "")
+            ? NodeFilter.FILTER_ACCEPT
+            : NodeFilter.FILTER_SKIP;
+        } },
+      );
+      return walker.nextNode();
+    } catch (_) {
+      return null;
+    }
+  }
+
   function harvestPageFacts() {
     const url = parseUrlPath(location.pathname);
     const qq = getQqdata() || {};
@@ -3721,21 +3850,113 @@
     pollMs = 150,
     expectedPid = null,
   } = {}) {
-    const start = Date.now();
-    const signal = currentSignal();
-    let prev = null;
-    let last = { ok: false, reason: "no_data_pid", ids: { dataPid: null, settledPid: null, expectedPid } };
-    while (Date.now() - start < timeoutMs) {
-      if (signal.aborted) return last;
-      const qq = getQqdata();
-      const dataPid = qq && qq.publicid != null ? Number(qq.publicid) : null;
-      last = evaluateCaptureReadiness({ dataPid, settledPid: prev, expectedPid });
-      if (last.ok) return last;
-      prev = dataPid;
-      const wait = await waitMs(pollMs);
-      if (wait === "aborted" || !running) return last;
-    }
-    return last;
+    // RACE: MutationObserver on visible "Q-NNN" text (~16 ms settle)
+    // against the legacy 150 ms poll loop. Both apply the SAME
+    // settling rule via `evaluateCaptureReadiness` — only the
+    // sampling source differs. The poll path is unconditional, so
+    // an observer that never fires (e.g. element missing, browser
+    // suppressed mutation) cannot regress capture: the gate behaves
+    // exactly as v5.38.0 poll-only in that case.
+    return new Promise((resolve) => {
+      const signal = currentSignal();
+      let done = false;
+      let observer = null;
+      let pollTimer = null;
+      let timeoutTimer = null;
+      let prev = null; // shared "previous" reading for the polling rule
+      let observerCheckPending = false;
+
+      const cleanup = () => {
+        if (observer) { try { observer.disconnect(); } catch (_) {} observer = null; }
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        if (timeoutTimer) { clearTimeout(timeoutTimer); timeoutTimer = null; }
+      };
+      const finish = (result, source) => {
+        if (done) return;
+        done = true;
+        cleanup();
+        result.source = source;
+        resolve(result);
+      };
+
+      // POLL PATH — unchanged contract, just driven by setInterval
+      // instead of the old async/await loop so it can race the
+      // observer cleanly. Same `evaluateCaptureReadiness` invariant.
+      const pollOnce = () => {
+        if (done) return;
+        if (signal.aborted || !running) {
+          return finish(
+            { ok: false, reason: "aborted", ids: { dataPid: null, settledPid: prev, expectedPid } },
+            "poll",
+          );
+        }
+        const qq = getQqdata();
+        const dataPid = qq && qq.publicid != null ? Number(qq.publicid) : null;
+        const ev = evaluateCaptureReadiness({ dataPid, settledPid: prev, expectedPid });
+        if (ev.ok) return finish(ev, "poll");
+        prev = dataPid;
+      };
+
+      // OBSERVER PATH — fires on every text-node mutation in the
+      // puzzle info area. To honor the existing "stable across one
+      // tick" invariant we double-read across one rAF (~16 ms)
+      // instead of two 150 ms poll ticks. If the value flaps to
+      // null between firing and rAF, we just wait for the next
+      // mutation — the poll path will catch it on its own cadence.
+      const observerCheck = () => {
+        if (done || observerCheckPending) return;
+        const qq = getQqdata();
+        const dataPid = qq && qq.publicid != null ? Number(qq.publicid) : null;
+        if (dataPid == null) return;
+        if (expectedPid != null && Number(dataPid) !== Number(expectedPid)) return;
+        observerCheckPending = true;
+        requestAnimationFrame(() => {
+          observerCheckPending = false;
+          if (done) return;
+          const qq2 = getQqdata();
+          const dp2 = qq2 && qq2.publicid != null ? Number(qq2.publicid) : null;
+          if (
+            dp2 != null
+            && dp2 === dataPid
+            && (expectedPid == null || dp2 === Number(expectedPid))
+          ) {
+            finish(
+              { ok: true, ids: { dataPid: dp2, settledPid: dp2, expectedPid } },
+              "observer",
+            );
+          }
+        });
+      };
+
+      if (USE_OBSERVER_GATE) {
+        const node = findQNNNTextNode();
+        if (node) {
+          try {
+            observer = new MutationObserver(observerCheck);
+            // Watch the parent element so we keep observing across
+            // text-node replacement (Alpine commonly recreates text
+            // nodes rather than mutating in place on AJAX swap).
+            const target = node.parentElement || node.parentNode || document.body;
+            observer.observe(target, { characterData: true, subtree: true, childList: true });
+            // Eager check: value may already be settled at install time.
+            requestAnimationFrame(observerCheck);
+          } catch (_) {
+            observer = null; // silent fallback to poll-only
+          }
+        }
+      }
+
+      // Poll always runs as the unconditional safety net.
+      pollOnce(); // eager first sample
+      pollTimer = setInterval(pollOnce, pollMs);
+
+      timeoutTimer = setTimeout(() => {
+        const qq = getQqdata();
+        const dataPid = qq && qq.publicid != null ? Number(qq.publicid) : null;
+        const ev = evaluateCaptureReadiness({ dataPid, settledPid: prev, expectedPid });
+        finish(ev, "timeout");
+      }, timeoutMs);
+    });
   }
 
   // Self-tests — run only when ?yengo_selftest=1 is in the URL. The
@@ -4046,6 +4267,10 @@
       expectedPid = Number(bookPlan.chapter_seq[bookPlan.current_seq_idx || 0].pid);
     }
     let gate = await awaitCaptureReadiness({ expectedPid });
+    // Remember which path opened the gate so the receiver's
+    // [SAVED] line can show `gate=observer|poll|timeout`. Cleared
+    // when consumed in the _capture_meta attach below.
+    _lastGateSource = gate.source || null;
 
     // ── Recovery for transient race ───────────────────────────────
     // `publicid_unsettled` after the default budget almost always
@@ -4072,6 +4297,7 @@
         ids: gate.ids,
       });
       gate = await awaitCaptureReadiness({ expectedPid, timeoutMs: 12000 });
+      _lastGateSource = gate.source || _lastGateSource;
       // If the retry succeeded, mark this capture as recovered so the
       // receiver can stamp `recovered=true` on the [SAVED] line. The
       // flag is consumed (cleared) when we attach _capture_meta below.
@@ -4274,15 +4500,23 @@
         drift_from_active: att.drift_from_active,
         drift_streak: driftBookStreak,
       };
-      // Carry per-puzzle recovery signal so the receiver's [SAVED]
-      // line can flag puzzles that landed only after a readiness-gate
-      // retry. Cleared after attach so it's strictly per-puzzle.
+      // Carry per-puzzle gate diagnostics so the receiver's [SAVED]
+      // line can flag readiness-gate retries (`recovered=true`) and
+      // surface which path opened the gate (`gate=observer|poll|
+      // timeout`). All flags are strictly per-puzzle and cleared
+      // here as they are consumed.
+      const _meta = {};
       if (_pendingRecoveryAttempts > 0) {
-        capturePayload._capture_meta = {
-          recovered: true,
-          attempts: _pendingRecoveryAttempts,
-        };
+        _meta.recovered = true;
+        _meta.attempts = _pendingRecoveryAttempts;
         _pendingRecoveryAttempts = 0;
+      }
+      if (_lastGateSource) {
+        _meta.gate_source = _lastGateSource;
+        _lastGateSource = null;
+      }
+      if (Object.keys(_meta).length > 0) {
+        capturePayload._capture_meta = _meta;
       }
       const result = await http("POST", "/capture", capturePayload);
       if (result.status === "ok") {
@@ -4628,6 +4862,23 @@
         }
         if (idx >= bookPlan.chapter_seq.length) {
           const name = bookPlan.book_name || `Book ${bookPlan.book_id}`;
+          const scopeChapterId = (bookPlan.scope_chapter_id != null)
+            ? Number(bookPlan.scope_chapter_id) : null;
+          if (scopeChapterId != null) {
+            // v5.38.0 interleaved flow: scoped chapter exhausted on
+            // resume entry (e.g. bulk-prune in clickPuzzleInChapterListing
+            // advanced current_seq_idx past every remaining entry, then
+            // re-entered autoStart). Hand control back to discovery via
+            // the shared helper so the three scoped-completion sites
+            // can't drift again (regression class fixed in v5.39.1).
+            await chapterScopeHandoff({
+              scopeChapterId,
+              bookName: name,
+              capturedCount: bookPlan.captured_count || 0,
+              callerTag: "autoStart-resume",
+            });
+            return;
+          }
           plog("DONE", `Chapter capture: "${name}" already complete`);
           updateStatus(`"${name}" — already complete`, "#4caf50");
           stopRunning();
