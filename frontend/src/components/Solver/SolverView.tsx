@@ -26,6 +26,7 @@ import {
 import type { VNode } from 'preact';
 import { useGoban } from '../../hooks/useGoban';
 import { usePuzzleState, type PuzzleStatus } from '../../hooks/usePuzzleState';
+import { sgfToPuzzle, isStudyMode } from '../../lib/sgf-to-puzzle';
 import { useTransforms } from '../../hooks/useTransforms';
 import { useSettings } from '../../hooks/useSettings';
 import { useIsDesktop } from '../../hooks/useMediaQuery';
@@ -272,7 +273,19 @@ export function SolverView({
     labelPosition
   );
   const gobanInstance = isReady ? gobanRef.current : null;
-  const puzzleState = usePuzzleState(gobanInstance);
+
+  // Detect study-mode puzzles (no recorded solution variations).
+  // Parse is cheap and the result feeds into the puzzle state machine
+  // and chrome-rendering branches below.
+  const isStudy = useMemo(() => {
+    try {
+      return isStudyMode(sgfToPuzzle(transformedSgf));
+    } catch {
+      return false;
+    }
+  }, [transformedSgf]);
+
+  const puzzleState = usePuzzleState(gobanInstance, { isStudy });
 
   // Transition puzzle state from 'loading' -> 'solving' once goban is ready
   useLayoutEffect(() => {
@@ -306,6 +319,7 @@ export function SolverView({
   const isSolved = puzzleState.state.status === 'complete';
   const isWrong = puzzleState.state.status === 'wrong';
   const isReviewMode = puzzleState.state.status === 'review';
+  const isStudying = puzzleState.state.status === 'study';
   const [hintsUsedCount, setHintsUsedCount] = useState(0);
 
   // UI-011: Apply color swap text transformation to hints
@@ -1081,6 +1095,29 @@ export function SolverView({
                   <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>{puzzleState.state.wrongAttempts === 0 ? 'Correct!' : 'Solved!'}</span>
+              </div>
+            )}
+            {isStudying && (
+              <div
+                className="py-1.5 flex items-center gap-2 px-3 py-2 rounded-[var(--radius-sm)] bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] text-sm border border-[var(--color-neutral-200)]"
+                role="status"
+                data-testid="answer-banner"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="shrink-0"
+                  aria-hidden="true"
+                >
+                  <path d="M12 6.253v13M12 6.253a4.5 4.5 0 014.5-4.5h3v13.5h-3a4.5 4.5 0 00-4.5 4.5M12 6.253a4.5 4.5 0 00-4.5-4.5h-3v13.5h3a4.5 4.5 0 014.5 4.5" />
+                </svg>
+                <span>Study position -- explore freely. No recorded solution.</span>
               </div>
             )}
 

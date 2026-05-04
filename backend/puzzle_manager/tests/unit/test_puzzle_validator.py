@@ -257,10 +257,12 @@ class TestBoardDimensionAboveMaximum:
 
 
 class TestSolutionRequired:
-    """T009: Puzzles without solution are rejected when required."""
+    """T009: Puzzles without solution are rejected when min_solution_depth >= 1."""
 
-    def test_no_solution_rejected(self, validator: PuzzleValidator) -> None:
-        """Puzzle with has_solution=False is rejected."""
+    def test_no_solution_rejected(self) -> None:
+        """Puzzle with has_solution=False is rejected when min_solution_depth=1."""
+        config = ValidationConfig(min_solution_depth=1)
+        validator = PuzzleValidator(config)
         puzzle = PuzzleData(
             board_width=9,
             board_height=9,
@@ -599,7 +601,7 @@ class TestAdapterDefaults:
         # Verify defaults from puzzle-validation.json are loaded
         assert config.min_board_dimension == 5
         assert config.max_board_dimension == 19
-        assert config.min_solution_depth == 1
+        assert config.min_solution_depth == 0
         assert config.min_stones == 2
         assert config.max_solution_depth == 30
 
@@ -992,14 +994,14 @@ class TestValidateSgf:
         assert result.is_valid is True
         assert result.rejection_reason is None
 
-    def test_no_solution_rejected(self) -> None:
-        """SGF without solution moves is rejected."""
+    def test_no_solution_accepted_as_study(self) -> None:
+        """SGF without solution moves is ACCEPTED (study-mode puzzle)."""
         from backend.puzzle_manager.core.puzzle_validator import validate_sgf
 
         sgf = "(;GM[1]FF[4]SZ[9]AB[cd][ce]AW[dd][de])"
         result = validate_sgf(sgf)
-        assert result.is_valid is False
-        assert "solution" in result.rejection_reason.lower()
+        assert result.is_valid is True
+        assert result.rejection_reason is None
 
     def test_no_stones_rejected(self) -> None:
         """SGF with no initial stones is rejected (below min_stones)."""

@@ -254,4 +254,18 @@ describe('sgfToPuzzle — move tree', () => {
   it('throws on unparseable SGF', () => {
     expect(() => sgfToPuzzle('not valid sgf')).toThrow('[sgf-to-puzzle]');
   });
+
+  describe('mode classification', () => {
+    it('marks SGF with no children as study mode', () => {
+      const sgf = '(;SZ[9]FF[4]GM[1]AB[cd][ce]AW[dd][de])';
+      const puzzle = sgfToPuzzle(sgf);
+      expect(puzzle.mode).toBe('study');
+    });
+
+    it('marks SGF with solution variations as solve mode', () => {
+      const sgf = '(;SZ[9]FF[4]GM[1]AB[cd]AW[dd];B[cg]C[Correct!])';
+      const puzzle = sgfToPuzzle(sgf);
+      expect(puzzle.mode).toBe('solve');
+    });
+  });
 });

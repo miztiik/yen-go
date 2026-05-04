@@ -43,7 +43,17 @@ export interface PuzzleObject {
   width: number;
   height: number;
   initial_player: 'black' | 'white';
+  /**
+   * `'study'` when the SGF has no recorded solution variations
+   * (move_tree has no children). Solver UI uses this to suppress
+   * wrong-move feedback and treat clicks as free exploration.
+   */
+  mode: 'solve' | 'study';
 }
+
+/** True when the puzzle is a study position (no recorded solution). */
+export const isStudyMode = (puzzle: Pick<PuzzleObject, 'mode'>): boolean =>
+  puzzle.mode === 'study';
 
 // ---------------------------------------------------------------------------
 // Canonical parser import (DRY — single parser in sgf-metadata.ts)
@@ -376,11 +386,21 @@ export function sgfToPuzzle(cleanedSgf: string): PuzzleObject {
   // 5. Mark correct/wrong flags from C[] comment text
   markCorrectWrongFromComments(moveTreeRoot);
 
+  // 6. Detect study mode: root sentinel with no children = no recorded solution
+  const mode: 'solve' | 'study' =
+    moveTreeRoot.x === -1 &&
+    moveTreeRoot.y === -1 &&
+    !moveTreeRoot.trunk_next &&
+    !(moveTreeRoot.branches && moveTreeRoot.branches.length > 0)
+      ? 'study'
+      : 'solve';
+
   return {
     initial_state,
     move_tree: moveTreeRoot,
     width,
     height,
     initial_player,
+    mode,
   };
 }

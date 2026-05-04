@@ -1,9 +1,15 @@
 {
   "$schema": "./schemas/puzzle-validation.schema.json",
-  "schema_version": "2.0",
+  "schema_version": "2.1",
   "description": "Centralized puzzle validation rules for board dimensions, solution requirements, and stone counts.",
-  "last_updated": "2026-02-18",
+  "last_updated": "2026-05-04",
   "changelog": [
+    {
+      "version": "2.1",
+      "date": "2026-05-04",
+      "author": "study-mode",
+      "changes": "Lower min_solution_depth from 1 to 0 to admit study-mode puzzles (positions without recorded solutions). Frontend renders these via parse-time mode='study' classification; see docs/concepts/study-puzzles.md."
+    },
     {
       "version": "2.0",
       "date": "2026-02-18",
@@ -19,7 +25,7 @@
   ],
   "min_board_dimension": 5,
   "max_board_dimension": 19,
-  "min_solution_depth": 1,
+  "min_solution_depth": 0,
   "min_stones": 2,
   "max_solution_depth": 30
 }

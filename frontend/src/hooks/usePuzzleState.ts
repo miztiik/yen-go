@@ -34,7 +34,8 @@ export type PuzzleStatus =
   | 'correct' // Just played a correct move (transient)
   | 'wrong' // Just played a wrong move
   | 'complete' // All moves played correctly
-  | 'review'; // Exploring solution tree
+  | 'review' // Exploring solution tree
+  | 'study'; // Position has no recorded solution; free exploration
 
 /**
  * Reactive puzzle solve state.
@@ -79,7 +80,7 @@ const INITIAL_STATE: PuzzleSolveState = {
 // ============================================================================
 
 type PuzzleAction =
-  | { type: 'GOBAN_READY' }
+  | { type: 'GOBAN_READY'; isStudy?: boolean }
   | { type: 'CORRECT_ANSWER' }
   | { type: 'WRONG_ANSWER' }
   | { type: 'PUZZLE_COMPLETE' }
@@ -88,7 +89,7 @@ type PuzzleAction =
   | { type: 'USE_HINT'; tier: number }
   | { type: 'REVEAL_SOLUTION' }
   | { type: 'ENTER_REVIEW' }
-  | { type: 'RESET' }
+  | { type: 'RESET'; isStudy?: boolean }
   | { type: 'OUT_OF_ORDER' }
   | { type: 'UNDO' };
 
@@ -101,7 +102,7 @@ function puzzleReducer(state: PuzzleSolveState, action: PuzzleAction): PuzzleSol
     case 'GOBAN_READY':
       return {
         ...state,
-        status: 'solving',
+        status: action.isStudy ? 'study' : 'solving',
         startedAt: Date.now(),
       };
 
@@ -132,6 +133,10 @@ function puzzleReducer(state: PuzzleSolveState, action: PuzzleAction): PuzzleSol
       // Guard: ignore stone placements during review mode — goban's
       // showNext/showPrevious re-enables placement internally.
       if (state.status === 'review') return state;
+      // Study positions never transition out of 'study' on click.
+      if (state.status === 'study') {
+        return { ...state, moveCount: state.moveCount + 1 };
+      }
       // Only count player moves (not opponent auto-plays)
       // Return to solving after correct/wrong indicator
       return {
@@ -168,13 +173,17 @@ function puzzleReducer(state: PuzzleSolveState, action: PuzzleAction): PuzzleSol
     case 'RESET':
       return {
         ...INITIAL_STATE,
-        status: 'solving',
+        status: action.isStudy ? 'study' : 'solving',
         startedAt: Date.now(),
       };
 
     case 'UNDO':
       // Guard: ignore undo during review mode
       if (state.status === 'review') return state;
+      // Study positions never transition out of 'study' on undo.
+      if (state.status === 'study') {
+        return { ...state, moveCount: Math.max(0, state.moveCount - 1) };
+      }
       // Decrement move count, return to solving if was wrong
       return {
         ...state,
@@ -206,6 +215,12 @@ function puzzleReducer(state: PuzzleSolveState, action: PuzzleAction): PuzzleSol
 export interface UsePuzzleStateOptions {
   /** Move order mode from YO property (default: 'flexible') */
   moveOrder?: MoveOrderMode;
+  /**
+   * When true, treat the puzzle as a study position (no recorded solution).
+   * Stone clicks place a stone but never trigger wrong/correct/complete
+   * dispatches or correct/wrong sounds. Status stays at `'study'`.
+   */
+  isStudy?: boolean;
 }
 
 export interface UsePuzzleStateResult {
@@ -260,7 +275,7 @@ export function usePuzzleState(
   goban: GobanInstance | null,
   options: UsePuzzleStateOptions = {}
 ): UsePuzzleStateResult {
-  const { moveOrder = 'flexible' } = options;
+  const { moveOrder = 'flexible', isStudy = false } = options;
   const [state, dispatch] = useReducer(puzzleReducer, INITIAL_STATE);
 
   // -------------------------------------------------------------------------
@@ -346,6 +361,15 @@ export function usePuzzleState(
       // Play stone placement sound immediately on every move
       audioService.play('stone');
 
+      // Study positions: no recorded solution to verify against. Just
+      // record the placement and move on. No wrong/correct dispatch,
+      // no extra audio cues.
+      if (isStudy) {
+        dispatch({ type: 'MOVE_PLACED' });
+        requestAnimationFrame(() => goban.redraw(true));
+        return;
+      }
+
       // Reset trackers before goban fires its events synchronously
       wrongFired = false;
       correctFired = false;
@@ -424,14 +448,14 @@ export function usePuzzleState(
       goban.off('puzzle-place', onPuzzlePlace);
       goban.off('update', onUpdate);
     };
-  }, [goban, moveOrder, isOnTrunk]);
+  }, [goban, moveOrder, isOnTrunk, isStudy]);
 
   // -------------------------------------------------------------------------
   // Actions
   // -------------------------------------------------------------------------
   const onGobanReady = useCallback(() => {
-    dispatch({ type: 'GOBAN_READY' });
-  }, []);
+    dispatch({ type: 'GOBAN_READY', isStudy });
+  }, [isStudy]);
 
   const requestHint = useCallback((tier: number) => {
     const clampedTier = Math.max(1, Math.min(3, tier));
@@ -471,8 +495,8 @@ export function usePuzzleState(
         goban.enableStonePlacement();
       }
     }
-    dispatch({ type: 'RESET' });
-  }, [goban]);
+    dispatch({ type: 'RESET', isStudy });
+  }, [goban, isStudy]);
 
   const undo = useCallback(() => {
     if (goban) {
