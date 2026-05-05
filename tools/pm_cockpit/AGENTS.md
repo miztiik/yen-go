@@ -16,13 +16,13 @@ It is **not** a second pipeline. It owns no domain logic.
 ## Principle #6 (the rule that decides every disagreement)
 
 > `tools/pm_cockpit/` is a pure presentation layer over `backend/puzzle_manager/`.
-> It may: spawn `python -m backend.puzzle_manager` subprocesses, read SQLite/JSON
-> state as raw data, tail log files, render results.
-> It may **not**: parse SGF, compute hashes, classify puzzles, decide what state
-> means.
+> It may: spawn `python -m backend.puzzle_manager` subprocesses, read JSON
+> snapshots and run-state files as raw data, tail log files, render results.
+> It may **not**: open `yengo-search.db` (or any pipeline-owned SQLite DB),
+> parse SGF, compute hashes, classify puzzles, decide what state means.
 >
 > If the UI needs data the pipeline doesn't expose, the rule is "add a CLI
-> subcommand or a read-only query method to puzzle_manager first."
+> subcommand or write a JSON snapshot from the pipeline first."
 
 This is non-negotiable. `tools/` may NOT import from `backend/` for domain
 logic. Imports of pure data types (Pydantic models, IntEnums, schema
@@ -40,7 +40,7 @@ tools/pm_cockpit/
   server/
     app.py              # FastAPI factory (create_app); mounts /api + static
     pipeline_runner.py  # subprocess wrapper around `python -m backend.puzzle_manager`
-    state_reader.py     # raw SQLite/JSON passthrough reads (no interpretation)
+    state_reader.py     # JSON-only passthrough reads (inventory.json snapshot + run state); never opens yengo-search.db
     run_controller.py   # long-lived subprocess + reader threads + SSE pub/sub
     routes_read.py      # GET endpoints (health, adapters, inventory, runs)
     routes_run.py       # POST + SSE endpoints (start/cancel/stream a run)
@@ -67,7 +67,7 @@ tools/pm_cockpit/
 | ------ | ----------------------------- | ------------------------------------- | ----------------------------------------------- |
 | GET    | `/api/health`                 | in-process                            | uptime, version                                 |
 | GET    | `/api/adapters`               | subprocess `source-status --json`     | named buckets only (no enum ints)               |
-| GET    | `/api/inventory`              | direct SQL on `yengo-search.db` (RO)  | COUNT/GROUP BY only                             |
+| GET    | `/api/inventory`              | reads `yengo-puzzle-collections/inventory.json` snapshot | JSON passthrough; `snapshot_exists=false` returns zeros + `advice` (cockpit MUST NOT open the SQLite DB) |
 | GET    | `/api/runs`                   | direct read of `.pm-runtime/state/runs/*.json` | strips heavy fields, newest-first      |
 | GET    | `/api/run/active`             | `RunController` in-process state      | `{active: snapshot|null}`                       |
 | POST   | `/api/run`                    | spawns `python -u -m backend.puzzle_manager run …` | 202 on accept, 409 if a run is active |
@@ -98,10 +98,17 @@ The cockpit **never reformats** pipeline-owned shapes:
   (intentionally — the cockpit is a thin projection).
 - `/api/runs` → `RunSummary.model_validate` of the run-state JSON file with
   heavy fields (`batches`, `file_results`, `config_snapshot`) stripped.
-- `/api/inventory` → raw `COUNT(*)` / `GROUP BY` results from
-  `yengo-search.db`. Counts are returned keyed by the column's stored value
-  (string form for JSON-key safety) — the cockpit does not translate
-  `level_id` → human label or `content_type` → "curated/practice/training".
+- `/api/inventory` → JSON passthrough of `yengo-puzzle-collections/inventory.json`,
+  written by `backend/puzzle_manager/inventory/snapshot.py` after every
+  pipeline mutation (publish / vacuum-db / rollback). The cockpit **never
+  opens `yengo-search.db`** — even read-only — because Windows file-lock
+  contention with `vacuum-db`'s atomic `os.replace()` and `clean`'s
+  `Path.unlink()` was the original WinError 5/32 root cause. When the
+  snapshot is missing the response carries `snapshot_exists=false`, zero
+  counts, and an `advice` string (it MUST NOT silently fall back to
+  opening the DB). Counts are keyed by stored column values — the cockpit
+  does not translate `level_id` → human label or `content_type` →
+  "curated/practice/training".
 - `/api/lock` → wraps `raw` around the verbatim CLI JSON. Extra fields the
   CLI adds (e.g., `holder_pid`) flow through without a cockpit-side schema
   bump.
@@ -132,8 +139,11 @@ Real fixtures only — see `PLAN.md §0.4`.
 
 - Adapter tests seed a real `.yengo-ingest.sqlite` via `SourceIngestDB.upsert`
   and a real `sources.json`, then drive the **actual subprocess**.
-- Inventory tests build a real `yengo-search.db` schema (matching the
-  publisher's columns) and run real SQL against it.
+- Inventory tests build a real `yengo-search.db` (matching the publisher's
+  schema) and call `write_inventory_snapshot()` to seed `inventory.json`,
+  then assert the cockpit reads counts from the snapshot only — including
+  a regression test that the cockpit returns zeros when the SQLite DB is
+  present but the snapshot is missing (the architectural guarantee).
 - Runs tests write real run-state JSON files in the same shape the pipeline
   emits, including the heavy fields the cockpit must strip.
 - Run-controller tests spawn a tmp `backend/puzzle_manager` package shim
