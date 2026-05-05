@@ -1,0 +1,202 @@
+"""Wrappers around ``python -m backend.puzzle_manager`` subprocess invocations.
+
+Per principle #6, the cockpit never imports from ``backend/``. Anything that
+requires pipeline domain logic (status interpretation, source resolution,
+config loading, etc.) is delegated to the CLI via subprocess, and we parse the
+machine-readable JSON it emits.
+
+Cost note: a cold ``python -m backend.puzzle_manager source-status --json``
+takes ~300–600 ms on a typical machine. Acceptable at the ~3 s poll cadence
+documented in PLAN.md §6. If callers ever need finer cadence, the right answer
+is "have the pipeline expose a polling daemon", not "reach into the SQLite
+files from the cockpit".
+"""
+
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+
+class PipelineCommandError(RuntimeError):
+    """Raised when the puzzle_manager CLI exits non-zero or emits invalid JSON."""
+
+    def __init__(self, command: list[str], returncode: int, stderr: str, stdout: str) -> None:
+        super().__init__(
+            f"command {command!r} failed: returncode={returncode}; "
+            f"stderr={stderr.strip()[:200]!r}; stdout={stdout.strip()[:200]!r}"
+        )
+        self.command = command
+        self.returncode = returncode
+        self.stderr = stderr
+        self.stdout = stdout
+
+
+@dataclass(frozen=True)
+class PipelineRunner:
+    """Invokes the puzzle_manager CLI and parses ``--json`` output.
+
+    Args:
+        repo_root: Repository root containing ``backend/puzzle_manager``.
+            Used both as the subprocess CWD and as ``PYTHONPATH``.
+        config_dir: Optional config directory (passed to ``--config`` when set).
+            When ``None``, the CLI uses its own default
+            (``backend/puzzle_manager/config/``).
+        python_executable: Interpreter to invoke. Defaults to ``sys.executable``
+            so the cockpit always uses the same Python it was launched under.
+        timeout_s: Subprocess timeout. Conservative default for read-only
+            commands; set higher for long-running ones (not used in this read
+            module).
+    """
+
+    repo_root: Path
+    config_dir: Path | None = None
+    python_executable: str = sys.executable
+    timeout_s: float = 30.0
+
+    def _base_cmd(self) -> list[str]:
+        return [self.python_executable, "-m", "backend.puzzle_manager"]
+
+    def _run_json(self, subcommand: list[str]) -> dict:
+        # ``--json`` is the conventional flag for the puzzle_manager CLI's
+        # subcommands that have a structured-output mode. ``--config`` is a
+        # top-level argparse flag and lives at the front of the command line
+        # (handled by ``_run_json_from_args``).
+        return self._run_json_from_args([*subcommand, "--json"])
+
+    def _env(self) -> dict[str, str]:
+        import os
+
+        env = os.environ.copy()
+        existing = env.get("PYTHONPATH", "")
+        repo = str(self.repo_root)
+        if repo not in existing.split(os.pathsep):
+            env["PYTHONPATH"] = (repo + os.pathsep + existing) if existing else repo
+        # Force UTF-8 stdout in the child so a non-ASCII byte in CLI output
+        # (e.g. a stray emoji) never crashes it on a cp1252 Windows console.
+        # The cockpit side decodes with errors="replace" as belt-and-braces.
+        env["PYTHONIOENCODING"] = "utf-8"
+        return env
+
+    def source_status(self) -> dict:
+        """Wraps ``puzzle_manager source-status --json``.
+
+        Returns the parsed JSON ``{"sources": [...]}`` as-is; the cockpit does
+        not transform field names or values.
+        """
+        return self._run_json(["source-status"])
+
+    def lock_status(self) -> dict:
+        """Wraps ``puzzle_manager config-lock status --json``.
+
+        Returns the parsed JSON dict verbatim. Schema is owned by the CLI;
+        currently ``{"locked": bool, ...}``.
+        """
+        return self._run_json(["config-lock", "status"])
+
+    def lock_release(self, *, force: bool = False) -> dict:
+        """Wraps ``puzzle_manager config-lock release [--force]``.
+
+        The CLI does not emit JSON on release — it prints a human line and
+        exits 0 on success or non-zero on failure. We surface the raw output
+        so the cockpit doesn't reinterpret it.
+
+        Returns ``{"ok": bool, "returncode": int, "stdout": str, "stderr": str}``.
+        Never raises ``PipelineCommandError`` — release failure is a
+        legitimate outcome the UI must show, not a 502.
+        """
+        args = ["config-lock", "release"]
+        if force:
+            args.append("--force")
+        return self._run_capture(args)
+
+    def _run_capture(self, subcommand: list[str]) -> dict:
+        """Generic short-CLI invocation that captures all output.
+
+        Like ``lock_release``: never raises on non-zero exit, returns the
+        ``{ok, returncode, stdout, stderr}`` shape the cockpit forwards.
+        """
+        cmd = self._base_cmd()
+        if self.config_dir is not None:
+            cmd += ["--config", str(self.config_dir)]
+        cmd += subcommand
+        result = subprocess.run(
+            cmd,
+            cwd=str(self.repo_root),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=self.timeout_s,
+            env=self._env(),
+        )
+        return {
+            "ok": result.returncode == 0,
+            "returncode": result.returncode,
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+        }
+
+    def enable_adapter(self, adapter_id: str, *, force: bool = False) -> dict:
+        """Wraps ``puzzle_manager enable-adapter ADAPTER_ID [--force]``."""
+        args = ["enable-adapter", adapter_id]
+        if force:
+            args.append("--force")
+        return self._run_capture(args)
+
+    def disable_adapter(self, *, force: bool = False) -> dict:
+        """Wraps ``puzzle_manager disable-adapter [--force]``."""
+        args = ["disable-adapter"]
+        if force:
+            args.append("--force")
+        return self._run_capture(args)
+
+    def publish_log_search(self, params: dict) -> dict:
+        """Wraps ``puzzle_manager publish-log search --json …``.
+
+        ``params`` keys map 1:1 to CLI flags after the ``--`` prefix. None /
+        empty values are skipped. The CLI rejects calls with no filter, so
+        the cockpit forwards that error verbatim via ``PipelineCommandError``.
+        """
+        args = ["publish-log", "search", "--format", "json"]
+        for key, val in params.items():
+            if val is None or val == "" or val == []:
+                continue
+            flag = f"--{key.replace('_', '-')}"
+            if isinstance(val, list):
+                args.append(flag)
+                args.extend(str(v) for v in val)
+            elif isinstance(val, bool):
+                if val:
+                    args.append(flag)
+            else:
+                args += [flag, str(val)]
+        return self._run_json_from_args(args)
+
+    def _run_json_from_args(self, subcommand: list[str]) -> dict:
+        """Like ``_run_json`` but does not append ``--json`` (caller has already
+        chosen the format flag). Used by subcommands whose JSON flag is
+        non-standard, e.g. ``publish-log search --format json``."""
+        cmd = self._base_cmd()
+        if self.config_dir is not None:
+            cmd += ["--config", str(self.config_dir)]
+        cmd += subcommand
+        result = subprocess.run(
+            cmd,
+            cwd=str(self.repo_root),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=self.timeout_s,
+            env=self._env(),
+        )
+        if result.returncode != 0:
+            raise PipelineCommandError(cmd, result.returncode, result.stderr, result.stdout)
+        try:
+            return json.loads(result.stdout)
+        except json.JSONDecodeError as exc:
+            raise PipelineCommandError(cmd, result.returncode, result.stderr, result.stdout) from exc
