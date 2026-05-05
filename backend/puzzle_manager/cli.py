@@ -49,6 +49,7 @@ from backend.puzzle_manager.models.enums import RunStatus
 from backend.puzzle_manager.models.publish_log import PublishLogEntry
 from backend.puzzle_manager.paths import (
     get_output_dir,
+    get_project_root,
     get_publish_log_dir,
     get_runtime_dir,
 )
@@ -63,6 +64,29 @@ from backend.puzzle_manager.rollback import (
 )
 
 logger = logging.getLogger("puzzle_manager.cli")
+
+
+def _shorten_paths(message: object, *bases: Path) -> str:
+    """Rewrite absolute paths in error messages to relative POSIX form.
+
+    Why: OSError messages on Windows splat the full
+    ``C:\\Users\\...\\yen-go\\yengo-puzzle-collections\\foo.db`` path. The
+    cockpit forwards stderr verbatim, so the operator sees a wall of
+    backslash-escaped noise. Substituting known base dirs keeps the signal
+    (which file failed) without the absolute-path prefix.
+    """
+    text = str(message)
+    for base in bases:
+        if base is None:
+            continue
+        try:
+            resolved = base.resolve()
+        except (OSError, RuntimeError):
+            resolved = base
+        for variant in {str(base), str(resolved), base.as_posix(), resolved.as_posix()}:
+            if variant:
+                text = text.replace(variant, base.name)
+    return text.replace("\\", "/")
 
 
 # ---------------------------------------------------------------------------
@@ -1241,7 +1265,7 @@ def cmd_clean(args: argparse.Namespace) -> int:
         return 0
 
     except PuzzleManagerError as e:
-        print(f"Error: {e}")
+        print(f"Error: {_shorten_paths(e, get_output_dir(), get_project_root())}")
         return 1
 
 
@@ -1249,6 +1273,7 @@ def cmd_vacuum_db(args: argparse.Namespace) -> int:
     """Execute the vacuum-db command."""
     from backend.puzzle_manager.core.content_db import vacuum_orphans
     from backend.puzzle_manager.inventory.reconcile import rebuild_search_db_from_disk
+    from backend.puzzle_manager.inventory.snapshot import write_inventory_snapshot
     from backend.puzzle_manager.paths import get_output_dir
 
     try:
@@ -1306,10 +1331,14 @@ def cmd_vacuum_db(args: argparse.Namespace) -> int:
             count = rebuild_search_db_from_disk(output_dir)
             print(f"Search DB rebuilt: {count} puzzles indexed.")
 
+        snapshot_path = write_inventory_snapshot(output_dir)
+        if snapshot_path is not None:
+            print(f"Inventory snapshot refreshed: {snapshot_path.name}")
+
         return 0
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error: {_shorten_paths(e, get_output_dir(), get_project_root())}")
         return 1
 
 
@@ -1623,6 +1652,11 @@ def cmd_rollback(args: argparse.Namespace) -> int:
                 print(f"  Puzzles rolled back: {result.puzzles_affected}")
                 print(f"  Files deleted: {result.files_deleted}")
                 print(f"  Indexes rebuilt: {result.indexes_updated}")
+                from backend.puzzle_manager.inventory.snapshot import (
+                    write_inventory_snapshot,
+                )
+                if write_inventory_snapshot(output_dir) is not None:
+                    print("  Inventory snapshot refreshed")
             else:
                 print("[FAIL] Rollback failed")
                 for error in result.errors:
@@ -1632,11 +1666,11 @@ def cmd_rollback(args: argparse.Namespace) -> int:
         return 0
 
     except RollbackError as e:
-        print(f"[FAIL] Rollback error: {e}")
+        print(f"[FAIL] Rollback error: {_shorten_paths(e, get_output_dir(), get_project_root())}")
         return 1
 
     except PuzzleManagerError as e:
-        print(f"Error: {e}")
+        print(f"Error: {_shorten_paths(e, get_output_dir(), get_project_root())}")
         return 1
 
 

@@ -667,6 +667,14 @@ class PublishStage:
             version_info.puzzle_count, version_info.db_version,
         )
 
+        from backend.puzzle_manager.inventory.snapshot import (
+            write_inventory_snapshot,
+        )
+        try:
+            write_inventory_snapshot(output_root)
+        except Exception:
+            logger.exception("Inventory snapshot write failed (non-fatal)")
+
     @staticmethod
     def _load_collections_meta() -> list[CollectionMeta]:
         """Load collection metadata from config/collections.json."""
