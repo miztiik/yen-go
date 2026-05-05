@@ -74,4 +74,17 @@ python -m backend.puzzle_manager source-status --json
 stage yet, or `yengo-puzzle-collections/yengo-search.db` is missing. Run the
 pipeline once to populate it.
 
+**`/api/inventory` says `snapshot_exists: false` (zeros + advice banner).**
+The SQLite DB exists but the `inventory.json` snapshot has not been written
+yet. The cockpit deliberately never opens `yengo-search.db` (Windows
+file-lock contention with `vacuum-db` / `clean`); it only reads the JSON
+snapshot the pipeline emits. Seed it once with:
+
+```bash
+python -m backend.puzzle_manager vacuum-db --rebuild
+```
+
+The snapshot refreshes automatically after every subsequent `publish`,
+`vacuum-db`, or `rollback` run.
+
 **Port 8201 is taken.** Pass `--port <other>`.

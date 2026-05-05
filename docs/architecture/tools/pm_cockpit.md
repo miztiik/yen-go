@@ -34,16 +34,20 @@ backend/puzzle_manager/   ←  every byte of domain logic lives here
 The cockpit may:
 
 - spawn `python -m backend.puzzle_manager` subprocesses
-- read SQLite/JSON state files as raw data
+- read JSON state files (run states, `inventory.json` snapshot) as raw data
 - tail log files
 - render results in a browser
 
 The cockpit may **not**:
 
+- open `yengo-search.db` (or any SQLite DB the pipeline writes) — even read-only
 - parse SGF
 - compute hashes or canonical positions
 - classify puzzles, assign difficulty, decide what status enums mean
 - duplicate any pipeline computation in JavaScript
+
+The "no SQLite handles" rule is what made the Windows file-lock crashes go
+away. See *Inventory snapshot pattern (G2)* below.
 
 If the UI needs data the pipeline doesn't expose, the rule is *"add a CLI
 subcommand or read-only query method to puzzle_manager first, then the
@@ -72,10 +76,10 @@ domain logic (project-level constraint, see root `CLAUDE.md`).
 │  │ (raw passthr)│ │ (CLI subproc)  │ │ (long Popen+SSE) │                  │
 │  └──────┬───────┘ └────────┬───────┘ └────────┬─────────┘                  │
 └─────────┼──────────────────┼──────────────────┼───────────────────────────┘
-          │ sqlite3 RO+json  │ subprocess.run   │ Popen + threads
+          │ json passthru    │ subprocess.run   │ Popen + threads
           ▼                  ▼                  ▼
 ┌────────────────────┐  ┌─────────────────────────────────────────┐
-│ yengo-search.db    │  │ python -m backend.puzzle_manager        │
+│ inventory.json     │  │ python -m backend.puzzle_manager        │
 │ .pm-runtime/state  │  │   source-status / config-lock /         │
 │                    │  │   enable-adapter / disable-adapter /    │
 │                    │  │   publish-log search /                  │
@@ -101,10 +105,48 @@ behind a 502.
 
 ### `StateReader` (passthrough path)
 
-For pure data — SQL `COUNT`/`GROUP BY` on `yengo-search.db`, or JSON file
-listings under `.pm-runtime/state/runs/` — the cockpit reads directly. The
-SQLite handle uses a read-only URI (`file:…?mode=ro`) so the cockpit cannot
-accidentally write to a published file or create WAL sidecar files.
+For pure data — JSON file listings under `.pm-runtime/state/runs/`, or the
+`inventory.json` snapshot beside `yengo-search.db` — the cockpit reads
+files directly. **It never opens `yengo-search.db`.** All puzzle/collection
+counts come from `inventory.json`, which the pipeline writes after every
+mutation (publish / vacuum-db / rollback). When the snapshot is missing
+(fresh checkout, mid-bootstrap), `/api/inventory` returns zeros plus an
+`advice` string nudging the operator to run `vacuum-db --rebuild`.
+
+### Inventory snapshot pattern (G2)
+
+**Problem this solves.** On Windows, `os.replace()` (used by `vacuum-db`'s
+atomic DB swap) and `Path.unlink()` (used by `clean`) raise `WinError 5/32`
+when *any* process holds an open handle on the target file — even a
+read-only one. The cockpit's old `sqlite3.connect(uri, mode=ro)` left
+handles cached in CPython long enough to collide with the pipeline's
+mutations. Unix doesn't notice; Windows refuses.
+
+**Fix.** Pure read/write split. The pipeline owns the SQLite handle
+exclusively; the cockpit reads JSON only.
+
+```
+backend/puzzle_manager/inventory/snapshot.py
+    write_inventory_snapshot(output_dir)
+        ├─ opens yengo-search.db RO
+        ├─ runs COUNT/GROUP BY queries
+        ├─ writes inventory.json.tmp
+        └─ os.replace() → inventory.json     ← atomic
+              │
+              │ called from publish.py, cmd_vacuum_db, cmd_rollback
+              ▼
+yengo-puzzle-collections/inventory.json       ← snapshot contract
+
+tools/pm_cockpit/server/state_reader.py
+    read_inventory()
+        ├─ json.loads(inventory.json)         ← never opens .db
+        └─ returns InventoryResponse
+```
+
+The JSON shape *is* the contract between pipeline writer and cockpit
+reader. Anything else that needs counts (CI dashboards, future TUIs)
+should consume this file rather than running its own SQL — single source
+of truth, language-agnostic, lock-free.
 
 ### `RunController` (long-lived subprocess + live stream)
 
@@ -139,7 +181,7 @@ renames a field or "improves" a label.
 | ------------------------------ | -------------------------------------------------------------- | ----------------------------------------------------- |
 | `/api/health`                  | none (in-process)                                              | n/a                                                   |
 | `/api/adapters`                | `puzzle_manager source-status --json`                          | `model_validate` only                                 |
-| `/api/inventory`               | `yengo-search.db` (`puzzles`, `collections`, `daily_schedule`) | `COUNT(*)`/`GROUP BY` only; counts keyed by raw value |
+| `/api/inventory`               | `inventory.json` snapshot (written by pipeline)                | JSON passthrough; zeros + `advice` if snapshot missing|
 | `/api/runs`                    | `.pm-runtime/state/runs/*.json`                                | strip `batches`/`file_results`/`config_snapshot`      |
 | `/api/run/active`              | `RunController` in-process state                               | `{active: snapshot|null}`                             |
 | `/api/run` (POST)              | spawns `python -u -m backend.puzzle_manager run …`             | 202 on accept, 409 if a run is active                 |
@@ -172,7 +214,7 @@ nothing about whether the wire contract still works.
 
 | Question                                          | Answer                                                |
 | ------------------------------------------------- | ----------------------------------------------------- |
-| Where do I add a new "show me X" view?            | New `StateReader` method or new `--json` CLI flag     |
+| Where do I add a new "show me X" view?            | New `StateReader` method (consume a pipeline-written JSON snapshot) or new `--json` CLI flag. **Never open a live pipeline DB from the cockpit.** |
 | Where do I add a new "do X" button?               | If long-running → extend `RunController` and route through `/api/run/*`. If short CLI call → add a method to `PipelineRunner` and a route module. |
 | Where does the difficulty enum get translated?    | Nowhere in `pm_cockpit/`. In `puzzle_manager` only.   |
 | The CLI returned a new field — what changes here? | Add it to `models.py`; the route auto-validates it    |

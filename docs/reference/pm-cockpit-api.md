@@ -116,18 +116,30 @@ named buckets — the cockpit never maps status integers to labels itself.
 
 ### `GET /api/inventory`
 
-Direct `COUNT(*)` / `GROUP BY` on `yengo-puzzle-collections/yengo-search.db`
-(read-only URI). No interpretation; counts keyed by stored value.
+JSON passthrough of the `inventory.json` snapshot the pipeline writes
+beside `yengo-search.db`. **The cockpit never opens the SQLite DB itself**
+— see [pm_cockpit architecture › Inventory snapshot pattern (G2)](../architecture/tools/pm_cockpit.md#inventory-snapshot-pattern-g2)
+for the why (Windows file-lock contention with `vacuum-db` / `clean`).
+
+When the snapshot is missing (fresh checkout, mid-bootstrap), the response
+returns zero counts plus an `advice` string nudging the operator to run
+`python -m backend.puzzle_manager vacuum-db --rebuild`.
 
 ```json
 {
   "db_path": "yengo-puzzle-collections/yengo-search.db",
   "db_exists": true,
+  "snapshot_exists": true,
+  "snapshot_path": "yengo-puzzle-collections/inventory.json",
+  "advice": null,
   "puzzles_total": 9132,
   "collections_total": 47,
   "daily_schedule_total": 365,
   "by_level_id": { "110": 412, "120": 530, "130": 1104 },
-  "by_content_type": { "1": 1820, "2": 5641, "3": 1671 }
+  "by_content_type": { "1": 1820, "2": 5641, "3": 1671 },
+  "by_collection_category": { "lnd": 18, "shape": 12, "uncategorised": 17 },
+  "schema_version": 2,
+  "db_version": "20260505-abc12345"
 }
 ```
 
