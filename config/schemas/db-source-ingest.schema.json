@@ -1,0 +1,70 @@
+{
+  "$comment": "Schema descriptor for .yengo-ingest.sqlite — per-external-source backend-only SQLite ingest state DB. Source of truth: backend/puzzle_manager/core/source_ingest_db.py (_SCHEMA_SQL_V1). Last Updated: 2026-05-03",
+  "title": ".yengo-ingest.sqlite Schema",
+  "description": "Per-source ingest state database. Co-located inside each external source directory at <source.path>/.yengo-ingest.sqlite. Owns content-aware skip, resume, and rename detection for one source. Replaces the legacy positional AdapterCheckpoint JSON. Never shipped to browser. See docs/architecture/backend/source-ingest-db.md.",
+  "database": ".yengo-ingest.sqlite",
+  "scope": "backend",
+  "schema_version": 1,
+  "pragmas": {
+    "journal_mode": "WAL",
+    "busy_timeout_ms": 5000
+  },
+  "tables": [
+    {
+      "name": "meta",
+      "description": "Key-value table for database-level metadata: schema version, format identifier, source binding, and run history.",
+      "without_rowid": true,
+      "columns": [
+        { "name": "key",   "type": "TEXT", "constraints": ["PRIMARY KEY"], "description": "Metadata key." },
+        { "name": "value", "type": "TEXT", "constraints": ["NOT NULL"],    "description": "Metadata value as a string. Integers and timestamps are encoded as text and parsed at read time." }
+      ],
+      "required_keys": [
+        { "key": "schema_version",   "description": "Integer schema version. Currently '1'." },
+        { "key": "ingest_db_format", "description": "Format identifier. Always 'yengo-source-ingest' for this database." },
+        { "key": "source_id",        "description": "The source.id value from sources.json that this database belongs to. Validated on open." },
+        { "key": "created_run_id",   "description": "run_id of the first run that created this database. Acts as migrator-completion marker." },
+        { "key": "last_run_id",      "description": "run_id of the most recent run that touched this database. Updated on close." },
+        { "key": "last_run_at",      "description": "ISO 8601 UTC timestamp of the most recent run." }
+      ]
+    },
+    {
+      "name": "files",
+      "description": "One row per source file ever observed. Acts as the canonical ingest checkpoint: presence + matching content_hash means 'already ingested'. No separate checkpoint table exists; rows are the checkpoint.",
+      "without_rowid": true,
+      "columns": [
+        { "name": "rel_path",     "type": "TEXT",    "constraints": ["PRIMARY KEY"], "description": "POSIX path relative to the source root (e.g. 'capture-problems/0001.sgf'). Always forward slashes; never absolute." },
+        { "name": "content_hash", "type": "TEXT",    "constraints": ["NOT NULL"],    "description": "16-char lowercase hex. SHA-256(raw_sgf_bytes)[:16]. Computed via core.naming.generate_content_hash. Same hash used for GN, filename, and yengo-content.db.content_hash." },
+        { "name": "size_bytes",   "type": "INTEGER", "constraints": ["NOT NULL"],    "description": "File size in bytes at last observation. Cheap stat-based change-detection signal." },
+        { "name": "mtime_ns",     "type": "INTEGER", "constraints": ["NOT NULL"],    "description": "File mtime in nanoseconds at last observation. Cheap stat-based change-detection signal. Not trusted alone; v1 always re-hashes (Tier-3 policy)." },
+        { "name": "status",       "type": "INTEGER", "constraints": ["NOT NULL"],    "description": "0=ingested (success), 1=skipped (intentional, e.g. wrong size), 2=failed (validation error or duplicate). Stored as integer for compactness." },
+        { "name": "skip_reason",  "type": "TEXT",    "constraints": [],              "description": "Nullable. Diagnostic string when status != 0 (e.g. 'invalid_sgf', 'duplicate_position', 'no_solution_tree'). Free-form." },
+        { "name": "run_id",       "type": "TEXT",    "constraints": ["NOT NULL"],    "description": "run_id of the run that last touched this row. Used for rename-tiebreak (most-recent wins) and forensics." }
+      ],
+      "indexes": [
+        { "name": "idx_files_hash",   "columns": ["content_hash"], "description": "Rename-detection lookup and cross-reference to yengo-content.db." },
+        { "name": "idx_files_status", "columns": ["status"],       "description": "Sub-millisecond progress queries via SELECT status, COUNT(*) GROUP BY status." },
+        { "name": "idx_files_run",    "columns": ["run_id"],       "description": "Forensic queries: 'what did this run touch?'" }
+      ]
+    }
+  ],
+  "status_codes": {
+    "0": "ingested",
+    "1": "skipped",
+    "2": "failed"
+  },
+  "skip_logic": {
+    "description": "Tier-3 (correctness-first) skip policy. For each walked file: stat for (size, mtime); if matches stored row, ALWAYS re-read and recompute content_hash to confirm identity. Only skip downstream stages if recomputed hash matches stored value. This eliminates platform-dependent mtime precision concerns.",
+    "policy_version": "tier-3"
+  },
+  "rename_detection": {
+    "description": "When a walked file's rel_path is not in `files`, look up by content_hash. If a row exists for an old rel_path that no longer exists on disk, update the row's rel_path (treat as rename, no re-ingest). Tiebreak on multiple matches: highest (most-recent) run_id wins.",
+    "tiebreak": "most_recent_run_id"
+  },
+  "see_also": [
+    { "path": "docs/architecture/backend/source-ingest-db.md", "description": "Full design document: rationale, lifecycle, deletions enabled, phased plan." },
+    { "path": "config/schemas/db-content.schema.json", "description": "yengo-content.db schema — backend cross-source content store. Same content_hash bridges the two." },
+    { "path": "docs/concepts/sqlite-index-architecture.md", "description": "The three databases (search, content, source-ingest) and their boundaries." },
+    { "path": "backend/puzzle_manager/core/source_ingest_db.py", "description": "Python implementation: schema DDL, SourceIngestDB class, migrator chain." },
+    { "path": "backend/puzzle_manager/core/naming.py", "description": "generate_content_hash() — the shared hash function." }
+  ]
+}

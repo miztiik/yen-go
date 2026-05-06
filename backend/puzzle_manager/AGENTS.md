@@ -64,12 +64,12 @@
 | `core/edition_detection.py` | `create_editions(entries, collections, db_path)` — detect multi-source collections, create edition sub-collections; called by publish + rollback |
 | `core/db_models.py` | `PuzzleEntry` (has `source: str`), `CollectionMeta`, `DbVersionInfo` dataclasses |
 | `core/batch_writer.py` | `BatchWriter` — sharded SGF output (sgf/{batch}/) with ≤100 files/dir |
-| `core/checkpoint.py` | `AdapterCheckpoint` — cross-run resume support (spec 109) |
 | `core/atomic_write.py` | `atomic_write_text/json()` — crash-safe file writes |
+| `core/source_ingest_db.py` | `SourceIngestDB` — per-source `.yengo-ingest.sqlite` (ingest state, content-aware skip, rename detection). Replaces legacy `AdapterCheckpoint`. |
 | `adapters/_base.py` | `BaseAdapter` protocol + `ResumableAdapter` + `FetchResult` |
 | `adapters/_registry.py` | `register_adapter()` decorator, `discover_adapters()`, `get_adapter(name)` |
 | `adapters/yengo-source/` | `YengoSourceAdapter` — JSON collection → SGF (HTTP) |
-| `adapters/local/` | `LocalAdapter` — filesystem SGF import with checkpoint |
+| `adapters/local/` | `LocalAdapter` — filesystem SGF import (uses `SourceIngestDB` for skip + rename detection) |
 | `adapters/yengo-source/` | `YengoSourceAdapter` — local puzzle import |
 | `adapters/yengo-source/` | `YengoSourceAdapter` — local collection import |
 | `stages/ingest.py` | `IngestStage.run()` — fetch + parse + validate; generates `trace_id`; `_check_dedup(conn, sgf, source_id=)` allows cross-source duplicates |
@@ -115,8 +115,13 @@
 | `build_search_db(entries, output_path)` | `(list[PuzzleEntry], Path) -> None` | `PublishStage` (incremental rebuild) |
 | `get_adapter(name)` | `(str) -> BaseAdapter` | `PipelineCoordinator`, `cli.py` |
 | `discover_adapters()` | `() -> list[str]` | `cli.py sources` command |
-| `AdapterCheckpoint.mark_done(puzzle_id)` | — | `IngestStage` per-puzzle |
-| `AdapterCheckpoint.is_done(puzzle_id)` | `(str) -> bool` | `IngestStage` (skip already-processed) |
+| `AdapterCheckpoint.mark_done(puzzle_id)` | — | _removed; superseded by `SourceIngestDB.upsert()`_ |
+| `AdapterCheckpoint.is_done(puzzle_id)` | `(str) -> bool` | _removed; superseded by `SourceIngestDB.find_by_path()` + tier-3 rehash_ |
+| `SourceIngestDB.open(source_path, *, source_id, run_id)` | classmethod context manager | `LocalAdapter.fetch()`, `SanderlandAdapter.fetch()`, `cli source-status` |
+| `SourceIngestDB.upsert(record)` | `(FileRecord) -> None` | adapter `_process_file()` per file |
+| `SourceIngestDB.find_by_hash(content_hash)` | `(str) -> list[FileRecord]` | adapter `_detect_rename()` |
+| `SourceIngestDB.progress()` | `() -> IngestProgress` | `cli source-status`, future telemetry |
+| `SourceIngestDB.wipe(source_path)` | `(Path) -> bool` | `cli run --fresh` |
 | `HttpClient.get(url)` | `async (str) -> Response` | All adapters that fetch from network |
 | `generate_trace_id()` | `() -> str` | `IngestStage` (16-char hex, one per puzzle) |
 
@@ -183,6 +188,6 @@ OUTPUT: yengo-puzzle-collections/sgf/{NNNN}/{hash}.sgf
 - **Incremental publish**: yengo-search.db is always rebuilt from all yengo-content.db entries. Never partially modify yengo-search.db directly.
 - **`content_hash` == filename == GN suffix**: All three must match. `naming.py:generate_content_hash()` is the single source of truth.
 - **`trace_id` != `puzzle_id`**: `trace_id` is per-puzzle pipeline-run identifier (in `YM[t=...]`). `puzzle_id` is the stable content hash (in `GN`). Use `trace_id` for debugging; use `puzzle_id` for identity.
-- **Checkpoint coupling**: `AdapterCheckpoint.is_done()` uses `puzzle_id` from the adapter, not the content hash. If an adapter changes its puzzle_id format, existing checkpoints won't be recognized.
+- **Ingest skip coupling**: `SourceIngestDB` keys on `rel_path` (POSIX, source-root relative) and `content_hash` = `SHA256(raw_sgf)[:16]`. The DB lives at `<source.path>/.yengo-ingest.sqlite` and is the single source of truth for resume/skip. Tier-3 always-rehash policy means stat changes alone never cause a re-publish; content drives everything. Wipe with `python -m backend.puzzle_manager run --source <id> --fresh` (also wipes `.pm-runtime/state`).
 - **`batch` field**: Determined by file count (BatchWriter auto-shards at 100 files/dir). Batch is in directory name AND in `PuzzleEntry.batch`. Used by frontend for path reconstruction: `sgf/{batch}/{content_hash}.sgf`.
 - **Run from repo root**: `python -m backend.puzzle_manager` must run from repo root (paths relative to repo root in `paths.py`).

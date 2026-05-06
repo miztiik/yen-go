@@ -37,11 +37,13 @@ import sys
 from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from backend.puzzle_manager import __version__
 from backend.puzzle_manager.config.loader import ConfigLoader, ConfigWriter
 from backend.puzzle_manager.core.datetime_utils import utc_now
 from backend.puzzle_manager.core.enrichment import EnrichmentConfig
+from backend.puzzle_manager.core.source_ingest_db import SourceIngestDB, SourceIngestDBError
 from backend.puzzle_manager.daily.generator import DailyGenerator
 from backend.puzzle_manager.exceptions import PuzzleManagerError
 from backend.puzzle_manager.inventory.cli import cmd_inventory
@@ -281,6 +283,11 @@ Examples:
         "--resume",
         action="store_true",
         help="Resume from last checkpoint if pipeline was interrupted",
+    )
+    run_parser.add_argument(
+        "--fresh",
+        action="store_true",
+        help="Wipe per-source SourceIngestDB AND .pm-runtime/state before running (forces full re-ingest)",
     )
     run_parser.add_argument(
         "--source",
@@ -565,6 +572,22 @@ File Locations:
         "--json",
         action="store_true",
         help="Output as JSON",
+    )
+
+    # source-status command (per-source ingest DB stats; consumed by tools/yengo_dashboard)
+    source_status_parser = subparsers.add_parser(
+        "source-status",
+        help="Per-source ingest DB stats (ingested/skipped/failed/total).",
+    )
+    source_status_parser.add_argument(
+        "--source",
+        default=None,
+        help="Filter to a single source ID. Default: all configured sources.",
+    )
+    source_status_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON.",
     )
 
     # enable-adapter command
@@ -858,6 +881,60 @@ Examples:
     return parser
 
 
+def _resolve_source_root(source: Any) -> Path | None:
+    """Resolve a source's on-disk data root (containing ``.yengo-ingest.sqlite``).
+
+    Looks at ``config.path`` (LocalAdapter & friends) then ``config.source_dir``
+    (Sanderland). Returns an absolute path, or ``None`` if the source has no
+    on-disk root configured (e.g., URL-only adapters).
+    """
+    cfg = source.config.model_dump()
+    raw = cfg.get("path") or cfg.get("source_dir")
+    if not raw and source.adapter == "sanderland":
+        return get_project_root() / "external-sources" / "sanderland"
+    if not raw:
+        return None
+    p = Path(raw)
+    if not p.is_absolute():
+        p = get_project_root() / p
+    return p
+
+
+def _wipe_source_ingest_dbs(loader: ConfigLoader, source_id: str | None) -> None:
+    """Wipe SourceIngestDB for the named source, or for all sources if None."""
+    sources = loader.load_sources()
+    if source_id:
+        sources = [s for s in sources if s.id == source_id]
+    if not sources:
+        logger.warning("--fresh: no matching source found for id=%s", source_id)
+        return
+    for s in sources:
+        root = _resolve_source_root(s)
+        if root is None:
+            logger.info("--fresh: skipping '%s' (no on-disk source root)", s.id)
+            continue
+        try:
+            SourceIngestDB.wipe(root)
+            print(f"[fresh] wiped SourceIngestDB for '{s.id}' at {root}")
+        except SourceIngestDBError as e:
+            logger.error("--fresh: failed to wipe '%s': %s", s.id, e)
+
+
+def _wipe_runtime_state(*, dry_run: bool = False) -> None:
+    """Wipe ``.pm-runtime/state`` so the next run starts from a clean slate.
+
+    Paired with :func:`_wipe_source_ingest_dbs` under ``--fresh`` because once
+    the per-source ingest DB is wiped the in-flight pipeline state is stale
+    anyway.
+    """
+    try:
+        counts = cleanup_target("state", dry_run=dry_run)
+        removed = counts.get("state", 0)
+        print(f"[fresh] wiped {removed} runtime state file(s) under .pm-runtime/state")
+    except Exception as e:  # pragma: no cover - defensive
+        logger.error("--fresh: failed to wipe runtime state: %s", e)
+
+
 def _format_stage_counts(result: "PipelineResult") -> str:
     """Format per-stage processed counts for display.
 
@@ -916,6 +993,12 @@ def cmd_run(args: argparse.Namespace) -> int:
         if exit_code != 0:
             return exit_code
         source = resolved_source
+
+        # --fresh: wipe per-source SourceIngestDB AND runtime state before running.
+        # (--resume is the always-on default and a no-op flag here.)
+        if getattr(args, "fresh", False):
+            _wipe_source_ingest_dbs(loader, source)
+            _wipe_runtime_state(dry_run=getattr(args, "dry_run", False))
 
         # Build enrichment config from CLI flags
         enrichment_config = None
@@ -1447,6 +1530,145 @@ def cmd_sources(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_source_status(args: argparse.Namespace) -> int:
+    """Per-source ingest DB stats. Read-only; consumed by tools/yengo_dashboard.
+
+    Schema:
+        {"sources": [AdapterRow, ...], "active_adapter": "id"|null}
+    where AdapterRow mirrors tools/yengo_dashboard/server/models.py:AdapterRow.
+    """
+    import sqlite3
+    from datetime import UTC, datetime
+
+    from backend.puzzle_manager.core.source_ingest_db import (
+        DB_FILENAME,
+        FileStatus,
+        db_path_for_source,
+    )
+    from backend.puzzle_manager.paths import get_project_root
+
+    try:
+        loader = ConfigLoader(Path(args.config) if args.config else None)
+        sources = loader.load_sources()
+        try:
+            active_adapter = loader.get_active_adapter()
+        except Exception:
+            active_adapter = None
+
+        source_filter = getattr(args, "source", None)
+        project_root = get_project_root()
+
+        rows: list[dict] = []
+        for s in sources:
+            if source_filter and s.id != source_filter:
+                continue
+
+            raw_path = s.config.path
+            if raw_path:
+                source_root = Path(raw_path)
+                if not source_root.is_absolute():
+                    source_root = project_root / source_root
+                source_root_posix = Path(raw_path).as_posix()
+            else:
+                source_root = None
+                source_root_posix = None
+
+            row: dict = {
+                "id": s.id,
+                "adapter": s.adapter,
+                "source_root": source_root_posix,
+                "db_path": None,
+                "db_exists": False,
+                "schema_version": None,
+                "ingested": 0,
+                "skipped": 0,
+                "failed": 0,
+                "total": 0,
+                "db_size_bytes": None,
+                "db_mtime": None,
+                "error": None,
+            }
+
+            if source_root is None:
+                row["error"] = "source has no 'path' configured"
+                rows.append(row)
+                continue
+
+            db_path = db_path_for_source(source_root)
+            try:
+                db_rel = db_path.resolve().relative_to(project_root.resolve()).as_posix()
+            except (OSError, ValueError):
+                db_rel = db_path.as_posix()
+            row["db_path"] = db_rel
+
+            if not db_path.exists():
+                rows.append(row)
+                continue
+
+            try:
+                stat = db_path.stat()
+                row["db_size_bytes"] = stat.st_size
+                row["db_mtime"] = datetime.fromtimestamp(stat.st_mtime, UTC).isoformat(
+                    timespec="seconds"
+                )
+                # Read-only attach so we never touch the writer's WAL or run_id.
+                uri = f"file:{db_path.as_posix()}?mode=ro"
+                conn = sqlite3.connect(uri, uri=True, timeout=2.0)
+                try:
+                    cur = conn.execute(
+                        "SELECT value FROM meta WHERE key='schema_version'"
+                    )
+                    schema_row = cur.fetchone()
+                    if schema_row and schema_row[0] is not None:
+                        row["schema_version"] = int(schema_row[0])
+                    counts = {int(FileStatus.INGESTED): 0,
+                              int(FileStatus.SKIPPED): 0,
+                              int(FileStatus.FAILED): 0}
+                    for status_int, count in conn.execute(
+                        "SELECT status, COUNT(*) FROM files GROUP BY status"
+                    ):
+                        counts[int(status_int)] = int(count)
+                    row["ingested"] = counts[int(FileStatus.INGESTED)]
+                    row["skipped"] = counts[int(FileStatus.SKIPPED)]
+                    row["failed"] = counts[int(FileStatus.FAILED)]
+                    row["total"] = row["ingested"] + row["skipped"] + row["failed"]
+                    row["db_exists"] = True
+                finally:
+                    conn.close()
+            except sqlite3.Error as exc:
+                row["error"] = f"{type(exc).__name__}: {exc}"
+
+            rows.append(row)
+
+        if args.json:
+            print(json.dumps(
+                {"sources": rows, "active_adapter": active_adapter},
+                indent=2,
+            ))
+        else:
+            print(f"Source status ({len(rows)} source{'s' if len(rows) != 1 else ''})")
+            if active_adapter:
+                print(f"Active adapter: {active_adapter}")
+            print("=" * 60)
+            for r in rows:
+                marker = " [ACTIVE]" if r["id"] == active_adapter else ""
+                print(
+                    f"  {r['id']}{marker}: "
+                    f"ingested={r['ingested']} "
+                    f"skipped={r['skipped']} "
+                    f"failed={r['failed']} "
+                    f"(db_exists={r['db_exists']})"
+                )
+                if r["error"]:
+                    print(f"    error: {r['error']}")
+
+        return 0
+
+    except PuzzleManagerError as e:
+        print(f"Error: {e}")
+        return 1
+
+
 def cmd_enable_adapter(args: argparse.Namespace) -> int:
     """Execute the enable-adapter command.
 
@@ -1854,6 +2076,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_inventory(args)
     elif args.command == "sources":
         return cmd_sources(args)
+    elif args.command == "source-status":
+        return cmd_source_status(args)
     elif args.command == "enable-adapter":
         return cmd_enable_adapter(args)
     elif args.command == "disable-adapter":
