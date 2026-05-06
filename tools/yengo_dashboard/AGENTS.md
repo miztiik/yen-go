@@ -47,6 +47,7 @@ tools/yengo_dashboard/
     routes_lock.py      # GET/POST endpoints (config-lock status/release)
     routes_maintenance.py # POST clean / rollback / vacuum-db (long-running, via RunController)
     routes_admin.py     # POST adapter enable/disable + GET publish-log search (short-running, via PipelineRunner)
+    routes_logs.py      # GET stage-log file list + tail (read-only filesystem under .pm-runtime/logs)
     models.py           # Pydantic response schemas
   web/
     index.html          # tab shell (Overview / Adapters / Live Run / Maintenance / History)
@@ -58,6 +59,7 @@ tools/yengo_dashboard/
     test_routes_lock.py        # env-driven shim of config-lock {status,release}
     test_routes_maintenance.py # real-subprocess shim that echoes argv (clean/rollback/vacuum-db)
     test_routes_admin.py       # env-driven shim of enable-adapter / disable-adapter / publish-log search
+    test_routes_logs.py        # real-disk fixture for stage-log list + tail (path-traversal safety)
     test_run_controller.py     # direct controller tests + slow `validate` smoke
 ```
 
@@ -81,7 +83,10 @@ tools/yengo_dashboard/
 | POST   | `/api/adapter/enable`         | subprocess `enable-adapter ID [--force]` | 200 with `{ok, returncode, stdout, stderr}` even on non-zero |
 | POST   | `/api/adapter/disable`        | subprocess `disable-adapter [--force]`| same shape; clears active adapter                |
 | GET    | `/api/publish-log/search`     | subprocess `publish-log search --format json …` | 400 if CLI rejects (no filter, etc.); raw payload otherwise |
+| GET    | `/api/logs/stage-files`       | direct read of `.pm-runtime/logs/*.log`         | name + size + mtime, newest-first; empty `files:[]` if dir missing |
+| GET    | `/api/logs/stage-files/{name}`| direct tail of one log file                     | 404 on bad name (regex / outside logs dir); 422 if `lines>5000` |
 | GET    | `/`, `/app.js`, `/styles.css` | StaticFiles                           | mounted at `/`, `/api/*` precedes               |
+| GET    | `/library`, `/pipeline`, `/operations`, `/logs`, `/guide`, `/guide/{rest:path}` | SPA shell | All return `index.html` so deep-link refresh works under clean-path routing |
 
 The single-active-run guard is shared across **every** mutating endpoint
 (`run`, `clean`, `rollback`, `vacuum-db`). One run at a time, regardless of
@@ -124,6 +129,13 @@ The cockpit **never reformats** pipeline-owned shapes:
   CLI failure (no filter, parse error, etc.) the route returns 400 with
   `{message, returncode, stdout, stderr}` so the operator sees the CLI's
   hint message verbatim — the hint goes to stdout, not stderr.
+- `/api/logs/stage-files` and `/api/logs/stage-files/{name}` → pure
+  filesystem reads under `.pm-runtime/logs/`. Names must match
+  `^[A-Za-z0-9._-]+\.log$` AND the resolved path must stay inside the logs
+  dir (path-traversal defense). Tail uses `deque(maxlen=lines)` so the
+  whole file never lives in memory. `lines` is capped at 5000 by FastAPI's
+  `Query(le=…)`. The cockpit reads files directly because log files are
+  the pipeline's own observable artifact — no domain interpretation needed.
 - SSE frames on `/api/run/{handle}/events`:
   - `event: line` carries `{ts, stream, text, seq}` — `stream` is exactly
     `"stdout"` or `"stderr"`, `seq` is monotonic per run.

@@ -1107,8 +1107,49 @@ async function runPublishLogSearch() {
   out.innerHTML = `<div class="text-xs text-slate-500">searching…</div>`;
   try {
     const res = await getJSON(`/api/publish-log/search?${params.toString()}`);
-    out.innerHTML = `<pre class="text-xs text-slate-200 whitespace-pre-wrap font-mono bg-slate-950 border border-slate-800 rounded p-3 max-h-96 overflow-auto">${escapeHtml(JSON.stringify(res.raw, null, 2))}</pre>`;
+    out.innerHTML = renderPublishLogResults(res.raw);
   } catch (err) { out.innerHTML = errorBlock("publish-log search", err); }
+}
+
+// Slice 5: render the publish-log search payload as a structured table so
+// operators can scan columns instead of squinting at JSON. The CLI returns
+// either a list of entries or a {results: [...]} envelope; treat both.
+function renderPublishLogResults(raw) {
+  const rows = Array.isArray(raw) ? raw : (raw?.results || raw?.entries || []);
+  if (!Array.isArray(rows) || rows.length === 0) {
+    const detailsBlock = `<details class="mt-2"><summary class="cursor-pointer text-xs text-slate-500">raw JSON</summary>
+      <pre class="mt-1 text-xs text-slate-400 whitespace-pre-wrap font-mono bg-slate-950 border border-slate-800 rounded p-2 max-h-60 overflow-auto">${escapeHtml(JSON.stringify(raw, null, 2))}</pre>
+    </details>`;
+    return `<div class="text-xs text-slate-400 italic">no entries match the filter.</div>${detailsBlock}`;
+  }
+  // Discover columns from the first row, with a stable lead order for the
+  // common keys so the table is recognizable across pipeline schema bumps.
+  const lead = ["timestamp", "ts", "date", "run_id", "puzzle_id", "source", "trace_id", "action", "status"];
+  const seen = new Set(lead);
+  const extras = [];
+  for (const k of Object.keys(rows[0] || {})) {
+    if (!seen.has(k)) { extras.push(k); seen.add(k); }
+  }
+  const cols = lead.filter(c => rows.some(r => c in r)).concat(extras);
+  return `
+    <div class="overflow-x-auto rounded-md border border-slate-800 bg-slate-900">
+      <table class="w-full text-xs">
+        <thead class="text-slate-500 uppercase tracking-wider sticky top-0 bg-slate-900">
+          <tr>${cols.map(c => `<th class="font-normal text-left py-1.5 px-2">${escapeHtml(c)}</th>`).join("")}</tr>
+        </thead>
+        <tbody>${rows.map(r => `
+          <tr class="border-t border-slate-800 align-top">
+            ${cols.map(c => {
+              const v = r[c];
+              const cell = v == null ? "" : (typeof v === "object" ? JSON.stringify(v) : String(v));
+              return `<td class="py-1 px-2 font-mono text-slate-200 break-all">${escapeHtml(cell)}</td>`;
+            }).join("")}
+          </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>
+    <div class="mt-2 text-[11px] text-slate-500">${rows.length.toLocaleString()} entr${rows.length === 1 ? "y" : "ies"}</div>
+  `;
 }
 
 function maintCard(opts) {
@@ -1204,22 +1245,11 @@ function renderMaintenance() {
         button: { id: "mr-go", label: "Run rollback", variant: "destructive", destructive: true },
       })}
     </div>
-
-    <h2 class="text-xs uppercase tracking-wider text-slate-500 mt-8 mb-3">Diagnostics · publish-log search</h2>
-    <section class="rounded-md border border-slate-800 bg-slate-900 p-4 space-y-3">
-      <div class="grid md:grid-cols-4 gap-3 text-xs">
-        <label>Run ID<input    id="pl-run-id"    type="text" placeholder="20260505-deadbeef" class="workshop-input block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" /></label>
-        <label>Puzzle ID<input id="pl-puzzle-id" type="text" placeholder="abc123def456 (16-hex)" class="workshop-input block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" /></label>
-        <label>Source<input    id="pl-source"    type="text" placeholder="sanderland" class="workshop-input block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" /></label>
-        <label>Trace ID<input  id="pl-trace-id"  type="text" placeholder="a1b2c3d4e5f67890 (16-hex)" class="workshop-input block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" /></label>
-        <label>Date <span class="text-slate-500">(YYYY-MM-DD)</span><input id="pl-date" type="text" placeholder="2026-05-05" class="workshop-input block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" /></label>
-        <label>From<input id="pl-from" type="text" placeholder="2026-05-01" class="workshop-input block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" /></label>
-        <label>To<input   id="pl-to"   type="text" placeholder="2026-05-31" class="workshop-input block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" /></label>
-        <label>Limit<input id="pl-limit" type="number" min="1" placeholder="50" class="block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" /></label>
-      </div>
-      <button id="pl-go" class="${PILL_VARIANTS.info} hover:brightness-125 text-sm rounded-md px-3 py-1.5">Search</button>
-      <div id="pl-results"></div>
-    </section>
+    <p class="mt-4 text-[11px] text-slate-500">
+      Looking for publish-log search? It moved to the
+      <a href="/logs" data-internal-nav="logs" class="text-teal-300 hover:text-teal-200 underline">Logs</a>
+      tab (Audit sub-section) so all read-only investigation lives in one place.
+    </p>
   `;
 
   $("#mv-go").addEventListener("click", (e) => startMaintenance("/api/vacuum-db", readVacuumForm(), "vacuum-db", e.currentTarget));
@@ -1244,7 +1274,187 @@ function renderMaintenance() {
     if (!ok) return;
     startMaintenance("/api/rollback", body, "rollback", originBtn);
   });
+}
+
+// ---------- Logs (Slice 5) ----------
+//
+// Three sub-sections under one nav: stage logs (file list + tail viewer),
+// audit (publish-log search), and a pointer to the live SSE log on Pipeline.
+// Sub-tabs are persisted in sessionStorage so a tab switch + return lands
+// the operator back where they were.
+
+const LOGS_SUBTAB_KEY = "yengo-dashboard:logsSubtab";
+const LOGS_DEFAULT_SUBTAB = "stage";
+const LOGS_TAIL_DEFAULT = 500;
+
+function _readLogsSubtab() {
+  try {
+    const v = sessionStorage.getItem(LOGS_SUBTAB_KEY);
+    if (v === "stage" || v === "audit" || v === "live") return v;
+  } catch { /* ignore */ }
+  return LOGS_DEFAULT_SUBTAB;
+}
+
+function _writeLogsSubtab(v) {
+  try { sessionStorage.setItem(LOGS_SUBTAB_KEY, v); } catch { /* ignore */ }
+}
+
+function _formatBytes(n) {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KiB`;
+  return `${(n / 1024 / 1024).toFixed(1)} MiB`;
+}
+
+function renderLogs() {
+  const root = $("#view-logs");
+  const sub = _readLogsSubtab();
+  root.innerHTML = `
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="text-xs uppercase tracking-wider text-slate-500">Logs</h2>
+      <span class="text-xs text-slate-500">read-only investigation</span>
+    </div>
+    <nav id="logs-subtabs" role="tablist" class="flex gap-1 mb-4 border-b border-slate-800">
+      <button role="tab" data-subtab="stage" class="logs-subtab px-3 py-1.5 text-xs uppercase tracking-wider">Stage logs</button>
+      <button role="tab" data-subtab="audit" class="logs-subtab px-3 py-1.5 text-xs uppercase tracking-wider">Audit · publish-log</button>
+      <button role="tab" data-subtab="live"  class="logs-subtab px-3 py-1.5 text-xs uppercase tracking-wider">Live run</button>
+    </nav>
+    <section id="logs-pane-stage" data-pane="stage" class="logs-pane"></section>
+    <section id="logs-pane-audit" data-pane="audit" class="logs-pane hidden"></section>
+    <section id="logs-pane-live"  data-pane="live"  class="logs-pane hidden"></section>
+  `;
+
+  function activate(name) {
+    _writeLogsSubtab(name);
+    $$("#logs-subtabs button").forEach((b) =>
+      b.classList.toggle("active", b.dataset.subtab === name));
+    $$(".logs-pane", root).forEach((p) =>
+      p.classList.toggle("hidden", p.dataset.pane !== name));
+    if (name === "stage") _renderLogsStagePane();
+    if (name === "audit") _renderLogsAuditPane();
+    if (name === "live")  _renderLogsLivePane();
+  }
+  $("#logs-subtabs").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-subtab]");
+    if (b) activate(b.dataset.subtab);
+  });
+  activate(sub);
+}
+
+async function _renderLogsStagePane() {
+  const pane = $("#logs-pane-stage");
+  pane.innerHTML = `<div class="text-xs text-slate-500">loading log files…</div>`;
+  try {
+    const data = await getJSON("/api/logs/stage-files");
+    if (!data.files.length) {
+      pane.innerHTML = emptyState(
+        "No stage logs on disk yet.",
+        `The pipeline writes per-day, per-stage logs into <code>${escapeHtml(data.logs_dir)}</code> when a run executes.`,
+      );
+      return;
+    }
+    pane.innerHTML = `
+      <div class="grid lg:grid-cols-[20rem,1fr] gap-4">
+        <aside class="rounded-md border border-slate-800 bg-slate-900 p-2 max-h-[70vh] overflow-y-auto">
+          <div class="text-[10px] uppercase tracking-wider text-slate-500 px-2 py-1">${data.files.length} files</div>
+          <ul id="stage-files-list" class="text-xs">
+            ${data.files.map((f) => `
+              <li>
+                <button data-file="${escapeHtml(f.name)}"
+                        class="stage-file-btn w-full text-left px-2 py-1 rounded hover:bg-slate-800/60 font-mono">
+                  <span class="block">${escapeHtml(f.name)}</span>
+                  <span class="block text-[10px] text-slate-500">
+                    ${escapeHtml(_formatBytes(f.size_bytes))} ·
+                    <span data-rel-time="${escapeHtml(f.mtime_iso)}">${relTime(f.mtime_iso)}</span>
+                  </span>
+                </button>
+              </li>`).join("")}
+          </ul>
+        </aside>
+        <div>
+          <div class="flex items-center gap-2 mb-2 text-xs">
+            <span class="text-slate-500">Tail</span>
+            <select id="stage-tail-lines" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs">
+              <option value="100">100</option>
+              <option value="500" selected>500</option>
+              <option value="2000">2000</option>
+              <option value="5000">5000</option>
+            </select>
+            <span id="stage-tail-meta" class="text-slate-500"></span>
+          </div>
+          <div id="stage-tail-output" class="log-panel min-h-[60vh]"></div>
+        </div>
+      </div>
+    `;
+    $("#stage-files-list").addEventListener("click", (e) => {
+      const b = e.target.closest("button.stage-file-btn");
+      if (!b) return;
+      $$(".stage-file-btn", pane).forEach((x) => x.classList.toggle("active", x === b));
+      _loadStageTail(b.dataset.file);
+    });
+    $("#stage-tail-lines").addEventListener("change", () => {
+      const active = $(".stage-file-btn.active", pane);
+      if (active) _loadStageTail(active.dataset.file);
+    });
+  } catch (err) {
+    pane.innerHTML = errorBlock("/api/logs/stage-files", err);
+  }
+}
+
+async function _loadStageTail(filename) {
+  const out = $("#stage-tail-output");
+  const meta = $("#stage-tail-meta");
+  if (!out) return;
+  const lines = Number($("#stage-tail-lines")?.value || LOGS_TAIL_DEFAULT);
+  out.innerHTML = `<div class="text-xs text-slate-500 px-2 py-1">tailing ${escapeHtml(filename)}…</div>`;
+  try {
+    const data = await getJSON(`/api/logs/stage-files/${encodeURIComponent(filename)}?lines=${lines}`);
+    out.innerHTML = data.lines.map((ln) =>
+      `<div class="log-row"><span class="lr-text">${escapeHtml(ln)}</span></div>`,
+    ).join("") || `<div class="text-xs text-slate-500 px-2 py-1">file is empty</div>`;
+    out.scrollTop = out.scrollHeight;
+    if (meta) {
+      meta.textContent = data.truncated
+        ? `showing last ${data.lines.length.toLocaleString()} of ${data.total_lines.toLocaleString()} lines`
+        : `${data.lines.length.toLocaleString()} lines`;
+    }
+  } catch (err) {
+    out.innerHTML = errorBlock(`tail ${filename}`, err);
+  }
+}
+
+function _renderLogsAuditPane() {
+  const pane = $("#logs-pane-audit");
+  pane.innerHTML = `
+    <section class="rounded-md border border-slate-800 bg-slate-900 p-4 space-y-3">
+      <div class="grid md:grid-cols-4 gap-3 text-xs">
+        <label>Run ID<input    id="pl-run-id"    type="text" placeholder="20260505-deadbeef" class="block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" /></label>
+        <label>Puzzle ID<input id="pl-puzzle-id" type="text" placeholder="abc123def456 (16-hex)" class="block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" /></label>
+        <label>Source<input    id="pl-source"    type="text" placeholder="sanderland" class="block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" /></label>
+        <label>Trace ID<input  id="pl-trace-id"  type="text" placeholder="a1b2c3d4e5f67890 (16-hex)" class="block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" /></label>
+        <label>Date <span class="text-slate-500">(YYYY-MM-DD)</span><input id="pl-date" type="text" placeholder="2026-05-05" class="block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" /></label>
+        <label>From<input id="pl-from" type="text" placeholder="2026-05-01" class="block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" /></label>
+        <label>To<input   id="pl-to"   type="text" placeholder="2026-05-31" class="block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" /></label>
+        <label>Limit<input id="pl-limit" type="number" min="1" placeholder="50" class="block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" /></label>
+      </div>
+      <button id="pl-go" class="${PILL_VARIANTS.info} hover:brightness-125 text-sm rounded-md px-3 py-1.5">Search</button>
+      <div id="pl-results"></div>
+    </section>
+  `;
   $("#pl-go").addEventListener("click", runPublishLogSearch);
+}
+
+function _renderLogsLivePane() {
+  const pane = $("#logs-pane-live");
+  pane.innerHTML = `
+    <div class="rounded-md border border-slate-800 bg-slate-900 p-6">
+      <p class="text-sm text-slate-300 mb-2">Live run output streams via SSE on the
+        <a href="/pipeline" data-internal-nav="pipeline" class="text-teal-300 hover:text-teal-200 underline">Pipeline</a>
+        tab.</p>
+      <p class="text-xs text-slate-500">The log panel there owns its own filters
+        (level, stream, search) and stage stepper. This pane links there rather
+        than duplicating the SSE subscription.</p>
+    </div>
+  `;
 }
 
 // ---------- History ----------
@@ -1480,6 +1690,15 @@ document.addEventListener("click", async (e) => {
   const copyBtn = e.target.closest("button.copy-run-id");
   if (copyBtn) { copyToClipboard(copyBtn.dataset.runId, copyBtn); return; }
 
+  // Slice 5: in-app cross-tab links (e.g. Operations → Logs/Audit) must
+  // route via showTab + pushState so we don't trigger a full page reload.
+  const internalNav = e.target.closest("a[data-internal-nav]");
+  if (internalNav) {
+    e.preventDefault();
+    showTab(internalNav.dataset.internalNav);
+    return;
+  }
+
   // Alarm-bar release-lock action
   const alarmBtn = e.target.closest("button[data-action='release-lock']");
   if (alarmBtn) { tryReleaseLock(); return; }
@@ -1599,6 +1818,7 @@ const NAV_VIEWS = {
   library:    ["overview", "adapters"],
   pipeline:   ["run", "history"],
   operations: ["maintenance"],
+  logs:       ["logs"],
   guide:      ["guide"],
 };
 
@@ -1608,6 +1828,7 @@ const RENDERERS = {
   run:         renderLiveRun,
   maintenance: renderMaintenance,
   history:     renderHistory,
+  logs:        renderLogs,
   guide:       renderGuide,
 };
 

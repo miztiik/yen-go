@@ -270,3 +270,84 @@ def test_guide_uses_clean_path(app_js: str) -> None:
         "parsePath must extract guide subpath into guidePath."
     )
 
+
+# ---------- Logs nav (Slice 5) -----------------------------------------------
+
+
+def test_sidebar_includes_logs_nav(index_html: str) -> None:
+    """Slice 5: Logs is a top-level nav item with the scroll-text icon."""
+    assert 'data-nav="logs"' in index_html, (
+        "Slice 5: sidebar must include data-nav='logs' button."
+    )
+    assert ">Logs<" in index_html, "Visible label must read 'Logs'."
+
+
+def test_view_logs_section_present(index_html: str) -> None:
+    """The Logs nav requires a #view-logs section in the page shell."""
+    assert 'id="view-logs"' in index_html, (
+        "Slice 5: index.html must declare a #view-logs section."
+    )
+
+
+def test_nav_views_routes_logs(app_js: str) -> None:
+    """NAV_VIEWS must route 'logs' to a 'logs' view (no fallback)."""
+    match = re.search(r"const\s+NAV_VIEWS\s*=\s*\{(.*?)\};", app_js, flags=re.DOTALL)
+    assert match
+    assert re.search(r"\blogs\s*:\s*\[", match.group(1)), (
+        "NAV_VIEWS must contain a 'logs' key."
+    )
+
+
+def test_render_logs_function_present(app_js: str) -> None:
+    """renderLogs must exist and own its three subtab panes."""
+    assert "function renderLogs" in app_js, (
+        "Slice 5: renderLogs() must be defined."
+    )
+    for sub in ("stage", "audit", "live"):
+        assert f'data-subtab="{sub}"' in app_js, (
+            f"renderLogs must wire a subtab button for '{sub}'."
+        )
+
+
+def test_publish_log_search_moved_out_of_maintenance(app_js: str) -> None:
+    """The publish-log search UI must live in renderLogs (Audit pane), not in
+    renderMaintenance, otherwise the operations page still owns it."""
+    maint = re.search(
+        r"function\s+renderMaintenance\s*\([^)]*\)\s*\{(.*?)\n\}",
+        app_js,
+        flags=re.DOTALL,
+    )
+    assert maint, "renderMaintenance not found"
+    assert "pl-go" not in maint.group(1), (
+        "Slice 5: publish-log search button must not live in renderMaintenance."
+    )
+    # And the audit pane in renderLogs MUST own it.
+    audit = re.search(
+        r"function\s+_renderLogsAuditPane\s*\([^)]*\)\s*\{(.*?)\n\}",
+        app_js,
+        flags=re.DOTALL,
+    )
+    assert audit, "_renderLogsAuditPane not found"
+    assert 'id="pl-go"' in audit.group(1), (
+        "Slice 5: publish-log search must be rendered by _renderLogsAuditPane."
+    )
+
+
+def test_publish_log_results_render_as_table(app_js: str) -> None:
+    """Results must come back as a <table>, not a <pre>JSON dump."""
+    assert "renderPublishLogResults" in app_js, (
+        "Slice 5: a renderPublishLogResults() helper must transform the raw "
+        "CLI payload into a structured table."
+    )
+
+
+def test_internal_nav_link_handler_present(app_js: str) -> None:
+    """Cross-tab links (e.g. Operations → Logs) must route via showTab,
+    not trigger a real navigation."""
+    assert re.search(
+        r'data-internal-nav', app_js
+    ), "Slice 5: in-app cross-tab links must use data-internal-nav."
+    assert re.search(
+        r'closest\(\s*"a\[data-internal-nav\]"\s*\)', app_js
+    ), "Slice 5: click delegation must intercept data-internal-nav links."
+

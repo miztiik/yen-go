@@ -18,6 +18,7 @@ from tools.yengo_dashboard.server.pipeline_runner import PipelineRunner
 from tools.yengo_dashboard.server.routes_admin import build_admin_router
 from tools.yengo_dashboard.server.routes_docs import build_docs_router
 from tools.yengo_dashboard.server.routes_lock import build_lock_router
+from tools.yengo_dashboard.server.routes_logs import build_logs_router
 from tools.yengo_dashboard.server.routes_maintenance import build_maintenance_router
 from tools.yengo_dashboard.server.routes_read import build_read_router
 from tools.yengo_dashboard.server.routes_run import build_run_router
@@ -86,6 +87,7 @@ def create_app(
     app.include_router(build_maintenance_router(controller=run_controller))
     app.include_router(build_lock_router(runner=runner))
     app.include_router(build_admin_router(runner=runner))
+    app.include_router(build_logs_router(state_reader=state_reader))
     app.include_router(build_docs_router(repo_root=root))
     # Read-only mount of config/ so the JS can fetch puzzle-levels.json /
     # content-types.json directly (no Pydantic round-trip for static config).
@@ -105,7 +107,7 @@ def create_app(
         def _serve_index() -> FileResponse:
             return FileResponse(index_path)
 
-        for nav in ("library", "pipeline", "operations", "guide"):
+        for nav in ("library", "pipeline", "operations", "logs", "guide"):
             app.add_api_route(f"/{nav}", _serve_index, methods=["GET"], include_in_schema=False)
         # Guide deep links: /guide/concepts/foo etc.
         app.add_api_route(

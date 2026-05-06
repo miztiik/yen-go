@@ -364,3 +364,27 @@ class PublishLogSearchResponse(BaseModel):
     """
 
     raw: object = Field(..., description="Parsed CLI JSON (--format json).")
+
+
+class StageLogFile(BaseModel):
+    """One entry in ``GET /api/logs/stage-files``."""
+
+    name: str = Field(..., description="Filename only — no path. e.g. '2026-05-06-ingest.log'.")
+    size_bytes: int = Field(..., ge=0)
+    mtime_iso: str = Field(..., description="UTC ISO-8601 modification time.")
+
+
+class StageLogListResponse(BaseModel):
+    """``GET /api/logs/stage-files`` payload."""
+
+    files: list[StageLogFile] = Field(default_factory=list)
+    logs_dir: str = Field(..., description="POSIX path to .pm-runtime/logs (relative to repo root).")
+
+
+class StageLogTailResponse(BaseModel):
+    """``GET /api/logs/stage-files/{name}`` payload."""
+
+    name: str
+    lines: list[str] = Field(default_factory=list)
+    truncated: bool = Field(..., description="True if the file had more lines than requested.")
+    total_lines: int = Field(..., ge=0)

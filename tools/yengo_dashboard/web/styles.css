@@ -835,3 +835,38 @@ body[data-theme="light"] #top-header {
    actually bright before any nested cards paint. */
 body[data-theme="light"].bg-zinc-950 { background-color: rgb(248 250 252) !important; }
 
+/* ---------- Logs sub-tabs (Slice 5) ---------------------------------- */
+/* Lightweight tab strip styled to match the header chip / sidebar nav.
+   The active subtab gets a teal underline so the eye finds it without
+   reading the labels. */
+.logs-subtab {
+  color: rgb(148 163 184);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-weight: 500;
+  transition: color 120ms, border-color 120ms;
+}
+.logs-subtab:hover { color: rgb(226 232 240); }
+.logs-subtab.active {
+  color: rgb(94 234 212);
+  border-bottom-color: rgb(20 184 166);
+}
+
+/* Active row in the stage-files file list — same teal accent as the active
+   subtab so the two reinforce. */
+.stage-file-btn.active {
+  background: rgb(20 184 166 / 0.12);
+  color: rgb(94 234 212);
+}
+
+body[data-theme="light"] .logs-subtab { color: rgb(71 85 105); }
+body[data-theme="light"] .logs-subtab:hover { color: rgb(15 23 42); }
+body[data-theme="light"] .logs-subtab.active {
+  color: rgb(13 148 136);
+  border-bottom-color: rgb(13 148 136);
+}
+body[data-theme="light"] .stage-file-btn.active {
+  background: rgb(204 251 241);
+  color: rgb(13 148 136);
+}
+
