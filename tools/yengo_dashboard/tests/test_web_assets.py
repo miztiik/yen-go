@@ -167,3 +167,55 @@ def test_theme_toggle_button_present(index_html: str, app_js: str) -> None:
         "app.js must expose applyTheme/THEME_KEY for the toggle to flip + persist."
     )
 
+
+# ---------- Header system chip (Slice 3) -------------------------------------
+
+
+def test_top_header_with_system_chip_present(index_html: str) -> None:
+    """The new top header must host the always-visible system chip."""
+    assert 'id="top-header"' in index_html, (
+        "Slice 3: top header must exist to host the system chip."
+    )
+    assert 'id="system-chip"' in index_html, (
+        "Slice 3: #system-chip button must be in the top header."
+    )
+    assert 'id="page-breadcrumb"' in index_html, (
+        "Slice 3: top header must include a #page-breadcrumb element."
+    )
+
+
+def test_legacy_sidebar_system_pill_removed(index_html: str) -> None:
+    """The old bottom-left System button must be gone — the chip replaces it."""
+    assert 'id="system-pill"' not in index_html, (
+        "Slice 3: legacy sidebar #system-pill must be removed."
+    )
+
+
+def test_paint_system_chip_wired_into_master_tick(app_js: str) -> None:
+    """paintSystemChip must run on every poll alongside paintStatusStrip,
+    otherwise the chip drifts out of sync with SYSTEM state."""
+    assert "function paintSystemChip" in app_js, (
+        "Slice 3: paintSystemChip() must be defined in app.js."
+    )
+    assert re.search(
+        r"function\s+masterTick\s*\([^)]*\)\s*\{[^}]*paintSystemChip\s*\(",
+        app_js,
+        flags=re.DOTALL,
+    ), "Slice 3: masterTick() must call paintSystemChip() each cycle."
+
+
+def test_system_chip_click_opens_system_dialog(app_js: str) -> None:
+    """The chip must open the same dialog as the bottom status strip."""
+    assert re.search(
+        r"#system-chip[\s\S]{0,400}?paintSystemDialog[\s\S]{0,200}?showModal",
+        app_js,
+    ), "Slice 3: clicking #system-chip must call paintSystemDialog + showModal."
+
+
+def test_system_chip_severity_styles_present(styles_css: str) -> None:
+    """Each chip severity must be styled, otherwise warn/error look identical."""
+    for sev in ("ok", "running", "warn", "error"):
+        assert f'.system-chip[data-sev="{sev}"]' in styles_css, (
+            f"Slice 3: chip severity '{sev}' must be styled in styles.css."
+        )
+

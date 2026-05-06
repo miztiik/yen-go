@@ -78,6 +78,36 @@ function paintSystemDialog() {
     : "Never refreshed.";
 }
 
+// ---------- Top header system chip (Slice 3) ----------
+//
+// Always-visible status surface. Severity is derived from the same SYSTEM
+// state the bottom strip uses, so the two never disagree. Click delegates
+// to the same system dialog the old bottom-left button opened.
+
+function paintSystemChip() {
+  const chip = $("#system-chip");
+  if (!chip) return;
+  const label = $("#system-chip-label");
+  const meta  = $("#system-chip-meta");
+  let sev = "ok";
+  let text = "healthy";
+  if (SYSTEM.unreachable) {
+    sev = "error"; text = "unreachable";
+  } else if (SYSTEM.active && !isTerminal(SYSTEM.active.status)) {
+    sev = "running";
+    const sub = SYSTEM.active.command?.[3] || "run";
+    text = `${sub} running`;
+  } else if (SYSTEM.lock.locked) {
+    sev = "warn"; text = "lock held";
+  }
+  chip.dataset.sev = sev;
+  if (label) label.textContent = text;
+  if (meta) {
+    const v = SYSTEM.health.version || "?";
+    meta.textContent = `v${v}`;
+  }
+}
+
 function isTerminal(status) {
   return ["completed", "failed", "cancelled"].includes(status);
 }
@@ -170,6 +200,7 @@ function _scheduleNextTick() {
 async function masterTick() {
   await Promise.all([refreshHealth(), refreshLock(), refreshActive()]);
   paintStatusStrip();
+  paintSystemChip();
   refreshRelTimes();
 
   const digest = _digestSystem();
@@ -1494,6 +1525,14 @@ document.addEventListener("click", async (e) => {
     return;
   }
 
+  // Top-header system chip → same target as the bottom strip (single dialog).
+  const chipHit = e.target.closest("#system-chip");
+  if (chipHit) {
+    paintSystemDialog();
+    $("#system-dialog").showModal();
+    return;
+  }
+
   // Adapter row actions
   const btn = e.target.closest("button[data-act]");
   if (!btn) return;
@@ -1591,6 +1630,8 @@ function showTab(name) {
     v.classList.toggle("hidden", !visibleViews.has(viewId));
   });
   history.replaceState(null, "", `#${nav}`);
+  const crumb = $("#page-breadcrumb");
+  if (crumb) crumb.textContent = nav;
 
   // Render every visible section.
   for (const viewId of visibleViews) {

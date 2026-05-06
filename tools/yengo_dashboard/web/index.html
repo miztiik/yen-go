@@ -54,14 +54,9 @@
       </button></li>
     </ul>
 
-    <!-- System status (bottom of sidebar) -->
-    <div class="border-t border-zinc-800/60 px-3 py-3 space-y-1">
-      <button id="system-pill"
-              class="w-full flex items-center gap-2 text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 rounded-lg px-2 py-1.5 transition"
-              aria-haspopup="dialog">
-        <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
-        <span id="system-status-label">System</span>
-      </button>
+    <!-- Theme toggle (System status moved to the top header chip; the bottom
+         status strip still escalates warn/error severities). -->
+    <div class="border-t border-zinc-800/60 px-3 py-3">
       <button id="theme-toggle"
               class="theme-toggle"
               type="button"
@@ -75,6 +70,26 @@
 
   <!-- ===== MAIN CONTENT COLUMN ===== -->
   <div class="flex flex-col flex-1 min-w-0">
+    <!-- Top header — system status chip lives here so it is always visible
+         without burying it in the bottom-left corner. Click opens the
+         existing system dialog (same target as the bottom strip). -->
+    <header id="top-header"
+            class="flex-shrink-0 h-12 px-6 flex items-center justify-between
+                   bg-zinc-950/80 border-b border-zinc-800/60 backdrop-blur">
+      <div id="page-breadcrumb" class="text-xs text-zinc-500 uppercase tracking-wider"></div>
+      <button id="system-chip"
+              type="button"
+              aria-haspopup="dialog"
+              aria-label="Open system status dialog"
+              title="Click for full system details"
+              class="system-chip"
+              data-sev="ok">
+        <span class="system-chip-dot" aria-hidden="true"></span>
+        <span class="system-chip-label" id="system-chip-label">starting…</span>
+        <span class="system-chip-meta" id="system-chip-meta"></span>
+      </button>
+    </header>
+
     <main id="page-content" class="flex-1 overflow-auto px-8 py-6">
       <!-- Library = overview + adapters stacked -->
       <section id="view-overview"    class="view"></section>

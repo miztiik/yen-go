@@ -778,6 +778,56 @@ body[data-theme="light"] .theme-toggle:hover { color: rgb(15 23 42); background:
 .theme-toggle i[data-lucide],
 .theme-toggle svg { width: 14px; height: 14px; flex-shrink: 0; stroke: currentColor; }
 
+/* ---------- Top header system chip (Slice 3) ---------- */
+.system-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: rgb(15 23 42 / 0.6);
+  color: rgb(203 213 225);
+  transition: background var(--dur-fast) var(--ease-standard),
+              border-color var(--dur-fast) var(--ease-standard);
+}
+.system-chip:hover { background: rgb(30 41 59 / 0.8); }
+.system-chip-dot {
+  width: 0.5rem; height: 0.5rem;
+  border-radius: 9999px;
+  background: currentColor;
+  flex-shrink: 0;
+  animation: pmc-pulse 1.6s ease-in-out infinite;
+}
+.system-chip-label { letter-spacing: 0.02em; }
+.system-chip-meta {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: rgb(100 116 139);
+  border-left: 1px solid rgb(51 65 85);
+  padding-left: 0.5rem;
+}
+.system-chip[data-sev="ok"]      { color: rgb(110 231 183); border-color: rgb(16 185 129 / 0.35); }
+.system-chip[data-sev="ok"]      .system-chip-dot { animation: none; }
+.system-chip[data-sev="running"] { color: rgb(94 234 212); border-color: rgb(20 184 166 / 0.45); }
+.system-chip[data-sev="warn"]    { color: rgb(253 186 116); border-color: rgb(249 115 22 / 0.45); }
+.system-chip[data-sev="error"]   { color: rgb(252 165 165); border-color: rgb(244 63 94 / 0.45); }
+.system-chip[data-sev="info"]    { color: rgb(190 242 100); border-color: rgb(132 204 22 / 0.35); }
+
+/* Light-theme chip surface */
+body[data-theme="light"] .system-chip { background: rgb(241 245 249); color: rgb(15 23 42); }
+body[data-theme="light"] .system-chip-meta { border-left-color: rgb(203 213 225); color: rgb(100 116 139); }
+
+/* Light-theme top header */
+body[data-theme="light"] #top-header {
+  background: rgb(255 255 255 / 0.92);
+  border-bottom-color: rgb(226 232 240);
+}
+
 /* Also flip the body's own background — the bg-zinc-950 class on <body>
    is element+class specificity (0,0,1,1), equal to body[data-theme=...].
    The !important on the .bg-zinc-950 override above already wins, but the
