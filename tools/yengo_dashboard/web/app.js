@@ -1105,7 +1105,7 @@ function renderMaintenance() {
   const root = $("#view-maintenance");
   root.innerHTML = `
     <div class="flex items-baseline gap-3 mb-3">
-      <h2 class="text-xs uppercase tracking-wider text-slate-500">Maintenance</h2>
+      <h2 class="text-xs uppercase tracking-wider text-slate-500">Operations</h2>
       <span class="text-xs text-slate-500">three groups, increasing blast radius</span>
     </div>
     <div id="maint-error" class="mb-3"></div>
@@ -1314,7 +1314,7 @@ function renderHistoryRows(runs) {
           ${r.failure_count > 0 ? `<span class="text-xs text-rose-300">${r.failure_count} failure${r.failure_count === 1 ? "" : "s"}</span>` : ""}
         </div>
         <div class="flex gap-2 mt-2 flex-wrap">${r.stages.map(stagePill).join("")}</div>
-        <div class="text-xs text-slate-500 font-mono mt-2 truncate" title="${escapeHtml(r.state_file)}">${escapeHtml(r.state_file)}</div>
+        <div class="text-xs text-slate-500 font-mono mt-2 truncate" title="Source: run-state JSON at ${escapeHtml(r.state_file)}">${escapeHtml(r.state_file)}</div>
       </div>`;
   }).join("");
 }
@@ -1354,14 +1354,15 @@ async function renderHistory() {
           <div class="text-2xl font-semibold tabular-nums mt-1 ${sum.okPct >= 90 ? "text-emerald-300" : sum.okPct >= 70 ? "text-orange-300" : "text-rose-300"}">${sum.okPct}%</div>
           <div class="text-xs text-slate-400 mt-0.5">across ${sum.total} runs</div>
         </div>
-        <div class="rounded-md border border-slate-800 bg-slate-900 p-4">
-          <div class="text-[10px] uppercase tracking-wider text-slate-500">Last failure</div>
+        <div class="rounded-md border border-slate-800 bg-slate-900 p-4"
+             title="Computed only from the most recent ${_historyData.runs.length} run-state files loaded into this view. Older failures on disk are not considered.">
+          <div class="text-[10px] uppercase tracking-wider text-slate-500">Last failure <span class="text-slate-600">(last ${_historyData.runs.length} runs)</span></div>
           ${sum.lastFail ? `
             <div class="text-sm font-mono mt-1 truncate" title="${escapeHtml(sum.lastFail.run_id)}">${escapeHtml(sum.lastFail.run_id)}</div>
             <div class="text-xs text-slate-400 mt-0.5" data-rel-time="${escapeHtml(sum.lastFail.started_at || "")}">${relTime(sum.lastFail.started_at)}</div>
           ` : `
             <div class="text-2xl font-semibold text-emerald-300 mt-1">none</div>
-            <div class="text-xs text-slate-400 mt-0.5">in shown window</div>
+            <div class="text-xs text-slate-400 mt-0.5">in last ${_historyData.runs.length} runs</div>
           `}
         </div>
       </div>
@@ -1545,16 +1546,21 @@ document.addEventListener("click", async (e) => {
 // run, maintenance, history) remain in the DOM so the existing render
 // functions don't need to change.
 //
-// Library  = overview + adapters       (KPIs above source list)
-// Pipeline = run + history             (active run above past runs)
-// Workshop = maintenance               (single view)
-// Guide    = guide                     (markdown docs viewer)
+// Library    = overview + adapters       (KPIs above source list)
+// Pipeline   = run + history             (active run above past runs)
+// Operations = maintenance               (single view)
+// Guide      = guide                     (markdown docs viewer)
+
+// Legacy hash names that should be remapped to current nav names. Kept here
+// (rather than as a one-shot rewrite at boot) so deep links shared during the
+// rename window keep working.
+const LEGACY_NAV_ALIASES = { workshop: "operations" };
 
 const NAV_VIEWS = {
-  library:  ["overview", "adapters"],
-  pipeline: ["run", "history"],
-  workshop: ["maintenance"],
-  guide:    ["guide"],
+  library:    ["overview", "adapters"],
+  pipeline:   ["run", "history"],
+  operations: ["maintenance"],
+  guide:      ["guide"],
 };
 
 const RENDERERS = {
@@ -1573,9 +1579,10 @@ const VIEW_TO_NAV = Object.fromEntries(
 );
 
 function showTab(name) {
-  // Accept either a nav name (library/pipeline/workshop/guide) or a legacy
-  // view name (overview/adapters/run/maintenance/history/guide).
-  const nav = NAV_VIEWS[name] ? name : (VIEW_TO_NAV[name] || "library");
+  // Accept either a nav name (library/pipeline/operations/guide), a legacy
+  // alias (workshop), or a legacy view name (overview/adapters/run/...).
+  const aliased = LEGACY_NAV_ALIASES[name] || name;
+  const nav = NAV_VIEWS[aliased] ? aliased : (VIEW_TO_NAV[aliased] || "library");
   const visibleViews = new Set(NAV_VIEWS[nav]);
 
   $$(".nav-item").forEach((b) => b.classList.toggle("active", b.dataset.nav === nav));
@@ -1620,7 +1627,7 @@ window.addEventListener("hashchange", () => {
     loadGuideDoc(decodeURIComponent(raw.slice("guide:".length)));
     return;
   }
-  if (NAV_VIEWS[raw] || RENDERERS[raw]) showTab(raw);
+  if (NAV_VIEWS[raw] || RENDERERS[raw] || LEGACY_NAV_ALIASES[raw]) showTab(raw);
 });
 
 // ---------- Boot ----------
@@ -1633,6 +1640,8 @@ if (initialHash.startsWith("guide:")) {
   initialGuidePath = decodeURIComponent(initialHash.slice("guide:".length));
 } else if (NAV_VIEWS[initialHash]) {
   initialNav = initialHash;
+} else if (LEGACY_NAV_ALIASES[initialHash]) {
+  initialNav = LEGACY_NAV_ALIASES[initialHash];
 } else if (VIEW_TO_NAV[initialHash]) {
   initialNav = VIEW_TO_NAV[initialHash];
 }
