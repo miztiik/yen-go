@@ -76,7 +76,7 @@ function onGuideClick(e) {
 export async function loadGuideDoc(path) {
   _guideCurrent = path;
   $$("#guide-tree a").forEach((a) => a.classList.toggle("active", a.dataset.path === path));
-  history.replaceState(null, "", `#guide:${encodeURIComponent(path)}`);
+  history.replaceState(null, "", `/guide/${path.split("/").map(encodeURIComponent).join("/")}`);
   const article = $("#guide-content");
   article.innerHTML = `<div class="text-zinc-500 text-sm">Loading <code>${escapeHtml(path)}</code>…</div>`;
   try {

@@ -414,3 +414,35 @@ class TestRunsEndpoint:
         assert body["total"] == 2
         assert len(body["runs"]) == 1
         assert body["runs"][0]["run_id"] == "good"
+
+
+class TestSpaCleanPathRoutes:
+    """Slice 4: clean URL paths for the SPA. Deep links like /pipeline must
+    return the same index.html as /, otherwise refreshing on a non-root path
+    or sharing a deep link 404s."""
+
+    @pytest.mark.parametrize("path", ["/library", "/pipeline", "/operations", "/guide"])
+    def test_top_level_nav_paths_serve_index_html(self, path: str) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.get(path)
+        assert resp.status_code == 200, resp.text
+        assert resp.headers["content-type"].startswith("text/html"), resp.headers
+        # Sanity: it really is the dashboard's index.html, not a stub.
+        assert "Yen-Go Dashboard" in resp.text
+
+    def test_guide_subpath_serves_index_html(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.get("/guide/concepts/anything-here.md")
+        assert resp.status_code == 200, resp.text
+        assert "Yen-Go Dashboard" in resp.text
+
+    def test_api_routes_still_take_precedence(self) -> None:
+        """The catch-all SPA routes must not shadow /api/* — /api/health must
+        still return JSON, not the SPA shell."""
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.get("/api/health")
+        assert resp.status_code == 200
+        assert resp.headers["content-type"].startswith("application/json")

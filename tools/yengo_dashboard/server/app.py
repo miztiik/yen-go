@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from tools.yengo_dashboard import __version__
@@ -95,5 +96,20 @@ def create_app(
     # the directory serve index.html for "/", which is what we want.
     web = _web_dir()
     if web.is_dir():
+        # Slice 4: clean URL paths for the SPA. The static mount only serves
+        # index.html for "/"; deep links like /pipeline would 404. These
+        # explicit routes hand back the same index.html so the JS router can
+        # parse location.pathname on boot.
+        index_path = web / "index.html"
+
+        def _serve_index() -> FileResponse:
+            return FileResponse(index_path)
+
+        for nav in ("library", "pipeline", "operations", "guide"):
+            app.add_api_route(f"/{nav}", _serve_index, methods=["GET"], include_in_schema=False)
+        # Guide deep links: /guide/concepts/foo etc.
+        app.add_api_route(
+            "/guide/{rest:path}", _serve_index, methods=["GET"], include_in_schema=False,
+        )
         app.mount("/", StaticFiles(directory=str(web), html=True), name="web")
     return app

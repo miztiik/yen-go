@@ -219,3 +219,54 @@ def test_system_chip_severity_styles_present(styles_css: str) -> None:
             f"Slice 3: chip severity '{sev}' must be styled in styles.css."
         )
 
+
+# ---------- Clean path routing (Slice 4) -------------------------------------
+
+
+def test_show_tab_uses_push_state_clean_path(app_js: str) -> None:
+    """Slice 4: showTab must push a clean path (/nav), not a hash (#nav)."""
+    body = re.search(r"function\s+showTab\s*\([^)]*\)\s*\{(.*?)\n\}", app_js, flags=re.DOTALL)
+    assert body, "showTab() not found"
+    assert "pushState" in body.group(1), (
+        "showTab() must call history.pushState (clean-path routing)."
+    )
+    assert "`#${nav}`" not in body.group(1), (
+        "showTab() must not write hash-style URLs anymore."
+    )
+
+
+def test_parse_path_helper_present(app_js: str) -> None:
+    """Slice 4: a parsePath() helper is the single source of pathname parsing."""
+    assert re.search(r"function\s+parsePath\s*\(", app_js), (
+        "Slice 4: parsePath() helper must exist for path-based routing."
+    )
+
+
+def test_popstate_listener_handles_back_forward(app_js: str) -> None:
+    """Slice 4: browser back/forward must re-render via popstate."""
+    assert re.search(
+        r'addEventListener\(\s*["\']popstate["\']', app_js
+    ), "Slice 4: window must listen for 'popstate' to handle back/forward."
+
+
+def test_legacy_hash_rewritten_at_boot(app_js: str) -> None:
+    """Slice 4: a #workshop or #operations hash must be rewritten to a clean
+    path on boot so the URL bar reflects the new format immediately."""
+    # The boot block computes a `cleanPath` from the legacy hash and
+    # rewrites the URL via replaceState. Look for that pair.
+    assert "cleanPath" in app_js, (
+        "Slice 4: boot must compute a cleanPath from the legacy hash."
+    )
+    assert re.search(
+        r"history\.replaceState\([^)]*cleanPath", app_js
+    ), "Slice 4: legacy hashes must be rewritten via replaceState to /<nav>."
+
+
+def test_guide_uses_clean_path(app_js: str) -> None:
+    """Boot: parsePath must recognize /guide/<path> deep links."""
+    body = re.search(r"function\s+parsePath\s*\([^)]*\)\s*\{(.*?)\n\}", app_js, flags=re.DOTALL)
+    assert body, "parsePath() not found"
+    assert '"guide"' in body.group(1) and "guidePath" in body.group(1), (
+        "parsePath must extract guide subpath into guidePath."
+    )
+

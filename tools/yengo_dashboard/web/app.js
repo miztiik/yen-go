@@ -1629,7 +1629,12 @@ function showTab(name) {
     const viewId = v.id.replace(/^view-/, "");
     v.classList.toggle("hidden", !visibleViews.has(viewId));
   });
-  history.replaceState(null, "", `#${nav}`);
+  // Slice 4: clean path routing. pushState only when path actually changes
+  // so we don't pile duplicate entries into history on tab re-clicks.
+  const targetPath = `/${nav}`;
+  if (location.pathname !== targetPath && !location.pathname.startsWith(`${targetPath}/`)) {
+    history.pushState({ nav }, "", targetPath);
+  }
   const crumb = $("#page-breadcrumb");
   if (crumb) crumb.textContent = nav;
 
@@ -1660,15 +1665,33 @@ $("#status-strip").addEventListener("keydown", (e) => {
   $("#system-dialog").showModal();
 });
 
-// React to in-app navigation by hash (e.g. status strip "Open Live Run" link).
+// React to in-app navigation by hash. Slice 4 moved primary routing to clean
+// paths, but this handler stays so that legacy `#workshop`, `#operations`,
+// `#guide:path` hashes shared during the rename window still work — we
+// rewrite them to the clean path and re-render.
 window.addEventListener("hashchange", () => {
   const raw = location.hash.slice(1);
+  if (!raw) return;
   if (raw.startsWith("guide:")) {
+    const sub = raw.slice("guide:".length);
     showTab("guide");
-    loadGuideDoc(decodeURIComponent(raw.slice("guide:".length)));
+    if (sub) loadGuideDoc(decodeURIComponent(sub));
     return;
   }
   if (NAV_VIEWS[raw] || RENDERERS[raw] || LEGACY_NAV_ALIASES[raw]) showTab(raw);
+});
+
+// Slice 4: browser back/forward should re-render the appropriate tab. The
+// catch-all backend routes serve index.html for /library /pipeline /operations
+// /guide(/...), so popstate is the only signal we get on navigation.
+window.addEventListener("popstate", () => {
+  const parsed = parsePath(location.pathname);
+  if (parsed.nav === "guide" && parsed.guidePath) {
+    showTab("guide");
+    loadGuideDoc(parsed.guidePath);
+  } else {
+    showTab(parsed.nav);
+  }
 });
 
 // ---------- Theme toggle (light default, dark opt-in) ----------
@@ -1717,18 +1740,46 @@ paintThemeToggle();
 
 // ---------- Boot ----------
 
-const initialHash = location.hash.slice(1);
+// Slice 4: clean-path router. Resolve the current navigation target from
+// (1) location.pathname, falling back to (2) the legacy hash format. Legacy
+// hashes are immediately rewritten via replaceState so the URL bar matches
+// the new format on the very first paint.
+function parsePath(pathname) {
+  const parts = pathname.split("/").filter(Boolean);
+  const head = parts[0] || "";
+  if (head === "guide") {
+    const sub = parts.slice(1).map(decodeURIComponent).join("/");
+    return { nav: "guide", guidePath: sub || null };
+  }
+  if (NAV_VIEWS[head]) return { nav: head, guidePath: null };
+  if (LEGACY_NAV_ALIASES[head]) return { nav: LEGACY_NAV_ALIASES[head], guidePath: null };
+  return { nav: "library", guidePath: null };
+}
+
 let initialNav = "library";
 let initialGuidePath = null;
-if (initialHash.startsWith("guide:")) {
-  initialNav = "guide";
-  initialGuidePath = decodeURIComponent(initialHash.slice("guide:".length));
-} else if (NAV_VIEWS[initialHash]) {
-  initialNav = initialHash;
-} else if (LEGACY_NAV_ALIASES[initialHash]) {
-  initialNav = LEGACY_NAV_ALIASES[initialHash];
-} else if (VIEW_TO_NAV[initialHash]) {
-  initialNav = VIEW_TO_NAV[initialHash];
+const initialHash = location.hash.slice(1);
+if (location.pathname !== "/" && location.pathname !== "") {
+  const parsed = parsePath(location.pathname);
+  initialNav = parsed.nav;
+  initialGuidePath = parsed.guidePath;
+} else if (initialHash) {
+  // Legacy hash → clean path. Rewrite the URL bar so screenshots and copies
+  // immediately use the new format.
+  if (initialHash.startsWith("guide:")) {
+    initialNav = "guide";
+    initialGuidePath = decodeURIComponent(initialHash.slice("guide:".length));
+  } else if (NAV_VIEWS[initialHash]) {
+    initialNav = initialHash;
+  } else if (LEGACY_NAV_ALIASES[initialHash]) {
+    initialNav = LEGACY_NAV_ALIASES[initialHash];
+  } else if (VIEW_TO_NAV[initialHash]) {
+    initialNav = VIEW_TO_NAV[initialHash];
+  }
+  const cleanPath = initialNav === "guide" && initialGuidePath
+    ? `/guide/${initialGuidePath.split("/").map(encodeURIComponent).join("/")}`
+    : `/${initialNav}`;
+  history.replaceState(null, "", cleanPath);
 }
 showTab(initialNav);
 if (initialGuidePath) loadGuideDoc(initialGuidePath);
