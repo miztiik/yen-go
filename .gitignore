@@ -117,3 +117,6 @@ toos/*/logs/
 tools/puzzle-enrichment-lab/models-data/
 tools/puzzle-enrichment-lab/tests/fixtures/scale/
 tools/puzzle-enrichment-lab/tests/fixtures/
+
+# Stash recovery workspace (RCA 2026-05-06 — agent stash@{0} violation)
+.recovery/
