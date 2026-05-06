@@ -7,7 +7,7 @@ Real fixtures, no mocks. Each test:
   3. Calls ``cmd_source_status`` directly with ``args.json=True``.
   4. Captures stdout via the ``capsys`` pytest fixture and parses the JSON.
   5. Asserts the named-bucket counts and the schema shape that
-     ``tools/pm_cockpit/`` will rely on (per principle #6: cockpit calls this
+     ``tools/yengo_dashboard/`` will rely on (per principle #6: cockpit calls this
      command and trusts its bucket names; it never sees raw status integers).
 """
 

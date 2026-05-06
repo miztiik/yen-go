@@ -1,7 +1,7 @@
 """Unit tests for the inventory snapshot writer (G2).
 
 The snapshot is the contract between the pipeline (writer) and presentation
-tools like pm_cockpit (reader). These tests pin the JSON shape so a
+tools like yengo_dashboard (reader). These tests pin the JSON shape so a
 schema drift breaks fast in CI rather than silently flipping the cockpit
 into a "snapshot missing" advisory state.
 """

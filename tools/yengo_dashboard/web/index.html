@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Yen-Go Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Inter variable font with optical sizing (2026 spec) -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide icon system: <i data-lucide="name"></i> + lucide.createIcons() -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <!-- Markdown renderer for the Guide tab -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/lib/marked.umd.js"></script>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="bg-zinc-950 text-zinc-100 h-screen overflow-hidden flex" data-run-active="false">
+
+  <!-- ===== LEFT SIDEBAR ===== -->
+  <nav id="sidebar" class="w-[220px] flex-shrink-0 border-r border-zinc-800/80 bg-zinc-950/80 flex flex-col">
+    <!-- Brand block -->
+    <div class="px-5 py-5 border-b border-zinc-800/60">
+      <h1 class="brand-wordmark" aria-label="Yen-Go Dashboard">
+        <span class="brand-mark">Yen-Go</span>
+        <span class="brand-sub">Dashboard</span>
+      </h1>
+      <p class="text-[11px] text-zinc-600 mt-1 tracking-wide uppercase">puzzle pipeline</p>
+    </div>
+
+    <!-- Nav items -->
+    <ul class="flex-1 py-3" id="nav-list">
+      <li><button data-nav="library"  class="nav-item">
+        <i data-lucide="layers"></i><span>Library</span>
+      </button></li>
+      <li><button data-nav="pipeline" class="nav-item">
+        <i data-lucide="git-branch"></i><span>Pipeline</span>
+      </button></li>
+      <li><button data-nav="workshop" class="nav-item">
+        <i data-lucide="wrench"></i><span>Workshop</span>
+      </button></li>
+      <li><button data-nav="guide"    class="nav-item">
+        <i data-lucide="book-open"></i><span>Guide</span>
+      </button></li>
+    </ul>
+
+    <!-- System status (bottom of sidebar) -->
+    <div class="border-t border-zinc-800/60 px-3 py-3">
+      <button id="system-pill"
+              class="w-full flex items-center gap-2 text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 rounded-lg px-2 py-1.5 transition"
+              aria-haspopup="dialog">
+        <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
+        <span id="system-status-label">System</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===== MAIN CONTENT COLUMN ===== -->
+  <div class="flex flex-col flex-1 min-w-0">
+    <main id="page-content" class="flex-1 overflow-auto px-8 py-6">
+      <!-- Library = overview + adapters stacked -->
+      <section id="view-overview"    class="view"></section>
+      <section id="view-adapters"    class="view"></section>
+      <!-- Pipeline = run + history stacked -->
+      <section id="view-run"         class="view hidden"></section>
+      <section id="view-history"     class="view hidden"></section>
+      <!-- Workshop = maintenance -->
+      <section id="view-maintenance" class="view hidden"></section>
+      <!-- Guide = docs viewer -->
+      <section id="view-guide"       class="view hidden"></section>
+    </main>
+
+    <!-- Sticky bottom status strip -->
+    <div id="status-strip" role="status" aria-live="polite" aria-atomic="true"
+         tabindex="0" aria-haspopup="dialog" title="Click for system details"
+         class="flex-shrink-0 h-9 px-4 flex items-center gap-3 text-xs font-medium
+                bg-zinc-950/90 backdrop-blur ring-1 ring-white/5 cursor-pointer
+                transition-colors duration-150 hover:bg-zinc-900/90"></div>
+  </div>
+
+  <!-- ===== DIALOGS ===== -->
+  <dialog id="system-dialog" class="pmc-dialog">
+    <form method="dialog">
+      <h3>System</h3>
+      <dl id="system-readings" class="text-sm grid grid-cols-[7rem_1fr] gap-y-1 gap-x-3"></dl>
+      <p class="text-[11px] text-zinc-500" id="system-refreshed"></p>
+      <div class="actions">
+        <button value="close" class="rounded-lg px-3 py-1 text-sm bg-zinc-800 hover:bg-zinc-700">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="confirm-dialog" class="pmc-dialog">
+    <form method="dialog">
+      <h3 id="cd-title">Confirm action</h3>
+      <p id="cd-body"></p>
+      <label class="text-xs text-zinc-400">
+        Type <code id="cd-verb" class="text-rose-300"></code> to confirm
+        <input id="cd-input" type="text" autocomplete="off" spellcheck="false" />
+      </label>
+      <div class="actions">
+        <button value="cancel" class="rounded-lg px-3 py-1 text-sm bg-zinc-800 hover:bg-zinc-700">Cancel</button>
+        <button id="cd-go" value="ok" disabled
+                class="rounded-lg px-3 py-1 text-sm bg-rose-500/15 text-rose-300 ring-1 ring-rose-500/40
+                       disabled:opacity-40 disabled:pointer-events-none">Proceed</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast-region" role="status" aria-live="polite"></div>
+
+  <script src="/app.js" type="module"></script>
+</body>
+</html>

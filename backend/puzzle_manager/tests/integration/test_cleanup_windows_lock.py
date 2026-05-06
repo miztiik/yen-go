@@ -1,6 +1,6 @@
 """Windows-only: ``clear_index_state`` must survive a transient file lock.
 
-The cockpit (``tools/pm_cockpit``) reads ``yengo-search.db`` over a SQLite
+The cockpit (``tools/yengo_dashboard``) reads ``yengo-search.db`` over a SQLite
 read-only URI. On Windows, even after the connection's context manager
 exits, the OS may still report the file as locked for a few milliseconds
 while the SQLite finalizer releases its handle. Issuing ``Path.unlink()``

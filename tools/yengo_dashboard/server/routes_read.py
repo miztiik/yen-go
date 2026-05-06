@@ -1,0 +1,82 @@
+"""Read-only HTTP endpoints for yengo_dashboard.
+
+These never mutate state. Per principle #6, they either:
+  - Subprocess the puzzle_manager CLI for any interpretation-heavy data, or
+  - Return raw rows from SQLite/JSON state files for pure data passthrough.
+"""
+
+from __future__ import annotations
+
+import time
+
+from fastapi import APIRouter, HTTPException, Query, Request
+
+from tools.yengo_dashboard import __version__
+from tools.yengo_dashboard.server.models import (
+    AdaptersResponse,
+    HealthResponse,
+    InventoryResponse,
+    RunsResponse,
+)
+from tools.yengo_dashboard.server.pipeline_runner import PipelineCommandError, PipelineRunner
+from tools.yengo_dashboard.server.state_reader import StateReader
+
+
+def build_read_router(
+    *,
+    started_at: float,
+    runner: PipelineRunner,
+    state_reader: StateReader,
+) -> APIRouter:
+    router = APIRouter(prefix="/api", tags=["read"])
+
+    # In-process TTL cache for /api/adapters. The underlying CLI invocation
+    # spawns a Python subprocess (~300-600ms cold). Cockpit polls every 3s
+    # and tab switches re-query. A 2s TTL means at most one subprocess per
+    # ~2s window regardless of poll/tab pressure, while keeping data fresh.
+    _adapters_cache: dict = {"ts": 0.0, "payload": None}
+    _ADAPTERS_TTL_S = 2.0
+
+    @router.get("/health", response_model=HealthResponse)
+    def health(_request: Request) -> HealthResponse:
+        return HealthResponse(
+            ok=True,
+            version=__version__,
+            uptime_s=round(time.monotonic() - started_at, 3),
+        )
+
+    @router.get("/adapters", response_model=AdaptersResponse)
+    def adapters(_request: Request) -> AdaptersResponse:
+        now = time.monotonic()
+        cached = _adapters_cache["payload"]
+        if cached is not None and (now - _adapters_cache["ts"]) < _ADAPTERS_TTL_S:
+            return AdaptersResponse.model_validate(cached)
+        try:
+            payload = runner.source_status()
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": "puzzle_manager source-status --json failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                },
+            ) from exc
+        _adapters_cache["payload"] = payload
+        _adapters_cache["ts"] = now
+        # Pydantic validates the shape we promised; mismatches surface as 500
+        # so we notice when the CLI contract drifts.
+        return AdaptersResponse.model_validate(payload)
+
+    @router.get("/inventory", response_model=InventoryResponse)
+    def inventory(_request: Request) -> InventoryResponse:
+        return InventoryResponse.model_validate(state_reader.read_inventory())
+
+    @router.get("/runs", response_model=RunsResponse)
+    def runs(
+        _request: Request,
+        limit: int = Query(50, ge=0, le=500),
+    ) -> RunsResponse:
+        return RunsResponse.model_validate(state_reader.read_runs(limit=limit))
+
+    return router

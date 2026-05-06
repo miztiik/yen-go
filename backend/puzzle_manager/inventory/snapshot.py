@@ -1,13 +1,13 @@
 """Atomic JSON snapshot of yengo-search.db counts for presentation tools.
 
-Why this exists: pm_cockpit (a presentation-only dashboard) needs the same
+Why this exists: yengo_dashboard (a presentation-only dashboard) needs the same
 counts the published SQLite DB exposes, but reading the live DB while the
 pipeline rewrites it (vacuum-db, rollback, publish, clean) causes Windows
 file-lock collisions (WinError 5/32). The fix is a clean read/write split:
 the backend writes inventory.json after every state mutation; the cockpit
 (or any other read-only consumer) reads JSON only and never opens the DB.
 
-The JSON shape mirrors ``tools.pm_cockpit.server.models.InventoryResponse``
+The JSON shape mirrors ``tools.yengo_dashboard.server.models.InventoryResponse``
 plus is the canonical, language-agnostic snapshot contract — anything that
 needs counts should consume this file rather than running its own SQL.
 """
