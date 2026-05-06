@@ -90,6 +90,40 @@ _ENCODED_FIELDS = (
 )
 
 
+def _extract_desc(data: dict[str, Any]) -> str:
+    """Pull the puzzle's instructional sentence from qqdata.
+
+    The site renders this as the green text under the heading. Field
+    `desc` is the canonical source; `title` and `name` are fallbacks
+    used by older qqdata payloads.
+    """
+    for key in ("desc", "title", "name"):
+        value = data.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return ""
+
+
+def _extract_signs(data: dict[str, Any]) -> list[str]:
+    """Parse the qqdata `signs` field — stones the puzzle marks with
+    triangles on the site.
+
+    Stored as either a JSON-encoded string (raw qqdata from HTML) or
+    an already-parsed list (browser capture path).
+    """
+    raw = data.get("signs")
+    if isinstance(raw, list):
+        return [s for s in raw if isinstance(s, str)]
+    if isinstance(raw, str) and raw.strip():
+        try:
+            parsed = json.loads(raw)
+        except (json.JSONDecodeError, ValueError):
+            return []
+        if isinstance(parsed, list):
+            return [s for s in parsed if isinstance(s, str)]
+    return []
+
+
 def decode_qqdata_fields(data: dict[str, Any]) -> None:
     """Decode all XOR-encoded fields in a qqdata dict (in-place).
 
@@ -172,6 +206,14 @@ class PuzzleData:
     leiid: int = 0       # Collection/series ID
     taotaiid: int = 0    # Elimination series ID
     hasbook: bool = False  # Whether puzzle is part of a book
+    desc: str = ""       # Site-provided instructional sentence (green hint
+                         # text under the heading). For mark-style puzzles
+                         # (qtype 16) this is required to make the SGF
+                         # interpretable.
+    signs: list[str] = field(default_factory=list)
+                         # Stones the question references (rendered with
+                         # triangle overlays on the site). Serialized to
+                         # SGF as TR[].
 
     @property
     def player_to_move(self) -> str:
@@ -298,4 +340,6 @@ class PuzzleData:
             leiid=data.get("leiid", 0) or 0,
             taotaiid=data.get("taotaiid", 0) or 0,
             hasbook=bool(data.get("hasbook", False)),
+            desc=_extract_desc(data),
+            signs=_extract_signs(data),
         )

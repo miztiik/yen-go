@@ -209,6 +209,53 @@ def test_root_comment_auto_generated_when_none():
     assert "C[White to play]" in sgf_w
 
 
+def test_root_comment_uses_desc_when_no_explicit_intent():
+    """qqdata.desc (green hint text) becomes the root C[] when no
+    explicit root_comment is provided."""
+    data = _sample_qqdata()
+    data["desc"] = "Please mark the liberties of the stones with triangles on the game board."
+    puzzle = PuzzleData.from_qqdata(data)
+    sgf = convert_puzzle_to_sgf(puzzle)
+    assert "C[Please mark the liberties of the stones with triangles on the game board.]" in sgf
+    # Auto-generated fallback must NOT also be emitted
+    assert "C[Black to play]" not in sgf
+
+
+def test_explicit_root_comment_overrides_desc():
+    """An explicit root_comment beats puzzle.desc."""
+    data = _sample_qqdata()
+    data["desc"] = "Please mark the liberties."
+    puzzle = PuzzleData.from_qqdata(data)
+    sgf = convert_puzzle_to_sgf(puzzle, root_comment="Black to live or kill")
+    assert "C[Black to live or kill]" in sgf
+    assert "C[Please mark the liberties.]" not in sgf
+
+
+def test_signs_emitted_as_triangle_markers():
+    """qqdata.signs becomes a TR[] property listing triangled stones."""
+    data = _sample_qqdata()
+    data["signs"] = ["pd", "qd", "qe"]
+    puzzle = PuzzleData.from_qqdata(data)
+    sgf = convert_puzzle_to_sgf(puzzle)
+    assert "TR[pd][qd][qe]" in sgf
+
+
+def test_signs_accepts_json_string_form():
+    """signs may arrive as a JSON-encoded string from raw HTML qqdata."""
+    data = _sample_qqdata()
+    data["signs"] = '["pd","qd","qe"]'
+    puzzle = PuzzleData.from_qqdata(data)
+    sgf = convert_puzzle_to_sgf(puzzle)
+    assert "TR[pd][qd][qe]" in sgf
+
+
+def test_no_signs_omits_tr_property():
+    """When signs is empty/missing, no TR[] is emitted."""
+    puzzle = PuzzleData.from_qqdata(_sample_qqdata())
+    sgf = convert_puzzle_to_sgf(puzzle)
+    assert "TR[" not in sgf
+
+
 def test_all_enrichment_together():
     """YX, YL, YM, and root C[] all appear when provided."""
     puzzle = PuzzleData.from_qqdata(_sample_qqdata())

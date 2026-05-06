@@ -389,7 +389,20 @@ Output Structure:
     # Discover-book-ids utility
     disc_ids_parser = subparsers.add_parser(
         "discover-book-ids",
-        help="Discover puzzle IDs within one or more books (scrapes /book/levelorder/)",
+        help="Discover puzzle IDs within one or more books (CLI-only legacy levelorder scraper)",
+    )
+
+    # Rebuild books-catalog.jsonl from inputs (idempotent, safe to run anytime)
+    subparsers.add_parser(
+        "rebuild-catalog",
+        help="Rebuild books-catalog.jsonl from book-ids.jsonl + discovery-catalog.json + book-reviews.jsonl",
+    )
+
+    # Validate that books-catalog.jsonl matches what would be regenerated
+    # from current inputs (catches drift if anyone bypassed the rebuild rule).
+    subparsers.add_parser(
+        "validate-catalog",
+        help="Verify books-catalog.jsonl is up-to-date with its inputs (exit 1 on drift)",
     )
 
     # Backfill-yl utility
@@ -415,6 +428,131 @@ Output Structure:
         default=False,
         help="Show what would change without modifying files",
     )
+
+    # Backfill-capture-log utility
+    backfill_caplog_parser = subparsers.add_parser(
+        "backfill-capture-log",
+        help="Rebuild capture-log.jsonl for books from existing SGF filenames",
+    )
+    backfill_caplog_parser.add_argument(
+        "--book-id",
+        type=int,
+        default=None,
+        metavar="BOOK_ID",
+        help="Single book ID to backfill (default: all books)",
+    )
+    backfill_caplog_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="Show what would be written without modifying files",
+    )
+    # Enrich-capture-log utility (retrospective: add sgf_hash to existing entries)
+    enrich_caplog_parser = subparsers.add_parser(
+        "enrich-capture-log",
+        help=(
+            "Add sgf_hash (normalized SGF SHA256[:16]) to existing capture-log "
+            "entries that lack it. Read-only on SGF files."
+        ),
+    )
+    enrich_caplog_parser.add_argument(
+        "--book-id",
+        type=int,
+        default=None,
+        metavar="BOOK_ID",
+        help="Single book ID to enrich (default: all books)",
+    )
+    enrich_caplog_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="Show what would change without modifying files",
+    )
+
+    # Inventory utility (corpus dedup view).
+    inv_parser = subparsers.add_parser(
+        "inventory",
+        help=(
+            "Show or refresh the 101weiqi corpus inventory "
+            "(unique pids + per-book overlap, no pid lists)"
+        ),
+    )
+    inv_parser.add_argument(
+        "--refresh",
+        action="store_true",
+        default=False,
+        help="Rescan the corpus and rewrite inventory.json + unique-sgf.txt",
+    )
+    inv_parser.add_argument(
+        "--json",
+        action="store_true",
+        default=False,
+        help="Print inventory.json to stdout instead of a human summary",
+    )
+    # Reconcile-books utility
+    reconcile_parser = subparsers.add_parser(
+        "reconcile-books",
+        help="Reconcile per-book book.json with actual SGF files on disk",
+    )
+    reconcile_parser.add_argument(
+        "--book-id",
+        type=int,
+        default=None,
+        metavar="BOOK_ID",
+        help="Single book ID to reconcile (default: all books)",
+    )
+    reconcile_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="Show what would change without modifying files",
+    )
+
+    # Manual chapter skip (Option 3 / schema v5)
+    skip_chapter_parser = subparsers.add_parser(
+        "skip-chapter",
+        help=(
+            "Mark a chapter as permanently skipped in book.json so the "
+            "userscript stops re-visiting it. Useful when the site has "
+            "broken/deleted chapters."
+        ),
+    )
+    skip_chapter_parser.add_argument(
+        "--book-id", type=int, required=True, metavar="BOOK_ID",
+    )
+    chapter_target = skip_chapter_parser.add_mutually_exclusive_group(
+        required=True,
+    )
+    chapter_target.add_argument(
+        "--chapter", type=int, metavar="CHAPTER_NUMBER",
+        help="1-based chapter number (as it appears in book.json)",
+    )
+    chapter_target.add_argument(
+        "--chapter-id", type=int, metavar="CHAPTER_ID",
+        help="Internal chapter_id (101weiqi-side identifier)",
+    )
+    skip_chapter_parser.add_argument(
+        "--reason", type=str, default=None,
+        help="Freeform reason recorded with the skip flag",
+    )
+
+    unskip_chapter_parser = subparsers.add_parser(
+        "unskip-chapter",
+        help="Clear a chapter's skip flag and reset its empty-attempt counter.",
+    )
+    unskip_chapter_parser.add_argument(
+        "--book-id", type=int, required=True, metavar="BOOK_ID",
+    )
+    unskip_target = unskip_chapter_parser.add_mutually_exclusive_group(
+        required=True,
+    )
+    unskip_target.add_argument(
+        "--chapter", type=int, metavar="CHAPTER_NUMBER",
+    )
+    unskip_target.add_argument(
+        "--chapter-id", type=int, metavar="CHAPTER_ID",
+    )
+
     disc_ids_parser.add_argument(
         "--book-id",
         type=int,
@@ -473,10 +611,26 @@ Output Structure:
         return _run_discover_categories(args)
     if args.source_mode == "discover-book-ids":
         return _run_discover_book_ids(args)
+    if args.source_mode == "rebuild-catalog":
+        return _run_rebuild_catalog(args)
+    if args.source_mode == "validate-catalog":
+        return _run_validate_catalog(args)
     if args.source_mode == "backfill-yl":
         return _run_backfill_yl(args)
     if args.source_mode == "backfill-annotations":
         return _run_backfill_annotations(args)
+    if args.source_mode == "backfill-capture-log":
+        return _run_backfill_capture_log(args)
+    if args.source_mode == "enrich-capture-log":
+        return _run_enrich_capture_log(args)
+    if args.source_mode == "reconcile-books":
+        return _run_reconcile_books(args)
+    if args.source_mode == "inventory":
+        return _run_inventory(args)
+    if args.source_mode == "skip-chapter":
+        return _run_skip_chapter(args)
+    if args.source_mode == "unskip-chapter":
+        return _run_unskip_chapter(args)
     if args.source_mode == "receive":
         return _run_receive(args)
     if args.source_mode == "import-jsonl":
@@ -693,6 +847,11 @@ def _run_discover_books(args: argparse.Namespace) -> int:
         output_path=output_path,
         delay=args.delay,
     )
+    # Rebuild derived books-catalog.jsonl so /books and downstream
+    # consumers see fresh metadata. Pure function — safe to call after
+    # any write to discovery-catalog.json.
+    from . import catalog as catalog_mod
+    catalog_mod.rebuild_books_catalog(output_dir)
     return 0 if catalog.books or catalog.book_tags else 1
 
 
@@ -720,7 +879,11 @@ def _run_discover_categories(args: argparse.Namespace) -> int:
 
 
 def _run_discover_book_ids(args: argparse.Namespace) -> int:
-    """Discover puzzle IDs within one or more books by scraping /book/levelorder/.
+    """Discover puzzle IDs within one or more books (CLI-only legacy scraper).
+
+    Note: This is the standalone discover CLI — used for ad-hoc enumeration
+    only. The browser capture flow does NOT use this and instead uses
+    chapter-based discovery via the userscript.
 
     Output format: JSONL — one JSON record per book, appended/merged into
     ``external-sources/101weiqi/book-ids.jsonl`` (or the path given by --output).
@@ -794,10 +957,32 @@ def _run_discover_book_ids(args: argparse.Namespace) -> int:
 
     # Scrape and merge — write incrementally after each book so no progress
     # is lost on crash.
+    # Canonical priority order (best-first). Unknown values sort last.
+    _PRIORITY_ORDER = {
+        "editorial": 0,
+        "premier": 1,
+        "curated": 2,
+        "community": 3,
+        "skip": 4,
+        "unrated": 5,
+    }
+
+    def _entry_puzzle_count(entry: dict) -> int:
+        if "chapters" in entry:
+            return sum(len(ch.get("puzzle_ids", [])) for ch in entry["chapters"])
+        return len(entry.get("puzzle_ids") or [])
+
+    def _sort_key(entry: dict):
+        return (
+            _PRIORITY_ORDER.get(entry.get("priority") or "unrated", 99),
+            -_entry_puzzle_count(entry),  # larger first within tier
+            int(entry.get("book_id", 0)),
+        )
+
     def _flush_jsonl() -> None:
         with output_path.open("w", encoding="utf-8") as f:
-            for bid in sorted(existing):
-                f.write(json.dumps(existing[bid], ensure_ascii=False) + "\n")
+            for entry in sorted(existing.values(), key=_sort_key):
+                f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
     with WeiQiClient() as client:
         for i, book_id in enumerate(book_ids):
@@ -824,6 +1009,14 @@ def _run_discover_book_ids(args: argparse.Namespace) -> int:
                     f"{_ts()}   [{i + 1}/{len(book_ids)}] Book {book_id:>6}: "
                     f"{len(index.puzzle_ids):>5} puzzle IDs{meta_str}"
                 )
+            # Preserve manually-curated fields from prior runs (e.g. priority,
+            # which is set externally via book-reviews / hand edits and is not
+            # re-discovered from the website).
+            prior = existing.get(book_id)
+            if prior:
+                prior_priority = prior.get("priority")
+                if prior_priority and prior_priority != "unrated":
+                    entry["priority"] = prior_priority
             existing[book_id] = entry
             _flush_jsonl()  # <-- incremental save after every book
             if i < len(book_ids) - 1:
@@ -836,7 +1029,61 @@ def _run_discover_book_ids(args: argparse.Namespace) -> int:
 
     total_ids = sum(_count_ids(e) for e in existing.values())
     print(f"\n{_ts()} Saved {len(existing)} books ({total_ids:,} puzzle IDs total) → {output_path}")
+    # Rebuild derived books-catalog.jsonl so /books reflects the new
+    # puzzle_count / chapter changes immediately.
+    from . import catalog as catalog_mod
+    catalog_mod.rebuild_books_catalog(output_dir)
     return 0
+
+
+def _run_rebuild_catalog(args: argparse.Namespace) -> int:
+    """Rebuild books-catalog.jsonl from inputs."""
+    from . import catalog as catalog_mod
+    from .config import get_output_dir
+
+    output_dir = get_output_dir()
+    n = catalog_mod.rebuild_books_catalog(output_dir)
+    print(f"{_ts()} Wrote {catalog_mod.CATALOG_FILE} with {n} entries")
+    return 0
+
+
+def _run_validate_catalog(args: argparse.Namespace) -> int:
+    """Verify on-disk catalog matches what rebuild would produce."""
+    import shutil
+    import tempfile
+
+    from . import catalog as catalog_mod
+    from .config import get_output_dir
+
+    output_dir = get_output_dir()
+    on_disk = output_dir / catalog_mod.CATALOG_FILE
+    if not on_disk.exists():
+        print(f"Error: {on_disk} does not exist. Run 'rebuild-catalog' first.")
+        return 1
+
+    with tempfile.TemporaryDirectory() as td:
+        tmp_dir = Path(td)
+        # Copy inputs into temp dir, rebuild there, diff bytes
+        for fname in (
+            catalog_mod.BOOK_IDS_FILE,
+            catalog_mod.DISCOVERY_CATALOG_FILE,
+            catalog_mod.REVIEWS_FILE,
+        ):
+            src = output_dir / fname
+            if src.exists():
+                shutil.copy2(src, tmp_dir / fname)
+        catalog_mod.rebuild_books_catalog(tmp_dir)
+        expected = (tmp_dir / catalog_mod.CATALOG_FILE).read_bytes()
+        actual = on_disk.read_bytes()
+
+    if expected == actual:
+        print(f"{_ts()} OK — {catalog_mod.CATALOG_FILE} is up-to-date")
+        return 0
+    print(
+        f"{_ts()} DRIFT — {catalog_mod.CATALOG_FILE} differs from a fresh "
+        f"rebuild. Run 'rebuild-catalog'."
+    )
+    return 1
 
 
 def _run_backfill_yl(args: argparse.Namespace) -> int:
@@ -930,6 +1177,526 @@ def _run_backfill_annotations(args: argparse.Namespace) -> int:
     if dry_run:
         print("\n(dry run — no files were modified)")
     return 0 if stats["errors"] == 0 else 1
+
+
+def _run_backfill_capture_log(args: argparse.Namespace) -> int:
+    """Rebuild capture-log.jsonl for books from existing SGF filenames.
+
+    Scans each book's sgf/ directory, parses filenames to extract puzzle metadata,
+    and writes entries to capture-log.jsonl for any SGFs not already logged.
+    """
+    import json
+    import re
+    from datetime import datetime, timezone
+
+    from .config import get_output_dir
+
+    output_dir = get_output_dir(getattr(args, "output_dir", None))
+    books_dir = output_dir / "books"
+    dry_run = getattr(args, "dry_run", False)
+    target_book_id = getattr(args, "book_id", None)
+
+    if not books_dir.exists():
+        print("Error: no books/ directory found")
+        return 1
+
+    if dry_run:
+        print("DRY RUN — no files will be modified\n")
+
+    total_added = 0
+    total_books = 0
+
+    for book_dir in sorted(books_dir.iterdir()):
+        if not book_dir.is_dir():
+            continue
+        sgf_dir = book_dir / "sgf"
+        if not sgf_dir.exists():
+            continue
+
+        # Extract book_id from directory name (e.g. "5121-叶老师围棋入门班")
+        dir_book_id_match = re.match(r"^(\d+)-", book_dir.name)
+        if not dir_book_id_match:
+            continue
+        book_id = int(dir_book_id_match.group(1))
+
+        if target_book_id is not None and book_id != target_book_id:
+            continue
+
+        total_books += 1
+        log_path = book_dir / "capture-log.jsonl"
+
+        # Read existing log entries to find already-logged puzzle IDs
+        existing_puzzle_ids: set[int] = set()
+        existing_entries: list[dict] = []
+        if log_path.exists():
+            for line in log_path.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                    existing_puzzle_ids.add(int(entry["puzzle_id"]))
+                    existing_entries.append(entry)
+                except (json.JSONDecodeError, KeyError, ValueError):
+                    continue
+
+        # Scan SGF filenames: {pos}_{label}_{chpos}_{puzzle_id}.sgf
+        new_entries: list[dict] = []
+        for f in sorted(sgf_dir.iterdir()):
+            if f.suffix != ".sgf":
+                continue
+            # Parse filename: 0405_死活-3目4目5目6目_405_8537.sgf
+            parts = f.stem.split("_", 2)  # split into [pos, ...rest]
+            if len(parts) < 3:
+                continue
+            # Last segment after final underscore is puzzle_id
+            last_parts = f.stem.rsplit("_", 1)
+            if len(last_parts) != 2:
+                continue
+            try:
+                puzzle_id = int(last_parts[1])
+            except ValueError:
+                continue
+            if puzzle_id in existing_puzzle_ids:
+                continue
+
+            # Extract global position from first segment
+            try:
+                global_pos = int(parts[0])
+            except ValueError:
+                global_pos = 0
+
+            # Middle part is chapter label, second-to-last is chapter position
+            middle = f.stem[len(parts[0]) + 1 : f.stem.rfind("_")]
+            # Middle: "死活-3目4目5目6目_405" → split on last _
+            mid_parts = middle.rsplit("_", 1)
+            chapter_name = mid_parts[0] if mid_parts else ""
+            try:
+                chapter_pos = int(mid_parts[1]) if len(mid_parts) > 1 else 0
+            except ValueError:
+                chapter_pos = 0
+
+            # Use file modification time as captured_at (best available)
+            mtime = f.stat().st_mtime
+            captured_at = datetime.fromtimestamp(mtime, tz=timezone.utc).strftime(
+                "%Y-%m-%dT%H:%M:%SZ"
+            )
+
+            new_entries.append({
+                "puzzle_id": puzzle_id,
+                "global_position": global_pos,
+                "chapter_name": chapter_name,
+                "chapter_position": chapter_pos,
+                "file": f.name,
+                "captured_at": captured_at,
+                "backfilled": True,
+            })
+
+        if not new_entries:
+            print(f"  {book_dir.name}: {len(existing_entries)} logged, 0 new — already complete")
+            continue
+
+        print(
+            f"  {book_dir.name}: {len(existing_entries)} logged, "
+            f"{len(new_entries)} to backfill"
+        )
+        total_added += len(new_entries)
+
+        if not dry_run:
+            # Merge existing + new, sort all by global_position for human readability
+            all_entries = existing_entries + new_entries
+            all_entries.sort(key=lambda e: e.get("global_position", 0))
+            with open(log_path, "w", encoding="utf-8") as f:
+                for entry in all_entries:
+                    f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+    print(f"\n{'=' * 50}")
+    print("Capture Log Backfill Summary")
+    print(f"{'=' * 50}")
+    print(f"Books scanned: {total_books}")
+    print(f"Entries added: {total_added}")
+    if dry_run:
+        print("\n(dry run — no files were modified)")
+    return 0
+
+
+def _run_enrich_capture_log(args: argparse.Namespace) -> int:
+    """Add sgf_hash to existing capture-log entries (retrospective)."""
+    import json
+    import re as _re
+
+    from .config import get_output_dir
+    from .sgf_identity import normalized_sgf_hash
+
+    output_dir = get_output_dir(getattr(args, "output_dir", None))
+    books_dir = output_dir / "books"
+    dry_run = getattr(args, "dry_run", False)
+    target_book_id = getattr(args, "book_id", None)
+
+    if not books_dir.exists():
+        print("Error: no books/ directory found")
+        return 1
+
+    if dry_run:
+        print("DRY RUN — no files will be modified\n")
+
+    total_books = 0
+    total_enriched = 0
+    total_skipped_no_file = 0
+    collision_pids: dict[int, set[str]] = {}
+
+    for book_dir in sorted(books_dir.iterdir()):
+        if not book_dir.is_dir():
+            continue
+        m = _re.match(r"^(\d+)-", book_dir.name)
+        book_id = int(m.group(1)) if m else None
+        if target_book_id is not None and book_id != target_book_id:
+            continue
+        log_path = book_dir / "capture-log.jsonl"
+        sgf_dir = book_dir / "sgf"
+        if not log_path.exists() or not sgf_dir.exists():
+            continue
+
+        total_books += 1
+        lines = log_path.read_text(encoding="utf-8").splitlines()
+        out_lines: list[str] = []
+        enriched_here = 0
+        missing_here = 0
+
+        for raw in lines:
+            raw = raw.strip()
+            if not raw:
+                continue
+            try:
+                entry = json.loads(raw)
+            except json.JSONDecodeError:
+                out_lines.append(raw)
+                continue
+
+            # Enrich any captured-puzzle row that lacks sgf_hash. Older
+            # capture-logs predate event_type, so accept rows that either
+            # explicitly mark puzzle_captured OR simply carry puzzle_id + file.
+            if entry.get("sgf_hash"):
+                out_lines.append(json.dumps(entry, ensure_ascii=False))
+                continue
+            event_type = entry.get("event_type")
+            looks_capture = (
+                event_type == "puzzle_captured"
+                or (event_type is None and entry.get("puzzle_id") and entry.get("file"))
+            )
+            if not looks_capture:
+                out_lines.append(json.dumps(entry, ensure_ascii=False))
+                continue
+
+            fname = entry.get("file")
+            sgf_path = sgf_dir / fname if fname else None
+            if not sgf_path or not sgf_path.exists():
+                missing_here += 1
+                out_lines.append(json.dumps(entry, ensure_ascii=False))
+                continue
+
+            try:
+                h = normalized_sgf_hash(sgf_path.read_text(encoding="utf-8"))
+            except OSError:
+                missing_here += 1
+                out_lines.append(json.dumps(entry, ensure_ascii=False))
+                continue
+
+            entry["sgf_hash"] = h
+            enriched_here += 1
+
+            pid = entry.get("puzzle_id")
+            if isinstance(pid, int):
+                collision_pids.setdefault(pid, set()).add(book_dir.name)
+
+            out_lines.append(json.dumps(entry, ensure_ascii=False))
+
+        total_enriched += enriched_here
+        total_skipped_no_file += missing_here
+
+        status = f"enriched={enriched_here} missing-sgf={missing_here}"
+        print(f"  {book_dir.name}: {status}")
+
+        if not dry_run and enriched_here > 0:
+            log_path.write_text("\n".join(out_lines) + "\n", encoding="utf-8")
+
+    # Cross-book pid collision count (informational)
+    cross_book = sum(1 for books in collision_pids.values() if len(books) > 1)
+
+    print(f"\n{'=' * 50}")
+    print("Capture Log Enrichment Summary")
+    print(f"{'=' * 50}")
+    print(f"Books scanned:              {total_books}")
+    print(f"Entries enriched:           {total_enriched}")
+    print(f"Entries skipped (no file):  {total_skipped_no_file}")
+    print(f"Pids appearing in 2+ books: {cross_book}")
+    if dry_run:
+        print("(dry run — no files were modified)")
+    return 0
+
+
+def _run_reconcile_books(args: argparse.Namespace) -> int:
+    """Reconcile per-book ``book.json`` state with actual SGF files on disk."""
+    import re
+
+    from .config import get_output_dir
+    from .receiver import reconcile_book_index
+
+    output_dir = get_output_dir(getattr(args, "output_dir", None))
+    books_dir = output_dir / "books"
+    dry_run = getattr(args, "dry_run", False)
+    target_book_id = getattr(args, "book_id", None)
+
+    if not books_dir.exists():
+        print("Error: no books/ directory found")
+        return 1
+
+    if dry_run:
+        print("DRY RUN — no files will be modified\n")
+
+    results = []
+    for book_dir in sorted(books_dir.iterdir()):
+        if not book_dir.is_dir():
+            continue
+        dir_match = re.match(r"^(\d+)-", book_dir.name)
+        if not dir_match:
+            continue
+        book_id = int(dir_match.group(1))
+        if target_book_id is not None and book_id != target_book_id:
+            continue
+
+        summary = reconcile_book_index(book_dir, dry_run=dry_run)
+        if "error" in summary:
+            print(f"  {book_dir.name}: {summary['error']}")
+            continue
+
+        results.append(summary)
+        changes = summary["newly_captured"] + summary["updated_pids"]
+        dups = summary.get("duplicates_removed", 0)
+        if changes == 0 and dups == 0:
+            print(f"  {book_dir.name}: already consistent ({summary['already_correct']} files)")
+        else:
+            parts = []
+            if summary["newly_captured"]:
+                parts.append(f"{summary['newly_captured']} newly captured")
+            if summary["updated_pids"]:
+                parts.append(f"{summary['updated_pids']} pid updates")
+            if dups:
+                parts.append(f"{dups} duplicates removed")
+            if summary["orphan_files"]:
+                parts.append(f"{summary['orphan_files']} orphans")
+            print(f"  {book_dir.name}: " + ", ".join(parts))
+            print(
+                f"    → captured={summary['final_captured']} "
+                f"external={summary['final_external']} "
+                f"pending={summary['final_pending']}"
+            )
+
+    if not results:
+        print("No books found to reconcile")
+        return 1
+
+    total_changes = sum(r["newly_captured"] + r["updated_pids"] for r in results)
+    print(f"\n{'=' * 50}")
+    print("Reconciliation Summary")
+    print(f"{'=' * 50}")
+    print(f"Books processed: {len(results)}")
+    print(f"Total changes: {total_changes}")
+    if dry_run:
+        print("\n(dry run — no files were modified)")
+    return 0
+
+
+def _run_inventory(args: argparse.Namespace) -> int:
+    """Show or refresh the corpus inventory."""
+    import json
+
+    from .config import get_output_dir
+    from . import inventory as inv_mod
+
+    output_dir = get_output_dir(getattr(args, "output_dir", None))
+    refresh = bool(getattr(args, "refresh", False))
+    as_json = bool(getattr(args, "json", False))
+
+    if refresh:
+        print(f"Scanning {output_dir} ...")
+        inv = inv_mod.refresh_blocking(output_dir)
+    else:
+        inv = inv_mod.load_inventory(output_dir)
+        if inv is None:
+            print(
+                "No inventory.json found. "
+                "Run with --refresh to generate one."
+            )
+            return 1
+
+    if as_json:
+        print(json.dumps(inv, indent=2, ensure_ascii=False))
+        return 0
+
+    totals = inv["totals"]
+    print(f"\nInventory generated_at: {inv['generated_at']}")
+    print(f"Scan duration:         {inv['scan_duration_ms']} ms")
+    print(f"\n{'=' * 50}")
+    print("Totals")
+    print(f"{'=' * 50}")
+    print(f"  Files scanned:       {totals['files']}")
+    print(f"  Unparseable:         {totals['files_unparsable']}")
+    print(f"  Unique pids:         {totals['unique_pids']}")
+    print(f"  Duplicate files:     {totals['duplicate_files']}")
+    print(f"  Overlap %:           {totals['overlap_pct']}%")
+
+    print(f"\n{'=' * 50}")
+    print("Per-location")
+    print(f"{'=' * 50}")
+    for name, loc in inv["locations"].items():
+        print(
+            f"  {name:6s}  files={loc['files']:>6}  "
+            f"unique_pids={loc['unique_pids']:>6}  "
+            f"shared_with_others={loc['shared_with_others_pct']}%"
+        )
+
+    books = inv.get("books", [])
+    if books:
+        print(f"\n{'=' * 50}")
+        print(f"Per-book overlap (top 10 by overlap %, of {len(books)} books)")
+        print(f"{'=' * 50}")
+        top = sorted(books, key=lambda b: b["overlap_with_corpus_pct"], reverse=True)[:10]
+        for b in top:
+            # CJK in dir names crashes cp1252 stdout on Windows; ascii-fold
+            # for display only (the JSON artifact preserves them).
+            safe_dir = b["dir"].encode("ascii", "replace").decode("ascii")
+            print(
+                f"  {safe_dir[:50]:50s}  "
+                f"pids={b['unique_pids']:>5}  "
+                f"overlap={b['overlap_with_corpus_pct']}%"
+            )
+    return 0
+
+
+
+def _resolve_book_dir_for_cli(book_id: int):
+    """Locate ``books/{book_id}-*`` for the configured output dir.
+
+    Used by the manual skip-chapter / unskip-chapter CLI commands.
+    Returns the Path on success, prints an error and returns None on
+    failure so the caller can exit with a clean non-zero code.
+    """
+    from .book_state import find_book_dir
+    from .config import get_output_dir
+
+    books_dir = get_output_dir() / "books"
+    if not books_dir.exists():
+        print(f"Error: no books/ directory at {books_dir}")
+        return None
+    book_dir = find_book_dir(books_dir, book_id)
+    if book_dir is None:
+        print(f"Error: no directory found for book_id={book_id} under {books_dir}")
+        return None
+    return book_dir
+
+
+def _append_skip_event(book_dir, event_type: str, detail: dict) -> None:
+    """Append a structured skip event to the book's capture-log.jsonl."""
+    import json
+    from datetime import UTC, datetime
+
+    entry = {
+        "event_type": event_type,
+        "recorded_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "book_id": detail.get("book_id"),
+        "detail": detail,
+    }
+    log_path = book_dir / "capture-log.jsonl"
+    with open(log_path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+
+def _run_skip_chapter(args: argparse.Namespace) -> int:
+    """Manually flag a chapter so the userscript stops re-visiting it."""
+    from . import book_state
+
+    book_dir = _resolve_book_dir_for_cli(args.book_id)
+    if book_dir is None:
+        return 1
+
+    data = book_state.load(book_dir)
+    if not data:
+        print(f"Error: no book.json under {book_dir}")
+        return 1
+
+    ch = book_state.mark_skip(
+        data,
+        chapter_id=getattr(args, "chapter_id", None),
+        chapter_number=getattr(args, "chapter", None),
+        status="manual",
+        reason=args.reason,
+    )
+    if ch is None:
+        target = (
+            f"chapter_id={args.chapter_id}" if args.chapter_id is not None
+            else f"chapter={args.chapter}"
+        )
+        print(f"Error: no matching chapter ({target}) in {book_dir.name}")
+        return 1
+
+    book_state.save(book_dir, data)
+    _append_skip_event(book_dir, "chapter_skip_marked", {
+        "book_id": args.book_id,
+        "chapter_id": ch.get("chapter_id"),
+        "chapter_number": ch.get("chapter_number"),
+        "chapter_name": ch.get("name"),
+        "skip_status": "manual",
+        "skip_reason": args.reason,
+        "source": "cli",
+    })
+    print(
+        f"OK: book {args.book_id} ch{ch.get('chapter_number')} "
+        f"({ch.get('name', '')!r}) flagged skip_status=manual"
+        + (f" reason={args.reason!r}" if args.reason else "")
+    )
+    return 0
+
+
+def _run_unskip_chapter(args: argparse.Namespace) -> int:
+    """Clear a chapter's skip flag (reverse of skip-chapter)."""
+    from . import book_state
+
+    book_dir = _resolve_book_dir_for_cli(args.book_id)
+    if book_dir is None:
+        return 1
+
+    data = book_state.load(book_dir)
+    if not data:
+        print(f"Error: no book.json under {book_dir}")
+        return 1
+
+    ch = book_state.clear_skip(
+        data,
+        chapter_id=getattr(args, "chapter_id", None),
+        chapter_number=getattr(args, "chapter", None),
+    )
+    if ch is None:
+        target = (
+            f"chapter_id={args.chapter_id}" if args.chapter_id is not None
+            else f"chapter={args.chapter}"
+        )
+        print(f"Error: no matching chapter ({target}) in {book_dir.name}")
+        return 1
+
+    book_state.save(book_dir, data)
+    _append_skip_event(book_dir, "chapter_skip_cleared", {
+        "book_id": args.book_id,
+        "chapter_id": ch.get("chapter_id"),
+        "chapter_number": ch.get("chapter_number"),
+        "chapter_name": ch.get("name"),
+        "source": "cli",
+    })
+    print(
+        f"OK: book {args.book_id} ch{ch.get('chapter_number')} "
+        f"({ch.get('name', '')!r}) skip flag cleared"
+    )
+    return 0
 
 
 def _run_receive(args: argparse.Namespace) -> int:

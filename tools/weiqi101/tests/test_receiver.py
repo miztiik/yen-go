@@ -659,7 +659,9 @@ class TestHttpEndpoints:
         assert exc_info.value.code == 400
 
     def test_books_endpoint_with_data(self, server_addr):
-        """GET /books lists available books from book-ids.jsonl."""
+        """GET /books lists available books from books-catalog.jsonl."""
+        from tools.weiqi101 import catalog as catalog_mod
+
         host, port, state = server_addr
         # Write a minimal book-ids.jsonl
         jsonl_path = state.output_dir / "book-ids.jsonl"
@@ -671,6 +673,8 @@ class TestHttpEndpoints:
             "puzzle_ids": [10001, 10002, 10003],
         }
         jsonl_path.write_text(json.dumps(entry) + "\n", encoding="utf-8")
+        # Build the derived catalog the endpoint reads from
+        catalog_mod.rebuild_books_catalog(state.output_dir)
         # Mark one as already downloaded
         state.known_ids.add(10001)
 
@@ -685,9 +689,14 @@ class TestHttpEndpoints:
         assert book["downloaded"] == 1
         assert book["remaining"] == 2
         assert book["complete"] is False
+        # New fields surfaced from catalog
+        assert "consensus_tier" in book
+        assert "review_stale" in book
+        # No reviews -> unrated
+        assert book["consensus_tier"] == "unrated"
 
     def test_books_endpoint_no_file(self, server_addr):
-        """GET /books returns empty list when no book-ids.jsonl exists."""
+        """GET /books returns empty list when no books-catalog.jsonl exists."""
         host, port, _ = server_addr
         url = f"http://{host}:{port}/books"
         with urllib.request.urlopen(url) as resp:
@@ -695,7 +704,9 @@ class TestHttpEndpoints:
         assert data["books"] == []
 
     def test_books_endpoint_sorting(self, server_addr):
-        """GET /books sorts incomplete books first, by remaining desc."""
+        """GET /books sorts incomplete books first, then by tier, then remaining desc."""
+        from tools.weiqi101 import catalog as catalog_mod
+
         host, port, state = server_addr
         jsonl_path = state.output_dir / "book-ids.jsonl"
         entries = [
@@ -709,6 +720,7 @@ class TestHttpEndpoints:
         jsonl_path.write_text(
             "\n".join(json.dumps(e) for e in entries) + "\n", encoding="utf-8"
         )
+        catalog_mod.rebuild_books_catalog(state.output_dir)
         # Mark book 3 as fully downloaded
         state.known_ids.add(301)
 
@@ -718,11 +730,386 @@ class TestHttpEndpoints:
 
         books = data["books"]
         assert len(books) == 3
-        # Incomplete first, by remaining desc
-        assert books[0]["book_id"] == 2  # 5 remaining
-        assert books[1]["book_id"] == 1  # 2 remaining
-        assert books[2]["book_id"] == 3  # complete
+        # Incomplete first; books 1 & 2 share tier (unrated), so remaining
+        # desc orders 2 ahead of 1.
+        assert books[0]["book_id"] == 2
+        assert books[1]["book_id"] == 1
+        assert books[2]["book_id"] == 3
         assert books[2]["complete"] is True
+
+    def test_books_endpoint_refresh_rebuilds_catalog(self, server_addr):
+        """GET /books?refresh=1 rebuilds catalog and reloads known_ids."""
+        from tools.weiqi101 import catalog as catalog_mod
+
+        host, port, state = server_addr
+        jsonl_path = state.output_dir / "book-ids.jsonl"
+        entry = {
+            "book_id": 42,
+            "book_name_en": "Refreshable",
+            "book_name": "刷新",
+            "puzzle_ids": [501, 502, 503],
+        }
+        jsonl_path.write_text(json.dumps(entry) + "\n", encoding="utf-8")
+        # Catalog is missing — refresh should build it
+        url = f"http://{host}:{port}/books?refresh=1"
+        with urllib.request.urlopen(url) as resp:
+            data = json.loads(resp.read())
+        assert len(data["books"]) == 1
+        assert data["books"][0]["book_id"] == 42
+        assert (state.output_dir / catalog_mod.CATALOG_FILE).exists()
+
+
+class TestBookManifestPartial:
+    """POST /book/manifest with partial=true (interleaved discovery↔capture).
+
+    Validates the v5.38.0 contract:
+      * Two partial POSTs accumulate chapters by chapter_id (no wholesale
+        replace), discovery.status stays "in_progress".
+      * A subsequent partial=false POST flips discovery.status to
+        "complete" and writes completed_at.
+      * Server-managed skip flags on chapters absent from a partial
+        payload are preserved (relies on merge_discovery_state).
+    """
+
+    @pytest.fixture()
+    def server_addr(self, tmp_path: Path):
+        from http.server import HTTPServer
+
+        state = _ReceiverState(
+            tmp_path,
+            batch_size=100,
+            match_collections=False,
+            resolve_intent=False,
+        )
+        handler = _make_handler(state)
+        server = HTTPServer(("127.0.0.1", 0), handler)
+        host, port = server.server_address
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        yield host, port, state
+        server.shutdown()
+
+    @staticmethod
+    def _post_manifest(host: str, port: int, body: dict) -> dict:
+        url = f"http://{host}:{port}/book/manifest"
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(body).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read())
+
+    def test_partial_then_partial_then_final(self, server_addr):
+        host, port, state = server_addr
+        from tools.weiqi101 import book_state
+
+        # First partial: only chapter 1 known
+        r1 = self._post_manifest(host, port, {
+            "book_id": 9001,
+            "book_name": "Test Book",
+            "partial": True,
+            "chapters": [
+                {"chapter_id": 100, "chapter_number": 1,
+                 "name": "Chapter A", "puzzle_ids": [501, 502]},
+            ],
+        })
+        assert r1["status"] == "ok"
+        assert r1["partial"] is True
+
+        books_dir = state.output_dir / "books"
+        book_dir = book_state.find_book_dir(books_dir, 9001)
+        assert book_dir is not None
+        data = book_state.load(book_dir)
+        assert data["discovery"]["status"] == "in_progress"
+        assert len(data["chapters"]) == 1
+
+        # Second partial: chapter 2 added; chapter 1 omitted from this
+        # payload but must be preserved by the merge.
+        r2 = self._post_manifest(host, port, {
+            "book_id": 9001,
+            "book_name": "Test Book",
+            "partial": True,
+            "chapters": [
+                {"chapter_id": 100, "chapter_number": 1,
+                 "name": "Chapter A", "puzzle_ids": [501, 502]},
+                {"chapter_id": 101, "chapter_number": 2,
+                 "name": "Chapter B", "puzzle_ids": [503, 504, 505]},
+            ],
+        })
+        assert r2["partial"] is True
+        data = book_state.load(book_dir)
+        assert data["discovery"]["status"] == "in_progress"
+        chapter_ids = sorted(c["chapter_id"] for c in data["chapters"])
+        assert chapter_ids == [100, 101]
+        # positions[] should now span both chapters
+        assert len(data["positions"]) == 5
+
+        # Final POST: marks discovery complete.
+        r3 = self._post_manifest(host, port, {
+            "book_id": 9001,
+            "book_name": "Test Book",
+            "partial": False,
+            "chapters": [
+                {"chapter_id": 100, "chapter_number": 1,
+                 "name": "Chapter A", "puzzle_ids": [501, 502]},
+                {"chapter_id": 101, "chapter_number": 2,
+                 "name": "Chapter B", "puzzle_ids": [503, 504, 505]},
+            ],
+        })
+        assert r3["partial"] is False
+        data = book_state.load(book_dir)
+        assert data["discovery"]["status"] == "complete"
+        assert data["discovery"].get("completed_at")
+
+    def test_partial_preserves_server_skip_flag(self, server_addr):
+        """A skip flag set on a chapter must survive a partial POST that
+        omits that chapter from its payload."""
+        host, port, state = server_addr
+        from tools.weiqi101 import book_state
+
+        # Seed: two chapters discovered.
+        self._post_manifest(host, port, {
+            "book_id": 9002,
+            "book_name": "Skip Test",
+            "partial": True,
+            "chapters": [
+                {"chapter_id": 200, "chapter_number": 1,
+                 "name": "A", "puzzle_ids": [1]},
+                {"chapter_id": 201, "chapter_number": 2,
+                 "name": "B", "puzzle_ids": [2]},
+            ],
+        })
+        books_dir = state.output_dir / "books"
+        book_dir = book_state.find_book_dir(books_dir, 9002)
+        # Mark chapter 201 as manually skipped on the server.
+        data = book_state.load(book_dir)
+        for ch in data["chapters"]:
+            if ch["chapter_id"] == 201:
+                ch["skip_status"] = "manual"
+                ch["skip_reason"] = "test"
+        book_state.save(book_dir, data)
+
+        # Partial POST that only re-sends chapter 200. Chapter 201's
+        # skip flag must survive.
+        self._post_manifest(host, port, {
+            "book_id": 9002,
+            "book_name": "Skip Test",
+            "partial": True,
+            "chapters": [
+                {"chapter_id": 200, "chapter_number": 1,
+                 "name": "A", "puzzle_ids": [1]},
+            ],
+        })
+        data = book_state.load(book_dir)
+        ch201 = next(c for c in data["chapters"] if c["chapter_id"] == 201)
+        assert ch201["skip_status"] == "manual"
+        assert ch201["skip_reason"] == "test"
+
+
+class TestBookContextRouting:
+    """Multi-layer reconciliation: receiver routes captures by detected
+    book_id (which may differ from the active capture target) and persists
+    `_capture_provenance` into `capture-log.jsonl` for audit.
+
+    Pairs with the browser-side reconcileAttribution() — see
+    ``tools/weiqi101/browser/101weiqi-capture.user.js``.
+    """
+
+    @pytest.fixture()
+    def server_addr(self, tmp_path: Path):
+        from http.server import HTTPServer
+
+        state = _ReceiverState(
+            tmp_path,
+            batch_size=100,
+            match_collections=False,
+            resolve_intent=False,
+        )
+        handler = _make_handler(state)
+        server = HTTPServer(("127.0.0.1", 0), handler)
+        host, port = server.server_address
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        yield host, port, state, tmp_path
+        server.shutdown()
+
+    @staticmethod
+    def _post_capture(host, port, payload):
+        url = f"http://{host}:{port}/capture"
+        body = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            url,
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read())
+
+    def test_capture_with_book_context_writes_to_book_dir(self, server_addr):
+        """Capture with `_book_context` lands under books/<slug>-<id>/sgf/."""
+        host, port, _, tmp_path = server_addr
+        payload = {
+            "qqdata": _sample_qqdata(81001),
+            "url": "https://www.101weiqi.com/book/5120/45791/81001/",
+            "_book_context": {
+                "book_id": 5120,
+                "book_name": "Test Book",
+                "chapter_id": 45791,
+                "chapter_number": 1,
+                "chapter_name": "Ch1",
+                "chapter_position": 5,
+                "global_position": 5,
+                "puzzle_id": 81001,
+                "capture_mode": "chapter",
+            },
+        }
+        data = self._post_capture(host, port, payload)
+        assert data["status"] == "ok"
+
+        books_dir = tmp_path / "books"
+        assert books_dir.exists()
+        # Find the book dir (auto-resolved by slug)
+        book_dirs = [d for d in books_dir.iterdir() if d.is_dir()]
+        assert len(book_dirs) == 1
+        sgf_files = list((book_dirs[0] / "sgf").glob("*.sgf"))
+        assert len(sgf_files) == 1
+        # Chapter-mode naming: ch01_005_*_81001.sgf
+        assert sgf_files[0].name.startswith("ch01_005_")
+        assert sgf_files[0].name.endswith("_81001.sgf")
+
+    def test_capture_with_unknown_book_id_auto_creates_dir(self, server_addr):
+        """Cross-book salvage: capture detected for a book we've never
+        seen — receiver auto-creates a fresh book dir for it."""
+        host, port, _, tmp_path = server_addr
+        payload = {
+            "qqdata": _sample_qqdata(82002),
+            "url": "https://www.101weiqi.com/book/9999/12345/82002/",
+            "_book_context": {
+                "book_id": 9999,  # never seen
+                "book_name": "Salvaged Book",
+                "chapter_id": 12345,
+                "chapter_number": 3,
+                "chapter_name": "X",
+                "chapter_position": 7,
+                "puzzle_id": 82002,
+                "capture_mode": "chapter",
+            },
+        }
+        data = self._post_capture(host, port, payload)
+        assert data["status"] == "ok"
+        books_dir = tmp_path / "books"
+        # Some directory was created for book 9999
+        book_dirs = [d for d in books_dir.iterdir() if d.is_dir()]
+        assert len(book_dirs) == 1
+        log = book_dirs[0] / "capture-log.jsonl"
+        assert log.exists()
+
+    def test_capture_provenance_persisted_to_jsonl(self, server_addr):
+        """`_capture_provenance` from the userscript is written into the
+        per-book capture-log.jsonl row so downstream audit can see which
+        layers agreed and which routing decision was made."""
+        host, port, _, tmp_path = server_addr
+        provenance = {
+            "reconciled_pid": 83003,
+            "pid_agreed_layers": ["qqdata", "url", "visible"],
+            "pid_conflicts": [],
+            "pid_candidates": {"qqdata": 83003, "url": 83003, "visible": 83003},
+            "book_id": 5120,
+            "book_source": "qqdata+breadcrumb",
+            "chapter_id": 45791,
+            "chapter_source": "breadcrumb",
+            "chapter_number": 2,
+            "chapter_number_source": "manifest+pid",
+            "position": 11,
+            "position_source": "breadcrumb",
+            "all_known_books": [{"book_id": 5120, "name": "T"}],
+            "active_book_id": 5120,
+            "expected_pid_from_manifest": 83003,
+            "drift_from_active": False,
+            "drift_streak": 0,
+        }
+        payload = {
+            "qqdata": _sample_qqdata(83003),
+            "url": "https://www.101weiqi.com/book/5120/45791/83003/",
+            "_book_context": {
+                "book_id": 5120,
+                "book_name": "T",
+                "chapter_id": 45791,
+                "chapter_number": 2,
+                "chapter_name": "Ch2",
+                "chapter_position": 11,
+                "puzzle_id": 83003,
+                "capture_mode": "chapter",
+            },
+            "_capture_provenance": provenance,
+        }
+        data = self._post_capture(host, port, payload)
+        assert data["status"] == "ok"
+
+        books_dir = tmp_path / "books"
+        book_dirs = [d for d in books_dir.iterdir() if d.is_dir()]
+        log_path = book_dirs[0] / "capture-log.jsonl"
+        rows = [json.loads(line) for line in log_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        # Last row is the puzzle capture
+        capture_rows = [r for r in rows if r.get("event_type") == "puzzle_captured"]
+        assert len(capture_rows) == 1
+        assert capture_rows[0]["puzzle_id"] == 83003
+        assert capture_rows[0]["capture_provenance"] == provenance
+
+    def test_capture_drift_to_different_book_routes_to_detected_book(
+        self, server_addr,
+    ):
+        """When the page lands on book 9999 while the active capture is
+        for book 5120, the receiver files the SGF under book 9999's dir
+        (auto-created), not 5120. Provenance records the drift."""
+        host, port, _, tmp_path = server_addr
+        # First, anchor an active book at 5120
+        self._post_capture(host, port, {
+            "qqdata": _sample_qqdata(84001),
+            "url": "https://www.101weiqi.com/book/5120/45791/84001/",
+            "_book_context": {
+                "book_id": 5120, "book_name": "Active",
+                "chapter_id": 45791, "chapter_number": 1, "chapter_name": "A",
+                "chapter_position": 1, "puzzle_id": 84001,
+                "capture_mode": "chapter",
+            },
+        })
+        # Now a drifted capture: detected book is 9999, active was 5120
+        self._post_capture(host, port, {
+            "qqdata": _sample_qqdata(84002),
+            "url": "https://www.101weiqi.com/book/9999/12345/84002/",
+            "_book_context": {
+                "book_id": 9999, "book_name": "Drifted",
+                "chapter_id": 12345, "chapter_number": 1, "chapter_name": "X",
+                "chapter_position": 1, "puzzle_id": 84002,
+                "capture_mode": "chapter",
+            },
+            "_capture_provenance": {
+                "reconciled_pid": 84002,
+                "pid_agreed_layers": ["qqdata", "url"],
+                "active_book_id": 5120,
+                "drift_from_active": True,
+                "drift_streak": 1,
+            },
+        })
+        books_dir = tmp_path / "books"
+        book_dirs = sorted(d.name for d in books_dir.iterdir() if d.is_dir())
+        # Two distinct book directories created
+        assert len(book_dirs) == 2
+        # The drifted SGF lives under the dir whose capture-log mentions 9999
+        for d in books_dir.iterdir():
+            log = d / "capture-log.jsonl"
+            if not log.exists():
+                continue
+            rows = [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines() if line.strip()]
+            for r in rows:
+                if r.get("puzzle_id") == 84002:
+                    assert r.get("capture_provenance", {}).get("drift_from_active") is True
+                    return
+        pytest.fail("Drifted capture not found in any book's capture-log")
 
 
 # ---------------------------------------------------------------------------
@@ -763,6 +1150,169 @@ class TestPuzzleQueue:
 
         r4 = q.next_url()
         assert r4["status"] == "done"
+
+
+class TestPuzzleDomMissing:
+    """End-to-end Phase A: capture-time DOM bulk-prune is recorded.
+
+    Covers the contract introduced in v5.40.0 / receiver Phase A:
+      * POST /book/log/event {event_type: puzzle_dom_missing} mutates
+        book.json positions[] entry to status=dom_missing.
+      * Subsequent /book/{id}/manifest reflects:
+          - the pid in known_ids (so resume-skip logic skips it)
+          - chapter_audit shows it under dom_missing, NOT under remaining.
+      * A real capture for the same pid wins over an existing
+        dom_missing flag (status priority captured > dom_missing).
+    """
+
+    @pytest.fixture()
+    def server_addr(self, tmp_path: Path):
+        from http.server import HTTPServer
+
+        state = _ReceiverState(
+            tmp_path,
+            batch_size=100,
+            match_collections=False,
+            resolve_intent=False,
+        )
+        handler = _make_handler(state)
+        server = HTTPServer(("127.0.0.1", 0), handler)
+        host, port = server.server_address
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        yield host, port, state
+        server.shutdown()
+
+    @staticmethod
+    def _post(host: str, port: int, path: str, body: dict) -> dict:
+        url = f"http://{host}:{port}{path}"
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(body).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read())
+
+    @staticmethod
+    def _get(host: str, port: int, path: str) -> dict:
+        url = f"http://{host}:{port}{path}"
+        with urllib.request.urlopen(url) as resp:
+            return json.loads(resp.read())
+
+    def _seed_book(self, host, port):
+        # Manifest with one chapter, three pids — pid 7702 will be marked
+        # dom_missing; pid 7701 captured later; pid 7703 stays pending.
+        self._post(host, port, "/book/manifest", {
+            "book_id": 7700,
+            "book_name": "DomMissing Test",
+            "partial": False,
+            "chapters": [
+                {"chapter_id": 200, "chapter_number": 1,
+                 "name": "Ch", "puzzle_ids": [7701, 7702, 7703]},
+            ],
+        })
+
+    def test_event_marks_pid_dom_missing_in_book_state(self, server_addr):
+        from tools.weiqi101 import book_state
+
+        host, port, state = server_addr
+        self._seed_book(host, port)
+
+        self._post(host, port, "/book/log/event", {
+            "book_id": 7700,
+            "event_type": "puzzle_dom_missing",
+            "detail": {
+                "pid": 7702,
+                "chapter_id": 200,
+                "chapter_number": 1,
+                "chapter_position": 2,
+                "page": 1,
+                "visible_count": 2,
+                "reason": "absent_from_listing_page",
+            },
+        })
+
+        books_dir = state.output_dir / "books"
+        book_dir = book_state.find_book_dir(books_dir, 7700)
+        data = book_state.load(book_dir)
+        target = next(
+            (p for p in data["positions"] if p.get("pid") == 7702), None,
+        )
+        assert target is not None, "pid 7702 not in positions[]"
+        assert target["status"] == "dom_missing"
+        assert target.get("dom_missing_reason") == "absent_from_listing_page"
+        assert target.get("dom_missing_at"), "dom_missing_at not stamped"
+
+    def test_audit_subtracts_dom_missing_from_remaining(self, server_addr):
+        host, port, state = server_addr
+        self._seed_book(host, port)
+
+        self._post(host, port, "/book/log/event", {
+            "book_id": 7700,
+            "event_type": "puzzle_dom_missing",
+            "detail": {
+                "pid": 7702, "chapter_id": 200, "chapter_number": 1,
+                "chapter_position": 2, "page": 1, "reason": "x",
+            },
+        })
+
+        manifest = self._get(host, port, "/book/7700/manifest")
+        # known_ids includes the dom_missing pid so the userscript
+        # skip-forward logic skips it on resume.
+        assert 7702 in manifest["known_ids"]
+        # chapter_audit splits captured / dom_missing / remaining cleanly.
+        ca = manifest["chapter_audit"][0]
+        assert ca["total"] == 3
+        assert ca["captured"] == 0
+        assert ca["dom_missing"] == 1
+        assert 7702 in ca["dom_missing_pids"]
+        # Remaining excludes dom_missing.
+        assert ca["remaining"] == 2
+        assert sorted(ca["remaining_pids"]) == [7701, 7703]
+
+    def test_real_capture_overrides_dom_missing(self, server_addr):
+        from tools.weiqi101 import book_state
+
+        host, port, state = server_addr
+        self._seed_book(host, port)
+
+        # Mark pid 7702 dom_missing.
+        self._post(host, port, "/book/log/event", {
+            "book_id": 7700,
+            "event_type": "puzzle_dom_missing",
+            "detail": {
+                "pid": 7702, "chapter_id": 200, "chapter_number": 1,
+                "chapter_position": 2, "reason": "x",
+            },
+        })
+
+        # Now suppose the site recovered and the puzzle DOES appear:
+        # simulate by directly applying a capture (mirrors what
+        # _save_to_book_dir does after a successful POST /capture).
+        books_dir = state.output_dir / "books"
+        book_dir = book_state.find_book_dir(books_dir, 7700)
+        data = book_state.load(book_dir)
+        book_state.apply_capture(
+            data,
+            pid=7702,
+            file="ch_001/Ch_001_007702.sgf",
+            chapter_number=1,
+            chapter_position=2,
+            chapter_name="Ch",
+        )
+        book_state.save(book_dir, data)
+
+        data = book_state.load(book_dir)
+        target = next(p for p in data["positions"] if p.get("pid") == 7702)
+        assert target["status"] == "captured"
+        # Captured wins; reapplying dom_missing now is a no-op.
+        book_state.apply_dom_missing(
+            data, pid=7702, reason="should_not_apply",
+        )
+        target = next(p for p in data["positions"] if p.get("pid") == 7702)
+        assert target["status"] == "captured"
 
     def test_next_url_inactive(self):
         q = PuzzleQueue()
@@ -936,3 +1486,40 @@ class TestTelemetry:
         s = t.summary()
         assert s["counts"]["ok"] == 1
         assert s["total_processed"] == 1
+
+    def test_rolling_rate_windows(self):
+        """rolling_rate filters by status + age; summary surfaces 5m/15m rates."""
+        import time as _time
+
+        t = Telemetry()
+        # Record 6 ok events in the last minute, 4 ok events 10 min ago,
+        # and 3 skipped events sprinkled across (must be excluded).
+        now = _time.time()
+        for i in range(6):
+            t.record(i, "ok", f"f{i}.sgf", 10.0)
+        for e in list(t._events)[-6:]:
+            e.ts_epoch = now - 30  # 30 s ago
+
+        for i in range(4):
+            t.record(100 + i, "ok", f"old{i}.sgf", 10.0)
+        for e in list(t._events)[-4:]:
+            e.ts_epoch = now - 600  # 10 min ago
+
+        for i in range(3):
+            t.record(200 + i, "skipped", "duplicate", 5.0)
+        for e in list(t._events)[-3:]:
+            e.ts_epoch = now - 60
+
+        c5, r5 = t.rolling_rate(300, now_epoch=now)
+        c15, r15 = t.rolling_rate(900, now_epoch=now)
+
+        assert c5 == 6                       # only the 6 recent oks
+        assert r5 == round(6 * 60 / 300, 2)  # 1.2/min
+        assert c15 == 10                     # 6 recent + 4 ten-min-old
+        assert r15 == round(10 * 60 / 900, 2)
+
+        s = t.summary()
+        assert "ok_per_min_5m" in s
+        assert "ok_per_min_15m" in s
+        assert s["window_ok_count_5m"] >= 0  # uses real wall clock; sanity only
+

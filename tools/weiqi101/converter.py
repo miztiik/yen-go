@@ -185,9 +185,17 @@ def convert_puzzle_to_sgf(
     # Player to move
     parts.append(f"PL[{puzzle.player_to_move}]")
 
-    # Root C[] intent comment
+    # Root C[] intent comment.
+    # Precedence: explicit root_comment (curated intent mapping) >
+    #   puzzle.desc (site-provided instructional sentence, e.g. the
+    #   green hint text below the heading) > auto-generated fallback.
+    # `desc` is critical for mark-style puzzles (qtype 16) where the
+    # board alone does not convey what the user must do.
     if root_comment:
         parts.append(f"C[{escape_sgf_text(root_comment)}]")
+    elif puzzle.desc:
+        translated_desc = translate_chinese_text(puzzle.desc)
+        parts.append(f"C[{escape_sgf_text(translated_desc)}]")
     else:
         # Auto-generate player-to-move comment (mirrors site's finfo display)
         ptm = "Black" if puzzle.player_to_move == "B" else "White"
@@ -201,6 +209,15 @@ def convert_puzzle_to_sgf(
     aw = _stones_to_sgf("AW", puzzle.white_stones)
     if aw:
         parts.append(aw)
+
+    # Triangle markers for stones the puzzle highlights (qqdata.signs).
+    # Used by mark-style puzzles to indicate which stones the player
+    # must reason about (e.g. "mark the liberties of the triangled
+    # stones"). Standard SGF TR[] property.
+    if puzzle.signs:
+        tr = _stones_to_sgf("TR", puzzle.signs)
+        if tr:
+            parts.append(tr)
 
     # Solution tree
     if puzzle.solution_nodes:

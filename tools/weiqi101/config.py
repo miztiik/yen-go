@@ -100,7 +100,14 @@ USER_AGENT = (
 
 RECEIVER_HOST = "127.0.0.1"
 RECEIVER_PORT = 8101
-RECEIVER_MAX_BODY = 1024 * 1024  # 1 MB max POST body
+# Max POST body. Bumped from 1 MB to 16 MB on 2026-04-27 after puzzle
+# 41011 (Tsumego Masters Collection, book=201) consistently produced
+# 3.94 MB /capture payloads — large `andata` solution trees + multiple
+# encoded answer arrays push some puzzles well past the original 1 MB
+# cap. The localhost-only receiver has no DoS exposure, so a generous
+# limit is fine; the cap exists only to fail-fast on truly broken
+# inputs (e.g. a runaway recursive serialization).
+RECEIVER_MAX_BODY = 16 * 1024 * 1024  # 16 MB max POST body
 
 # ============================================================================
 # PATH HELPERS

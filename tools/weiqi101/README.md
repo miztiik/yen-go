@@ -22,11 +22,13 @@ Modular tool to download Go/Baduk tsumego puzzles from [101weiqi.com](https://ww
 | Discover all books & tags | `discover-books` | `discovery-catalog.json` |
 | Discover puzzle IDs per book | `discover-book-ids` | `book-ids.jsonl` (merged, canonical) |
 | Discover category sizes | `discover-categories` | Printed to stdout |
+| Rebuild prioritised catalog | `rebuild-catalog` | `books-catalog.jsonl` (derived) |
+| Validate catalog freshness | `validate-catalog` | Exit 0 if up-to-date, 1 on drift |
 | Inspect tag/collection mappings | `scan-tags`, `scan-collections` | Printed to stdout |
 
 ## State Files & Orchestration
 
-The tool writes **five canonical state files**. Each has a clear purpose in the download lifecycle:
+The tool writes **six canonical state files**. Each has a clear purpose in the download lifecycle:
 
 ```
 external-sources/101weiqi/
@@ -41,17 +43,42 @@ external-sources/101weiqi/
 │                                         Run: discover-book-ids --book-id N
 │                                         Format: {"book_id":5,"puzzle_ids":[...],"view_count":0,...}
 │
-├── sgf-index.txt                 ← (3) DONE INDEX: One puzzle ID per line, all downloaded IDs
+├── book-reviews.jsonl            ← (3) REVIEWS: Curatorial persona ratings (one record per book)
+│                                         Hand/LLM-edited. Source of consensus_tier.
+│                                         Format: {"book_id":N,"reviews":{...},"puzzle_count_at_review":X}
+│
+├── books-catalog.jsonl           ← (4) DERIVED CATALOG: Join of (1)+(2)+(3)
+│                                         Single source of truth for /books endpoint.
+│                                         AUTO-REBUILT after discover-books, discover-book-ids,
+│                                         or manually via: rebuild-catalog
+│                                         NEVER edit by hand — your changes will be overwritten.
+│
+├── sgf-index.txt                 ← (5) DONE INDEX: One puzzle ID per line, all downloaded IDs
 │                                         Used for O(1) dedup — re-running a download skips
 │                                         any ID already present here.
 │
-├── .checkpoint.json              ← (4) RESUME STATE: Last completed batch position
+├── .checkpoint.json              ← (6) RESUME STATE: Last completed batch position
 │                                         Use --resume to continue an interrupted run.
 │                                         Reset: delete this file to start fresh.
 │
 └── logs/
-    └── YYYYMMDD-HHMMSS-101weiqi.jsonl  ← (5) AUDIT LOG: Every request/response logged
+    └── YYYYMMDD-HHMMSS-101weiqi.jsonl  ← AUDIT LOG: Every request/response logged
 ```
+
+**Catalog rebuild contract**: `books-catalog.jsonl` is a derived artifact.
+Any function that mutates `book-ids.jsonl`, `discovery-catalog.json`, or
+`book-reviews.jsonl` MUST call `tools.weiqi101.catalog.rebuild_books_catalog()`.
+The `discover-books` and `discover-book-ids` CLI handlers do this
+automatically. Run `validate-catalog` to verify nothing has drifted.
+
+For browser-capture and per-book workflows, each book directory also carries a consolidated `book.json`.
+Its `chapters[]` entries are serialized one chapter per line, with the chapter summary counts (`total`,
+`captured`, `external`, `pending`) grouped before the optional legacy `puzzle_positions` map and
+before `puzzle_ids`. That keeps pending-heavy chapters visually easy to scan without changing the
+underlying data model.
+
+Legacy `puzzle_positions` persistence is now disabled by default. To re-enable it for rollback or
+comparison, start the receiver with `YENGO_WEIQI101_ENABLE_PUZZLE_POSITIONS=1` in the environment.
 
 ### Recommended Workflow (Low Cognitive Load)
 
@@ -482,8 +509,57 @@ external-sources/101weiqi/
 ├── logs/
 │   └── YYYYMMDD-HHMMSS-101weiqi.jsonl
 ├── sgf-index.txt              # All IDs in the sgf/ pool (for dedup)
+├── inventory.json             # Corpus dedup snapshot (counts + per-book overlap %)
+├── unique-sgf.txt             # One POSIX path per unique pid, sorted by pid asc
 └── .checkpoint.json           # Resume state for sgf/ pool
 ```
+
+## Corpus Inventory
+
+`inventory.json` and `unique-sgf.txt` are derived artifacts that answer
+"how much of the corpus is duplicated, and where do unique puzzles live?"
+without leaking pid lists into a stats file.
+
+- `inventory.json` — totals + per-location (`books`, `qday`, `sgf`)
+  counts + per-book `overlap_with_corpus_pct` / `novel_pct`. No pids.
+- `unique-sgf.txt` — one POSIX-relative path per unique pid, sorted by
+  pid ascending. Tie-breaker when a pid appears in multiple locations:
+  `books > qday > sgf`, then lexicographic path.
+
+Pid extraction is centralised in `tools/weiqi101/pid_extract.py`
+(`pid_from_filename`) and supports book chapter form, qday daily form,
+and bare numeric stems. Slug churn (incl. CJK→English cleanup) does not
+affect extraction because the trailing `_<pid>.sgf` is always ASCII.
+
+### Generate / inspect
+
+```powershell
+# Refresh (rescan disk and rewrite both artifacts).
+python -m tools.weiqi101 inventory --refresh
+
+# Show the cached snapshot as a human summary.
+python -m tools.weiqi101 inventory
+
+# Or as JSON.
+python -m tools.weiqi101 inventory --json
+```
+
+### From the receiver (read-only HTTP)
+
+All endpoints are GET so they work from a browser address bar.
+
+```text
+GET /inventory             → 200 inventory.json | 404 if not yet generated
+GET /inventory/refresh     → 202 {scan_id, started_at} | 409 if scan in flight
+GET /inventory/unique-sgf  → 200 text/plain (streams unique-sgf.txt) | 404
+```
+
+Triggers:
+
+- **Server start** — generates `inventory.json` only if missing.
+- **`session_summary` capture event** — kicks a throttled background
+  refresh (≥30 min between auto-refreshes); manual `/inventory/refresh`
+  is never throttled.
 
 ## SGF Properties
 

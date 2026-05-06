@@ -147,14 +147,16 @@ class BookPuzzleIndex:
     view_count: int = 0     # Page views / attempts
     like_count: int = 0     # Likes / bookmarks
     finish_count: int = 0   # Users who completed the book
+    priority: str = "unrated"  # editorial|premier|curated|community|skip|unrated
 
     def to_dict(self) -> dict:
         return {
+            "priority": self.priority,
+            "puzzle_count": len(self.puzzle_ids),
             "book_id": self.book_id,
             "book_name": self.book_name,
             "book_name_en": self.book_name_en,
             "difficulty": self.difficulty,
-            "puzzle_count": len(self.puzzle_ids),
             "view_count": self.view_count,
             "like_count": self.like_count,
             "finish_count": self.finish_count,
@@ -422,7 +424,7 @@ def _extract_book_meta_from_page(html: str) -> dict[str, int]:
     return meta
 
 
-def _extract_book_info_from_levelorder(html: str) -> dict[str, str]:
+def _extract_book_info_from_page(html: str) -> dict[str, str]:
     """Extract book name and difficulty from the levelorder page JS.
 
     Current format uses ``var pagedata = {bookname: ..., qs: [{levelname}, ...]}``.
@@ -847,7 +849,7 @@ def fetch_book_puzzle_ids(
 
     # Extract book metadata from page 1 HTML (zero extra requests)
     meta = _extract_book_meta_from_page(page1_html) if page1_html else {}
-    book_info = _extract_book_info_from_levelorder(page1_html) if page1_html else {}
+    book_info = _extract_book_info_from_page(page1_html) if page1_html else {}
 
     result = BookPuzzleIndex(
         book_id=book_id,
@@ -893,6 +895,7 @@ class BookChapterIndex:
     book_name: str = ""
     book_name_en: str = ""
     discovered_at: str = ""
+    priority: str = "unrated"  # editorial|premier|curated|community|skip|unrated
 
     def all_puzzle_ids(self) -> list[int]:
         """Return all puzzle IDs in chapter order."""
@@ -903,10 +906,11 @@ class BookChapterIndex:
 
     def to_dict(self) -> dict:
         return {
+            "priority": self.priority,
+            "puzzle_count": sum(len(ch.puzzle_ids) for ch in self.chapters),
             "book_id": self.book_id,
             "book_name": self.book_name,
             "book_name_en": self.book_name_en,
-            "puzzle_count": sum(len(ch.puzzle_ids) for ch in self.chapters),
             "chapter_count": len(self.chapters),
             "chapters": [
                 {
@@ -1084,7 +1088,7 @@ def fetch_book_puzzle_ids_by_chapter(
         return BookChapterIndex(book_id=book_id)
 
     # Extract book name
-    book_info = _extract_book_info_from_levelorder(html)
+    book_info = _extract_book_info_from_page(html)
     book_name = book_info.get("name", "")
 
     # Extract chapter list

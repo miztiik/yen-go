@@ -159,7 +159,17 @@ Their independent ratings were averaged into a consensus tier, then mapped:
 - Consensus tier-3 → `community`
 - Consensus skip → `skip`
 
-Full review data: `external-sources/101weiqi/_book_priority_report.json`
+Full review data: `external-sources/101weiqi/book-reviews.jsonl` (one record per book,
+hand/LLM-edited). The derived `books-catalog.jsonl` carries the joined
+`consensus_tier` field — rebuild after editing reviews via:
+
+```bash
+python -m tools.weiqi101 rebuild-catalog
+python -m tools.weiqi101 validate-catalog   # verify on-disk catalog matches inputs
+```
+
+Historical artifacts (`_book_priority_report.json`, `_book_summary_for_review.json`,
+`_build_priority_report.py`) are archived under `external-sources/101weiqi/archive/`.
 
 ### editorial — Classical canon & named pro authors (79 books)
 

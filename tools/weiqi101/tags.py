@@ -11,6 +11,11 @@ import logging
 
 logger = logging.getLogger("101weiqi.tags")
 
+# Per-process dedup of "Unknown qtypename" warnings. Without this the
+# same warning fires once per puzzle for every category we don't yet
+# have a mapping for, drowning the saved/skipped lines in the log.
+_LOGGED_UNKNOWN_QTYPES: set[str] = set()
+
 # Chinese qtypename → YenGo tag slug
 # null entries are intentionally unmapped (too generic for a single tag).
 # Sub-technique tags (ladder, snapback, ko, etc.) are discovered by the
@@ -66,6 +71,10 @@ def map_tag(type_name: str) -> str | None:
     elif type_name in TAG_MAPPING:
         logger.debug(f"Tag '{type_name}' → None (intentionally unmapped)")
     else:
-        logger.warning(f"Unknown qtypename: '{type_name}'")
+        if type_name not in _LOGGED_UNKNOWN_QTYPES:
+            _LOGGED_UNKNOWN_QTYPES.add(type_name)
+            logger.warning(f"[BOOK-WARN] unknown_qtypename='{type_name}' (first sighting this session)")
+        else:
+            logger.debug(f"Unknown qtypename '{type_name}' (already logged this session)")
 
     return tag
