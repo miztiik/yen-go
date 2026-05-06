@@ -1049,8 +1049,8 @@
       "curator": "Kobayashi Satoru",
       "source": "mixed",
       "type": "author",
-      "ordering": "sequential",
-      "tier": "reference",
+      "ordering": "source",
+      "tier": "community",
       "aliases": [
         "kobayashi-basic-tesuji",
         "kobayashi",
@@ -1823,9 +1823,9 @@
       "description": "87 tsumego problems across 3 chapters from Yamada Kimio's Interesting Tsumego Dojo (山田規三生のおもしろ詰碁道場).",
       "curator": "Yamada Kimio",
       "source": "kisvadim",
-      "type": "authored",
-      "ordering": "sequential",
-      "tier": "reference",
+      "type": "author",
+      "ordering": "source",
+      "tier": "community",
       "aliases": [
         "YAMADA KIMIO Interesting Tsumego Dojo"
       ],
@@ -3538,8 +3538,7 @@
       "aliases": [
         "skillful life and death",
         "巧みな死活"
-      ],
-      "puzzle_count": 179
+      ]
     },
     {
       "slug": "maeda-nobuaki-advanced-tsumego",
@@ -3640,15 +3639,14 @@
       "description": "Shumyo Tsumego (衆妙詰碁) — 4-volume collection of exquisite life-and-death compositions by Kada Katsuji 9p. Published 1993-1994 by Seibundo Shinkosha.",
       "curator": "Kada Katsuji",
       "source": "kisvadim-goproblems",
-      "type": "authored",
-      "ordering": "sequential",
-      "tier": "reference",
+      "type": "author",
+      "ordering": "source",
+      "tier": "community",
       "aliases": [
         "kada brilliances",
         "shumyo tsumego",
         "加田克司衆妙詰碁"
-      ],
-      "puzzle_count": 216
+      ]
     },
     {
       "id": 172,
@@ -3657,16 +3655,15 @@
       "description": "Kada Tsumego Kyoshitsu (加田詰碁教室) — Go Super Books vol. 15. Instructional tsumego collection with teaching commentary. Published 1971 by Nihon Ki-in.",
       "curator": "Kada Katsuji",
       "source": "kisvadim-goproblems",
-      "type": "authored",
-      "ordering": "sequential",
-      "tier": "reference",
+      "type": "author",
+      "ordering": "source",
+      "tier": "community",
       "aliases": [
         "kada class",
         "kada classroom",
         "tsumego kyoshitsu",
         "加田詰碁教室"
-      ],
-      "puzzle_count": 48
+      ]
     },
     {
       "id": 173,
@@ -3675,15 +3672,14 @@
       "description": "Kessaku Tsumego (傑作詰碁) — Definitive 8-volume tsumego collection by Kada Katsuji 9p, the \"God of Tsumego\". Published 1988-1991 by Seibundo Shinkosha.",
       "curator": "Kada Katsuji",
       "source": "kisvadim-goproblems",
-      "type": "authored",
-      "ordering": "sequential",
-      "tier": "reference",
+      "type": "author",
+      "ordering": "source",
+      "tier": "community",
       "aliases": [
         "kada masterpieces",
         "kessaku tsumego",
         "加田克司傑作詰碁"
-      ],
-      "puzzle_count": 436
+      ]
     },
     {
       "slug": "go-seigen-jikyou-fusoku",
@@ -3764,7 +3760,7 @@
       "source": "kisvadim",
       "type": "author",
       "ordering": "source",
-      "tier": "reference",
+      "tier": "community",
       "aliases": [
         "sawayaka tsumego",
         "さわやか詰碁"
@@ -3779,7 +3775,7 @@
       "source": "kisvadim",
       "type": "author",
       "ordering": "source",
-      "tier": "reference",
+      "tier": "community",
       "aliases": [
         "shinayaka tsumego",
         "しなやか詰碁"
@@ -3792,9 +3788,9 @@
       "description": "105 challenging tsumego problems at 6-dan level by Ishigure Ikuro, organized in 3 chapters of increasing difficulty.",
       "curator": "Ishigure Ikuro",
       "source": "kisvadim-goproblems",
-      "type": "authored",
-      "ordering": "sequential",
-      "tier": "reference",
+      "type": "author",
+      "ordering": "source",
+      "tier": "community",
       "aliases": [],
       "id": 180
     },
@@ -3804,9 +3800,9 @@
       "description": "150 masterpiece tsumego problems by Ishigure Ikuro, organized in three parts: Heaven (50), Earth (50), and Man (50).",
       "curator": "Ishigure Ikuro",
       "source": "kisvadim-goproblems",
-      "type": "authored",
-      "ordering": "sequential",
-      "tier": "reference",
+      "type": "author",
+      "ordering": "source",
+      "tier": "community",
       "aliases": [],
       "id": 181
     },
@@ -3816,9 +3812,9 @@
       "description": "119 tsumego problems by Ishigure Ikuro targeting shodan to 3-dan players, with sections for sure-kill moves, shodan challenges, and high-dan challenges.",
       "curator": "Ishigure Ikuro",
       "source": "kisvadim-goproblems",
-      "type": "authored",
-      "ordering": "sequential",
-      "tier": "reference",
+      "type": "author",
+      "ordering": "source",
+      "tier": "community",
       "aliases": [],
       "id": 182
     },
@@ -3828,9 +3824,9 @@
       "description": "Comprehensive compilation of tesuji from Japanese and Chinese Go classical literature plus games by top professionals from Edo to Heisei era. 1,117 pages, 2636 problems. Published by Nihon Ki-in, 1992. ISBN 4818203556.",
       "curator": "Nihon Ki-in",
       "source": "kisvadim-goproblems",
-      "type": "authored",
-      "ordering": "sequential",
-      "tier": "reference",
+      "type": "author",
+      "ordering": "source",
+      "tier": "community",
       "aliases": [
         "tesuji daijiten",
         "tesuji great dictionary",
@@ -3856,9 +3852,9 @@
       "description": "200 tsumego problems by Kaku Kyushin 6p. Flat collection covering a range of life-and-death positions.",
       "curator": "Kaku Kyushin",
       "source": "kisvadim-goproblems",
-      "type": "authored",
-      "ordering": "sequential",
-      "tier": "reference",
+      "type": "author",
+      "ordering": "source",
+      "tier": "community",
       "aliases": [],
       "id": 186
     },
@@ -3868,9 +3864,9 @@
       "description": "151 tsumego problems by Kaku Kyushin 6p (MYCOM 2006, supervised by Rin Kaiho and O Rissei). Three difficulty classes: C-class (kyu), B-class (dan), A-class (high-dan).",
       "curator": "Kaku Kyushin",
       "source": "kisvadim-goproblems",
-      "type": "authored",
-      "ordering": "sequential",
-      "tier": "reference",
+      "type": "author",
+      "ordering": "source",
+      "tier": "community",
       "aliases": [],
       "id": 187
     },
