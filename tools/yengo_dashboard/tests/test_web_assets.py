@@ -131,6 +131,50 @@ def test_pre_paint_theme_script_present(index_html: str) -> None:
     assert "documentElement.dataset.theme" in index_html
 
 
+def test_body_theme_synced_from_documentElement(index_html: str) -> None:
+    """The <head> pre-paint script writes data-theme to <html>, but every
+    light-mode CSS rule targets body[data-theme=...]. Without a sync
+    step the persisted dark preference is silently lost on every reload
+    (body keeps its inline 'light'). A second inline <script> right
+    after <body> must mirror the value onto the body element."""
+    # Find the body open tag, then verify a sync script appears before any
+    # visible content (i.e. before the sidebar nav). We don't pin exact
+    # placement — only that the html→body mirror runs early.
+    body_open = index_html.find("<body")
+    sidebar = index_html.find('id="sidebar"')
+    assert body_open != -1 and sidebar > body_open, "body/sidebar landmarks missing"
+    head_of_body = index_html[body_open:sidebar]
+    assert re.search(
+        r"document\.body\.dataset\.theme\s*=\s*[A-Za-z_]",
+        head_of_body,
+    ), (
+        "An inline <script> must run between <body> and the first visible "
+        "element to copy documentElement.dataset.theme onto "
+        "document.body.dataset.theme."
+    )
+    assert "documentElement.dataset.theme" in head_of_body, (
+        "The body-sync script must read from documentElement (the value "
+        "the head pre-paint script wrote)."
+    )
+
+
+def test_apply_theme_writes_both_html_and_body(app_js: str) -> None:
+    """applyTheme must keep html and body in sync, otherwise the next
+    reload's pre-paint reads a stale documentElement value."""
+    body = re.search(
+        r"function\s+applyTheme\s*\([^)]*\)\s*\{(.*?)\n\}", app_js, flags=re.DOTALL
+    )
+    assert body, "applyTheme() not found"
+    src = body.group(1)
+    assert "document.body.dataset.theme" in src, (
+        "applyTheme must set document.body.dataset.theme."
+    )
+    assert "document.documentElement.dataset.theme" in src, (
+        "applyTheme must also set document.documentElement.dataset.theme so "
+        "the next reload's pre-paint reads the fresh value."
+    )
+
+
 def test_styles_define_light_theme_overrides(styles_css: str) -> None:
     """Light theme must override the dominant dark surfaces."""
     assert 'body[data-theme="light"]' in styles_css, (

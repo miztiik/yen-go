@@ -1977,6 +1977,7 @@ function readTheme() {
 function applyTheme(theme) {
   const next = theme === "dark" ? "dark" : "light";
   document.body.dataset.theme = next;
+  document.documentElement.dataset.theme = next;
   try { localStorage.setItem(THEME_KEY, next); } catch (_) { /* private mode */ }
   paintThemeToggle();
 }

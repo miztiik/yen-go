@@ -26,6 +26,18 @@
   </script>
 </head>
 <body class="bg-zinc-950 text-zinc-100 h-screen overflow-hidden flex" data-run-active="false" data-theme="light">
+  <!-- Sync body[data-theme] from the pre-paint <head> script. CSS targets
+       body[data-theme=...] (60+ selectors), so we mirror the persisted value
+       onto body before any visible content paints. Without this, dark
+       theme persistence breaks because body keeps its inline 'light'. -->
+  <script>
+    (function () {
+      try {
+        var t = document.documentElement.dataset.theme;
+        if (t === "dark" || t === "light") document.body.dataset.theme = t;
+      } catch (_) { /* ignore */ }
+    })();
+  </script>
 
   <!-- ===== LEFT SIDEBAR ===== -->
   <nav id="sidebar" class="w-[220px] flex-shrink-0 border-r border-zinc-800/80 bg-zinc-950/80 flex flex-col">
