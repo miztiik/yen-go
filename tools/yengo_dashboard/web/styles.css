@@ -870,3 +870,112 @@ body[data-theme="light"] .stage-file-btn.active {
   color: rgb(13 148 136);
 }
 
+/* ---------- Operations groups (Slice 6) ------------------------------ */
+/* Three sections grouped by blast radius. The destructive section gets
+   the loudest visual fence (rose ring + amber warning icon) so an
+   operator never confuses 'Clean' with 'Rollback' at a glance. */
+.ops-group {
+  border-radius: 8px;
+  padding: 1rem;
+}
+.ops-group-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+.ops-group-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(148 163 184);
+}
+.ops-group-sub {
+  font-size: 11px;
+  color: rgb(100 116 139);
+}
+
+.ops-group--diagnostics {
+  background: rgb(15 23 42 / 0.4);
+  border: 1px solid rgb(30 41 59);
+}
+.ops-group--maintenance {
+  background: rgb(15 23 42 / 0.4);
+  border: 1px solid rgb(30 41 59);
+}
+/* Destructive: rose ring + tinted background. Big enough to catch the
+   eye even if the operator skims past the section header. */
+.ops-group--destructive {
+  background: rgb(76 5 25 / 0.12);
+  border: 1px solid rgb(244 63 94 / 0.35);
+  box-shadow: 0 0 0 1px rgb(244 63 94 / 0.15) inset;
+}
+.ops-group-title--destructive { color: rgb(253 164 175); }
+.ops-group-sub--destructive { color: rgb(252 165 165); }
+.ops-warn-icon {
+  width: 14px; height: 14px;
+  color: rgb(251 191 36);
+}
+
+/* Diagnostics link cards — pointer-cursor outline cards that route to
+   read-only views via showTab (data-internal-nav delegation). */
+.ops-link-card {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  border: 1px solid rgb(30 41 59);
+  background: rgb(15 23 42 / 0.6);
+  text-decoration: none;
+  transition: border-color 120ms, background-color 120ms;
+}
+.ops-link-card:hover {
+  border-color: rgb(20 184 166 / 0.5);
+  background: rgb(20 184 166 / 0.06);
+}
+.ops-link-icon {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px;
+  background: rgb(20 184 166 / 0.12);
+  color: rgb(94 234 212);
+}
+.ops-link-icon i { width: 16px; height: 16px; }
+.ops-link-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(226 232 240);
+}
+.ops-link-body {
+  font-size: 11px;
+  color: rgb(148 163 184);
+  margin-top: 2px;
+}
+
+body[data-theme="light"] .ops-group--diagnostics,
+body[data-theme="light"] .ops-group--maintenance {
+  background: rgb(241 245 249);
+  border-color: rgb(203 213 225);
+}
+body[data-theme="light"] .ops-group--destructive {
+  background: rgb(254 226 226 / 0.6);
+  border-color: rgb(244 63 94 / 0.45);
+}
+body[data-theme="light"] .ops-group-title { color: rgb(71 85 105); }
+body[data-theme="light"] .ops-group-sub { color: rgb(100 116 139); }
+body[data-theme="light"] .ops-group-title--destructive { color: rgb(159 18 57); }
+body[data-theme="light"] .ops-group-sub--destructive { color: rgb(190 18 60); }
+body[data-theme="light"] .ops-link-card {
+  background: white;
+  border-color: rgb(203 213 225);
+}
+body[data-theme="light"] .ops-link-card:hover {
+  border-color: rgb(13 148 136);
+  background: rgb(204 251 241 / 0.5);
+}
+body[data-theme="light"] .ops-link-title { color: rgb(15 23 42); }
+body[data-theme="light"] .ops-link-body { color: rgb(71 85 105); }
+

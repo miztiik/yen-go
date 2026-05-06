@@ -351,3 +351,86 @@ def test_internal_nav_link_handler_present(app_js: str) -> None:
         r'closest\(\s*"a\[data-internal-nav\]"\s*\)', app_js
     ), "Slice 5: click delegation must intercept data-internal-nav links."
 
+
+# ---------- Operations regrouping (Slice 6) ----------------------------------
+
+
+def test_operations_has_three_blast_radius_groups(app_js: str) -> None:
+    """Slice 6: renderMaintenance must render three discrete sections, one
+    per blast-radius bucket (diagnostics, maintenance, destructive)."""
+    maint = re.search(
+        r"function\s+renderMaintenance\s*\([^)]*\)\s*\{(.*?)\n\}",
+        app_js,
+        flags=re.DOTALL,
+    )
+    assert maint, "renderMaintenance not found"
+    body = maint.group(1)
+    for bucket in ("diagnostics", "maintenance", "destructive"):
+        assert f'data-ops-group="{bucket}"' in body, (
+            f"Slice 6: Operations must have a data-ops-group=\"{bucket}\" section."
+        )
+
+
+def test_operations_diagnostics_links_to_read_only_views(app_js: str) -> None:
+    """Slice 6: the Diagnostics section is the 'look-before-you-leap'
+    triage panel — it must link to pipeline / logs / library via
+    data-internal-nav so the clicks stay SPA-routed."""
+    maint = re.search(
+        r"function\s+renderMaintenance\s*\([^)]*\)\s*\{(.*?)\n\}",
+        app_js,
+        flags=re.DOTALL,
+    )
+    assert maint
+    diagnostics = re.search(
+        r'data-ops-group="diagnostics"[\s\S]*?</section>', maint.group(1)
+    )
+    assert diagnostics, "Slice 6: diagnostics section not found"
+    diag_html = diagnostics.group(0)
+    for nav in ("pipeline", "logs", "library"):
+        assert f'data-internal-nav="{nav}"' in diag_html, (
+            f"Slice 6: diagnostics must link to /{nav} via data-internal-nav."
+        )
+
+
+def test_destructive_section_has_visual_fence(app_js: str, styles_css: str) -> None:
+    """Slice 6: the destructive bucket must carry a warning header AND have
+    a dedicated CSS class so the rose ring works in both themes."""
+    maint = re.search(
+        r"function\s+renderMaintenance\s*\([^)]*\)\s*\{(.*?)\n\}",
+        app_js,
+        flags=re.DOTALL,
+    )
+    assert maint
+    destructive = re.search(
+        r'data-ops-group="destructive"[\s\S]*?</section>', maint.group(1)
+    )
+    assert destructive, "Slice 6: destructive section not found"
+    dest_html = destructive.group(0)
+    assert "alert-triangle" in dest_html, (
+        "Slice 6: destructive section must carry an alert-triangle icon."
+    )
+    assert "ops-group--destructive" in dest_html, (
+        "Slice 6: destructive section must carry the ops-group--destructive class."
+    )
+    assert ".ops-group--destructive" in styles_css, (
+        "Slice 6: ops-group--destructive must be styled in styles.css."
+    )
+    assert re.search(
+        r'body\[data-theme="light"\][^{]*\.ops-group--destructive',
+        styles_css,
+    ), "Slice 6: ops-group--destructive must have a light-theme override."
+
+
+def test_publish_log_pointer_removed_from_operations(app_js: str) -> None:
+    """Slice 6: the Slice 5 'Looking for publish-log search?' pointer is
+    gone — Diagnostics already cross-links to /logs."""
+    maint = re.search(
+        r"function\s+renderMaintenance\s*\([^)]*\)\s*\{(.*?)\n\}",
+        app_js,
+        flags=re.DOTALL,
+    )
+    assert maint
+    assert "Looking for publish-log search" not in maint.group(1), (
+        "Slice 6: the transitional pointer must be removed."
+    )
+

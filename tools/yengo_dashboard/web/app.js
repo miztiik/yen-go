@@ -1178,78 +1178,123 @@ function renderMaintenance() {
   root.innerHTML = `
     <div class="flex items-baseline gap-3 mb-3">
       <h2 class="text-xs uppercase tracking-wider text-slate-500">Operations</h2>
-      <span class="text-xs text-slate-500">three groups, increasing blast radius</span>
+      <span class="text-xs text-slate-500">grouped by blast radius — diagnose first, mutate second, destroy last</span>
     </div>
     <div id="maint-error" class="mb-3"></div>
 
-    <div class="grid lg:grid-cols-3 gap-4">
-      ${maintCard({
-        title: "Vacuum DB",
-        group: "maintenance",
-        body: `
-          <label class="flex items-center gap-2 text-xs"><input id="mv-rebuild" type="checkbox" /> --rebuild (full rebuild from disk)</label>
-          <label class="flex items-center gap-2 text-xs"><input id="mv-dry" type="checkbox" /> --dry-run</label>
-          <p class="text-[11px] text-slate-500">Reclaims free space in <code>yengo-search.db</code>. Rebuild is slow (minutes).</p>
-        `,
-        button: { id: "mv-go", label: "Run vacuum-db", variant: "info" },
-      })}
-
-      ${maintCard({
-        title: "Clean",
-        group: "maintenance",
-        body: `
-          <label class="block text-xs text-slate-400">Target
-            <select id="mc-target" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm">
-              <option value="">(retention-based)</option>
-              <option value="staging">staging</option>
-              <option value="state">state</option>
-              <option value="logs">logs</option>
-              <option value="puzzles-collection">puzzles-collection</option>
-              <option value="publish-logs">publish-logs</option>
-            </select>
-          </label>
-          <label class="block text-xs text-slate-400">Retention days
-            <input id="mc-days" type="number" min="0" placeholder="(CLI default: 45)" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm font-mono" />
-          </label>
-          <label class="block text-xs text-slate-400">Dry run
-            <select id="mc-dry" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm">
-              <option value="">(let CLI decide)</option>
-              <option value="true">true</option>
-              <option value="false">false</option>
-            </select>
-          </label>
-        `,
-        button: { id: "mc-go", label: "Run clean", variant: "info" },
-      })}
-
-      ${maintCard({
-        title: "Rollback",
-        group: "destructive",
-        body: `
-          <label class="block text-xs text-slate-400">Run ID
-            <input id="mr-run-id" type="text" placeholder="20260505-deadbeef" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm font-mono" />
-          </label>
-          <div class="text-[10px] text-slate-500 -my-1">— or —</div>
-          <label class="block text-xs text-slate-400">Puzzle IDs <span class="text-slate-500">(comma/space separated)</span>
-            <textarea id="mr-puzzle-ids" rows="2" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm font-mono"></textarea>
-          </label>
-          <label class="block text-xs text-slate-400">Reason <span class="text-rose-400">*</span>
-            <input id="mr-reason" type="text" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm" />
-          </label>
-          <div class="space-y-1.5">
-            <label class="flex items-center gap-2 text-xs"><input id="mr-dry" type="checkbox" checked /> --dry-run</label>
-            <label class="flex items-center gap-2 text-xs"><input id="mr-yes" type="checkbox" /> --yes (skip prompt)</label>
-            <label class="flex items-center gap-2 text-xs"><input id="mr-verify" type="checkbox" /> --verify</label>
+    <!-- ===== Diagnostics (read-only) =================================== -->
+    <section data-ops-group="diagnostics" class="ops-group ops-group--diagnostics mb-6">
+      <header class="ops-group-header">
+        <h3 class="ops-group-title">Diagnostics</h3>
+        <span class="ops-group-sub">read-only — look before you leap</span>
+      </header>
+      <div class="grid lg:grid-cols-3 gap-4">
+        <a href="/pipeline" data-internal-nav="pipeline" class="ops-link-card">
+          <div class="ops-link-icon"><i data-lucide="activity"></i></div>
+          <div>
+            <div class="ops-link-title">Active run</div>
+            <p class="ops-link-body">Watch the live SSE stream of any in-flight pipeline run.</p>
           </div>
-        `,
-        button: { id: "mr-go", label: "Run rollback", variant: "destructive", destructive: true },
-      })}
-    </div>
-    <p class="mt-4 text-[11px] text-slate-500">
-      Looking for publish-log search? It moved to the
-      <a href="/logs" data-internal-nav="logs" class="text-teal-300 hover:text-teal-200 underline">Logs</a>
-      tab (Audit sub-section) so all read-only investigation lives in one place.
-    </p>
+        </a>
+        <a href="/logs" data-internal-nav="logs" class="ops-link-card">
+          <div class="ops-link-icon"><i data-lucide="scroll-text"></i></div>
+          <div>
+            <div class="ops-link-title">Stage logs</div>
+            <p class="ops-link-body">Tail <code>.pm-runtime/logs/*.log</code> or search the publish-log audit table.</p>
+          </div>
+        </a>
+        <a href="/library" data-internal-nav="library" class="ops-link-card">
+          <div class="ops-link-icon"><i data-lucide="layers"></i></div>
+          <div>
+            <div class="ops-link-title">Library snapshot</div>
+            <p class="ops-link-body">Confirm current puzzle counts before clean / rollback / vacuum-db.</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ===== Maintenance (reversible) ================================== -->
+    <section data-ops-group="maintenance" class="ops-group ops-group--maintenance mb-6">
+      <header class="ops-group-header">
+        <h3 class="ops-group-title">Maintenance</h3>
+        <span class="ops-group-sub">reversible — safe to dry-run, safe to retry</span>
+      </header>
+      <div class="grid lg:grid-cols-2 gap-4">
+        ${maintCard({
+          title: "Vacuum DB",
+          group: "maintenance",
+          body: `
+            <label class="flex items-center gap-2 text-xs"><input id="mv-rebuild" type="checkbox" /> --rebuild (full rebuild from disk)</label>
+            <label class="flex items-center gap-2 text-xs"><input id="mv-dry" type="checkbox" /> --dry-run</label>
+            <p class="text-[11px] text-slate-500">Reclaims free space in <code>yengo-search.db</code>. Rebuild is slow (minutes).</p>
+          `,
+          button: { id: "mv-go", label: "Run vacuum-db", variant: "info" },
+        })}
+
+        ${maintCard({
+          title: "Clean",
+          group: "maintenance",
+          body: `
+            <label class="block text-xs text-slate-400">Target
+              <select id="mc-target" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm">
+                <option value="">(retention-based)</option>
+                <option value="staging">staging</option>
+                <option value="state">state</option>
+                <option value="logs">logs</option>
+                <option value="puzzles-collection">puzzles-collection</option>
+                <option value="publish-logs">publish-logs</option>
+              </select>
+            </label>
+            <label class="block text-xs text-slate-400">Retention days
+              <input id="mc-days" type="number" min="0" placeholder="(CLI default: 45)" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm font-mono" />
+            </label>
+            <label class="block text-xs text-slate-400">Dry run
+              <select id="mc-dry" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm">
+                <option value="">(let CLI decide)</option>
+                <option value="true">true</option>
+                <option value="false">false</option>
+              </select>
+            </label>
+          `,
+          button: { id: "mc-go", label: "Run clean", variant: "info" },
+        })}
+      </div>
+    </section>
+
+    <!-- ===== Destructive (irreversible) ================================ -->
+    <section data-ops-group="destructive" class="ops-group ops-group--destructive">
+      <header class="ops-group-header ops-group-header--destructive">
+        <div class="flex items-center gap-2">
+          <i data-lucide="alert-triangle" class="ops-warn-icon"></i>
+          <h3 class="ops-group-title ops-group-title--destructive">Destructive</h3>
+        </div>
+        <span class="ops-group-sub ops-group-sub--destructive">irreversible — dry-run first, type to confirm</span>
+      </header>
+      <div class="grid lg:grid-cols-2 gap-4">
+        ${maintCard({
+          title: "Rollback",
+          group: "destructive",
+          body: `
+            <label class="block text-xs text-slate-400">Run ID
+              <input id="mr-run-id" type="text" placeholder="20260505-deadbeef" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm font-mono" />
+            </label>
+            <div class="text-[10px] text-slate-500 -my-1">— or —</div>
+            <label class="block text-xs text-slate-400">Puzzle IDs <span class="text-slate-500">(comma/space separated)</span>
+              <textarea id="mr-puzzle-ids" rows="2" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm font-mono"></textarea>
+            </label>
+            <label class="block text-xs text-slate-400">Reason <span class="text-rose-400">*</span>
+              <input id="mr-reason" type="text" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm" />
+            </label>
+            <div class="space-y-1.5">
+              <label class="flex items-center gap-2 text-xs"><input id="mr-dry" type="checkbox" checked /> --dry-run</label>
+              <label class="flex items-center gap-2 text-xs"><input id="mr-yes" type="checkbox" /> --yes (skip prompt)</label>
+              <label class="flex items-center gap-2 text-xs"><input id="mr-verify" type="checkbox" /> --verify</label>
+            </div>
+          `,
+          button: { id: "mr-go", label: "Run rollback", variant: "destructive", destructive: true },
+        })}
+      </div>
+    </section>
   `;
 
   $("#mv-go").addEventListener("click", (e) => startMaintenance("/api/vacuum-db", readVacuumForm(), "vacuum-db", e.currentTarget));
@@ -1274,6 +1319,8 @@ function renderMaintenance() {
     if (!ok) return;
     startMaintenance("/api/rollback", body, "rollback", originBtn);
   });
+
+  if (window.lucide?.createIcons) window.lucide.createIcons();
 }
 
 // ---------- Logs (Slice 5) ----------
