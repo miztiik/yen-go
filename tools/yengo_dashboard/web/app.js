@@ -1630,6 +1630,50 @@ window.addEventListener("hashchange", () => {
   if (NAV_VIEWS[raw] || RENDERERS[raw] || LEGACY_NAV_ALIASES[raw]) showTab(raw);
 });
 
+// ---------- Theme toggle (light default, dark opt-in) ----------
+//
+// The pre-paint inline <script> in index.html sets body[data-theme] before
+// CSS renders to avoid a flash. This block owns the toggle button + the
+// localStorage persistence; both must agree on the same key + values.
+
+const THEME_KEY = "yengo-dashboard:theme";
+
+function readTheme() {
+  return document.body.dataset.theme === "dark" ? "dark" : "light";
+}
+
+function applyTheme(theme) {
+  const next = theme === "dark" ? "dark" : "light";
+  document.body.dataset.theme = next;
+  try { localStorage.setItem(THEME_KEY, next); } catch (_) { /* private mode */ }
+  paintThemeToggle();
+}
+
+function paintThemeToggle() {
+  const btn = $("#theme-toggle");
+  if (!btn) return;
+  const cur = readTheme();
+  const icon = $("#theme-toggle-icon");
+  const label = $("#theme-toggle-label");
+  // Toggle says "switch to <other>" — clearer than "currently <this>".
+  if (cur === "light") {
+    if (icon) icon.setAttribute("data-lucide", "moon");
+    if (label) label.textContent = "Dark theme";
+  } else {
+    if (icon) icon.setAttribute("data-lucide", "sun");
+    if (label) label.textContent = "Light theme";
+  }
+  if (window.lucide?.createIcons) window.lucide.createIcons();
+}
+
+const themeToggleBtn = $("#theme-toggle");
+if (themeToggleBtn) {
+  themeToggleBtn.addEventListener("click", () => {
+    applyTheme(readTheme() === "light" ? "dark" : "light");
+  });
+}
+paintThemeToggle();
+
 // ---------- Boot ----------
 
 const initialHash = location.hash.slice(1);

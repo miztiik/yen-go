@@ -103,3 +103,67 @@ def test_last_failure_label_carries_window_scope(app_js: str) -> None:
     assert "Computed only from the most recent" in app_js, (
         "Last-failure tile must carry a tooltip explaining the scope."
     )
+
+
+# ---------- Bright theme (Slice 2) -------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def styles_css() -> str:
+    return (WEB_DIR / "styles.css").read_text(encoding="utf-8")
+
+
+def test_body_defaults_to_light_theme(index_html: str) -> None:
+    """The handoff calls for light as default; the body must declare it
+    inline so server-rendered HTML matches what the JS later persists."""
+    assert 'data-theme="light"' in index_html, (
+        "<body> must default to data-theme='light' (Slice 2 requirement)."
+    )
+
+
+def test_pre_paint_theme_script_present(index_html: str) -> None:
+    """A small inline <script> in <head> must read localStorage and set
+    data-theme before CSS paints, otherwise dark-mode users see a white
+    flash on every reload."""
+    assert "yengo-dashboard:theme" in index_html, (
+        "Inline pre-paint theme script must read the persisted preference."
+    )
+    assert "documentElement.dataset.theme" in index_html
+
+
+def test_styles_define_light_theme_overrides(styles_css: str) -> None:
+    """Light theme must override the dominant dark surfaces."""
+    assert 'body[data-theme="light"]' in styles_css, (
+        "styles.css must define body[data-theme='light'] override block."
+    )
+    # A few concrete surfaces the override block must touch.
+    assert "#sidebar" in styles_css
+    # Override must hit at least one of the inline Tailwind dark classes.
+    assert ".bg-slate-900" in styles_css or ".bg-zinc-950" in styles_css
+
+
+def test_log_panels_have_no_light_theme_override(styles_css: str) -> None:
+    """Log/terminal surfaces must stay dark in both themes — high-contrast
+    terminal output is the whole point. The CSS file must not contain a
+    light-mode rule that recolours .log-panel's background."""
+    # Crude but effective: scan for any selector that targets .log-panel
+    # under body[data-theme="light"]. Such a rule would defeat the design.
+    bad = re.search(
+        r'body\[data-theme="light"\][^{]*\.log-panel[^{]*\{[^}]*background',
+        styles_css,
+    )
+    assert bad is None, (
+        "Light-mode override must not change .log-panel background — "
+        "log surfaces stay dark in both themes."
+    )
+
+
+def test_theme_toggle_button_present(index_html: str, app_js: str) -> None:
+    """Toggle button must exist in the sidebar and be wired up."""
+    assert 'id="theme-toggle"' in index_html, (
+        "Sidebar must carry an explicit theme-toggle button."
+    )
+    assert "applyTheme" in app_js and "THEME_KEY" in app_js, (
+        "app.js must expose applyTheme/THEME_KEY for the toggle to flip + persist."
+    )
+

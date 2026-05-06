@@ -14,8 +14,18 @@
   <!-- Markdown renderer for the Guide tab -->
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/lib/marked.umd.js"></script>
   <link rel="stylesheet" href="/styles.css" />
+  <!-- Pre-paint theme attr (avoids FOUC flicker between light/dark on reload). -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem("yengo-dashboard:theme");
+        var theme = (saved === "dark" || saved === "light") ? saved : "light";
+        document.documentElement.dataset.theme = theme;
+      } catch (_) { /* private mode etc. */ }
+    })();
+  </script>
 </head>
-<body class="bg-zinc-950 text-zinc-100 h-screen overflow-hidden flex" data-run-active="false">
+<body class="bg-zinc-950 text-zinc-100 h-screen overflow-hidden flex" data-run-active="false" data-theme="light">
 
   <!-- ===== LEFT SIDEBAR ===== -->
   <nav id="sidebar" class="w-[220px] flex-shrink-0 border-r border-zinc-800/80 bg-zinc-950/80 flex flex-col">
@@ -45,12 +55,20 @@
     </ul>
 
     <!-- System status (bottom of sidebar) -->
-    <div class="border-t border-zinc-800/60 px-3 py-3">
+    <div class="border-t border-zinc-800/60 px-3 py-3 space-y-1">
       <button id="system-pill"
               class="w-full flex items-center gap-2 text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 rounded-lg px-2 py-1.5 transition"
               aria-haspopup="dialog">
         <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
         <span id="system-status-label">System</span>
+      </button>
+      <button id="theme-toggle"
+              class="theme-toggle"
+              type="button"
+              aria-label="Toggle light/dark theme"
+              title="Toggle light/dark theme">
+        <i data-lucide="sun" id="theme-toggle-icon"></i>
+        <span id="theme-toggle-label">Dark theme</span>
       </button>
     </div>
   </nav>

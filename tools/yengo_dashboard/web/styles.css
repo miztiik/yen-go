@@ -669,3 +669,119 @@ input.workshop-input::placeholder {
   font-size: 0.85em;
 }
 
+/* =============================================================================
+   THEME — bright ops cockpit (default) + dark (opt-in)
+   =============================================================================
+   The base CSS above (and most inline Tailwind classes) target the dark
+   palette. Light mode is opt-in via body[data-theme="light"]; we override
+   the page background, sidebar, cards, and primary text. Log surfaces and
+   the system dialog stay dark in both themes (terminal panels are easier
+   to read against a near-black backdrop regardless of the page chrome).
+
+   Strategy: high-specificity overrides keyed on body[data-theme="light"]
+   recolor the most-visited Tailwind classes used in markup. This avoids a
+   wholesale class rewrite while still flipping the dominant surfaces. */
+
+body[data-theme="light"] {
+  background: rgb(248 250 252) !important;            /* slate-50 */
+  color: rgb(15 23 42);                               /* slate-900 */
+}
+
+/* Sidebar surfaces */
+body[data-theme="light"] #sidebar {
+  background: rgb(255 255 255 / 0.92);
+  border-right-color: rgb(226 232 240);               /* slate-200 */
+}
+body[data-theme="light"] #sidebar .nav-item { color: rgb(71 85 105); }   /* slate-500 */
+body[data-theme="light"] #sidebar .nav-item:hover {
+  color: rgb(15 23 42);
+  background: rgba(124, 58, 237, 0.08);
+}
+body[data-theme="light"] #sidebar .nav-item.active {
+  color: rgb(91 33 182);                              /* violet-800 */
+  background: rgba(124, 58, 237, 0.12);
+}
+body[data-theme="light"] .brand-wordmark .brand-mark { color: rgb(15 23 42); }
+body[data-theme="light"] .brand-wordmark .brand-sub  { color: rgb(124 58 237); }
+body[data-theme="light"] #sidebar .border-zinc-800\/60,
+body[data-theme="light"] #sidebar .border-zinc-800\/80 { border-color: rgb(226 232 240) !important; }
+
+/* Page chrome surfaces — recolour the most common Tailwind backgrounds */
+body[data-theme="light"] .bg-zinc-950,
+body[data-theme="light"] .bg-zinc-950\/80,
+body[data-theme="light"] .bg-zinc-950\/90 { background-color: rgb(255 255 255) !important; }
+body[data-theme="light"] .bg-slate-900,
+body[data-theme="light"] .bg-slate-900\/60 { background-color: rgb(255 255 255) !important; }
+body[data-theme="light"] .bg-slate-950,
+body[data-theme="light"] .bg-slate-950\/60 { background-color: rgb(248 250 252) !important; }
+
+/* Borders + rings */
+body[data-theme="light"] .border-slate-700,
+body[data-theme="light"] .border-slate-800,
+body[data-theme="light"] .border-zinc-800 { border-color: rgb(226 232 240) !important; }
+body[data-theme="light"] .ring-1.ring-white\/5,
+body[data-theme="light"] .ring-1.ring-slate-800 { --tw-ring-color: rgb(226 232 240) !important; }
+
+/* Text colour overrides — invert the dark slate ladder */
+body[data-theme="light"] .text-zinc-100,
+body[data-theme="light"] .text-slate-100,
+body[data-theme="light"] .text-slate-200,
+body[data-theme="light"] .text-slate-300 { color: rgb(15 23 42) !important; }
+body[data-theme="light"] .text-slate-400 { color: rgb(71 85 105) !important; }
+body[data-theme="light"] .text-slate-500 { color: rgb(100 116 139) !important; }
+body[data-theme="light"] .text-slate-600,
+body[data-theme="light"] .text-zinc-600  { color: rgb(148 163 184) !important; }
+
+/* KVP card text legibility in light mode */
+body[data-theme="light"] .kvp dt { color: rgb(100 116 139); }
+body[data-theme="light"] .kvp dd { color: rgb(15 23 42); }
+
+/* Hover/selected rows */
+body[data-theme="light"] .hover\:bg-slate-800\/30:hover { background-color: rgb(241 245 249) !important; }
+body[data-theme="light"] .hover\:bg-zinc-900\/90:hover  { background-color: rgb(241 245 249) !important; }
+
+/* Status strip — keep dark always (it lives over the log cluster) */
+body[data-theme="light"] #status-strip {
+  background: rgb(15 23 42 / 0.95);
+}
+body[data-theme="light"] #status-strip .strip-msg { color: rgb(226 232 240); }
+
+/* Log/terminal surfaces — ALWAYS dark, regardless of theme */
+.log-panel,
+.inline-log-panel,
+.maint-card .card-status .card-tail .inline-log {
+  /* No light-mode override — dark is intentional for terminal contrast. */
+}
+
+/* Dialogs stay dark for visual continuity with their backdrop */
+body[data-theme="light"] dialog.pmc-dialog { background: rgb(15 23 42); color: rgb(226 232 240); }
+
+/* ---------- Theme toggle button (sidebar bottom row) ---------- */
+.theme-toggle {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.72rem;
+  color: rgb(148 163 184);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-standard),
+              color var(--dur-fast) var(--ease-standard);
+}
+.theme-toggle:hover { color: rgb(228 228 231); background: rgba(124, 58, 237, 0.06); }
+body[data-theme="light"] .theme-toggle { color: rgb(100 116 139); }
+body[data-theme="light"] .theme-toggle:hover { color: rgb(15 23 42); background: rgba(124, 58, 237, 0.08); }
+.theme-toggle i[data-lucide],
+.theme-toggle svg { width: 14px; height: 14px; flex-shrink: 0; stroke: currentColor; }
+
+/* Also flip the body's own background — the bg-zinc-950 class on <body>
+   is element+class specificity (0,0,1,1), equal to body[data-theme=...].
+   The !important on the .bg-zinc-950 override above already wins, but the
+   default bg of <body> (none) needs a positive light fill so the page is
+   actually bright before any nested cards paint. */
+body[data-theme="light"].bg-zinc-950 { background-color: rgb(248 250 252) !important; }
+
