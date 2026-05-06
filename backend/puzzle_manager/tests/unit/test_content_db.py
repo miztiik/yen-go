@@ -93,6 +93,20 @@ class TestBuildContentDb:
         build_content_db({"abc123": SIMPLE_SGF}, db_path)
         assert db_path.exists()
 
+    def test_journal_mode_is_wal(self, tmp_path: Path) -> None:
+        db_path = tmp_path / "test.db"
+        build_content_db({"abc123": SIMPLE_SGF}, db_path)
+
+        conn = sqlite3.connect(str(db_path))
+        try:
+            mode = conn.execute("PRAGMA journal_mode").fetchone()[0]
+        finally:
+            conn.close()
+        assert mode.lower() == "wal", (
+            "yengo-content.db must persist in WAL mode so pm_cockpit (and other "
+            "readers) can query while the pipeline writes without blocking."
+        )
+
     def test_schema(self, tmp_path: Path) -> None:
         db_path = tmp_path / "test.db"
         build_content_db({"abc123": SIMPLE_SGF}, db_path)

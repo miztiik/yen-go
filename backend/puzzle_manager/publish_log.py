@@ -87,6 +87,7 @@ class PublishLogWriter:
         with open(log_path, "a", encoding="utf-8") as f:
             for entry in entries:
                 f.write(entry.to_jsonl() + "\n")
+            f.flush()
 
         logger.info(f"Wrote {len(entries)} publish log entries")
         return len(entries)

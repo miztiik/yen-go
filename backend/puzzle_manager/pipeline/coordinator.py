@@ -95,6 +95,25 @@ class PipelineResult:
         """Return sum of remaining files across all stages."""
         return sum(s.remaining for s in self.stages.values())
 
+    @property
+    def up_to_date(self) -> bool:
+        """True iff the pipeline ran successfully but had no work to do.
+
+        This covers the steady-state re-run case: ingest fetches 0 new files
+        (the per-source ingest DB skipped everything as already-known), and
+        every downstream stage either short-circuits as a no-op or also
+        produces nothing.
+
+        Definition: at least one stage executed, every stage succeeded,
+        no failures, no items processed.
+        """
+        if not self.stages:
+            return False
+        return all(
+            s.success and s.failed == 0 and s.processed == 0
+            for s in self.stages.values()
+        )
+
     def __str__(self) -> str:
         status = "OK" if self.success else "FAILED"
         return (
@@ -329,6 +348,43 @@ class PipelineCoordinator:
                 continue
 
             stage = self._stages[stage_name]
+
+            # Short-circuit: if the prior executed stage produced no work
+            # (processed == 0, no failures), downstream stages have nothing to
+            # do. This is the common steady-state case (e.g., re-running
+            # ingest on a fully-synced source). Treat as a no-op success rather
+            # than letting the prerequisite check fire "empty staging dir" as
+            # a failure. See docs/architecture/backend/source-ingest-db.md
+            # "Up-to-date detection".
+            prior_stage_name = next(
+                (s for s in reversed(stage_order[:i]) if s in results),
+                None,
+            )
+            prior = results.get(prior_stage_name) if prior_stage_name else None
+            if (
+                prior is not None
+                and prior.success
+                and prior.failed == 0
+                and prior.processed == 0
+            ):
+                noop = StageResult.noop_result(
+                    f"no input from upstream stage '{prior_stage_name}'"
+                )
+                results[stage_name] = noop
+                # Record in run state so `status` reflects the no-op,
+                # rather than leaving the stage as PENDING forever.
+                self.state_manager.start_stage(stage_name)
+                self.state_manager.complete_stage(stage_name, 0, 0, None, 0)
+                logger.info(
+                    "Stage %s: no-op (upstream produced no new work)",
+                    stage_name,
+                    extra={
+                        "stage": stage_name,
+                        "action": "stage_noop",
+                        "reason": "upstream_zero_output",
+                    },
+                )
+                continue
 
             try:
                 result = self.executor.execute(stage, context)

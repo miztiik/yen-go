@@ -191,6 +191,7 @@ def build_content_db(
 
     conn = sqlite3.connect(str(output_path))
     try:
+        conn.execute("PRAGMA journal_mode=WAL")
         conn.executescript(_SCHEMA_SQL)
         _ensure_batch_column(conn)
         _ensure_collection_slug_column(conn)

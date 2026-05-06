@@ -60,7 +60,6 @@ DEFAULT_SOURCES_CONFIG = {
                 "path": "external-sources/manual-imports",
                 "include_folders": [],
                 "exclude_folders": [],
-                "resume": False,
                 "validate": True,
                 "move_processed_to": None
             },
@@ -158,6 +157,11 @@ class ConfigLoader:
     def load_sources(self) -> list[SourceConfig]:
         """Load source configurations.
 
+        Strips the deprecated ``resume`` field from each adapter config and
+        emits a one-time WARNING per source. Resume is now always-on via
+        :class:`SourceIngestDB`; use ``--fresh`` to start over. See
+        ``docs/architecture/backend/source-ingest-db.md``.
+
         Returns:
             List of validated SourceConfig objects.
 
@@ -169,6 +173,15 @@ class ConfigLoader:
         try:
             sources = []
             for source_data in data.get("sources", []):
+                cfg = source_data.get("config")
+                if isinstance(cfg, dict) and "resume" in cfg:
+                    logger.warning(
+                        "sources.json: deprecated 'resume' field on source '%s' "
+                        "will be ignored. Resume is always-on via SourceIngestDB; "
+                        "use --fresh to start over.",
+                        source_data.get("id", "<unknown>"),
+                    )
+                    cfg.pop("resume", None)
                 sources.append(SourceConfig.model_validate(source_data))
             return sources
         except Exception as e:

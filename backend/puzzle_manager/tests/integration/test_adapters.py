@@ -24,15 +24,18 @@ class TestAdapterIntegration:
         assert callable(adapter.configure)
 
 
-class TestAdapterCheckpoint:
-    """Tests for adapter checkpoint and resume functionality."""
+class TestAdapterResume:
+    """Tests for adapter resume support via SourceIngestDB."""
 
     def test_local_adapter_has_checkpoint_field(self) -> None:
-        """LocalAdapter should have checkpoint tracking."""
+        """LocalAdapter must declare resume support via SourceIngestDB."""
         adapter = LocalAdapter()
 
-        # Check that adapter has some state/checkpoint capability
-        assert hasattr(adapter, "_checkpoint") or hasattr(adapter, "_processed_files")
+        # Resume is now provided by SourceIngestDB (per-source SQLite),
+        # not by an in-process attribute. See
+        # docs/architecture/backend/source-ingest-db.md.
+        assert adapter.supports_resume() is True
+        assert hasattr(adapter, "_run_id")
 
     def test_adapter_fetch_accepts_batch_size(self) -> None:
         """Adapter fetch should accept batch_size parameter."""

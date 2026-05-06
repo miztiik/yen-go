@@ -6,9 +6,12 @@ Converts JSON format to SGF.
 
 Features:
 - Folder filtering (include_folders, exclude_folders)
-- Checkpoint/resume support for interrupted imports
+- Content-aware skip + resume via SourceIngestDB (per-source SQLite at
+  ``<source_dir>/.yengo-ingest.sqlite``); see
+  ``docs/architecture/backend/source-ingest-db.md``
 """
 
+import hashlib
 import json
 import logging
 from pathlib import Path
@@ -16,7 +19,6 @@ from pathlib import Path
 from backend.puzzle_manager.adapters._base import FetchResult
 from backend.puzzle_manager.adapters._registry import register_adapter
 from backend.puzzle_manager.config.loader import ConfigLoader
-from backend.puzzle_manager.core.checkpoint import AdapterCheckpoint
 from backend.puzzle_manager.core.collection_assigner import (
     assign_collections,
     normalize,
@@ -25,6 +27,11 @@ from backend.puzzle_manager.core.collection_assigner import (
 from backend.puzzle_manager.core.puzzle_validator import (
     PuzzleData,
     PuzzleValidator,
+)
+from backend.puzzle_manager.core.source_ingest_db import (
+    FileStatus,
+    SourceIngestDB,
+    migrate_legacy_checkpoint,
 )
 from backend.puzzle_manager.paths import get_project_root, rel_path
 
@@ -61,15 +68,21 @@ class SanderlandAdapter:
         else:
             self.source_dir = get_project_root() / "external-sources" / "sanderland"
 
-        self._processed_ids: set[str] = set()
-
         # Folder filtering configuration
         self._include_folders: list[str] = []
         self._exclude_folders: list[str] = []
-        self._resume: bool = False
-        self._config_signature: str = ""
 
-        # Centralized puzzle validator (spec 108)
+        # Optional override for source.id (set by IngestStage via
+        # ``configure({"_source_id": ...})``). When unset, falls back to the
+        # default ``"sanderland"`` so per-source ingest DBs stamp ``meta.source_id``
+        # consistently with sources.json.
+        self._source_id_override: str | None = None
+
+        # Pipeline-injected run_id (set via configure(); IngestStage passes
+        # ``context.run_id`` through ``adapter_config['_run_id']``).
+        self._run_id: str = "unknown"
+
+        # Centralized puzzle validator
         self._validator = PuzzleValidator()
 
         # Load collection aliases for enrichment (spec 128)
@@ -86,8 +99,11 @@ class SanderlandAdapter:
 
     @property
     def source_id(self) -> str:
-        """Unique source identifier."""
-        return "sanderland"
+        """Unique source identifier.
+
+        Falls back to ``"sanderland"`` if no IngestStage-injected override is set.
+        """
+        return self._source_id_override or "sanderland"
 
     def configure(self, config: dict) -> None:
         """Apply adapter-specific configuration.
@@ -97,18 +113,24 @@ class SanderlandAdapter:
                 - source_dir (str, optional): Path to sanderland collection
                 - include_folders (list[str], optional): Folders to include (empty = all)
                 - exclude_folders (list[str], optional): Folders to exclude
-                - resume (bool, optional): If True, load existing checkpoint
+                - _run_id (str, optional): Pipeline-injected run identifier.
+                - resume (bool, optional): Deprecated. Resume is now always-on
+                  via SourceIngestDB; use ``--fresh`` to start over.
         """
         if "source_dir" in config:
             self.source_dir = Path(config["source_dir"])
 
-        # Folder filtering (spec 109)
+        # Pipeline-injected source.id (private key — adapters never touch sources.json).
+        if "_source_id" in config and config["_source_id"]:
+            self._source_id_override = str(config["_source_id"])
+
+        # Pipeline-injected run_id (private key — adapters never touch sources.json).
+        if "_run_id" in config and config["_run_id"]:
+            self._run_id = str(config["_run_id"])
+
+        # Folder filtering
         self._include_folders = config.get("include_folders", [])
         self._exclude_folders = config.get("exclude_folders", [])
-        self._resume = config.get("resume", False)
-
-        # Store config signature for resume validation
-        self._config_signature = self._compute_config_signature()
 
         # Log configuration
         folders_to_process = self._get_folders_to_process()
@@ -120,32 +142,8 @@ class SanderlandAdapter:
             logger.debug(f"Exclude folders: {self._exclude_folders}")
 
     def supports_resume(self) -> bool:
-        """Whether adapter supports resuming from checkpoint.
-
-        Returns:
-            True (always supported)
-        """
+        """Resume is always-on now via SourceIngestDB."""
         return True
-
-    def get_checkpoint(self) -> str | None:
-        """Get current checkpoint as JSON string.
-
-        Returns:
-            JSON string of checkpoint state, or None if no checkpoint
-        """
-        checkpoint = AdapterCheckpoint.load(self.source_id)
-        if checkpoint is None:
-            return None
-        return json.dumps(checkpoint["state"])
-
-    def set_checkpoint(self, checkpoint: str) -> None:
-        """Set checkpoint from JSON string.
-
-        Args:
-            checkpoint: JSON string of checkpoint state
-        """
-        state = json.loads(checkpoint)
-        AdapterCheckpoint.save(self.source_id, state)
 
     def _get_folders_to_process(self) -> list[Path]:
         """Get list of folders to process based on filtering config.
@@ -198,42 +196,6 @@ class SanderlandAdapter:
         else:
             # All folders
             return all_folders
-
-    def _save_checkpoint(self, state: dict) -> None:
-        """Save checkpoint state."""
-        AdapterCheckpoint.save(self.source_id, state)
-
-    def _load_checkpoint(self) -> dict | None:
-        """Load checkpoint state.
-
-        Returns:
-            Checkpoint state dict or None if not found/invalid
-        """
-        checkpoint = AdapterCheckpoint.load(self.source_id)
-        if checkpoint is None:
-            return None
-        return checkpoint["state"]
-
-    def _clear_checkpoint(self) -> None:
-        """Clear checkpoint after successful completion."""
-        AdapterCheckpoint.clear(self.source_id)
-
-    def _compute_config_signature(self) -> str:
-        """Compute a signature of the folder filtering config.
-
-        Used to detect when config has changed between resume runs.
-        Uses JSON serialization for deterministic, explicit representation.
-
-        Returns:
-            String signature of include_folders + exclude_folders (8-char MD5)
-        """
-        import hashlib
-        config_dict = {
-            "include": sorted(self._include_folders),
-            "exclude": sorted(self._exclude_folders),
-        }
-        config_str = json.dumps(config_dict, sort_keys=True)
-        return hashlib.md5(config_str.encode()).hexdigest()[:8]
 
     def _to_puzzle_data(self, data: dict) -> PuzzleData:
         """Convert Sanderland JSON to PuzzleData for centralized validation.
@@ -291,16 +253,24 @@ class SanderlandAdapter:
     def fetch(self, batch_size: int = 100):
         """Fetch puzzles from sanderland collection.
 
-        The sanderland collection uses JSON format, not SGF.
-        This adapter converts JSON to SGF.
+        The sanderland collection uses JSON format, not SGF. This adapter
+        converts JSON to SGF.
 
-        Puzzles are validated using PuzzleValidator (spec 108) before
-        conversion to ensure consistent validation across adapters.
+        Uses :class:`SourceIngestDB` (co-located at
+        ``<source_dir>/.yengo-ingest.sqlite``) for content-aware skip,
+        resume, and rename detection. See
+        ``docs/architecture/backend/source-ingest-db.md``.
 
-        Supports folder filtering and checkpoint/resume (spec 109).
+        Tier-3 skip policy: files are always re-read and re-hashed, then the
+        hash is compared against the stored row. If hashes match, downstream
+        stages are skipped (no yield, no batch consumption).
+
+        Args:
+            batch_size: Maximum NEW puzzles to yield per call. Already-known
+                files (skipped via the ingest DB) do not consume batch slots.
 
         Yields:
-            FetchResult for each puzzle
+            FetchResult for each NEW file (success, skipped, or failed).
         """
         if not self.source_dir.exists():
             logger.warning(f"Sanderland directory not found: {rel_path(self.source_dir)}")
@@ -310,155 +280,228 @@ class SanderlandAdapter:
             )
             return
 
-        # Get folders to process
         folders = self._get_folders_to_process()
         if not folders:
             logger.info("No folders to process")
             return
 
-        # Initialize or load checkpoint state
-        state = {
-            "current_folder": folders[0].name,
-            "current_folder_index": 0,
-            "files_completed": 0,  # 1-indexed: how many files done in current folder
-            "total_processed": 0,
-            "total_failed": 0,
-            "config_signature": self._config_signature,
-        }
+        yielded = 0  # NEW puzzles yielded this call (counts toward batch_size)
 
-        if self._resume:
-            loaded_state = self._load_checkpoint()
-            if loaded_state:
-                # Check if config has changed since checkpoint was saved
-                saved_signature = loaded_state.get("config_signature", "")
-                if saved_signature and saved_signature != self._config_signature:
-                    logger.warning(
-                        f"Config changed since checkpoint (was: {saved_signature}, "
-                        f"now: {self._config_signature}). Folder positions may not align. "
-                        f"Consider using --no-resume for a fresh start."
-                    )
+        # One-shot migration of any legacy AdapterCheckpoint JSON for this source.
+        migrate_legacy_checkpoint(
+            self.source_dir, source_id=self.source_id, run_id=self._run_id
+        )
 
-                # Validate folder_index is within bounds
-                saved_folder_index = loaded_state.get("current_folder_index", 0)
-                if saved_folder_index >= len(folders):
-                    logger.warning(
-                        f"Checkpoint folder_index ({saved_folder_index}) exceeds "
-                        f"available folders ({len(folders)}). Starting from beginning."
-                    )
-                    loaded_state["current_folder_index"] = 0
-                    loaded_state["files_completed"] = 0
+        ingest_db = SourceIngestDB.open(
+            self.source_dir, source_id=self.source_id, run_id=self._run_id
+        )
+        try:
+            for folder in folders:
+                json_files = sorted(folder.rglob("*.json"))
+                if not json_files:
+                    continue
 
-                state = loaded_state
+                ingest_db.begin()
+                folder_writes = 0
+                try:
+                    for json_path in json_files:
+                        if yielded >= batch_size:
+                            ingest_db.commit()
+                            logger.info(
+                                "Sanderland: yielded %d new puzzles (batch full)",
+                                yielded,
+                            )
+                            return
+
+                        result = self._process_file(
+                            json_path=json_path, ingest_db=ingest_db
+                        )
+                        if result is None:
+                            continue
+                        folder_writes += 1
+                        if result.is_success:
+                            yielded += 1
+                        yield result
+
+                        if folder_writes >= 100:
+                            ingest_db.commit()
+                            ingest_db.begin()
+                            folder_writes = 0
+                finally:
+                    ingest_db.commit()
+
+            progress = ingest_db.progress()
+            if yielded == 0 and progress.ingested > 0:
                 logger.info(
-                    f"Resuming from checkpoint: folder={state['current_folder']}, "
-                    f"files_completed={state['files_completed']}"
+                    "Sanderland: source '%s' is up to date — 0 new files "
+                    "(DB: ingested=%d, skipped=%d, failed=%d). "
+                    "Use --fresh to reprocess.",
+                    self._source_id_override or self.source_id,
+                    progress.ingested,
+                    progress.skipped,
+                    progress.failed,
                 )
+            else:
+                logger.info(
+                    "Sanderland: fetched %d (this run), DB totals — ingested=%d skipped=%d failed=%d",
+                    yielded,
+                    progress.ingested,
+                    progress.skipped,
+                    progress.failed,
+                )
+        finally:
+            ingest_db.close()
 
-        count = 0
-        # Checkpoint save interval: save every N puzzles instead of every puzzle
-        # to reduce PermissionError risk on Windows (antivirus/indexer file locking)
-        checkpoint_interval = 10
-        files_since_checkpoint = 0
-        completed_all = False
-        start_folder_index = min(state["current_folder_index"], len(folders) - 1)
+    # ------------------------------------------------------------------ #
+    # Per-file processing helpers
+    # ------------------------------------------------------------------ #
+
+    def _process_file(
+        self, *, json_path: Path, ingest_db: SourceIngestDB
+    ) -> FetchResult | None:
+        """Read, classify, and (when new) yield one Sanderland JSON file.
+
+        Returns:
+            ``None`` when the file is already-known and unchanged (caller
+            should skip silently). Otherwise a ``FetchResult`` to yield.
+        """
+        rel = self._rel_path(json_path)
+        try:
+            stat = json_path.stat()
+            raw_bytes = json_path.read_bytes()
+        except OSError as exc:
+            return FetchResult.failed(
+                puzzle_id=self._generate_id(json_path),
+                error=f"File I/O error: {exc}",
+            )
+
+        content_hash = hashlib.sha256(raw_bytes).hexdigest()[:16]
+
+        existing = ingest_db.find_by_path(rel)
+        if existing is not None and existing.content_hash == content_hash:
+            ingest_db.upsert(
+                rel_path=rel,
+                content_hash=content_hash,
+                size_bytes=stat.st_size,
+                mtime_ns=stat.st_mtime_ns,
+                status=existing.status,
+                skip_reason=existing.skip_reason,
+            )
+            return None
+
+        if existing is None:
+            renamed_from = self._detect_rename(content_hash, rel, ingest_db)
+            if renamed_from is not None:
+                ingest_db.rename(old_rel_path=renamed_from.rel_path, new_rel_path=rel)
+                logger.info(
+                    "Detected rename: %s -> %s (hash %s)",
+                    renamed_from.rel_path,
+                    rel,
+                    content_hash,
+                )
+                return None
+
+        puzzle_id = self._generate_id(json_path)
+        try:
+            raw_data = json.loads(raw_bytes.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            ingest_db.upsert(
+                rel_path=rel,
+                content_hash=content_hash,
+                size_bytes=stat.st_size,
+                mtime_ns=stat.st_mtime_ns,
+                status=FileStatus.FAILED,
+                skip_reason=f"json_parse_error:{type(exc).__name__}",
+            )
+            return FetchResult.failed(
+                puzzle_id=puzzle_id,
+                error=f"{type(exc).__name__}: {exc}",
+            )
 
         try:
-            for folder_idx, folder in enumerate(folders[start_folder_index:], start=start_folder_index):
-                # Get JSON files in this folder
-                json_files = sorted(folder.rglob("*.json"))
+            puzzle_data = self._to_puzzle_data(raw_data)
+            validation_result = self._validator.validate(puzzle_data)
+        except Exception as exc:
+            ingest_db.upsert(
+                rel_path=rel,
+                content_hash=content_hash,
+                size_bytes=stat.st_size,
+                mtime_ns=stat.st_mtime_ns,
+                status=FileStatus.FAILED,
+                skip_reason=f"validation_error:{type(exc).__name__}",
+            )
+            return FetchResult.failed(
+                puzzle_id=puzzle_id,
+                error=f"{type(exc).__name__}: {exc}",
+            )
 
-                # Determine starting file index (files_completed is 1-indexed count)
-                start_file_index = 0
-                if folder_idx == state["current_folder_index"]:
-                    start_file_index = state["files_completed"]  # Skip already completed files
+        if not validation_result.is_valid:
+            ingest_db.upsert(
+                rel_path=rel,
+                content_hash=content_hash,
+                size_bytes=stat.st_size,
+                mtime_ns=stat.st_mtime_ns,
+                status=FileStatus.SKIPPED,
+                skip_reason=validation_result.rejection_reason or "validation_failed",
+            )
+            return FetchResult.skipped(
+                puzzle_id=puzzle_id,
+                reason=validation_result.rejection_reason,
+            )
 
-                for file_idx, json_path in enumerate(json_files[start_file_index:], start=start_file_index):
-                    if count >= batch_size:
-                        # Save checkpoint before returning
-                        state["current_folder"] = folder.name
-                        state["current_folder_index"] = folder_idx
-                        state["files_completed"] = file_idx  # file_idx is 0-indexed, so this = count of completed
-                        self._save_checkpoint(state)
-                        files_since_checkpoint = 0
-                        logger.info(f"Sanderland: fetched {count} puzzles (batch complete)")
-                        return
+        try:
+            sgf_content = self._json_to_sgf(raw_data, json_path, puzzle_id)
+        except Exception as exc:
+            ingest_db.upsert(
+                rel_path=rel,
+                content_hash=content_hash,
+                size_bytes=stat.st_size,
+                mtime_ns=stat.st_mtime_ns,
+                status=FileStatus.FAILED,
+                skip_reason=f"sgf_conversion_error:{type(exc).__name__}",
+            )
+            return FetchResult.failed(
+                puzzle_id=puzzle_id,
+                error=f"{type(exc).__name__}: {exc}",
+            )
 
-                    puzzle_id = self._generate_id(json_path)
-                    if puzzle_id in self._processed_ids:
-                        continue
+        ingest_db.upsert(
+            rel_path=rel,
+            content_hash=content_hash,
+            size_bytes=stat.st_size,
+            mtime_ns=stat.st_mtime_ns,
+            status=FileStatus.INGESTED,
+        )
+        return FetchResult.success(
+            puzzle_id=puzzle_id,
+            sgf_content=sgf_content,
+            source_link=str(json_path),
+        )
 
-                    try:
-                        raw_data = json.loads(json_path.read_text(encoding="utf-8"))
+    def _detect_rename(
+        self, content_hash: str, new_rel_path: str, ingest_db: SourceIngestDB
+    ):
+        """Return a candidate prior row if this content_hash represents a rename."""
+        if not content_hash:
+            return None
+        candidates = [
+            r for r in ingest_db.find_by_hash(content_hash)
+            if r.rel_path != new_rel_path
+        ]
+        if not candidates:
+            return None
+        for cand in sorted(candidates, key=lambda r: r.run_id, reverse=True):
+            old_abs = self.source_dir / cand.rel_path
+            if not old_abs.exists():
+                return cand
+        return None
 
-                        # Validate puzzle using centralized validator (spec 108)
-                        puzzle_data = self._to_puzzle_data(raw_data)
-                        validation_result = self._validator.validate(puzzle_data)
-
-                        if not validation_result.is_valid:
-                            self._processed_ids.add(puzzle_id)
-                            state["total_failed"] += 1
-                            yield FetchResult.skipped(
-                                puzzle_id=puzzle_id,
-                                reason=validation_result.rejection_reason,
-                            )
-                            continue
-
-                        # Convert to SGF only after validation passes
-                        sgf_content = self._json_to_sgf(raw_data, json_path, puzzle_id)
-                        self._processed_ids.add(puzzle_id)
-                        state["total_processed"] += 1
-                        count += 1
-
-                        yield FetchResult.success(
-                            puzzle_id=puzzle_id,
-                            sgf_content=sgf_content,
-                            source_link=str(json_path),
-                        )
-
-                        # Update checkpoint state in memory after each yield
-                        state["current_folder"] = folder.name
-                        state["current_folder_index"] = folder_idx
-                        state["files_completed"] = file_idx + 1  # 1-indexed: count of files done
-                        files_since_checkpoint += 1
-
-                        # Throttle disk writes: save every checkpoint_interval puzzles
-                        # to reduce PermissionError risk from Windows file locking
-                        if files_since_checkpoint >= checkpoint_interval:
-                            self._save_checkpoint(state)
-                            files_since_checkpoint = 0
-
-                    except Exception as e:
-                        # Extract error type and message without exposing full paths
-                        error_type = type(e).__name__
-                        # Use only the error message, not args which may contain paths
-                        error_msg = str(e).split(":")[-1].strip() if ":" in str(e) else str(e)
-                        logger.info(f"Error reading {rel_path(json_path)}: {error_type} - {error_msg}")
-                        state["total_failed"] += 1
-                        yield FetchResult.failed(
-                            puzzle_id=puzzle_id,
-                            error=f"{error_type}: {error_msg}",
-                        )
-
-                        # Update checkpoint after failure too - advance files_completed so we
-                        # don't retry the same failed file on resume, and persist total_failed
-                        state["current_folder"] = folder.name
-                        state["current_folder_index"] = folder_idx
-                        state["files_completed"] = file_idx + 1  # 1-indexed: count of files done
-                        files_since_checkpoint += 1
-
-                        # Throttle disk writes on failure path too
-                        if files_since_checkpoint >= checkpoint_interval:
-                            self._save_checkpoint(state)
-                            files_since_checkpoint = 0
-
-            # All folders complete - clear checkpoint
-            completed_all = True
-            self._clear_checkpoint()
-            logger.info(f"Sanderland: fetched {count} puzzles (all complete)")
-        finally:
-            # Flush pending checkpoint when generator is closed early (consumer breaks)
-            if files_since_checkpoint > 0 and not completed_all:
-                self._save_checkpoint(state)
+    def _rel_path(self, file_path: Path) -> str:
+        """POSIX path relative to source root, used as DB primary key."""
+        try:
+            return file_path.relative_to(self.source_dir).as_posix()
+        except ValueError:
+            return file_path.name
 
     def _json_to_sgf(self, data: dict, path: Path, puzzle_id: str) -> str:
         """Convert sanderland JSON format to SGF.

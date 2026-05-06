@@ -5,8 +5,10 @@ Implements 45-day retention policy (FR-078).
 Spec 107: Collection cleanup consistency (FR-025 to FR-033).
 """
 
+import gc
 import logging
 import shutil
+import time
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -102,6 +104,33 @@ def write_cleanup_audit_entry(
     )
 
 
+def _unlink_with_retry(path: Path, attempts: int = 5) -> None:
+    """Unlink ``path`` with short backoff between attempts.
+
+    Windows refuses ``unlink()`` with ``WinError 32`` when another handle
+    holds the file (a SQLite reader's cache, an editor extension, etc.).
+    A ``gc.collect()`` between attempts gives Python finalizers a chance
+    to release lingering ``sqlite3.Connection`` objects whose refcount
+    has just hit zero.
+    """
+    delays = (0.05, 0.10, 0.25, 0.50)
+    last_err: OSError | None = None
+    # First pass: pre-empt finalizer lag — collect once before the first
+    # attempt so the common refcount-just-dropped case clears in one shot.
+    gc.collect()
+    for i in range(attempts):
+        try:
+            path.unlink()
+            return
+        except PermissionError as e:
+            last_err = e
+            gc.collect()
+            if i < attempts - 1:
+                time.sleep(delays[i])
+    assert last_err is not None
+    raise last_err
+
+
 def clear_index_state(output_dir: Path, dry_run: bool = False) -> bool:
     """Clear index state files (DB files and legacy pagination state).
 
@@ -122,7 +151,7 @@ def clear_index_state(output_dir: Path, dry_run: bool = False) -> bool:
         if dry_run:
             logger.debug(f"Would delete: {rel_path(legacy_pagination)}")
         else:
-            legacy_pagination.unlink()
+            _unlink_with_retry(legacy_pagination)
             logger.debug(f"Deleted legacy: {rel_path(legacy_pagination)}")
         cleaned = True
 
@@ -132,7 +161,7 @@ def clear_index_state(output_dir: Path, dry_run: bool = False) -> bool:
         if dry_run:
             logger.debug(f"Would delete: {rel_path(db_file)}")
         else:
-            db_file.unlink()
+            _unlink_with_retry(db_file)
             logger.debug(f"Deleted: {rel_path(db_file)}")
         cleaned = True
 
@@ -142,7 +171,7 @@ def clear_index_state(output_dir: Path, dry_run: bool = False) -> bool:
         if dry_run:
             logger.debug(f"Would delete: {rel_path(db_version_file)}")
         else:
-            db_version_file.unlink()
+            _unlink_with_retry(db_version_file)
             logger.debug(f"Deleted: {rel_path(db_version_file)}")
         cleaned = True
 
@@ -152,7 +181,7 @@ def clear_index_state(output_dir: Path, dry_run: bool = False) -> bool:
         if dry_run:
             logger.debug(f"Would delete: {rel_path(content_db_file)}")
         else:
-            content_db_file.unlink()
+            _unlink_with_retry(content_db_file)
             logger.debug(f"Deleted: {rel_path(content_db_file)}")
         cleaned = True
 

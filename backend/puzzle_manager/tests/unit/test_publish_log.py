@@ -260,6 +260,38 @@ class TestPublishLogWriter:
         log_files = list(tmp_path.glob("*.jsonl"))
         assert len(log_files) == 0
 
+    def test_write_batch_flushes_before_returning(self, tmp_path: Path):
+        """write_batch must push bytes past Python's buffered writer before
+        returning, so a SIGTERM landing immediately after the call still leaves
+        the batch readable on disk. Mirrors the explicit f.flush() in write().
+        """
+        writer = PublishLogWriter(log_dir=tmp_path)
+        entries = [
+            PublishLogEntry(
+                run_id="20260505-flushtest",
+                puzzle_id=f"puzzle-{i:03d}",
+                source_id="local",
+                path=f"sgf/test/puzzle-{i:03d}.sgf",
+                quality=2,
+                trace_id=f"trace-{i:03d}",
+                level="beginner",
+            )
+            for i in range(50)
+        ]
+
+        writer.write_batch(entries)
+
+        log_files = list(tmp_path.glob("*.jsonl"))
+        assert len(log_files) == 1
+
+        # Open a fresh handle from "another reader" and confirm every entry is
+        # already on disk — no entries trapped in a Python-side buffer.
+        with open(log_files[0], encoding="utf-8") as f:
+            lines = [line for line in f.read().splitlines() if line]
+        assert len(lines) == 50
+        recovered_ids = [json.loads(line)["puzzle_id"] for line in lines]
+        assert recovered_ids == [f"puzzle-{i:03d}" for i in range(50)]
+
     def test_write_appends_to_existing(self, tmp_path: Path):
         """Test writing appends to existing log file."""
         writer = PublishLogWriter(log_dir=tmp_path)

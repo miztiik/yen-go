@@ -129,11 +129,18 @@ class IngestStage:
             logger.info(f"Processing source: {source.id}")
 
             try:
-                # Create and configure adapter
-                # Spec 109: Merge resume flag into adapter config
+                # Create and configure adapter.
+                # Resume/skip is now always-on via SourceIngestDB; the legacy
+                # ``resume`` adapter-config flag is no longer set here.
                 adapter_config = source.config.model_dump()
-                if context.resume:
-                    adapter_config["resume"] = True
+                # Inject run_id and source.id so adapters can stamp them on per-source
+                # ingest DB rows (see docs/architecture/backend/source-ingest-db.md).
+                # `_source_id` is critical because shared adapters (e.g., LocalAdapter
+                # serves t-hero, ogs, kisvadim, harada-tsumego, ...) all return the
+                # same hardcoded `self.source_id`; the canonical identity comes from
+                # sources.json's `id` field.
+                adapter_config["_run_id"] = context.run_id
+                adapter_config["_source_id"] = source.id
                 adapter = create_adapter(source.adapter, adapter_config)
 
                 # Fetch puzzles

@@ -144,3 +144,84 @@ class TestStageResult:
 
         assert result.processed == 0
         assert result.failed == 0
+
+    def test_noop_result_is_success_with_flag(self):
+        """noop_result() yields a successful result with up_to_date=True."""
+        result = StageResult.noop_result("no input from upstream stage 'ingest'")
+
+        assert result.success is True
+        assert result.up_to_date is True
+        assert result.processed == 0
+        assert result.failed == 0
+        assert result.note == "no input from upstream stage 'ingest'"
+        # Critical: noop must not set errors (CLI prints those as `Error: ...`).
+        assert result.errors == []
+
+    def test_success_result_is_not_up_to_date(self):
+        """Regular success_result must not be flagged as up_to_date."""
+        result = StageResult.success_result(processed=10, duration=1.0)
+
+        assert result.success is True
+        assert result.up_to_date is False
+
+
+class TestPipelineResultUpToDate:
+    """PipelineResult.up_to_date aggregates per-stage state."""
+
+    def test_up_to_date_true_when_all_stages_noop(self):
+        from backend.puzzle_manager.pipeline.coordinator import PipelineResult
+
+        result = PipelineResult(
+            success=True,
+            stages={
+                "ingest": StageResult.noop_result(),
+                "analyze": StageResult.noop_result(),
+                "publish": StageResult.noop_result(),
+            },
+        )
+        assert result.up_to_date is True
+
+    def test_up_to_date_true_when_ingest_zero_processed_and_downstream_noop(self):
+        """Real-world steady-state: ingest succeeded with 0 processed (DB skipped
+        everything), downstream short-circuited as noop."""
+        from backend.puzzle_manager.pipeline.coordinator import PipelineResult
+
+        result = PipelineResult(
+            success=True,
+            stages={
+                "ingest": StageResult.success_result(processed=0, duration=1.0),
+                "analyze": StageResult.noop_result(),
+                "publish": StageResult.noop_result(),
+            },
+        )
+        assert result.up_to_date is True
+
+    def test_up_to_date_false_when_any_stage_did_work(self):
+        from backend.puzzle_manager.pipeline.coordinator import PipelineResult
+
+        result = PipelineResult(
+            success=True,
+            stages={
+                "ingest": StageResult.success_result(processed=5, duration=0.1),
+                "analyze": StageResult.noop_result(),
+            },
+        )
+        assert result.up_to_date is False
+
+    def test_up_to_date_false_when_any_stage_failed(self):
+        from backend.puzzle_manager.pipeline.coordinator import PipelineResult
+
+        result = PipelineResult(
+            success=False,
+            stages={
+                "ingest": StageResult.success_result(processed=0, duration=0.1),
+                "analyze": StageResult.failure_result("boom"),
+            },
+        )
+        assert result.up_to_date is False
+
+    def test_up_to_date_false_when_no_stages(self):
+        from backend.puzzle_manager.pipeline.coordinator import PipelineResult
+
+        result = PipelineResult(success=True, stages={})
+        assert result.up_to_date is False

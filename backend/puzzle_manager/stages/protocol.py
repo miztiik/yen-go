@@ -138,11 +138,28 @@ class StageResult:
     errors: list[str] = field(default_factory=list)
     duration_seconds: float = 0.0
     resolved_paths: list[str] = field(default_factory=list)  # Spec 105: Actual paths written (e.g., publish stage SGF dirs)
+    up_to_date: bool = False  # True when the stage was a no-op because there was nothing new to do.
+    note: str = ""  # Optional human-readable note (e.g., "no input from upstream stage")
 
     @classmethod
     def success_result(cls, processed: int, duration: float) -> "StageResult":
         """Create a successful result."""
         return cls(success=True, processed=processed, duration_seconds=duration)
+
+    @classmethod
+    def noop_result(cls, reason: str = "") -> "StageResult":
+        """Create a no-op success result.
+
+        Used when a stage has no work to do because an upstream stage in the
+        same run produced nothing (e.g., re-running ingest on an already
+        fully-synced source). Distinct from ``success_result`` so that the
+        coordinator and CLI can render an "up to date" message instead of a
+        generic success.
+
+        Args:
+            reason: Optional human-readable reason, surfaced in logs.
+        """
+        return cls(success=True, processed=0, up_to_date=True, note=reason)
 
     @classmethod
     def partial_result(

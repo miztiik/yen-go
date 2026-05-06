@@ -1,5 +1,5 @@
 {
-  "active_adapter": "local",
+  "active_adapter": "t-hero",
   "sources": [
     {
       "id": "local-imports",
@@ -22,7 +22,6 @@
         "path": "external-sources/ambak-tsumego/problems",
         "include_folders": [],
         "exclude_folders": [],
-        "resume": false,
         "validate": true,
         "move_processed_to": null
       }
@@ -34,11 +33,33 @@
       "config": {
         "path": "external-sources/t-hero/sgf",
         "exclude_folders": [
-          "1a-tsumego-beginner"
+          "endgame-problems",
+          "general-practice",
+          "gokyo-shumyo",
+          "guanzi-pu",
+          "igo-hatsuyoron",
+          "kajiwara-direction-of-play",
+          "kano-yoshinori-graded-go-problems",
+          "kill-problems",
+          "kim-jiseok-tsumego",
+          "ko-problems",
+          "korean-problem-academy",
+          "life-and-death",
+          "sacrifice-techniques",
+          "segoe-kensaku-tesuji-dictionary",
+          "small-board-problems",
+          "tesuji-training",
+          "tsumego-dictionary",
+          "weiqi-problems",
+          "xuanxuan-qijing",
+          "yi-kuo"
         ],
         "include_folders": [
-          "batch-001",
-          "batch-002"
+          "capture-problems",
+          "capturing-races-unsolved",
+          "cho-chikun-life-death-advanced",
+          "cho-chikun-life-death-elementary",
+          "cho-chikun-life-death-intermediate"
         ]
       }
     },
@@ -86,7 +107,6 @@
           "batch-001"
         ],
         "exclude_folders": [],
-        "resume": true,
         "validate": true,
         "move_processed_to": null
       }
