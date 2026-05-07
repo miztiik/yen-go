@@ -22,9 +22,12 @@ The biggest gap is between "puzzle app" and "learning platform."
 ## Research Invocation Decision
 
 Research was invoked (two rounds) and confirmed:
-1. All required data infrastructure exists (progress tracker, SQLite WASM, achievement model)
-2. No competing implementation in the codebase
-3. The gap is confirmed: zero stats visualization, zero adaptive routing, zero SRS
+
+- Supporting audit: `TODO/initiatives/20260317-1400-feature-adaptive-learning-engine/20260317-learning-platform-gap.md`
+- Supporting audit: `TODO/initiatives/20260317-1400-feature-adaptive-learning-engine/20260318-progress-stats-page-placement.md`
+- All required data infrastructure exists (progress tracker, SQLite WASM, achievement model)
+- No competing implementation in the codebase
+- The gap is confirmed: zero stats visualization, zero adaptive routing, zero SRS
 
 ## Round 1 — High-Impact Clarifications
 

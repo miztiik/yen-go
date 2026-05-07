@@ -248,3 +248,36 @@ These were identified in `15-research-standalone-todo-audit.md` but were not con
 | `15-research-ground-truth-v2.md` | KaTrain/backend/frontend verification (11 initiatives) | Raw data — consumed into Findings Table + Confirmed Successes |
 | `15-research-standalone-todo-audit.md` | TODO markdowns, Kishimoto, hints, archive list | Raw data — consumed into TODO Staleness + High-Value Opportunities |
 | **`20-analysis.md`** | **This file — consolidated, user-decided, actionable** | **Single source of truth** |
+
+---
+
+## Residual Non-Contract Directory Decisions (2026-05-07)
+
+After the May initiative-normalization passes, **17 non-contract directories remain**. These are no longer treated as unprocessed cleanup debt. They are the explicit residual set after all defensible `fold with owner rewrite` moves were completed.
+
+### Keep Standalone
+
+- `2026-03-06-fix-enrichment-lab-logging-scope` — historical cross-initiative regression note cited by multiple historical initiatives; no single canonical owner.
+- `2026-03-08-research-ghostban-katago-webgl` — exploratory external research with zero downstream initiative references.
+- `20260314-research-101weiqi-sources-architecture` — standalone source-architecture investigation; only referenced by this audit.
+- `20260314-research-db1-schema-tag-storage` — backend schema design note; only referenced by this audit.
+- `20260314-research-incremental-db-feasibility` — backend feasibility note; only referenced by this audit.
+- `20260314-research-lizgoban-katrain-patterns` — two-file research bundle with cross-cutting enrichment-lab value; not a single supporting artifact.
+- `20260314-research-sequence-number-removal` — referenced by another research directory rather than by a single owner initiative.
+- `20260317-research-capability-audit` — three-file meta-audit that informed multiple downstream initiatives; should remain standalone evidence.
+- `20260318-research-hinting-system-comparison` — cross-cutting comparison referenced outside a single initiative; not safe to assign one owner retroactively.
+- `20260319-research-katago-allowmoves-occupied` — low-level engine behavior note; no owner initiative artifact cites it directly beyond audit synthesis.
+- `20260324-research-backend-failing-tests` — historical pre-remediation evidence; the remediation initiative already contains its own analysis and execution record.
+- `20260324-research-initiative-audit` — meta-audit bundle; canonical decision record for the cleanup itself.
+
+### Formalize Before Any Future Execution
+
+- `20260313-research-score-trap-density-elo-anchor` — execution candidate only if trap-density validation work resumes; do not fold into an unrelated owner.
+- `20260317-research-browser-tiny-llm` — future-facing product research; no current owner initiative should absorb it.
+- `20260325-research-instinct-calibration-golden-set` — calibration work seed; formalize first if promoted from research to implementation.
+- `20260329-research-collection-assignment-pipeline` — pipeline-change seed; requires a fresh charter before execution.
+- `20260413-research-101weiqi-bulk-download-strategy` — external-source ingestion research; must be explicitly re-scoped and formalized before any action.
+
+### Fold-With-Owner-Rewrite
+
+None remaining. Any further fold would require inventing or rewriting historical owner relationships rather than repairing or clarifying existing ones.

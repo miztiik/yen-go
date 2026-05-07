@@ -1,5 +1,8 @@
 # Research Brief: Learning Platform Gap Analysis — Deep Dive
 
+> **Supporting Audit**: `20260317-research-learning-platform-gap`
+> **Owner Initiative**: `20260317-1400-feature-adaptive-learning-engine`
+
 > **Research question**: What is the precise gap between YenGo's current "puzzle solving tool" state and an "intelligent learning platform," and what single feature maximally transforms the user experience with minimum implementation cost?
 >
 > **Boundaries**: Codebase evidence from `frontend/src/` (services, models, types, components, pages). No code changes. Focused on user-facing value and data availability.
@@ -428,7 +431,7 @@ Generalizing `DailySummary` to work for Collections/Training/Technique sessions 
 | Field | Value |
 |-------|-------|
 | `research_completed` | true |
-| `initiative_path` | `TODO/initiatives/20260317-research-learning-platform-gap/` |
+| `artifact_path` | `TODO/initiatives/20260317-1400-feature-adaptive-learning-engine/20260317-learning-platform-gap.md` |
 | `artifact` | `15-research.md` |
 | `top_recommendations` | 1. Statistics Page (SVG, no chart lib) 2. Generalize DailySummary to all modes 3. Persist failed puzzle IDs 4. Wire achievement evaluation triggers |
 | `open_questions` | Q1-Q5 (chart approach, page structure, schema strategy, MVP scope, initiative grouping) |

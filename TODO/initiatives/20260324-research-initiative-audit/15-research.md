@@ -90,9 +90,9 @@ These folders contain only `15-research.md` (sometimes multiple research files) 
 | R-40 | 20260314-research-sequence-number-removal | backend | 15-research.md | — |
 | R-41 | 20260317-research-browser-tiny-llm | other | 15-research.md | — |
 | R-42 | 20260317-research-capability-audit | other | 15-research.md, 15-research-enrichment-lab-accretion.md, 15-research-ng-gap-audit.md | — |
-| R-43 | 20260317-research-learning-platform-gap | other | 15-research.md | R-10 (adaptive-learning-engine) |
+| R-43 | 20260317-research-learning-platform-gap | nested initiative artifact | 20260317-learning-platform-gap.md | R-10 (adaptive-learning-engine) |
 | R-44 | 20260318-research-hinting-system-comparison | enrichment-lab | 15-research.md | R-7 (tactical-hints) |
-| R-45 | 20260318-research-progress-stats-page-placement | frontend | 15-research.md | R-10 (adaptive-learning-engine) |
+| R-45 | 20260318-research-progress-stats-page-placement | nested initiative artifact | 20260318-progress-stats-page-placement.md | R-10 (adaptive-learning-engine) |
 | R-46 | 20260319-research-katago-allowmoves-occupied | katago | 15-research.md | R-17/R-18 (katago tuning) |
 | R-47 | 20260322-research-external-sources-fixture-sourcing | nested initiative artifact | 20260322-external-sources-fixture-sourcing.md | R-24 (technique-calibration-fixtures) |
 | R-48 | 20260322-research-rush-timed-puzzle-audit | nested initiative artifact | 20260322-rush-timed-puzzle-audit.md | R-25 (rush-mode-fix), R-30 (timed-puzzle-json-to-sql) |

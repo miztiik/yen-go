@@ -1,5 +1,8 @@
 # Research: Frontend Navigation & UX Placement for "My Progress / Stats" Page
 
+> **Supporting Audit**: `20260318-research-progress-stats-page-placement`
+> **Owner Initiative**: `20260317-1400-feature-adaptive-learning-engine`
+
 **Last Updated**: 2026-03-18  
 **Research Question**: What is the exact current navigation structure, routing, page layout, and icon system in the YenGo frontend, and where should a new "My Progress / Stats" page be placed?  
 **Boundaries**: Frontend code only (`frontend/src/`). No backend / pipeline code in scope.

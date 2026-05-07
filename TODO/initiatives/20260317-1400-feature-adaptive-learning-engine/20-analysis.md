@@ -10,6 +10,11 @@
 | risk_level | low |
 | research_invoked | Yes (2 rounds: capability audit + engagement gap deep-dive) |
 
+Supporting audits nested under this initiative:
+
+- `20260317-learning-platform-gap.md` — gap framing and data-readiness evidence
+- `20260318-progress-stats-page-placement.md` — routing/navigation placement evidence
+
 ## Cross-Artifact Consistency
 
 | finding_id | severity | area | description | resolution |
