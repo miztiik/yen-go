@@ -446,3 +446,91 @@ class TestSpaCleanPathRoutes:
             resp = client.get("/api/health")
         assert resp.status_code == 200
         assert resp.headers["content-type"].startswith("application/json")
+
+
+def _seed_failures_runs(runtime: Path) -> Path:
+    """Theme 2b: seed real RunState JSON files containing Failure[] entries.
+
+    Uses the same on-disk shape ``StateManager.archive()`` writes
+    (``runs/{prefix}_{run_id}.json``), and ``model_dump_json()`` to keep the
+    Pydantic schema authoritative — no hand-rolled fields.
+    """
+    from datetime import UTC, datetime, timedelta
+
+    from backend.puzzle_manager.models.enums import RunStatus
+    from backend.puzzle_manager.state.models import Failure, RunState
+
+    runs_dir = runtime / "state" / "runs"
+    runs_dir.mkdir(parents=True, exist_ok=True)
+
+    started = datetime.now(UTC)
+    runs = [
+        RunState(
+            run_id="20260507-aaaaaaaa",
+            status=RunStatus.FAILED,
+            started_at=started,
+            failures=[
+                Failure(item_id="p1", stage="ingest", error_type="HTTPError", error_message="429"),
+                Failure(item_id="p2", stage="ingest", error_type="HTTPError", error_message="503"),
+            ],
+        ),
+        RunState(
+            run_id="20260507-bbbbbbbb",
+            status=RunStatus.FAILED,
+            started_at=started - timedelta(minutes=1),
+            failures=[
+                Failure(item_id="p3", stage="publish", error_type="DBError", error_message="locked"),
+            ],
+        ),
+    ]
+    for run in runs:
+        (runs_dir / f"{run.run_id}.json").write_text(
+            run.model_dump_json(indent=2), encoding="utf-8",
+        )
+    return runs_dir
+
+
+class TestFailuresSummaryEndpoint:
+    """Theme 2b: drives the real ``status --failures-summary --json`` subprocess
+    via the cockpit. Runtime dir is overridden via ``YENGO_RUNTIME_DIR`` so the
+    CLI scans tmp run-state files only."""
+
+    def test_returns_grouped_raw_list(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        runtime = tmp_path / "runtime"
+        _seed_failures_runs(runtime)
+        monkeypatch.setenv("YENGO_RUNTIME_DIR", str(runtime))
+        monkeypatch.setenv("YENGO_ROOT", str(REPO_ROOT))
+        app = create_app(repo_root=REPO_ROOT, runtime_dir=runtime)
+        with TestClient(app) as client:
+            resp = client.get("/api/status/failures-summary", params={"last": 10})
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert isinstance(raw, list)
+        # Two distinct (stage, error_type) groups across the seeded runs.
+        keys = {(g["stage"], g["error_type"]) for g in raw}
+        assert keys == {("ingest", "HTTPError"), ("publish", "DBError")}
+        ingest = next(g for g in raw if g["stage"] == "ingest")
+        assert ingest["count"] == 2
+        assert "20260507-aaaaaaaa" in ingest["affected_runs"]
+
+    def test_empty_runtime_returns_empty_list(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        runtime = tmp_path / "runtime"
+        (runtime / "state" / "runs").mkdir(parents=True)
+        monkeypatch.setenv("YENGO_RUNTIME_DIR", str(runtime))
+        monkeypatch.setenv("YENGO_ROOT", str(REPO_ROOT))
+        app = create_app(repo_root=REPO_ROOT, runtime_dir=runtime)
+        with TestClient(app) as client:
+            resp = client.get("/api/status/failures-summary")
+        assert resp.status_code == 200, resp.text
+        assert resp.json()["raw"] == []
+
+    def test_last_query_param_clamped(self) -> None:
+        # Query(ge=1, le=200) → 0 is rejected by FastAPI before subprocess.
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.get("/api/status/failures-summary", params={"last": 0})
+        assert resp.status_code == 422

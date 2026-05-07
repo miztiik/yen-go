@@ -454,3 +454,20 @@ class LogsGrepResponse(BaseModel):
             "`backend.puzzle_manager.models.logs.LogsGrepHit`."
         ),
     )
+
+
+class FailuresSummaryResponse(BaseModel):
+    """``GET /api/status/failures-summary`` payload — verbatim CLI JSON list.
+
+    Each ``raw`` entry mirrors ``backend.puzzle_manager.models.failures.FailureGroup``
+    (Theme 2a). Per principle #6 the cockpit does not re-validate the items so
+    the schema can evolve in the pipeline without a coordinated dashboard release.
+    """
+
+    raw: list = Field(
+        ...,
+        description=(
+            "Parsed JSON list of `status --failures-summary --json`. Item shape "
+            "owned by `backend.puzzle_manager.models.failures.FailureGroup`."
+        ),
+    )

@@ -51,7 +51,7 @@ tools/yengo_dashboard/
     models.py           # Pydantic response schemas
   web/
     index.html          # tab shell (Library / Pipeline / Operations / Logs / Guide)
-    app.js              # vanilla ES module — fetch + render + EventSource. Every render* function MUST emit its title via viewHeader() so the .view-header typography stays pinned (Theme 0 invariant). Operations cards expose a Preview button that opens #preview-dialog via openPreviewModal() — GET /api/{op}/preview, render via PREVIEW_RENDERERS, then "Run for real" reuses startMaintenance() with dry_run=false (Theme 1e). Logs/Stage pane has a regex search box (#lg-pattern + #lg-stage/from/to/limit) that calls /api/logs/grep and renders a results table; each row's [Open] button dispatches the matching #stage-files-list button so the existing tail viewer kicks in (Theme 4c).
+    app.js              # vanilla ES module — fetch + render + EventSource. Every render* function MUST emit its title via viewHeader() so the .view-header typography stays pinned (Theme 0 invariant). Operations cards expose a Preview button that opens #preview-dialog via openPreviewModal() — GET /api/{op}/preview, render via PREVIEW_RENDERERS, then "Run for real" reuses startMaintenance() with dry_run=false (Theme 1e). Logs/Stage pane has a regex search box (#lg-pattern + #lg-stage/from/to/limit) that calls /api/logs/grep and renders a results table; each row's [Open] button dispatches the matching #stage-files-list button so the existing tail viewer kicks in (Theme 4c). Pipeline (history) view mounts a #failures-summary-card above the run list that loads /api/status/failures-summary?last=10 and renders top failure modes; each `.failures-row` click writes a `yengo-dashboard:logsGrepPrefill` sessionStorage entry then nav→/logs, where _renderLogsStagePane consumes-and-clears the prefill to auto-search (Theme 2b/2c).
     view-guide.js       # docs-tree viewer for the Guide tab (own layout, no view-header)
     styles.css          # minimal complement to Tailwind CDN. Owns .view-header / .view-header-title / .view-header-sub, the .logs-stage-grid responsive template, and dialog.preview-dialog (Theme 1e impact modal).
   tests/
@@ -90,6 +90,7 @@ tools/yengo_dashboard/
 | GET    | `/api/logs/stage-files`       | direct read of `.pm-runtime/logs/*.log`         | name + size + mtime, newest-first; empty `files:[]` if dir missing |
 | GET    | `/api/logs/stage-files/{name}`| direct tail of one log file                     | 404 on bad name (regex / outside logs dir); 422 if `lines>5000` |
 | GET    | `/api/logs/grep`              | subprocess `logs grep --json PATTERN [--stage] [--from] [--to] [--limit]` | 200 with `{raw: list[LogsGrepHit]}`; 400 on CLI failure (e.g. invalid regex); 422 if `pattern` missing |
+| GET    | `/api/status/failures-summary`| subprocess `status --failures-summary --last N --json` (Theme 2b) | 200 with `{raw: list[FailureGroup]}`; 400 on CLI failure; 422 if `last` outside [1,200] |
 | GET    | `/`, `/app.js`, `/styles.css` | StaticFiles                           | mounted at `/`, `/api/*` precedes               |
 | GET    | `/library`, `/pipeline`, `/operations`, `/logs`, `/guide`, `/guide/{rest:path}` | SPA shell | All return `index.html` so deep-link refresh works under clean-path routing |
 

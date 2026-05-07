@@ -1709,6 +1709,20 @@ async function _renderLogsStagePane() {
     $("#lg-pattern").addEventListener("keydown", (e) => {
       if (e.key === "Enter") { e.preventDefault(); _runLogsGrep(); }
     });
+    // Theme 2c: consume sessionStorage prefill set by the failures-summary
+    // card on the Pipeline tab. One-shot: read, clear, auto-search.
+    try {
+      const raw = sessionStorage.getItem("yengo-dashboard:logsGrepPrefill");
+      if (raw) {
+        sessionStorage.removeItem("yengo-dashboard:logsGrepPrefill");
+        const pre = JSON.parse(raw);
+        if (pre?.pattern) {
+          $("#lg-pattern").value = pre.pattern;
+          if (pre.stage) $("#lg-stage").value = pre.stage;
+          _runLogsGrep();
+        }
+      }
+    } catch { /* ignore malformed prefill */ }
   } catch (err) {
     pane.innerHTML = errorBlock("/api/logs/stage-files", err);
   }
@@ -1990,6 +2004,8 @@ async function renderHistory() {
         </div>
       </div>
 
+      <div id="failures-summary-card" class="mb-5"></div>
+
       <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-2 mb-3">
         <input id="history-q" type="search" placeholder="filter by run_id substring…"
                value="${escapeHtml(_historyFilter.q)}"
@@ -2030,7 +2046,84 @@ async function renderHistory() {
       saveHistoryFilter(_historyFilter);
       refreshHistoryView();
     });
+    _loadFailuresSummaryCard();
   } catch (e) { root.innerHTML = errorBlock("/api/runs", e); }
+}
+
+// ---------- Theme 2b: Top failure modes card ----------
+//
+// Renders an aggregated digest of RunState.failures[] for the most recent N
+// runs above the History list. Each row is a (stage, error_type) bucket from
+// the pipeline's `status --failures-summary` CLI; clicking jumps to the Logs
+// view filtered to that error pattern (Theme 2c).
+
+async function _loadFailuresSummaryCard() {
+  const root = document.getElementById("failures-summary-card");
+  if (!root) return;
+  const last = 10;
+  root.innerHTML = `<div class="text-xs text-slate-500">loading top failure modes…</div>`;
+  let groups;
+  try {
+    const resp = await getJSON(`/api/status/failures-summary?last=${last}`);
+    groups = Array.isArray(resp?.raw) ? resp.raw : [];
+  } catch (e) {
+    root.innerHTML = errorBlock("/api/status/failures-summary", e);
+    return;
+  }
+  if (groups.length === 0) {
+    root.innerHTML = `
+      <div class="rounded-md border border-slate-800 bg-slate-900 p-4">
+        <div class="text-[11px] uppercase tracking-wider text-slate-500">Top failure modes (last ${last} runs)</div>
+        <div class="text-sm text-emerald-300 mt-2">No failures recorded.</div>
+      </div>`;
+    return;
+  }
+  const rows = groups.map((g) => {
+    const sample = g.sample_message ? escapeHtml(g.sample_message).slice(0, 160) : "";
+    const ids = (g.sample_puzzle_ids || []).map(escapeHtml).join(", ");
+    return `
+      <button type="button"
+              class="failures-row w-full text-left grid grid-cols-[6rem_1fr_auto] gap-3 items-center px-3 py-2 rounded hover:bg-slate-800/60 focus:outline-none focus:ring-1 focus:ring-teal-500/50"
+              data-stage="${escapeHtml(g.stage)}"
+              data-error-type="${escapeHtml(g.error_type)}"
+              title="Click to search logs for ${escapeHtml(g.error_type)}">
+        <span class="text-[11px] uppercase tracking-wider text-slate-400 font-mono">${escapeHtml(g.stage)}</span>
+        <span class="min-w-0">
+          <span class="text-sm text-slate-100 font-mono">${escapeHtml(g.error_type)}</span>
+          ${sample ? `<span class="block text-xs text-slate-500 truncate">${sample}</span>` : ""}
+          ${ids ? `<span class="block text-[11px] text-slate-600 truncate font-mono">ids: ${ids}</span>` : ""}
+        </span>
+        <span class="text-sm tabular-nums text-rose-300">×${g.count}</span>
+      </button>`;
+  }).join("");
+  root.innerHTML = `
+    <div class="rounded-md border border-slate-800 bg-slate-900 p-3">
+      <div class="flex items-center justify-between mb-2 px-1">
+        <div class="text-[11px] uppercase tracking-wider text-slate-500">Top failure modes (last ${last} runs)</div>
+        <div class="text-[11px] text-slate-600">click a row to search logs</div>
+      </div>
+      <div class="divide-y divide-slate-800/60">${rows}</div>
+    </div>`;
+  // Theme 2c: row click → navigate to /logs with grep prefilled.
+  root.querySelectorAll(".failures-row").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const stage = btn.dataset.stage || "";
+      const errType = btn.dataset.errorType || "";
+      try {
+        sessionStorage.setItem(
+          "yengo-dashboard:logsGrepPrefill",
+          JSON.stringify({ pattern: errType, stage, ts: Date.now() }),
+        );
+      } catch { /* sessionStorage may be disabled */ }
+      // Use the same internal-nav path the rest of the app uses.
+      const a = document.createElement("a");
+      a.href = "/logs";
+      a.dataset.internalNav = "logs";
+      a.click();
+      // Fallback if anchor click was swallowed.
+      if (location.pathname !== "/logs") location.href = "/logs";
+    });
+  });
 }
 
 // ---------- Lock release (from alarm bar action) ----------

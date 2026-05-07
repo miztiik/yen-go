@@ -129,7 +129,7 @@ None.
 
 ---
 
-## Theme 2 — Failure Digest on History (P0) ◐ (2a shipped)
+## Theme 2 — Failure Digest on History (P0) ✓
 
 **Jobs covered**: "Why did this run fail / skip puzzles?"
 
@@ -148,8 +148,8 @@ None.
 
 ### Acceptance criteria
 - [x] Backend test with seeded run-state files asserts grouping logic.
-- [ ] Dashboard test pins the new card renders even on empty fixture.
-- [ ] Click flow from card → Logs view works under SPA routing.
+- [x] Dashboard test pins the new card renders even on empty fixture.
+- [x] Click flow from card → Logs view works under SPA routing.
 
 ### Dependencies
 - Visually depends on Theme 0 (consistent card styling).

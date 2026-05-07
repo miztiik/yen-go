@@ -14,6 +14,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from tools.yengo_dashboard import __version__
 from tools.yengo_dashboard.server.models import (
     AdaptersResponse,
+    FailuresSummaryResponse,
     HealthResponse,
     InventoryResponse,
     RunsResponse,
@@ -78,5 +79,28 @@ def build_read_router(
         limit: int = Query(50, ge=0, le=500),
     ) -> RunsResponse:
         return RunsResponse.model_validate(state_reader.read_runs(limit=limit))
+
+    @router.get("/status/failures-summary", response_model=FailuresSummaryResponse)
+    def failures_summary(
+        _request: Request,
+        last: int = Query(10, ge=1, le=200),
+    ) -> FailuresSummaryResponse:
+        """Theme 2b: passthrough of ``status --failures-summary --json``.
+
+        Pipeline tab renders the resulting groups above the History list.
+        """
+        try:
+            payload = runner.failures_summary(last=last)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "puzzle_manager status --failures-summary failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return FailuresSummaryResponse(raw=payload)
 
     return router

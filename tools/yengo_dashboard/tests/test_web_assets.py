@@ -660,3 +660,25 @@ def test_logs_grep_open_button_jumps_to_file(app_js: str) -> None:
     assert "lg-open-btn" in app_js, "Theme 4c: result rows must mark Open buttons with class lg-open-btn."
     assert "stage-file-btn" in app_js, "Theme 4c: Open must dispatch through stage-file-btn click."
 
+
+
+def test_failures_summary_card_present(app_js: str) -> None:
+    """Theme 2b: Pipeline (history) view must mount a placeholder for the
+    Top failure modes card and call the dashboard endpoint to populate it."""
+    assert 'id="failures-summary-card"' in app_js, (
+        "Theme 2b: history view must include #failures-summary-card placeholder."
+    )
+    assert "/api/status/failures-summary?last=" in app_js, (
+        "Theme 2b: app.js must call GET /api/status/failures-summary."
+    )
+
+
+def test_failures_summary_row_navigates_to_logs(app_js: str) -> None:
+    """Theme 2c: clicking a failure-mode row prefills the Logs grep form via
+    sessionStorage and navigates to /logs."""
+    assert "failures-row" in app_js, (
+        "Theme 2c: failure-mode rows must be marked with class failures-row."
+    )
+    assert "yengo-dashboard:logsGrepPrefill" in app_js, (
+        "Theme 2c: row click must seed the documented sessionStorage prefill key."
+    )
