@@ -471,3 +471,20 @@ class FailuresSummaryResponse(BaseModel):
             "owned by `backend.puzzle_manager.models.failures.FailureGroup`."
         ),
     )
+
+
+class RuntimeInfoResponse(BaseModel):
+    """``GET /api/runtime-info`` payload — verbatim ``runtime-info --json``.
+
+    Mirrors ``backend.puzzle_manager.models.runtime_info.RuntimeInfo`` (Theme 3a).
+    Per principle #6 the cockpit forwards the dict unchanged so the schema can
+    evolve in the pipeline without a coordinated dashboard release.
+    """
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON object of `runtime-info --json`. Shape owned by "
+            "`backend.puzzle_manager.models.runtime_info.RuntimeInfo`."
+        ),
+    )

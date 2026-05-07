@@ -682,3 +682,35 @@ def test_failures_summary_row_navigates_to_logs(app_js: str) -> None:
     assert "yengo-dashboard:logsGrepPrefill" in app_js, (
         "Theme 2c: row click must seed the documented sessionStorage prefill key."
     )
+
+
+# ---------- Theme 3b: runtime footprint -----------------------------------
+
+
+def test_system_dialog_has_footprint_section(index_html: str, app_js: str) -> None:
+    """Theme 3b: System dialog must expose a footprint container and app.js
+    must populate it on dialog open via paintSystemDialog."""
+    assert 'id="system-footprint"' in index_html, (
+        "Theme 3b: index.html must declare #system-footprint inside the system dialog."
+    )
+    assert "_loadFootprint" in app_js, (
+        "Theme 3b: paintSystemDialog must call _loadFootprint."
+    )
+
+
+def test_runtime_info_endpoint_called(app_js: str) -> None:
+    """Theme 3b: footprint must come from /api/runtime-info (cockpit principle
+    #6 — never read disk directly from the browser)."""
+    assert "/api/runtime-info" in app_js, (
+        "Theme 3b: app.js must call GET /api/runtime-info."
+    )
+
+
+def test_clean_target_dropdown_decorated(app_js: str) -> None:
+    """Theme 3b: Clean target dropdown must show per-target byte estimates."""
+    assert "_decorateCleanTargets" in app_js, (
+        "Theme 3b: clean form mount must invoke _decorateCleanTargets."
+    )
+    assert "_CLEAN_TARGET_BYTE_KEYS" in app_js, (
+        "Theme 3b: target→bytes mapping must be present so options show estimates."
+    )

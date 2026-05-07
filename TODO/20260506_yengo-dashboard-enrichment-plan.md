@@ -157,7 +157,7 @@ None.
 
 ---
 
-## Theme 3 — Disk / Runtime Footprint (P0) ◐
+## Theme 3 — Disk / Runtime Footprint (P0) ✓
 
 **Jobs covered**: *"Why is `.pm-runtime/` 2 GB?"*
 
@@ -181,8 +181,8 @@ None.
   target option (pulled from `runtime-info`).
 
 ### Acceptance criteria
-- [x] CLI test: seeds tmp `.pm-runtime/` with known sizes, asserts response. _(Theme 3a, this commit)_
-- [ ] Dashboard test: chip dialog renders the footprint tab.
+- [x] CLI test: seeds tmp `.pm-runtime/` with known sizes, asserts response. _(Theme 3a, commit 4c30cca21)_
+- [x] Dashboard test: chip dialog renders the footprint tab. _(Theme 3b, this commit — pin tests for #system-footprint, /api/runtime-info, _decorateCleanTargets, plus real-fixture endpoint test)_
 
 ---
 

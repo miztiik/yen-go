@@ -76,6 +76,107 @@ function paintSystemDialog() {
   $("#system-refreshed").textContent = newest
     ? `Last refreshed ${Math.round((Date.now() - newest) / 1000)}s ago`
     : "Never refreshed.";
+  _loadFootprint();
+}
+
+// ---------- Theme 3b: runtime footprint ----------
+//
+// `runtime-info` is a subprocess (~300-600ms) so we cache the most recent
+// payload and re-render dialogs/decorations from cache. Refetch on demand
+// (system dialog open, Clean target focus) — never on the master tick.
+
+const FOOTPRINT = { payload: null, fetchedAt: 0, inflight: null };
+const FOOTPRINT_TTL_MS = 10000;
+
+function fmtBytes(n) {
+  if (n == null || !Number.isFinite(n)) return "–";
+  let v = Number(n);
+  for (const u of ["B", "KB", "MB", "GB", "TB"]) {
+    if (v < 1024 || u === "TB") {
+      return u === "B" ? `${v.toLocaleString()} B` : `${v.toFixed(1)} ${u}`;
+    }
+    v /= 1024;
+  }
+  return `${v} B`;
+}
+
+async function refreshFootprint(force = false) {
+  const now = Date.now();
+  if (!force && FOOTPRINT.payload && (now - FOOTPRINT.fetchedAt) < FOOTPRINT_TTL_MS) {
+    return FOOTPRINT.payload;
+  }
+  if (FOOTPRINT.inflight) return FOOTPRINT.inflight;
+  FOOTPRINT.inflight = (async () => {
+    try {
+      const data = await getJSON("/api/runtime-info");
+      FOOTPRINT.payload = data?.raw ?? null;
+      FOOTPRINT.fetchedAt = Date.now();
+      return FOOTPRINT.payload;
+    } catch {
+      return null;
+    } finally {
+      FOOTPRINT.inflight = null;
+    }
+  })();
+  return FOOTPRINT.inflight;
+}
+
+async function _loadFootprint() {
+  const dl = $("#system-footprint");
+  const meta = $("#system-footprint-meta");
+  if (!dl) return;
+  dl.innerHTML = `<dt class="text-slate-500 text-xs">…</dt><dd class="font-mono text-slate-500">loading</dd>`;
+  if (meta) meta.textContent = "";
+  const fp = await refreshFootprint();
+  if (!fp) {
+    dl.innerHTML = `<dt class="text-slate-500 text-xs">error</dt><dd class="font-mono text-slate-500">runtime-info unavailable</dd>`;
+    return;
+  }
+  const rows = [
+    ["logs",         fmtBytes(fp.logs_bytes)],
+    ["state",        fmtBytes(fp.state_bytes)],
+    ["staging",      fmtBytes(fp.staging_bytes)],
+    ["raw",          fmtBytes(fp.raw_bytes)],
+    ["ingest-dbs",   fmtBytes(fp.ingest_dbs_bytes)],
+    ["publish-logs", fmtBytes(fp.publish_logs_bytes)],
+  ];
+  dl.innerHTML = rows.map(([k, v]) => `
+    <dt class="text-slate-500 text-xs uppercase tracking-wider self-center">${escapeHtml(k)}</dt>
+    <dd class="font-mono text-slate-200">${escapeHtml(v)}</dd>
+  `).join("");
+  if (Object.keys(fp.by_source || {}).length) {
+    const srcRows = Object.entries(fp.by_source).sort()
+      .map(([sid, b]) => `
+        <dt class="text-slate-500 text-xs pl-3 self-center">${escapeHtml(sid)}</dt>
+        <dd class="font-mono text-slate-300 text-xs">${escapeHtml(fmtBytes(b))}</dd>
+      `).join("");
+    dl.insertAdjacentHTML("beforeend", srcRows);
+  }
+  if (meta) meta.textContent = `captured ${fp.captured_at}`;
+}
+
+// Theme 3b: decorate Clean's target dropdown with per-target byte estimates
+// (e.g. "staging — 12.3 MB"). Falls back gracefully when runtime-info fails.
+const _CLEAN_TARGET_BYTE_KEYS = {
+  staging:               "staging_bytes",
+  state:                 "state_bytes",
+  logs:                  "logs_bytes",
+  "publish-logs":        "publish_logs_bytes",
+  "puzzles-collection":  null,  // owned by yengo-puzzle-collections, not runtime-info
+};
+
+async function _decorateCleanTargets() {
+  const sel = document.querySelector("#mc-target");
+  if (!sel) return;
+  const fp = await refreshFootprint();
+  if (!fp) return;
+  for (const opt of sel.options) {
+    const key = _CLEAN_TARGET_BYTE_KEYS[opt.value];
+    if (!key) continue;
+    const bytes = fp[key];
+    if (bytes == null) continue;
+    opt.textContent = `${opt.value} — ${fmtBytes(bytes)}`;
+  }
 }
 
 // ---------- Top header system chip (Slice 3) ----------
@@ -1494,6 +1595,7 @@ function renderMaintenance() {
 
   $("#mv-go").addEventListener("click", (e) => startMaintenance("/api/vacuum-db", readVacuumForm(), "vacuum-db", e.currentTarget));
   $("#mc-go").addEventListener("click", (e) => startMaintenance("/api/clean", readCleanForm(), "clean", e.currentTarget));
+  _decorateCleanTargets();
   $("#mr-go").addEventListener("click", async (e) => {
     const originBtn = e.currentTarget;
     const body = readRollbackForm();

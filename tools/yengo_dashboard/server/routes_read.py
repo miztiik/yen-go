@@ -18,6 +18,7 @@ from tools.yengo_dashboard.server.models import (
     HealthResponse,
     InventoryResponse,
     RunsResponse,
+    RuntimeInfoResponse,
 )
 from tools.yengo_dashboard.server.pipeline_runner import PipelineCommandError, PipelineRunner
 from tools.yengo_dashboard.server.state_reader import StateReader
@@ -102,5 +103,27 @@ def build_read_router(
                 },
             ) from exc
         return FailuresSummaryResponse(raw=payload)
+
+    @router.get("/runtime-info", response_model=RuntimeInfoResponse)
+    def runtime_info(_request: Request) -> RuntimeInfoResponse:
+        """Theme 3b: passthrough of ``runtime-info --json``.
+
+        System dialog Footprint tab + Operations Clean per-target estimates
+        consume this. Errors propagate as 400 so the UI can surface the CLI
+        stderr instead of a generic 5xx.
+        """
+        try:
+            payload = runner.runtime_info()
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "puzzle_manager runtime-info failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return RuntimeInfoResponse(raw=payload)
 
     return router

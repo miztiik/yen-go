@@ -272,6 +272,22 @@ class PipelineRunner:
             )
         return result
 
+    def runtime_info(self) -> dict:
+        """Wraps ``puzzle_manager runtime-info --json``.
+
+        Returns the parsed JSON dict verbatim. Schema is owned by the CLI
+        (``backend.puzzle_manager.models.runtime_info.RuntimeInfo``); the
+        cockpit forwards fields unchanged per principle #6.
+        """
+        args = ["runtime-info", "--json"]
+        result = self._run_json_any(args)
+        if not isinstance(result, dict):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON object, got {type(result).__name__}", "",
+            )
+        return result
+
     def _run_json_any(self, subcommand: list[str]) -> object:
         """Like ``_run_json_from_args`` but returns parsed JSON of any type
         (list or dict). Used by subcommands whose JSON output is a bare list."""

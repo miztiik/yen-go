@@ -534,3 +534,60 @@ class TestFailuresSummaryEndpoint:
         with TestClient(app) as client:
             resp = client.get("/api/status/failures-summary", params={"last": 0})
         assert resp.status_code == 422
+
+
+def _seed_runtime_tree(runtime: Path) -> None:
+    """Theme 3b: seed `.pm-runtime/` with known byte sizes per bucket."""
+    for rel, size in (
+        ("logs/2026-05-07-ingest.log", 100),
+        ("state/current_run.json", 50),
+        ("staging/ingest/p1.sgf", 300),
+        ("raw/source/x.json", 25),
+    ):
+        f = runtime / rel
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_bytes(b"x" * size)
+
+
+class TestRuntimeInfoEndpoint:
+    """Theme 3b: drives the real ``runtime-info --json`` subprocess via the
+    cockpit. Runtime dir overridden via ``YENGO_RUNTIME_DIR`` so per-bucket
+    sizes are deterministic."""
+
+    def test_returns_runtime_info_dict(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        runtime = tmp_path / "runtime"
+        _seed_runtime_tree(runtime)
+        monkeypatch.setenv("YENGO_RUNTIME_DIR", str(runtime))
+        monkeypatch.setenv("YENGO_ROOT", str(REPO_ROOT))
+        app = create_app(repo_root=REPO_ROOT, runtime_dir=runtime)
+        with TestClient(app) as client:
+            resp = client.get("/api/runtime-info")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert isinstance(raw, dict)
+        assert raw["logs_bytes"] == 100
+        assert raw["state_bytes"] == 50
+        assert raw["staging_bytes"] == 300
+        assert raw["raw_bytes"] == 25
+        assert raw["captured_at"]
+        assert "by_source" in raw
+        assert "ingest_dbs_bytes" in raw
+        assert "publish_logs_bytes" in raw
+
+    def test_empty_runtime_returns_zeros(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        runtime = tmp_path / "runtime"
+        runtime.mkdir()
+        monkeypatch.setenv("YENGO_RUNTIME_DIR", str(runtime))
+        monkeypatch.setenv("YENGO_ROOT", str(REPO_ROOT))
+        app = create_app(repo_root=REPO_ROOT, runtime_dir=runtime)
+        with TestClient(app) as client:
+            resp = client.get("/api/runtime-info")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["logs_bytes"] == 0
+        assert raw["state_bytes"] == 0
+        assert raw["staging_bytes"] == 0
