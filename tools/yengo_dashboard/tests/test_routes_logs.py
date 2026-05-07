@@ -8,6 +8,7 @@ path-resolution) deserve real-disk verification.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -117,4 +118,108 @@ class TestStageFilesTail:
         with TestClient(app) as client:
             # 100000 > _MAX_TAIL_LINES (5000) → 422 from FastAPI Query(le=...)
             resp = client.get("/api/logs/stage-files/2026-05-06-ingest.log?lines=100000")
+        assert resp.status_code == 422
+
+
+def _seed_grep_logs(runtime: Path) -> Path:
+    """Seed JSON-per-line stage logs the CLI's grep handler can scan."""
+    logs = runtime / "logs"
+    logs.mkdir(parents=True)
+
+    def jline(ts: str, msg: str, **extra: object) -> str:
+        return json.dumps({"ts": ts, "msg": msg, **extra})
+
+    (logs / "2026-05-06-ingest.log").write_text(
+        "\n".join([
+            jline("2026-05-06 10:00:00.001", "Ingest start", source="sanderland"),
+            jline("2026-05-06 10:00:01.001", "ERROR rate-limited"),
+            jline("2026-05-06 10:00:02.001", "Retry succeeded"),
+        ]) + "\n",
+        encoding="utf-8",
+    )
+    (logs / "2026-05-06-analyze.log").write_text(
+        jline("2026-05-06 11:00:00.001", "Analyze start") + "\n",
+        encoding="utf-8",
+    )
+    return logs
+
+
+class TestLogsGrep:
+    """Drives the real ``backend.puzzle_manager logs grep`` subprocess via the
+    cockpit. Requires the actual backend module on disk; runtime dir is
+    overridden via ``YENGO_RUNTIME_DIR`` so the CLI scans tmp logs only."""
+
+    def test_finds_match_and_returns_raw_list(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        runtime = tmp_path / "runtime"
+        _seed_grep_logs(runtime)
+        monkeypatch.setenv("YENGO_RUNTIME_DIR", str(runtime))
+        monkeypatch.setenv("YENGO_ROOT", str(REPO_ROOT))
+        app = create_app(repo_root=REPO_ROOT, runtime_dir=runtime)
+        with TestClient(app) as client:
+            resp = client.get("/api/logs/grep", params={"pattern": "rate-limited"})
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert isinstance(raw, list)
+        assert len(raw) == 1
+        hit = raw[0]
+        assert "rate-limited" in hit["text"]
+        assert hit["ts"] == "2026-05-06 10:00:01.001"
+        assert hit["line_no"] == 2
+
+    def test_stage_filter_threaded_through(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        runtime = tmp_path / "runtime"
+        _seed_grep_logs(runtime)
+        monkeypatch.setenv("YENGO_RUNTIME_DIR", str(runtime))
+        monkeypatch.setenv("YENGO_ROOT", str(REPO_ROOT))
+        app = create_app(repo_root=REPO_ROOT, runtime_dir=runtime)
+        with TestClient(app) as client:
+            resp = client.get(
+                "/api/logs/grep",
+                params={"pattern": "start", "stage": "analyze"},
+            )
+        assert resp.status_code == 200
+        raw = resp.json()["raw"]
+        assert len(raw) == 1
+        assert "analyze" in raw[0]["file"]
+
+    def test_date_range_filter_threaded_through(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        runtime = tmp_path / "runtime"
+        _seed_grep_logs(runtime)
+        monkeypatch.setenv("YENGO_RUNTIME_DIR", str(runtime))
+        monkeypatch.setenv("YENGO_ROOT", str(REPO_ROOT))
+        app = create_app(repo_root=REPO_ROOT, runtime_dir=runtime)
+        with TestClient(app) as client:
+            resp = client.get(
+                "/api/logs/grep",
+                params={"pattern": "start", "from": "2026-05-07"},
+            )
+        assert resp.status_code == 200
+        assert resp.json()["raw"] == []
+
+    def test_invalid_regex_translated_to_400(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        runtime = tmp_path / "runtime"
+        _seed_grep_logs(runtime)
+        monkeypatch.setenv("YENGO_RUNTIME_DIR", str(runtime))
+        monkeypatch.setenv("YENGO_ROOT", str(REPO_ROOT))
+        app = create_app(repo_root=REPO_ROOT, runtime_dir=runtime)
+        with TestClient(app) as client:
+            resp = client.get("/api/logs/grep", params={"pattern": "[unclosed"})
+        # CLI exits 2 with `{"error": "invalid_regex"}` on stdout; cockpit
+        # translates PipelineCommandError to 400 with stderr/stdout bundle.
+        assert resp.status_code == 400
+        detail = resp.json()["detail"]
+        assert detail["returncode"] == 2
+
+    def test_missing_pattern_returns_422(self, tmp_path: Path) -> None:
+        app = create_app(repo_root=REPO_ROOT, runtime_dir=tmp_path / "runtime")
+        with TestClient(app) as client:
+            resp = client.get("/api/logs/grep")
         assert resp.status_code == 422

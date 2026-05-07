@@ -221,6 +221,65 @@ class PipelineRunner:
                 args += [flag, str(val)]
         return self._run_json_from_args(args)
 
+    def logs_grep(
+        self,
+        *,
+        pattern: str,
+        stage: str | None = None,
+        from_date: str | None = None,
+        to_date: str | None = None,
+        limit: int | None = None,
+    ) -> list:
+        """Wraps ``puzzle_manager logs grep --json …``.
+
+        Returns the parsed JSON list verbatim. Schema is owned by the CLI
+        (``backend.puzzle_manager.models.logs.LogsGrepHit``); the cockpit
+        forwards the items unchanged per principle #6.
+        """
+        args = ["logs", "grep", "--json"]
+        if stage:
+            args += ["--stage", stage]
+        if from_date:
+            args += ["--from", from_date]
+        if to_date:
+            args += ["--to", to_date]
+        if limit is not None:
+            args += ["--limit", str(limit)]
+        # PATTERN is positional and must come after the flags so argparse
+        # doesn't try to consume the following value as another flag arg.
+        args.append(pattern)
+        result = self._run_json_any(args)
+        if not isinstance(result, list):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON list, got {type(result).__name__}", "",
+            )
+        return result
+
+    def _run_json_any(self, subcommand: list[str]) -> object:
+        """Like ``_run_json_from_args`` but returns parsed JSON of any type
+        (list or dict). Used by subcommands whose JSON output is a bare list."""
+        cmd = self._base_cmd()
+        if self.config_dir is not None:
+            cmd += ["--config", str(self.config_dir)]
+        cmd += subcommand
+        result = subprocess.run(
+            cmd,
+            cwd=str(self.repo_root),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=self.timeout_s,
+            env=self._env(),
+        )
+        if result.returncode != 0:
+            raise PipelineCommandError(cmd, result.returncode, result.stderr, result.stdout)
+        try:
+            return json.loads(result.stdout)
+        except json.JSONDecodeError as exc:
+            raise PipelineCommandError(cmd, result.returncode, result.stderr, result.stdout) from exc
+
     def _run_json_from_args(self, subcommand: list[str]) -> dict:
         """Like ``_run_json`` but does not append ``--json`` (caller has already
         chosen the format flag). Used by subcommands whose JSON flag is

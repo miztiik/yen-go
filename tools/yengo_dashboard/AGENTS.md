@@ -89,6 +89,7 @@ tools/yengo_dashboard/
 | GET    | `/api/publish-log/search`     | subprocess `publish-log search --format json …` | 400 if CLI rejects (no filter, etc.); raw payload otherwise |
 | GET    | `/api/logs/stage-files`       | direct read of `.pm-runtime/logs/*.log`         | name + size + mtime, newest-first; empty `files:[]` if dir missing |
 | GET    | `/api/logs/stage-files/{name}`| direct tail of one log file                     | 404 on bad name (regex / outside logs dir); 422 if `lines>5000` |
+| GET    | `/api/logs/grep`              | subprocess `logs grep --json PATTERN [--stage] [--from] [--to] [--limit]` | 200 with `{raw: list[LogsGrepHit]}`; 400 on CLI failure (e.g. invalid regex); 422 if `pattern` missing |
 | GET    | `/`, `/app.js`, `/styles.css` | StaticFiles                           | mounted at `/`, `/api/*` precedes               |
 | GET    | `/library`, `/pipeline`, `/operations`, `/logs`, `/guide`, `/guide/{rest:path}` | SPA shell | All return `index.html` so deep-link refresh works under clean-path routing |
 
@@ -149,6 +150,11 @@ The cockpit **never reformats** pipeline-owned shapes:
   whole file never lives in memory. `lines` is capped at 5000 by FastAPI's
   `Query(le=…)`. The cockpit reads files directly because log files are
   the pipeline's own observable artifact — no domain interpretation needed.
+- `/api/logs/grep` → subprocess `logs grep --json …` (Theme 4b). Returns
+  `{raw: list[LogsGrepHit]}` verbatim from the CLI; PATTERN is positional
+  (placed last in argv so flags don't swallow it). Invalid regex / unknown
+  stage → CLI exit 2, cockpit translates `PipelineCommandError` to 400
+  with `{message, returncode, stdout, stderr}`.
 - SSE frames on `/api/run/{handle}/events`:
   - `event: line` carries `{ts, stream, text, seq}` — `stream` is exactly
     `"stdout"` or `"stderr"`, `seq` is monotonic per run.

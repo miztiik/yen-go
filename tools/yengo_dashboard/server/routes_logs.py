@@ -22,10 +22,12 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, Query
 
 from tools.yengo_dashboard.server.models import (
+    LogsGrepResponse,
     StageLogFile,
     StageLogListResponse,
     StageLogTailResponse,
 )
+from tools.yengo_dashboard.server.pipeline_runner import PipelineCommandError, PipelineRunner
 from tools.yengo_dashboard.server.state_reader import StateReader
 
 # Filenames the pipeline emits into .pm-runtime/logs/. Conservative on purpose:
@@ -45,7 +47,7 @@ def _logs_dir(state_reader: StateReader) -> Path:
     return state_reader._runtime() / "logs"  # noqa: SLF001 (reader owns the path convention)
 
 
-def build_logs_router(*, state_reader: StateReader) -> APIRouter:
+def build_logs_router(*, state_reader: StateReader, runner: PipelineRunner) -> APIRouter:
     router = APIRouter(prefix="/api/logs", tags=["logs"])
 
     @router.get("/stage-files", response_model=StageLogListResponse)
@@ -106,5 +108,33 @@ def build_logs_router(*, state_reader: StateReader) -> APIRouter:
             truncated=total > len(tail),
             total_lines=total,
         )
+
+    @router.get("/grep", response_model=LogsGrepResponse)
+    def grep_stage_logs(
+        pattern: str = Query(..., min_length=1, description="Python regex pattern."),
+        stage: str | None = Query(default=None, description="Filter by stage name."),
+        from_: str | None = Query(default=None, alias="from", description="YYYY-MM-DD"),
+        to: str | None = Query(default=None, description="YYYY-MM-DD"),
+        limit: int = Query(default=200, ge=1, le=5000),
+    ) -> LogsGrepResponse:
+        try:
+            payload = runner.logs_grep(
+                pattern=pattern,
+                stage=stage,
+                from_date=from_,
+                to_date=to,
+                limit=limit,
+            )
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "logs grep failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return LogsGrepResponse(raw=payload)
 
     return router

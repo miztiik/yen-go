@@ -87,7 +87,7 @@ def create_app(
     app.include_router(build_maintenance_router(controller=run_controller, runner=runner))
     app.include_router(build_lock_router(runner=runner))
     app.include_router(build_admin_router(runner=runner))
-    app.include_router(build_logs_router(state_reader=state_reader))
+    app.include_router(build_logs_router(state_reader=state_reader, runner=runner))
     app.include_router(build_docs_router(repo_root=root))
     # Read-only mount of config/ so the JS can fetch puzzle-levels.json /
     # content-types.json directly (no Pydantic round-trip for static config).

@@ -437,3 +437,20 @@ class StageLogTailResponse(BaseModel):
     lines: list[str] = Field(default_factory=list)
     truncated: bool = Field(..., description="True if the file had more lines than requested.")
     total_lines: int = Field(..., ge=0)
+
+
+class LogsGrepResponse(BaseModel):
+    """``GET /api/logs/grep`` payload — verbatim ``logs grep --json`` output.
+
+    Each ``raw`` entry mirrors ``backend.puzzle_manager.models.logs.LogsGrepHit``.
+    The cockpit MUST NOT re-validate per principle #6; the schema can evolve in
+    the pipeline without a coordinated dashboard release.
+    """
+
+    raw: list = Field(
+        ...,
+        description=(
+            "Parsed JSON list of `logs grep --json`. Item shape owned by "
+            "`backend.puzzle_manager.models.logs.LogsGrepHit`."
+        ),
+    )
