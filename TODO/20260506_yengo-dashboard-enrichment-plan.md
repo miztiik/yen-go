@@ -28,7 +28,7 @@ get done; the order is the prioritization, not the filter.
 | 1  | Dry-run preview as first-class     | ☑      |  P0   | Shipped 2026-05-07 (1a–1e). CLI `--dry-run --json` for clean/rollback/vacuum-db; GET /api/{op}/preview; UI Preview button + impact modal |
 | 2  | Failure digest on History          | ☐      |  P0   | #1 operational question |
 | 3  | Disk / runtime footprint           | ☐      |  P0   | Cheap, high signal |
-| 4  | Logs grep across files             | ◐      |  P0   | 4a (CLI) + 4b (GET /api/logs/grep) shipped 2026-05-07; 4c (UI) pending |
+| 4  | Logs grep across files             | ☑      |  P0   | Shipped 2026-05-07 (4a CLI + 4b GET /api/logs/grep + 4c UI search box) |
 | 13 | Unified activity surface           | ☐      |  P0   | NEW: correlate runs + maintenance + publish-log + audit + lock events into one timeline |
 | 14 | Inventory health surface           | ☐      |  P0   | NEW: surface CLI's --rebuild/--reconcile/--check/--fix as actions, not just counts |
 | 16 | Reset blast-radius (backend concept)| ☐     |  P0   | NEW: name `clean / run --fresh / rollback / vacuum-db / reconcile` as one taxonomy in CLI + UI |
@@ -202,8 +202,8 @@ None.
 
 ### Acceptance criteria
 - [x] CLI test seeds multi-file logs and verifies grep + ordering. _(Theme 4a, commit 54738cc5b)_
-- [x] Dashboard `GET /api/logs/grep` endpoint with real-fixture tests. _(Theme 4b, this commit)_
-- [ ] Dashboard test pins the new search field and result row click. _(Theme 4c, pending)_
+- [x] Dashboard `GET /api/logs/grep` endpoint with real-fixture tests. _(Theme 4b, commit 5496009de)_
+- [x] Dashboard test pins the new search field and result row click. _(Theme 4c, this commit)_
 
 ---
 

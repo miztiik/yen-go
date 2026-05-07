@@ -633,3 +633,30 @@ def test_preview_endpoints_used_by_ui(app_js: str) -> None:
             f"Theme 1e: app.js must call {url} from a Preview handler."
         )
 
+
+# ---------- Theme 4c: Logs grep search box ---------------------------------
+
+
+def test_logs_grep_search_box_present(app_js: str) -> None:
+    """Theme 4c: Stage Logs pane must include a regex search form with the
+    documented input ids so future renames don't silently break the wire-up."""
+    for input_id in ("lg-pattern", "lg-stage", "lg-from", "lg-to", "lg-limit", "lg-go", "lg-results"):
+        assert f'id="{input_id}"' in app_js, (
+            f"Theme 4c: Stage Logs pane must expose #{input_id}."
+        )
+
+
+def test_logs_grep_calls_endpoint(app_js: str) -> None:
+    """Theme 4c: search must hit the dashboard's logs grep endpoint."""
+    assert "/api/logs/grep?" in app_js, (
+        "Theme 4c: app.js must call GET /api/logs/grep with query params."
+    )
+
+
+def test_logs_grep_open_button_jumps_to_file(app_js: str) -> None:
+    """Theme 4c: each result row's Open button must select the matching
+    stage-file-btn so the existing tail viewer kicks in (no duplicate
+    fetch logic, no separate viewer)."""
+    assert "lg-open-btn" in app_js, "Theme 4c: result rows must mark Open buttons with class lg-open-btn."
+    assert "stage-file-btn" in app_js, "Theme 4c: Open must dispatch through stage-file-btn click."
+

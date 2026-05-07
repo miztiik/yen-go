@@ -1634,6 +1634,35 @@ async function _renderLogsStagePane() {
       return;
     }
     pane.innerHTML = `
+      <section id="logs-grep-form" class="rounded-md border border-slate-800 bg-slate-900 p-3 mb-4 space-y-2">
+        <div class="grid md:grid-cols-5 gap-2 text-xs">
+          <label class="md:col-span-2">Pattern <span class="text-slate-500">(regex; <code>(?i)</code> for case-insensitive)</span>
+            <input id="lg-pattern" type="text" placeholder="ERROR|rate-limited" class="block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" />
+          </label>
+          <label>Stage
+            <select id="lg-stage" class="block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1">
+              <option value="">any</option>
+              <option value="ingest">ingest</option>
+              <option value="analyze">analyze</option>
+              <option value="publish">publish</option>
+              <option value="puzzle_manager">puzzle_manager</option>
+            </select>
+          </label>
+          <label>From <span class="text-slate-500">(YYYY-MM-DD)</span>
+            <input id="lg-from" type="text" placeholder="2026-05-01" class="block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" />
+          </label>
+          <label>To
+            <input id="lg-to" type="text" placeholder="2026-05-31" class="block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" />
+          </label>
+          <label>Limit
+            <input id="lg-limit" type="number" min="1" max="5000" value="200" class="block w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 font-mono" />
+          </label>
+          <div class="flex items-end">
+            <button id="lg-go" class="${PILL_VARIANTS.info} hover:brightness-125 text-sm rounded-md px-3 py-1.5">Search</button>
+          </div>
+        </div>
+        <div id="lg-results" class="text-xs"></div>
+      </section>
       <div class="grid gap-4 logs-stage-grid">
         <aside class="rounded-md border border-slate-800 bg-slate-900 p-2 max-h-[70vh] overflow-y-auto logs-stage-aside">
           <div class="text-[10px] uppercase tracking-wider text-slate-500 px-2 py-1">${data.files.length} files</div>
@@ -1676,8 +1705,81 @@ async function _renderLogsStagePane() {
       const active = $(".stage-file-btn.active", pane);
       if (active) _loadStageTail(active.dataset.file);
     });
+    $("#lg-go").addEventListener("click", _runLogsGrep);
+    $("#lg-pattern").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); _runLogsGrep(); }
+    });
   } catch (err) {
     pane.innerHTML = errorBlock("/api/logs/stage-files", err);
+  }
+}
+
+async function _runLogsGrep() {
+  const pattern = $("#lg-pattern").value.trim();
+  const out = $("#lg-results");
+  if (!pattern) {
+    out.innerHTML = `<div class="text-amber-300 px-2 py-1">Pattern is required.</div>`;
+    return;
+  }
+  const params = new URLSearchParams({ pattern });
+  const stage = $("#lg-stage").value;
+  const from = $("#lg-from").value.trim();
+  const to = $("#lg-to").value.trim();
+  const limit = $("#lg-limit").value;
+  if (stage) params.set("stage", stage);
+  if (from) params.set("from", from);
+  if (to) params.set("to", to);
+  if (limit) params.set("limit", limit);
+  out.innerHTML = `<div class="text-slate-500 px-2 py-1">searching…</div>`;
+  try {
+    const data = await getJSON(`/api/logs/grep?${params.toString()}`);
+    const hits = data.raw || [];
+    if (!hits.length) {
+      out.innerHTML = `<div class="text-slate-500 px-2 py-1">no matches</div>`;
+      return;
+    }
+    out.innerHTML = `
+      <table class="w-full text-xs font-mono mt-2">
+        <thead class="text-[10px] uppercase tracking-wider text-slate-500">
+          <tr>
+            <th class="text-left px-2 py-1">File</th>
+            <th class="text-right px-2 py-1">Line</th>
+            <th class="text-left px-2 py-1">Timestamp</th>
+            <th class="text-left px-2 py-1">Snippet</th>
+            <th class="px-2 py-1"></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${hits.map((h) => {
+            const fname = (h.file || "").split("/").pop() || h.file;
+            const snippet = (h.text || "").length > 160 ? h.text.slice(0, 160) + "…" : h.text;
+            return `
+              <tr class="border-t border-slate-800/60 hover:bg-slate-800/40">
+                <td class="px-2 py-1 text-slate-300">${escapeHtml(fname)}</td>
+                <td class="px-2 py-1 text-right text-slate-400">${escapeHtml(String(h.line_no))}</td>
+                <td class="px-2 py-1 text-slate-400">${escapeHtml(h.ts || "—")}</td>
+                <td class="px-2 py-1 text-slate-200 max-w-md truncate" title="${escapeHtml(h.text || "")}">${escapeHtml(snippet)}</td>
+                <td class="px-2 py-1">
+                  <button data-grep-open="${escapeHtml(fname)}" class="lg-open-btn ${PILL_VARIANTS.muted} text-[10px] rounded px-2 py-0.5">Open</button>
+                </td>
+              </tr>`;
+          }).join("")}
+        </tbody>
+      </table>
+      <div class="text-[10px] text-slate-500 px-2 py-1">${hits.length.toLocaleString()} hit${hits.length === 1 ? "" : "s"}</div>
+    `;
+    out.querySelectorAll("button.lg-open-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const fname = btn.dataset.grepOpen;
+        const target = document.querySelector(`button.stage-file-btn[data-file="${fname}"]`);
+        if (target) {
+          target.click();
+          target.scrollIntoView({ block: "nearest" });
+        }
+      });
+    });
+  } catch (err) {
+    out.innerHTML = errorBlock("/api/logs/grep", err);
   }
 }
 
