@@ -70,9 +70,9 @@ class InventoryMutationPreview(BaseModel):
     would_rebuild_search_db: bool = Field(
         ...,
         description=(
-            "True if applying the op would rebuild yengo-search.db. Only "
-            "``rebuild`` does this today; ``reconcile`` and ``fix`` leave "
-            "the search DB alone."
+            "True if applying the op would rebuild yengo-search.db. None of "
+            "the inventory ops touch the search DB today — use ``vacuum-db`` "
+            "for that. Kept on the wire for forward compatibility."
         ),
     )
     fix_skip_reason: str | None = Field(
@@ -80,5 +80,66 @@ class InventoryMutationPreview(BaseModel):
         description=(
             "Populated only for ``op=fix`` when the current integrity check "
             "is clean — the apply path would short-circuit with this message."
+        ),
+    )
+
+
+class InventoryMutationResult(BaseModel):
+    """Wire shape for the *applied* mutation (Theme 14c2).
+
+    Mirrors :class:`InventoryMutationPreview` so the dashboard's modal can
+    render the same impact-summary table for both Preview and post-Apply
+    states. The two are distinct types — never reuse the preview shape for
+    the result, since callers need to distinguish ``executed=False`` (still
+    a preview) from ``executed=True`` (audit entry written).
+    """
+
+    op: InventoryOp = Field(..., description="Which mutation was applied.")
+    executed: bool = Field(
+        default=True,
+        description="Always true for results emitted by the apply path.",
+    )
+    snapshot_total_before: int | None = Field(
+        default=None,
+        description=(
+            "puzzles_total recorded in inventory.json *before* the mutation. "
+            "Null when no prior snapshot existed."
+        ),
+    )
+    snapshot_total_after: int = Field(
+        ...,
+        ge=0,
+        description="puzzles_total recorded in the rewritten inventory.json.",
+    )
+    delta: int = Field(
+        ...,
+        description="snapshot_total_after − snapshot_total_before (treats null before as 0).",
+    )
+    rewrote_snapshot: bool = Field(
+        ...,
+        description=(
+            "True if a fresh inventory.json was written. ``fix`` reports false "
+            "when the pre-flight integrity check was already clean."
+        ),
+    )
+    rebuilt_search_db: bool = Field(
+        ...,
+        description=(
+            "True if yengo-search.db was rebuilt. Today only ``rebuild`` does "
+            "this; ``reconcile`` and ``fix`` leave the search DB alone."
+        ),
+    )
+    audit_timestamp: str | None = Field(
+        default=None,
+        description=(
+            "ISO 8601 timestamp recorded in audit.jsonl. Null when no audit "
+            "row was written (e.g. ``fix`` skipped because already clean)."
+        ),
+    )
+    fix_skip_reason: str | None = Field(
+        default=None,
+        description=(
+            "Populated only for ``op=fix`` when the apply path short-circuited "
+            "because the pre-flight integrity check was already clean."
         ),
     )

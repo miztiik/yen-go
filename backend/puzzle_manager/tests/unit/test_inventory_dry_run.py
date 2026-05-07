@@ -115,8 +115,8 @@ class TestInventoryDryRunCli:
         assert rc == 0
         report = InventoryMutationPreview.model_validate_json(capsys.readouterr().out)
         assert report.op == "rebuild"
-        # Only --rebuild touches yengo-search.db.
-        assert report.would_rebuild_search_db is True
+        # No inventory op rebuilds yengo-search.db today (vacuum-db owns that).
+        assert report.would_rebuild_search_db is False
         assert report.would_rewrite_snapshot is True
 
     def test_fix_preview_skips_when_check_clean(

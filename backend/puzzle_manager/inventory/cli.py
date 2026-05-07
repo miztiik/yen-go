@@ -167,72 +167,13 @@ def cmd_inventory(args: "argparse.Namespace") -> int:
             return 0 if result.is_valid else 1
 
         if getattr(args, "fix", False):
-            from backend.puzzle_manager.inventory.check import (
-                check_integrity,
-                fix_integrity,
-                format_integrity_result,
-            )
-
-            logger.info("Fixing inventory...")
-
-            # First check current state
-            inventory = manager.load() if manager.exists() else None
-            result_before = check_integrity(inventory=inventory)
-
-            if result_before.is_valid:
-                print("✓ Inventory is already consistent, no fix needed")
-                return 0
-
-            # Fix by rebuilding
-            fixed_inventory = fix_integrity()
-
-            # Save the fixed inventory
-            manager.save(fixed_inventory)
-
-            # Verify fix
-            result_after = check_integrity(inventory=fixed_inventory)
-
-            if result_after.is_valid:
-                print("✓ Inventory fixed successfully")
-                print(f"  Total puzzles: {fixed_inventory.collection.total_puzzles}")
-            else:
-                print("✗ Fix completed but issues remain:")
-                print(format_integrity_result(result_after))
-                return 1
-
-            return 0
+            return _apply_fix(args, manager)
 
         if getattr(args, "reconcile", False):
-            # Reconcile from disk — scans actual SGF files for ground truth
-            logger.info("Reconciling inventory from SGF files on disk...")
-            from backend.puzzle_manager.inventory.reconcile import reconcile_inventory
-            inventory = reconcile_inventory(
-                run_id=None,  # auto-generated
-            )
-            manager.save(inventory)
-            print(f"[OK] Inventory reconciled from disk: {inventory.collection.total_puzzles} puzzles")
-            # Now format and display the reconciled inventory
-            if getattr(args, "json", False):
-                output = format_inventory_json(inventory)
-            else:
-                output = format_inventory_summary(inventory)
-            print(output)
-            return 0
+            return _apply_reconcile(args, manager)
 
         if getattr(args, "rebuild", False):
-            # Rebuild from SGF files on disk (same as reconcile in v2.0)
-            logger.info("Rebuilding inventory from SGF files...")
-            from backend.puzzle_manager.inventory.reconcile import reconcile_inventory
-            inventory = reconcile_inventory()
-            manager.save(inventory)
-            print(f"[OK] Inventory rebuilt: {inventory.collection.total_puzzles} puzzles")
-            # Now format and display the rebuilt inventory
-            if getattr(args, "json", False):
-                output = format_inventory_json(inventory)
-            else:
-                output = format_inventory_summary(inventory)
-            print(output)
-            return 0
+            return _apply_rebuild(args, manager)
 
         # Load inventory if exists, otherwise show message
         if manager.exists():
@@ -319,9 +260,7 @@ def _emit_mutation_preview(
         disk_total=disk_total,
         delta=delta,
         would_rewrite_snapshot=would_rewrite_snapshot,
-        # Only --rebuild also rewrites yengo-search.db today; reconcile/fix
-        # leave the search DB alone.
-        would_rebuild_search_db=(op == "rebuild"),
+        would_rebuild_search_db=False,
         fix_skip_reason=fix_skip_reason,
     )
 
@@ -349,3 +288,210 @@ def _format_mutation_preview_human(preview: object) -> str:
         lines.append("")
         lines.append(f"Note: {p.fix_skip_reason}")  # type: ignore[attr-defined]
     return "\n".join(lines)
+
+
+def _emit_apply_result(args: "argparse.Namespace", result: object) -> None:
+    """Print the apply result as JSON (when --json) or human text."""
+    if getattr(args, "json", False):
+        print(result.model_dump_json())  # type: ignore[attr-defined]
+        return
+    r = result
+    lines = [
+        f"Inventory --{r.op}",  # type: ignore[attr-defined]
+        "─" * 40,
+        f"Executed:                  {r.executed}",  # type: ignore[attr-defined]
+        f"Snapshot total before:     {r.snapshot_total_before if r.snapshot_total_before is not None else '—'}",  # type: ignore[attr-defined]
+        f"Snapshot total after:      {r.snapshot_total_after}",  # type: ignore[attr-defined]
+        f"Delta:                     {r.delta:+d}",  # type: ignore[attr-defined]
+        f"Rewrote snapshot:          {r.rewrote_snapshot}",  # type: ignore[attr-defined]
+        f"Rebuilt search DB:         {r.rebuilt_search_db}",  # type: ignore[attr-defined]
+    ]
+    if r.audit_timestamp:  # type: ignore[attr-defined]
+        lines.append(f"Audit timestamp:           {r.audit_timestamp}")  # type: ignore[attr-defined]
+    if r.fix_skip_reason:  # type: ignore[attr-defined]
+        lines.append("")
+        lines.append(f"Note: {r.fix_skip_reason}")  # type: ignore[attr-defined]
+    print("\n".join(lines))
+
+
+def _snapshot_total(manager: InventoryManager) -> int | None:
+    """Read current snapshot total puzzles, or None when no snapshot exists."""
+    if not manager.exists():
+        return None
+    try:
+        return manager.load().collection.total_puzzles
+    except Exception as exc:
+        logger.warning("Snapshot present but unreadable; treating as absent: %s", exc)
+        return None
+
+
+def _audit_inventory_op(
+    op: str,
+    *,
+    total_before: int | None,
+    total_after: int,
+    rewrote_snapshot: bool,
+    rebuilt_search_db: bool,
+) -> str:
+    """Append an audit entry for an inventory mutation. Returns the timestamp."""
+    from datetime import UTC, datetime
+
+    from backend.puzzle_manager.audit import write_audit_entry
+    from backend.puzzle_manager.paths import get_audit_log_path
+
+    timestamp = datetime.now(UTC).isoformat()
+    write_audit_entry(
+        audit_file=get_audit_log_path(),
+        operation=f"inventory_{op}",
+        target="puzzle-collection",
+        details={
+            "timestamp": timestamp,
+            "total_before": total_before,
+            "total_after": total_after,
+            "delta": total_after - (total_before or 0),
+            "rewrote_snapshot": rewrote_snapshot,
+            "rebuilt_search_db": rebuilt_search_db,
+        },
+    )
+    return timestamp
+
+
+def _apply_rebuild(
+    args: "argparse.Namespace", manager: InventoryManager
+) -> int:
+    """Theme 14c2: lock + rebuild inventory snapshot + audit."""
+    from backend.puzzle_manager.inventory.reconcile import reconcile_inventory
+    from backend.puzzle_manager.models.inventory_preview import (
+        InventoryMutationResult,
+    )
+    from backend.puzzle_manager.pipeline.lock import PipelineLock
+
+    total_before = _snapshot_total(manager)
+
+    with PipelineLock(run_id="inventory-rebuild"):
+        logger.info("Rebuilding inventory from SGF files...")
+        inventory = reconcile_inventory()
+        manager.save(inventory)
+        total_after = inventory.collection.total_puzzles
+        timestamp = _audit_inventory_op(
+            "rebuild",
+            total_before=total_before,
+            total_after=total_after,
+            rewrote_snapshot=True,
+            rebuilt_search_db=False,
+        )
+
+    result = InventoryMutationResult(
+        op="rebuild",
+        executed=True,
+        snapshot_total_before=total_before,
+        snapshot_total_after=total_after,
+        delta=total_after - (total_before or 0),
+        rewrote_snapshot=True,
+        rebuilt_search_db=False,
+        audit_timestamp=timestamp,
+    )
+    _emit_apply_result(args, result)
+    return 0
+
+
+def _apply_reconcile(
+    args: "argparse.Namespace", manager: InventoryManager
+) -> int:
+    """Theme 14c2: lock + reconcile inventory from disk + audit."""
+    from backend.puzzle_manager.inventory.reconcile import reconcile_inventory
+    from backend.puzzle_manager.models.inventory_preview import (
+        InventoryMutationResult,
+    )
+    from backend.puzzle_manager.pipeline.lock import PipelineLock
+
+    total_before = _snapshot_total(manager)
+
+    with PipelineLock(run_id="inventory-reconcile"):
+        logger.info("Reconciling inventory from SGF files on disk...")
+        inventory = reconcile_inventory(run_id=None)
+        manager.save(inventory)
+        total_after = inventory.collection.total_puzzles
+        timestamp = _audit_inventory_op(
+            "reconcile",
+            total_before=total_before,
+            total_after=total_after,
+            rewrote_snapshot=True,
+            rebuilt_search_db=False,
+        )
+
+    result = InventoryMutationResult(
+        op="reconcile",
+        executed=True,
+        snapshot_total_before=total_before,
+        snapshot_total_after=total_after,
+        delta=total_after - (total_before or 0),
+        rewrote_snapshot=True,
+        rebuilt_search_db=False,
+        audit_timestamp=timestamp,
+    )
+    _emit_apply_result(args, result)
+    return 0
+
+
+def _apply_fix(
+    args: "argparse.Namespace", manager: InventoryManager
+) -> int:
+    """Theme 14c2: lock + fix inventory (no-op when clean) + audit on success."""
+    from backend.puzzle_manager.inventory.check import (
+        check_integrity,
+        fix_integrity,
+    )
+    from backend.puzzle_manager.models.inventory_preview import (
+        InventoryMutationResult,
+    )
+    from backend.puzzle_manager.pipeline.lock import PipelineLock
+
+    total_before = _snapshot_total(manager)
+
+    inventory = manager.load() if manager.exists() else None
+    pre = check_integrity(inventory=inventory)
+    if pre.is_valid:
+        result = InventoryMutationResult(
+            op="fix",
+            executed=True,
+            snapshot_total_before=total_before,
+            snapshot_total_after=total_before or 0,
+            delta=0,
+            rewrote_snapshot=False,
+            rebuilt_search_db=False,
+            audit_timestamp=None,
+            fix_skip_reason=(
+                "Inventory is already consistent — `inventory --fix` skipped."
+            ),
+        )
+        _emit_apply_result(args, result)
+        return 0
+
+    with PipelineLock(run_id="inventory-fix"):
+        logger.info("Fixing inventory...")
+        fixed = fix_integrity()
+        manager.save(fixed)
+        total_after = fixed.collection.total_puzzles
+        post = check_integrity(inventory=fixed)
+        timestamp = _audit_inventory_op(
+            "fix",
+            total_before=total_before,
+            total_after=total_after,
+            rewrote_snapshot=True,
+            rebuilt_search_db=False,
+        )
+
+    result = InventoryMutationResult(
+        op="fix",
+        executed=True,
+        snapshot_total_before=total_before,
+        snapshot_total_after=total_after,
+        delta=total_after - (total_before or 0),
+        rewrote_snapshot=True,
+        rebuilt_search_db=False,
+        audit_timestamp=timestamp,
+    )
+    _emit_apply_result(args, result)
+    # Match the prior CLI contract: rc=1 when post-fix issues remain.
+    return 0 if post.is_valid else 1
