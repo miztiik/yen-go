@@ -85,7 +85,7 @@ The tsumego frame's `fill_territory()` algorithm uses a linear zone-based scan (
 > **See also**:
 >
 > - [Clarifications](./10-clarifications.md) — User decisions Q1-Q8
-> - [Research: Flood-Fill Strategy](../20260312-research-tsumego-frame-flood-fill/15-research.md) — Technical research brief
+> - [Research: Flood-Fill Strategy](./20260312-flood-fill-strategy-research.md) — Technical research brief
 > - [Prior Initiative: Frame Legality](../20260311-1800-feature-tsumego-frame-legality/) — Closed out correctness fixes
 > - [Concepts: Tsumego Frame](../../docs/concepts/tsumego-frame.md) — Current algorithm docs
 > - [Architecture: KataGo Enrichment D33](../../docs/architecture/tools/katago-enrichment.md) — Crop-then-frame decision

@@ -182,7 +182,7 @@ These are NOT covered by the technique calibration test suite (which is 1-per-ta
 ### Cross-References
 
 - [Charter](./00-charter.md) — Quality criteria definitions (QC-1 through QC-8)
-- [Research](../20260322-research-external-sources-fixture-sourcing/15-research.md) — Sourcing strategy per technique
+- [Research](./20260322-external-sources-fixture-sourcing.md) — Sourcing strategy per technique
 - [Audit](../../tools/puzzle-enrichment-lab/tests/fixtures/TECHNIQUE_FIXTURE_AUDIT.md) — Expert panel assessment
 
 > **See also**:

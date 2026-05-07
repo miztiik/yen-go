@@ -127,6 +127,6 @@
 21. `backend/puzzle_manager/inventory/manager.py` — 3 fixes: `failed` accumulation, `error_rate_publish` computation, `daily_publish_throughput` per-run update
 
 ### Created/Updated (documentation)
-22. `TODO/initiatives/20260324-dead-code-decommissioning.md` — added inventory check production gaps
+22. `TODO/initiatives/20260324-2000-feature-backend-test-remediation/20260324-dead-code-decommissioning.md` — added inventory check production gaps
 
 _Last updated: 2026-03-24_

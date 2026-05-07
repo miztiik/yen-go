@@ -275,5 +275,5 @@ Key change in `build_frame()`:
 >
 > - [Charter](./00-charter.md) — Goals G1-G6, constraints C1-C7
 > - [Options](./25-options.md) — OPT-3 selected
-> - [Research](../20260312-research-tsumego-frame-flood-fill/15-research.md) — R-20 through R-24
+> - [Research](./20260312-flood-fill-strategy-research.md) — R-20 through R-24
 > - [Governance](./70-governance-decisions.md) — MH-1 through MH-6

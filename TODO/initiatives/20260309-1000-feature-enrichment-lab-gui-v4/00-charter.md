@@ -86,6 +86,6 @@ Developers MAY copy individual modules from `gui_deprecated/` into `gui/`. `gui_
 > **See also:**
 >
 > - [Clarifications](./10-clarifications.md) — User Q&A and deprecation history
-> - [Research](../20260309-research-enrichment-lab-gui-v4-feasibility/15-research.md) — Feasibility research
+> - [Research](./20260309-gui-v4-feasibility.md) — Feasibility research
 > - [gui_deprecated Architecture](../../../tools/puzzle-enrichment-lab/gui_deprecated/ARCHITECTURE.md) — Prior attempt reference
 > - [BesoGo Tree Swap plan](../../../TODO/besogo-solution-tree-swap.md) — Prior BesoGo integration analysis

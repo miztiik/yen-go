@@ -14,7 +14,7 @@
 
 | rc_id | requirement | status |
 |-------|-------------|--------|
-| RC-1 | Add "Prior Art" section referencing `2026-03-07-refactor-enrich-single-decomposition` | ✅ addressed |
+| RC-1 | Add "Prior Art" section referencing `20260307-0000-refactor-enrich-single-decomposition` | ✅ addressed |
 | RC-2 | Clarify success criterion #2 vs Q9:B consistency | ✅ addressed |
 | RC-3 | Update `status.json` decisions (stale "pending" values) | ✅ addressed |
 | RC-4 | Add `planning_confidence_score` and `risk_level` to `status.json` | ✅ addressed |

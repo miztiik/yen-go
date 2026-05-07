@@ -73,7 +73,7 @@ A research-grade puzzle analysis GUI where the Go board dominates the viewport, 
 | Target reference architecture (GoProblems comparison) | `tools/puzzle-enrichment-lab/gui/docs/target-reference-architecture.md` |
 | UX issues audit (full issue list with root causes) | `tools/puzzle-enrichment-lab/gui/docs/ux-issues-audit.md` |
 | Existing GUI README | `tools/puzzle-enrichment-lab/gui/README.md` |
-| Parent initiative (original GUI build) | `TODO/initiatives/2026-03-07-feature-enrichment-lab-gui/` |
+| Parent initiative (original GUI build) | `TODO/initiatives/20260307-0000-feature-enrichment-lab-gui/` |
 
 ## Key Design Decisions
 

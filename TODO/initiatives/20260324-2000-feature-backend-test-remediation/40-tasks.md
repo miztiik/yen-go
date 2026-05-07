@@ -84,7 +84,7 @@ Tasks are: `[P]` = parallelizable with previous task, otherwise sequential.
 
 | ID | Task | File(s) | Action | Tests Affected |
 |----|------|---------|--------|----------------|
-| T21 | Create dead code decommissioning artifact | `TODO/initiatives/20260324-dead-code-decommissioning.md` | CREATE: list dead code paths, sidecar doc references, trace_map module | 0 |
+| T21 | Create dead code decommissioning artifact | `TODO/initiatives/20260324-2000-feature-backend-test-remediation/20260324-dead-code-decommissioning.md` | CREATE: list dead code paths, sidecar doc references, trace_map module | 0 |
 | T22 | [P] Final full regression | All | Run `pytest backend/ -q --no-header --tb=short` | 0 |
 
 ---

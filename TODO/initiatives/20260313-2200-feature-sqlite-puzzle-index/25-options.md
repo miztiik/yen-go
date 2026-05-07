@@ -117,4 +117,4 @@ The user's original request confirms this preference: *"once the SQL design and 
 
 > **See also**:
 > - [Charter](./00-charter.md) — Goals, non-goals, acceptance criteria
-> - [Research](../20260313-research-sqlite-puzzle-index/15-research.md) — Full SQL schema, size estimates, governance opinions
+> - [Research](./20260313-sqlite-puzzle-index-research.md) — Full SQL schema, size estimates, governance opinions

@@ -3,8 +3,11 @@
 > **See also**:
 >
 > - [Architecture: Enrichment](../backend/enrichment.md) — Analyze-stage enrichment model
+>
 > - [Architecture: Hint Architecture](../backend/hint-architecture.md) — Progressive hint design used by downstream puzzle presentation
+>
 > - [Concepts: Solution Trees](../../concepts/solution-trees.md) — SGF solution-tree semantics
+>
 > - [Archive: AI-Solve Enrichment Plan v3](../../archive/ai-solve-enrichment-plan-v3.md) — Historical review-panel plan and implementation narrative
 
 **Last Updated:** 2026-05-06
@@ -16,10 +19,14 @@
 KataGo-based enrichment adds AI-powered analysis to Yen-Go's ~194K puzzle corpus, providing:
 
 1. **Correct move validation** — verify SGF solution trees against KataGo's reading
-2. **Wrong-move refutations** — generate YR property with refutation sequences
-3. **Calibrated difficulty rating** — map policy prior + visits + trap density to 9-level system
-4. **Teaching comments** (Phase B) — template-based explanations from KataGo signals
-5. **Technique classification** (Phase B) — auto-tag YT from detected patterns
+
+1. **Wrong-move refutations** — generate YR property with refutation sequences
+
+1. **Calibrated difficulty rating** — map policy prior + visits + trap density to 9-level system
+
+1. **Teaching comments** (Phase B) — template-based explanations from KataGo signals
+
+1. **Technique classification** (Phase B) — auto-tag YT from detected patterns
 
 ---
 
@@ -40,7 +47,9 @@ KataGo-based enrichment adds AI-powered analysis to Yen-Go's ~194K puzzle corpus
 **Rationale:**
 
 - KataGo requires external binary + GPU — not suitable for all pipeline environments
+
 - Enrichment is slow (~200ms/puzzle with b15c192) — should be opt-in, not mandatory
+
 - Decoupling allows enrichment to run independently, in parallel, or on a different machine
 
 **Interface:** Reads SGFs from `.pm-runtime/staging/analyzed/`, writes enrichment JSON, then patches SGFs back. Pipeline's publish stage reads the enriched SGFs.
@@ -52,8 +61,11 @@ KataGo-based enrichment adds AI-powered analysis to Yen-Go's ~194K puzzle corpus
 **Rationale:** Without a frame, the empty 19×19 board around the puzzle causes:
 
 - Policy spread across the entire board
+
 - Ownership head shows everything as "dame"
+
 - Komi bias (one side "winning" before analysis starts)
+
 - Accuracy drops from ~95% to ~60%
 
 **Source:** Adapted from KaTrain `tsumego_frame.py` (176 LOC Python).
@@ -133,7 +145,9 @@ score = w1 * (1 - policy_prior) + w2 * log(visits_to_solve / 50) + w3 * trap_den
 **YK-aware handling:**
 
 - `YK=direct`: strict validation — the ko capture must be the top or near-top move
+
 - `YK=approach`: lenient validation — approach moves are harder for AI to evaluate since the ko fight is 1+ moves away
+
 - `YK=none`: detection only — ko signal from PV adds a diagnostic flag but doesn't change validation logic
 
 ### D14: Seki 3-Signal Detection
@@ -203,7 +217,8 @@ score = w1 * (1 - policy_prior) + w2 * log(visits_to_solve / 50) + w3 * trap_den
 **Rationale:** R.3 was motivated by two false assumptions:
 
 1. _Determinism required in lab_ — User clarified: "It would be stupid to expect deterministic behavior from an AI engine." Determinism is for the production pipeline, not the enrichment lab.
-2. _`visits_to_solve` hardware variance unacceptable_ — With max-effort config (10K visits, b28c512), visits converge more reliably than at 200 visits.
+
+1. _`visits_to_solve` hardware variance unacceptable_ — With max-effort config (10K visits, b28c512), visits converge more reliably than at 200 visits.
 
 R.3 made 75% of difficulty signal come from SGF tree copying, not KataGo. This defeats the purpose of running KataGo. The replacement formula: `policy_rank(30) + visits_to_solve(30) + trap_density(20) + structural(20) = 100`.
 
@@ -255,11 +270,11 @@ R.3 made 75% of difficulty signal come from SGF tree copying, not KataGo. This d
 
 **Decision:** Puzzles are classified into three enrichment tiers based on available signals:
 
-| Tier | Label   | Signals Available                                              | Use Case                       |
+| Tier | Label | Signals Available | Use Case |
 | ---- | ------- | -------------------------------------------------------------- | ------------------------------ |
-| 3    | Full    | KataGo (policy, visits, ownership, PV) + structural + teaching | Phase S+B complete             |
-| 2    | Partial | Structural only (depth, branches) + tag-based templates        | KataGo unavailable or rejected |
-| 1    | Bare    | No enrichment (original SGF properties only)                   | Pipeline error or skip         |
+| 3 | Full | KataGo (policy, visits, ownership, PV) + structural + teaching | Phase S+B complete |
+| 2 | Partial | Structural only (depth, branches) + tag-based templates | KataGo unavailable or rejected |
+| 1 | Bare | No enrichment (original SGF properties only) | Pipeline error or skip |
 
 **Rationale:** Not all puzzles will receive full KataGo enrichment (some may be rejected by KataGo, some sources may be processed before Phase S). Having explicit tiers prevents confusion about what signals are available for a given puzzle.
 
@@ -295,10 +310,15 @@ Similarly, ko fights produce longer principal variation sequences than standard 
 **Implementation:**
 
 - `KoAnalysisConfig` Pydantic model in `config.py` with defaults
+
 - `AnalysisRequest` gains `rules` and `analysis_pv_len` fields → serialized to KataGo JSON
+
 - `build_query_from_sgf()` resolves rules/PV length from `ko_type` parameter and config
+
 - `QueryStage` (in `analyzers/stages/query_stage.py`) threads `ko_type` (from YK SGF property) through to query builder
+
 - 5 ko calibration fixtures in `tests/fixtures/calibration/ko/` (direct + approach)
+
 - 22 unit tests in `test_ko_rules.py` covering serialization, routing, config model, and fixture integrity
 
 **Key Insight:** Unlike PR #261 which modifies KataGo's C++ engine code to add a `kata-problem_analyze` GTP command, we achieve the same effect using KataGo's existing analysis protocol `rules` field. This is architecturally cleaner — no custom KataGo build required.
@@ -344,9 +364,13 @@ Curated wrong branches extracted from SGF solution trees (e.g., Cho Chikun colle
 **Contract:**
 
 - **Producer:** `tools/puzzle-enrichment-lab` — writes `AiAnalysisResult` as JSON adjacent to each SGF (or in a sidecar directory)
+
 - **Consumer:** `hints.py` — reads `AiAnalysisResult`, extracts PV + ownership + policy, generates `YH[]` hints and `C[]` teaching comments, writes back to SGF via `SgfBuilder`
+
 - **Versioning:** Consumer checks `schema_version`. If `schema_version < 5`, consumer falls back to structural-only hints. If `schema_version >= 5`, consumer uses full KataGo signals.
+
 - **Tier guard:** Consumer checks `enrichment_tier`. Tier ≤ 2 → structural-only hints (do not access sentinel fields). Tier 3 → full KataGo-based hints.
+
 - **No circular dependency:** Lab tool (`tools/`) must NOT import from `backend/`. The contract is enforced by JSON schema only.
 
 **Status (2026-03-04):** `hints.py` integration is planned for Phase B. Current state: lab tool produces `AiAnalysisResult` JSON; `hints.py` stub exists in `backend/` but does not yet read `AiAnalysisResult`.
@@ -358,8 +382,11 @@ Curated wrong branches extracted from SGF solution trees (e.g., Cho Chikun colle
 **Scale plan:**
 
 - **Batch size:** 100 puzzles per batch (in-memory). Larger batches risk OOM on typical hardware.
+
 - **Parallelism:** KataGo supports up to `numAnalysisThreads` concurrent positions. Recommend 4 threads on a mid-range GPU (RTX 3080), giving ~28s/batch (100 puzzles × 7s / 4 threads ≈ 175s), or ~95 hours total. With an A100, estimated 12-18 hours.
+
 - **Incremental:** Already-enriched puzzles (identified by `puzzle_id` in `AiAnalysisResult` sidecar files) are skipped. A `--resume` flag restarts from the last completed batch.
+
 - **Priority order:** Process puzzles in descending quality score order — highest-quality puzzles first so early batches represent the best of the collection.
 
 **E1 — Level Mismatch Calibration (2026-03-04, updated 2026-03-10):** The `level_mismatch` config section was retired and removed from `config/katago-enrichment.json`. The threshold is now a code constant `_MISMATCH_THRESHOLD = 99` in `sgf_enricher.py`, effectively disabling the mismatch detector. This was a deliberate placeholder pending calibration data. After collecting enrichment results for ≥1000 puzzles across all 9 levels, the constant should be lowered (e.g., to `3`) and the threshold calibrated against the two-population test set (D27).
@@ -381,8 +408,10 @@ Curated wrong branches extracted from SGF solution trees (e.g., Cho Chikun colle
 **Decision:** Phase B enrichment adds three modules to the lab tool:
 
 1. **Teaching Comments** (`analyzers/teaching_comments.py`) — V2 two-layer composition engine: technique phrase (tag-driven) + signal phrase (engine-driven), assembled under 15-word cap with V1 fallback. Supersedes V1 `analyzers/teaching_comments.py` (deleted in V2 migration). Config: `config/teaching-comments.json` v2.1 (28 tags, 6 signals).
-2. **Technique Classifier** (`analyzers/technique_classifier.py`) — PV pattern detection (ladder, snapback, ko, net, throw-in) + ownership-based classification
-3. **Hint Generator** (`analyzers/hint_generator.py`) — 3-tier progressive hints (technique → reasoning → coordinate reveal with `{!xy}` tokens)
+
+1. **Technique Classifier** (`analyzers/technique_classifier.py`) — PV pattern detection (ladder, snapback, ko, net, throw-in) + ownership-based classification
+
+1. **Hint Generator** (`analyzers/hint_generator.py`) — 3-tier progressive hints (technique → reasoning → coordinate reveal with `{!xy}` tokens)
 
 **Integration contract:** Follows D34 — lab tool produces `AiAnalysisResult` with Phase B fields (`teaching_comments`, `technique_tags`, `hints`). Production `hints.py` consumes these. Schema version bumped from 7 → 8.
 
@@ -407,11 +436,17 @@ Curated wrong branches extracted from SGF solution trees (e.g., Cho Chikun colle
 **Implementation:**
 
 - `log_config.py` (355 LOC) — `_StructuredJsonFormatter` (JSON payloads with run_id, time, level, logger, msg + extras), `_HumanReadableFormatter` (console), `_RunIdFilter` (injects run_id), `_ErrorToInfoFilter` (mirrors ERROR+ at INFO)
+
 - `setup_logging()` — configures stderr + `TimedRotatingFileHandler` to `logs/enrichment.log` (always DEBUG, reads rotation/retention from `config/logging.json`)
+
 - `--verbose` / `-v` CLI flag enables DEBUG + full tracebacks; `--log-dir` overrides directory
+
 - `set_run_id()` / `get_run_id()` — update run_id mid-session after `generate_run_id()`
+
 - `log_with_context()` — convenience wrapper for structured extras (puzzle_id, stage, collection)
+
 - `LOG_LEVEL` / `LOG_FORMAT` env vars override defaults
+
 - 28 unit tests in `tests/test_log_config.py`
 
 **Entry point wiring:** cli.py, bridge.py, scripts/run_calibration.py, conftest.py (pytest) — all call `setup_logging()` once at startup.
@@ -420,18 +455,18 @@ Curated wrong branches extracted from SGF solution trees (e.g., Cho Chikun colle
 
 ## Accuracy Improvement Levers
 
-| Lever                                            |      Accuracy Impact      |         Latency Impact         |       Priority        |
+| Lever | Accuracy Impact | Latency Impact | Priority |
 | ------------------------------------------------ | :-----------------------: | :----------------------------: | :-------------------: |
-| Stronger model (b15→b28)                         |           +5-8%           |              +3x               |         High          |
-| 8-symmetry evaluation                            |           +2-3%           |          +8x per eval          |         High          |
-| Tight-board cropping (D24)                       |  +5-10% on 19×19 puzzles  | None (smaller board is faster) |  **High (Phase S)**   |
-| Fixed max visits 10K+ (D30)                      |   +3-5% on hard puzzles   |       +5-10s per puzzle        |  **High (Phase S)**   |
-| Tsumego frame                                    |    +30-35% (mandatory)    |           Negligible           |       Critical        |
-| Disable score utility                            |   +1-2% for life/death    |              None              |        Medium         |
-| Ko-aware rules D31 (tromp-taylor for ko puzzles) |   +5-15% on ko puzzles    |              None              | **High (Phase S.4a)** |
-| Correct komi (=0)                                |            +1%            |              None              |        Medium         |
-| `rootFpuReductionMax=0` for refutations          |  +2% refutation coverage  |              None              |        Medium         |
-| ~~Progressive visit escalation~~                 | ~~+3-5% on hard puzzles~~ |     ~~~0 on easy puzzles~~     | ~~Superseded by D30~~ |
+| Stronger model (b15→b28) | +5-8% | +3x | High |
+| 8-symmetry evaluation | +2-3% | +8x per eval | High |
+| Tight-board cropping (D24) | +5-10% on 19×19 puzzles | None (smaller board is faster) | **High (Phase S)** |
+| Fixed max visits 10K+ (D30) | +3-5% on hard puzzles | +5-10s per puzzle | **High (Phase S)** |
+| Tsumego frame | +30-35% (mandatory) | Negligible | Critical |
+| Disable score utility | +1-2% for life/death | None | Medium |
+| Ko-aware rules D31 (tromp-taylor for ko puzzles) | +5-15% on ko puzzles | None | **High (Phase S.4a)** |
+| Correct komi (=0) | +1% | None | Medium |
+| `rootFpuReductionMax=0` for refutations | +2% refutation coverage | None | Medium |
+| ~~Progressive visit escalation~~ | ~~+3-5% on hard puzzles~~ | ~~~0 on easy puzzles~~ | ~~Superseded by D30~~ |
 
 ### D40: Performance-First Enrichment (2026-03-03)
 
@@ -492,10 +527,15 @@ Curated wrong branches extracted from SGF solution trees (e.g., Cho Chikun colle
 **Cleanup completed:**
 
 - **Files deleted:** `_fix_de3.py`, `config.json`, `config.example.json`, `check_conflicts.py`, `expert_review.py`, `mini_calibration.py`, `test-results/`, `analysis_logs/`, stale log files.
+
 - **Backward compat removed:** `lab_mode` → `deep_enrich` JSON key shim in `load_enrichment_config()`.
+
 - **Hardcoded 500 visits removed:** `get_effective_max_visits()` quick_only mode now reads `config.analysis_defaults.default_max_visits`.
+
 - **Test renamed:** `test_lab_mode_config.py` → `test_deep_enrich_config.py`, all DualEngineManager coupling tests removed.
+
 - **Log naming fixed:** `pytest-{PID}` → `YYYYMMDD-{hex}` format (e.g., `20260303-c772f480_enrichment.log`).
+
 - **Log paths fixed:** `strip_workspace_root()` used in config loader and log init messages.
 
 ### D49: Ladder Edge-Following Detection — DEFERRED (2026-03-03)
@@ -515,18 +555,27 @@ Curated wrong branches extracted from SGF solution trees (e.g., Cho Chikun colle
 **Implemented:**
 
 - **Q1:** Removed CLI `patch` subcommand (dead verb, not part of pipeline)
+
 - **Q3:** Confident-but-wrong escalation — if Quick engine's top move ≠ curated `correct_move`, ALWAYS escalate regardless of winrate confidence
+
 - **Q6:** Difficulty weights rebalanced to 25/25/25/25 (from 30/30/20/20) — Go pro consultation confirmed equal weighting reduces collinearity while maintaining ≥75% KataGo signal weight
+
 - **Q7:** Seki score threshold wired to `config.technique_detection.seki.score_threshold`
+
 - **Q8:** `max_time` wired to KataGo `maxTime` field via `AnalysisRequest` and `query_builder`
+
 - **Q10:** Output artifacts consolidated to `.lab-runtime/outputs/`
+
 - **Q14:** Ko-aware refutation delta — ko puzzles use `teaching.ko_delta_threshold` (0.1) instead of standard 0.08
+
 - **Q15:** Batch quality gate — logs warning if acceptance rate below `quality_gates.acceptance_threshold`
 
 **Deferred (needs Go pro consultation):**
 
 - **Q2:** Ownership grid in L&D validation
+
 - **Q5:** Ko detection capture verification
+
 - **Q12/Q13:** Refutation tree depth + PV truncation cascade
 
 ---
@@ -586,16 +635,20 @@ Adapted from Kishimoto & Müller (2005) AAAI-05 and Thomsen (2000) ICGA Journal.
 > **See also:**
 >
 > - [How-To: Enrichment Lab](../../how-to/tools/katago-enrichment-lab.md) — step-by-step usage
+>
 > - [Reference: KataGo Enrichment Config](../../reference/katago-enrichment-config.md) — runtime configuration surface
+>
 > - [Concepts: Tsumego Frame](../../concepts/tsumego-frame.md) — frame-generation algorithm
+>
 > - [Concepts: Quality](../../concepts/quality.md) — quality and complexity signals
+>
 > - [Architecture: Enrichment Lab GUI](./enrichment-lab-gui.md) — GUI and orchestration context
 
 ---
 
 ### No-Solution Resilience (2026-03-07)
 
-Design decisions from initiative `2026-03-07-refactor-enrichment-no-solution-resilience`. Fixes two critical bugs in position-only SGF handling and adds graceful degradation.
+Design decisions from initiative `20260307-0000-refactor-enrichment-no-solution-resilience`. Fixes two critical bugs in position-only SGF handling and adds graceful degradation.
 
 #### D57: Root Winrate from rootInfo (CA-1 Fix)
 
@@ -637,14 +690,14 @@ Design decisions from initiative `2026-03-07-refactor-enrichment-no-solution-res
 
 #### D64: Tier↔AC Consistency
 
-| Tier | AC Level | Meaning                                          |
+| Tier | AC Level | Meaning |
 | ---- | -------- | ------------------------------------------------ |
-| 1    | 0        | No KataGo data available                         |
-| 2    | 0        | KataGo data but no solution tree                 |
-| 3    | 0        | Full analysis, untouched                         |
-| 3    | 1        | Full analysis, enriched                          |
-| 3    | 2        | Full analysis, AI-solved (position-only success) |
-| 3    | 3        | Full analysis, verified                          |
+| 1 | 0 | No KataGo data available |
+| 2 | 0 | KataGo data but no solution tree |
+| 3 | 0 | Full analysis, untouched |
+| 3 | 1 | Full analysis, enriched |
+| 3 | 2 | Full analysis, AI-solved (position-only success) |
+| 3 | 3 | Full analysis, verified |
 
 #### D65: Determinism Scope Override
 
@@ -661,11 +714,16 @@ Design decisions from initiative `2026-03-07-refactor-enrichment-no-solution-res
 **Correct algorithm (KaTrain's `put_outside`):**
 
 1. Iterate all cells in row-major order (y=0..size-1, x=0..size-1)
-2. Skip cells inside the puzzle region
-3. Increment a counter for each frameable cell
-4. If `count ≤ defense_area` → defender colour (one contiguous block)
-5. If `count > defense_area` → attacker colour (another contiguous block)
-6. Checkerboard holes (`(x+y) % 2 == 0`) applied only far from the zone boundary (`abs(count - defense_area) > board_size`), not everywhere
+
+1. Skip cells inside the puzzle region
+
+1. Increment a counter for each frameable cell
+
+1. If `count ≤ defense_area` → defender colour (one contiguous block)
+
+1. If `count > defense_area` → attacker colour (another contiguous block)
+
+1. Checkerboard holes (`(x+y) % 2 == 0`) applied only far from the zone boundary (`abs(count - defense_area) > board_size`), not everywhere
 
 **Visual result:**
 
@@ -680,8 +738,11 @@ XXXX.X???????    ← Wall + margin + puzzle
 **Rationale:**
 
 - Solid colour zones produce strong ownership signals (±1.0) that KataGo reads as clearly owned territory
+
 - The prior checkerboard produced weak ownership (~0.0), which the network interprets as contested — indistinguishable from an actual fight
+
 - Zone-based fill matches KaTrain's canonical implementation and its empirically validated results
+
 - yengo-source (which uses the same algorithmic approach) reports reliable analysis with just b10/500 visits
 
 **Source:** KaTrain `put_outside()` (MIT License, SHA `877684f9a2ff913120e2d608a4eb8202dc1fc8ed`). See [Concept: Tsumego Frame](../../concepts/tsumego-frame.md) for the full algorithm description.
@@ -724,9 +785,9 @@ Two algorithmic gates run BEFORE each `engine.query()` call in `_build_tree_recu
 
 **Rationale:** In many tsumego positions, the defender's group may already be unconditionally alive at intermediate depths. Querying KataGo for these positions wastes budget without providing new information.
 
-**Algorithm:** `find_unconditionally_alive_groups(stones, board_size)` returns ALL unconditionally alive groups on the board. A group is alive if it has ≥ 2 "vital regions" — empty connected regions whose every adjacent stone belongs to that group. The caller (`solve_position.py`) checks whether the *contest group* (stones of defender color within `puzzle_region`) is a subset of any returned alive group.
+Algorithm: `find_unconditionally_alive_groups(stones, board_size)` returns ALL unconditionally alive groups on the board. A group is alive if it has ≥ 2 "vital regions" — empty connected regions whose every adjacent stone belongs to that group. The caller (`solve_position.py`) checks whether the _contest group_ (stones of defender color within `puzzle_region`) is a subset of any returned alive group.
 
-**Critical design choice:** The function returns *all* alive groups, not just the contest group. In tsumego, framework/surrounding stones ARE unconditionally alive by construction. Only contest-group membership triggers the terminal gate.
+Critical design choice: The function returns _all_ alive groups, not just the contest group. In tsumego, framework/surrounding stones ARE unconditionally alive by construction. Only contest-group membership triggers the terminal gate.
 
 **Ko handling:** Ko-dependent groups inherently fail the vital-region test because the ko fight means the region is not unconditionally enclosed. No YK property check is needed.
 
@@ -769,7 +830,9 @@ Two algorithmic gates run BEFORE each `engine.query()` call in `_build_tree_recu
 > **See also:**
 >
 > - [Concepts: Quality — Benson Gate](../../concepts/quality.md#benson-gate) — quality signals
+>
 > - [How-To: KataGo Enrichment Lab](../../how-to/tools/katago-enrichment-lab.md) — usage guide
+>
 > - [Reference: KataGo Enrichment Config](../../reference/katago-enrichment-config.md#benson-gate-config) — configuration
 
 ### D73: Teaching Comment Voice Principles & Opponent-Response Composition (2026-03-15)
@@ -779,10 +842,15 @@ Two algorithmic gates run BEFORE each `engine.query()` call in `_build_tree_recu
 **Rationale:** Original wrong-move templates violated consistent voice standards: 7 of 12 started with articles ("The", "This"), used passive verbs ("captured", "lost"), and contained vague consequences ("group captured" — which group?). The opponent-response consequence should name the mechanism ("fills the last liberty", "captures the stone") and target ("the stone", not abstract "group"). 7 conditions suppress opponent-response because their wrong-move template already fully describes the opponent's action — appending more would be redundant.
 
 **Voice principles:**
+
 - VP-1: Board speaks first — never narrate student error
+
 - VP-2: Action→consequence — `{who} {action} — {result}`
+
 - VP-3: Verb-forward, article-light — drop "The"/"This"/"A" when subject obvious
+
 - VP-4: 15-word hard cap on combined comment (parenthetical = 1 word, coordinate token = 1 word)
+
 - VP-5: Warmth only for `almost_correct`; zero sentiment elsewhere
 
 **Implementation:** `voice_constraints` block in `config/teaching-comments.json` with `forbidden_starts`, `forbidden_phrases`, `max_words`. `opponent_response_templates` with `enabled_conditions` array (5 active) and condition-keyed templates. Conditional dash rule: if wrong-move template contains `—`, opponent-response omits dash (~5 LOC). Feature-gated via `use_opponent_policy: bool = False` in `TeachingConfig`.
@@ -792,6 +860,7 @@ Two algorithmic gates run BEFORE each `engine.query()` call in `_build_tree_recu
 > **See also:**
 >
 > - [Concepts: Teaching Comments](../../concepts/teaching-comments.md) — full template reference
+>
 > - [Concepts: Quality](../../concepts/quality.md) — downstream signal semantics
 
 ### D74: Signal Persistence & Search DB Indexing Strategy (2026-03-24)
@@ -803,7 +872,7 @@ Two algorithmic gates run BEFORE each `engine.query()` call in `_build_tree_recu
 #### Signal Persistence Tiers
 
 | Tier | Flow | Signals | Rationale |
-|------|------|---------|-----------|
+| ------ | ------ | --------- | ----------- |
 | **Tier 1: SGF → search DB** | Signal → SGF property → `parse_yx()`/`parse_yq()` → DB column | `ac_level` (YQ ac → `puzzles.ac`), `depth` (YX d → `cx_depth`), `reading` (YX r → `cx_refutations`), `stones` (YX s → `cx_solution_len`), `unique` (YX u → `cx_unique_resp`) | Needed for frontend search queries (filter by difficulty, complexity, AC level) |
 | **Tier 2: SGF only** | Signal → SGF property (not indexed in search DB) | `trap_density` (YX t), `wrong_count` (YX w), `avg_refutation_depth` (YX a), `branch_count` (YX b), `qk` (YQ qk), `seki_detected` (via YT tag), `ko_type` (via YK from backend) | Available in raw SGF for offline analysis, calibration, and future indexing. Not needed for current frontend queries. |
 | **Tier 3: Composite** | Raw value baked into composite score, raw lost | `policy_entropy` (10% of qk), `correct_move_rank` (20% of qk) | Individual raw values are noisy; the composite `qk` preserves the pedagogically relevant signal. |
@@ -813,7 +882,7 @@ Two algorithmic gates run BEFORE each `engine.query()` call in `_build_tree_recu
 #### YQ Format Divergence
 
 | Writer | Format | Example |
-|--------|--------|---------|
+| -------- | -------- | --------- |
 | Backend pipeline | `q:N;rc:N;hc:N;ac:N` | `YQ[q:3;rc:2;hc:1;ac:0]` |
 | Enrichment lab | `q:N;rc:N;hc:N;ac:N;qk:N` | `YQ[q:3;rc:2;hc:1;ac:1;qk:4]` |
 
@@ -822,7 +891,7 @@ Backend's `parse_ac_level()` ignores unknown trailing fields, so `qk` is forward
 #### YX Format Divergence
 
 | Writer | Format | Fields |
-|--------|--------|--------|
+| -------- | -------- | -------- |
 | Backend pipeline (`compute_complexity_metrics()`) | `d:N;r:N;s:N;u:N` | 4 core fields |
 | Enrichment lab (`_build_yx()` in `sgf_enricher.py`) | `d:N;r:N;s:N;u:N;w:N;a:N;b:N;t:N` | 4 core + 4 extended |
 
@@ -833,6 +902,7 @@ Backend's `parse_ac_level()` ignores unknown trailing fields, so `qk` is forward
 > **See also:**
 >
 > - [Concepts: Quality](../../concepts/quality.md) — YQ/YX field definitions and search DB column mapping
+>
 > - [Concepts: SGF Properties](../../concepts/sgf-properties.md) — Canonical property reference
 
 ---
@@ -844,7 +914,7 @@ The enrichment pipeline is orchestrated by `enrich_single_puzzle()` in `analyzer
 ### Stage Execution Order
 
 | # | Stage | Module | Error Policy | Description |
-|---|-------|--------|-------------|-------------|
+| --- | ------- | -------- | ------------- | ------------- |
 | 1 | **ParseStage** | `stages/parse_stage.py` | FAIL_FAST | Parse SGF text → `SGFNode` tree + `Position` extraction. Extracts metadata (`puzzle_id`, tags, corner, move_order, ko_type). |
 | 2 | **SolvePathStage** | `stages/solve_path_stage.py` | FAIL_FAST | Dispatch to appropriate solve path: `run_standard_path()` (default), `run_has_solution_path()` (solution present), or `run_position_only_path()` (no solution in SGF). |
 | 3 | **AnalyzeStage** | `stages/analyze_stage.py` | CONTINUE | Build `AnalysisRequest` via `query_builder.py` (applies tsumego frame, restricts `allowMoves` to puzzle region). Send to KataGo via `engine_manager` → `AnalysisResponse`. |
@@ -860,7 +930,9 @@ The enrichment pipeline is orchestrated by `enrich_single_puzzle()` in `analyzer
 ### Error Policy
 
 - **FAIL_FAST**: Stage failure aborts the pipeline. Used for critical stages where subsequent stages cannot proceed (parse, validation).
+
 - **CONTINUE**: Stage failure is logged but the pipeline continues with partial results.
+
 - **DEGRADE**: Stage failure silently degrades (no error logged at WARNING+), pipeline continues without that data.
 
 ### Timing & Notification
@@ -868,7 +940,9 @@ The enrichment pipeline is orchestrated by `enrich_single_puzzle()` in `analyzer
 `StageRunner.run_stage()` wraps each stage call with:
 
 - Monotonic timing (stored in `ctx.timings[stage_name]`)
+
 - Optional progress notification via `ctx.notify_fn` (used by GUI SSE stream)
+
 - Error handling per the stage's `ErrorPolicy`
 
 ### Existing-Solution Solve Path
@@ -876,9 +950,12 @@ The enrichment pipeline is orchestrated by `enrich_single_puzzle()` in `analyzer
 `run_has_solution_path()` handles puzzles whose SGF already contains a human-authored solution. These puzzles still go through engine analysis; the existing tree is not a bypass.
 
 1. Validate the human line against KataGo.
-2. Spend root budget on wrong-move refutation roots first (`max_refutation_root_trees`).
-3. Spend remaining root budget on additional correct roots (`max_correct_root_trees`).
-4. Append AI-discovered branches without deleting or reordering existing human branches.
+
+1. Spend root budget on wrong-move refutation roots first (`max_refutation_root_trees`).
+
+1. Spend remaining root budget on additional correct roots (`max_correct_root_trees`).
+
+1. Append AI-discovered branches without deleting or reordering existing human branches.
 
 This path is additive-only. If the shared `QueryBudget` is exhausted, lower-priority optional roots are skipped instead of replacing the existing human line. `human_solution_confidence` and `ai_solution_validated` remain Tier 4 diagnostic state and do not persist to SGF or `yengo-search.db`.
 
@@ -890,7 +967,7 @@ This path is additive-only. If the shared `QueryBudget` is exhausted, lower-prio
 
 The `qk` quality score (0–5 integer) is computed by `_compute_qk()` in `analyzers/sgf_enricher.py` using a panel-validated weighted formula:
 
-```
+```text
 qk_raw = 0.40 × norm(trap_density, 0, 1)
        + 0.30 × norm(avg_refutation_depth, 0, avg_depth_max)
        + 0.20 × norm(clamp(correct_move_rank, 1, rank_clamp_max), 1, rank_clamp_max)
@@ -904,7 +981,7 @@ Where `norm(v, min, max) = clamp((v - min) / (max - min), 0, 1)`.
 **Component rationale:**
 
 | Component | Weight | Signal Source | Why |
-|-----------|--------|--------------|-----|
+| ----------- | -------- | -------------- | ----- |
 | `trap_density` | 40% | Refutation winrate deltas | How tempting the wrong moves are — the core quality signal |
 | `avg_refutation_depth` | 30% | Mean depth of refutation PVs | Deeper refutations = richer pedagogical content |
 | `correct_move_rank` | 20% | KataGo policy prior ordering | Lower rank = more surprising correct move = higher quality |
@@ -916,7 +993,7 @@ Where `norm(v, min, max) = clamp((v - min) / (max - min), 0, 1)`.
 
 When `total_visits < rank_min_visits` (default: 500), the qk score is penalized:
 
-```
+```text
 qk_raw *= low_visit_multiplier  (default: 0.7)
 ```
 
@@ -927,7 +1004,7 @@ This prevents low-visit analyses from producing inflated quality scores. At low 
 `DifficultyStage` computes and propagates two signals via `PipelineContext`:
 
 | Signal | Field | Computed By | Used By |
-|--------|-------|-------------|---------|
+| -------- | ------- | ------------- | --------- |
 | `policy_entropy` | `ctx.policy_entropy` | `compute_policy_entropy(move_infos, top_k)` — Shannon entropy of top-K policy priors | `TeachingStage` (hint calibration), `_compute_qk()` (quality score) |
 | `correct_move_rank` | `ctx.correct_move_rank` | `find_correct_move_rank(move_infos, correct_move_gtp)` — 0-indexed rank in policy ordering | `_compute_qk()` (quality score), observability tracking |
 
@@ -942,10 +1019,10 @@ These signals flow through `AssemblyStage` into `AiAnalysisResult.difficulty` as
 Refutation quality was improved across four phased releases (config v1.18–v1.21), each adding feature-gated improvements:
 
 | Phase | Config Version | Improvements (PI = Pipeline Improvement) | Focus Area |
-|-------|---------------|------------------------------------------|------------|
-| **A** | v1.18 | PI-1: Ownership delta composite scoring<br>PI-3: Score delta rescue filter<br>PI-4: Model routing by puzzle complexity<br>PI-10: Opponent-response teaching comments | Scoring & teaching |
-| **B** | v1.19 | PI-2: Adaptive visit allocation (branch vs continuation)<br>PI-5: Board-size-scaled Dirichlet noise<br>PI-6: Forced minimum visits formula<br>PI-9: Player-side alternative exploration | Visit budgeting & exploration |
-| **C** | v1.20 | PI-7: Branch-local disagreement escalation<br>PI-8: Diversified root candidate harvesting (multi-pass)<br>PI-12: Best-resistance line generation | Deeper analysis & diversity |
+| ------- | --------------- | ------------------------------------------ | ------------ |
+| **A** | v1.18 | PI-1: Ownership delta composite scoring; PI-3: Score delta rescue filter; PI-4: Model routing by puzzle complexity; PI-10: Opponent-response teaching comments | Scoring & teaching |
+| **B** | v1.19 | PI-2: Adaptive visit allocation (branch vs continuation); PI-5: Board-size-scaled Dirichlet noise; PI-6: Forced minimum visits formula; PI-9: Player-side alternative exploration | Visit budgeting & exploration |
+| **C** | v1.20 | PI-7: Branch-local disagreement escalation; PI-8: Diversified root candidate harvesting (multi-pass); PI-12: Best-resistance line generation | Deeper analysis & diversity |
 | **D** | v1.21 | PI-11: Surprise-weighted calibration | Calibration methodology |
 
 ### Feature Activation Phases
@@ -953,12 +1030,17 @@ Refutation quality was improved across four phased releases (config v1.18–v1.2
 Features were activated in two waves (config v1.23–v1.24):
 
 **Phase 1 (v1.23):**
+
 - **1a**: PI-1 `ownership_delta_weight=0.3`, PI-3 `score_delta_enabled=true`, PI-12 `best_resistance_enabled=true`
+
 - **1b**: PI-5 `noise_scaling=board_scaled`, PI-6 `forced_min_visits_formula=true`
+
 - **1c**: PI-10 `use_opponent_policy=true`, PI-11 `surprise_weighting=true`
 
 **Phase 2 (v1.24):**
+
 - PI-2 `visit_allocation_mode=adaptive`, PI-7 `branch_escalation_enabled=true`, PI-8 `multi_pass_harvesting=true`, PI-9 `player_alternative_rate=0.15`
+
 - Budget constraint C7: `max_total_tree_queries=50`, `continuation_visits < branch_visits`, `player_alternative_rate ≤ 0.20`
 
 ### Kishimoto-Mueller Search Optimizations (KM-01..KM-04)
@@ -966,7 +1048,7 @@ Features were activated in two waves (config v1.23–v1.24):
 Adapted from Kishimoto & Müller (2005) AAAI-05 and Thomsen (2000) ICGA Journal. These reduce query budget consumption in the solution tree builder:
 
 | ID | Name | Mechanism | Savings |
-|----|------|-----------|---------|
+| ---- | ------ | ----------- | --------- |
 | **KM-01** | Kawano Simulation | Cache player's winning sequence; replay as single verification query for sibling opponent responses | 30–50% at opponent branch points |
 | **KM-02** | Transposition Table | Zobrist-hashed position cache within single tree build; incremental XOR with capture resolution | 10–30% for puzzles with transpositions |
 | **KM-03** | Forced Move Fast-Path | Single-candidate player moves (policy > 0.85) analyzed at 125 visits instead of 500+ | ~375 visits per forced node |

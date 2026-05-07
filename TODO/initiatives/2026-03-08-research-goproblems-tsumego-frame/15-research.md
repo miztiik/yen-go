@@ -48,7 +48,7 @@
 | R-8  | `komi`                      | 0.0 (override)                           | [query_builder.py L21](../../../tools/puzzle-enrichment-lab/analyzers/query_builder.py#L21) `_TSUMEGO_KOMI = 0.0` |
 | R-9  | `rules`                     | `chinese` (non-ko) / `tromp-taylor` (ko) | [D31](../../../docs/architecture/tools/katago-enrichment.md#L397)                                                 |
 | R-10 | `rootNumSymmetriesToSample` | 8                                        | [D10](../../../docs/architecture/tools/katago-enrichment.md)                                                      |
-| R-11 | `reportAnalysisWinratesAs`  | Being fixed to `SIDETOMOVE`              | [2026-03-08-fix-katago-perspective initiative](../../2026-03-08-fix-katago-perspective/00-charter.md)             |
+| R-11 | `reportAnalysisWinratesAs`  | Being fixed to `SIDETOMOVE`              | [20260308-0000-bugfix-katago-perspective initiative](../../20260308-0000-bugfix-katago-perspective/00-charter.md)             |
 
 ### 2.3 Known Limitations of Checkerboard
 

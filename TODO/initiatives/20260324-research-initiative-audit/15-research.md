@@ -94,19 +94,19 @@ These folders contain only `15-research.md` (sometimes multiple research files) 
 | R-44 | 20260318-research-hinting-system-comparison | enrichment-lab | 15-research.md | R-7 (tactical-hints) |
 | R-45 | 20260318-research-progress-stats-page-placement | frontend | 15-research.md | R-10 (adaptive-learning-engine) |
 | R-46 | 20260319-research-katago-allowmoves-occupied | katago | 15-research.md | R-17/R-18 (katago tuning) |
-| R-47 | 20260322-research-external-sources-fixture-sourcing | enrichment-lab | 15-research.md | R-24 (technique-calibration-fixtures) |
+| R-47 | 20260322-research-external-sources-fixture-sourcing | nested initiative artifact | 20260322-external-sources-fixture-sourcing.md | R-24 (technique-calibration-fixtures) |
 | R-48 | 20260322-research-rush-timed-puzzle-audit | frontend | 15-research.md | R-25 (rush-mode-fix), R-30 (timed-puzzle-json-to-sql) |
-| R-49 | 20260324-research-backend-cleanup-post-recovery | backend | 15-research.md | R-28 (backend-dead-code-cleanup) |
+| R-49 | 20260324-research-backend-cleanup-post-recovery | nested initiative artifact | 20260324-backend-cleanup-post-recovery-audit.md | R-28 (backend-dead-code-cleanup) |
 | R-50 | 20260324-research-backend-failing-tests | backend | 15-research.md | R-31 (backend-test-remediation) |
-| R-51 | 20260324-research-enrichment-lab-test-audit | enrichment-lab | 15-research.md | R-33 (enrichment-lab-test-audit) |
-| R-52 | 20260324-research-frontend-cleanup-deep-audit | frontend | 15-research.md | R-29 (frontend-cleanup-post-recovery) |
+| R-51 | 20260324-research-enrichment-lab-test-audit | nested initiative artifact | 20260324-enrichment-lab-test-audit-research.md | R-33 (enrichment-lab-test-audit) |
+| R-52 | 20260324-research-frontend-cleanup-deep-audit | nested initiative artifact | 20260324-frontend-cleanup-deep-audit.md | R-29 (frontend-cleanup-post-recovery) |
 
 ### Additional Items
 
 | R-ID | Item | Type | Notes |
 |------|------|------|-------|
-| R-53 | 2026-03-24-backend-docs-cleanup | research | 15-research.md only; audits stale backend documentation references |
-| R-54 | 20260324-dead-code-decommissioning.md | standalone file | Reference artifact for dead code paths (trace_map, etc.); produced by R-31 |
+| R-53 | 2026-03-24-backend-docs-cleanup | nested initiative artifact | `20260324-backend-docs-cleanup-audit.md`; audits stale backend documentation references under the dead-code cleanup initiative |
+| R-54 | 20260324-dead-code-decommissioning.md | nested initiative artifact | Reference artifact for dead code paths (trace_map, etc.); produced by R-31 under the remediation initiative directory |
 
 ---
 

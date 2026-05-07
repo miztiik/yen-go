@@ -68,5 +68,5 @@ Each phase is independently revertible via `git revert <commit>`. If Phase A pas
 No shared state between phases — the two subsystems have no cross-imports.
 
 > **See also**:
-> - [Prior research](../20260310-research-sgfmill-replacement/15-research.md) — sgfmill replacement complexity assessment
+> - [Prior research](./20260310-sgfmill-replacement-research.md) — sgfmill replacement complexity assessment
 > - [Research brief](./15-research.md) — KaTrain swap-specific findings

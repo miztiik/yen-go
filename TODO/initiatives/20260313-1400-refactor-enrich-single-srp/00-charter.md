@@ -8,7 +8,7 @@
 
 ## Prior Art
 
-Initiative `2026-03-07-refactor-enrich-single-decomposition` (fully closed out) performed a first-pass decomposition:
+Initiative `20260307-0000-refactor-enrich-single-decomposition` (fully closed out) performed a first-pass decomposition:
 - **Extracted:** `config_lookup.py` (metadata/level helpers), `enrichment_state.py` (@dataclass state carrier), moved `_uncrop_response` to `query_builder.py`
 - **Reduced:** file from ~1,593 to ~1,500 lines at completion
 - **Left intact:** The three major code paths (`_run_position_only_path`, `_run_has_solution_path`, `_run_standard_path`) and the 10-step orchestrator body

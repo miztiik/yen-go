@@ -10,7 +10,7 @@ The initiative needs a live KataGo test architecture that validates technique fi
 2. **Parametrized structural** (`test_fixture_coverage.py`): `ALL_TAG_FIXTURES` registry + `@pytest.mark.parametrize`
 3. **Batch calibration** (`test_calibration.py`): Batch CLI runner, statistical thresholds over collection
 
-The options below cover the **test architecture** for the new technique calibration suite. Fixture sourcing strategy is already decided (grep external-sources for pre-tagged SGFs — see [15-research.md](../20260322-research-external-sources-fixture-sourcing/15-research.md)).
+The options below cover the **test architecture** for the new technique calibration suite. Fixture sourcing strategy is already decided (grep external-sources for pre-tagged SGFs — see [20260322-external-sources-fixture-sourcing.md](./20260322-external-sources-fixture-sourcing.md)).
 
 ---
 
@@ -178,4 +178,4 @@ Edge cases (ko YK property, miai move_order) can be handled via optional registr
 
 > **See also**:
 > - [Charter](./00-charter.md) — Goals and acceptance criteria
-> - [Research](../20260322-research-external-sources-fixture-sourcing/15-research.md) — Sourcing strategy
+> - [Research](./20260322-external-sources-fixture-sourcing.md) — Sourcing strategy

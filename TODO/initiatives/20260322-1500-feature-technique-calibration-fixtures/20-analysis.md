@@ -10,7 +10,7 @@ Last Updated: 2026-03-22
 | risk_level | medium |
 | research_invoked | true |
 | post_research_confidence | 75 |
-| research_artifact | `TODO/initiatives/20260322-research-external-sources-fixture-sourcing/15-research.md` |
+| research_artifact | `TODO/initiatives/20260322-1500-feature-technique-calibration-fixtures/20260322-external-sources-fixture-sourcing.md` |
 
 ---
 

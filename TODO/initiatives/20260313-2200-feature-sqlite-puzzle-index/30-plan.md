@@ -200,4 +200,4 @@ interface PuzzleQueryService {
 > **See also**:
 > - [Charter](./00-charter.md) — Goals, acceptance criteria
 > - [Options](./25-options.md) — Why OPT-1 was selected
-> - [Research](../20260313-research-sqlite-puzzle-index/15-research.md) — Full SQL schema, size math
+> - [Research](./20260313-sqlite-puzzle-index-research.md) — Full SQL schema, size math

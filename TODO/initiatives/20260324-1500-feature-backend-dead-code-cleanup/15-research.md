@@ -1,8 +1,8 @@
 # Research Brief — Backend Dead Code Cleanup (Consolidated)
 
 **Sources**:
-- Code audit: `TODO/initiatives/20260324-research-backend-cleanup-post-recovery/15-research.md`
-- Docs audit: `TODO/initiatives/2026-03-24-backend-docs-cleanup/15-research.md`
+- Code audit: `TODO/initiatives/20260324-1500-feature-backend-dead-code-cleanup/20260324-backend-cleanup-post-recovery-audit.md`
+- Docs audit: `TODO/initiatives/20260324-1500-feature-backend-dead-code-cleanup/20260324-backend-docs-cleanup-audit.md`
 **Date**: 2026-03-24 (two research passes)
 
 ---

@@ -61,4 +61,4 @@ After the prior consolidation initiative (20260322-1400), the enrichment lab tes
 
 > **See also**:
 > - [Prior initiative](../20260322-1400-refactor-enrichment-lab-test-consolidation/00-charter.md) — Sprint files, sys.path DRY
-> - [Research brief](../20260324-research-enrichment-lab-test-audit/15-research.md) — Full 84-file audit
+> - [Research brief](./20260324-enrichment-lab-test-audit-research.md) — Full 84-file audit

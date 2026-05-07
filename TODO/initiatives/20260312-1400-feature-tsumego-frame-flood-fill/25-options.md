@@ -226,5 +226,5 @@ The YAGNI concern (D4) is mitigated by the user's explicit requirement for valid
 >
 > - [Charter](./00-charter.md) — Goals G1-G6 and constraints C1-C7
 > - [Clarifications](./10-clarifications.md) — User decisions Q1-Q8
-> - [Research: Flood-Fill Strategy](../20260312-research-tsumego-frame-flood-fill/15-research.md) — R-20 through R-25
+> - [Research: Flood-Fill Strategy](./20260312-flood-fill-strategy-research.md) — R-20 through R-25
 > - [Governance: Charter Decision](./70-governance-decisions.md) — RC-1 and RC-2

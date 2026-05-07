@@ -9,8 +9,8 @@
 
 This initiative is informed by two comprehensive research passes:
 
-1. **Code Audit**: [`TODO/initiatives/20260324-research-frontend-cleanup-deep-audit/15-research.md`](../20260324-research-frontend-cleanup-deep-audit/15-research.md)
-2. **Docs/README/AGENTS.md Audit**: [`TODO/initiatives/frontend-docs-gap-audit/15-research.md`](../frontend-docs-gap-audit/15-research.md)
+1. **Code Audit**: [`TODO/initiatives/20260324-1800-feature-frontend-cleanup-post-recovery/20260324-frontend-cleanup-deep-audit.md`](./20260324-frontend-cleanup-deep-audit.md)
+2. **Docs/README/AGENTS.md Audit**: [`TODO/initiatives/20260324-1800-feature-frontend-cleanup-post-recovery/20260324-frontend-docs-gap-audit.md`](./20260324-frontend-docs-gap-audit.md)
 
 ---
 

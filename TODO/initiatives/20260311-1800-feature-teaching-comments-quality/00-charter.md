@@ -72,6 +72,6 @@ The teaching comments system (V2, completed 2026-03-06) uses a two-layer composi
 
 > **See also**:
 >
-> - [Prior Initiative: Teaching Comments V2](../2026-03-06-feature-teaching-comments-v2/) — Layer architecture (closed out)
+> - [Prior Initiative: Teaching Comments V2](../20260306-0000-feature-teaching-comments-v2/) — Layer architecture (closed out)
 > - [Frame Legality Initiative](../20260311-1800-feature-tsumego-frame-legality/) — Parallel initiative
 > - [Concepts: Tsumego Frame](../../docs/concepts/tsumego-frame.md) — Frame algorithm

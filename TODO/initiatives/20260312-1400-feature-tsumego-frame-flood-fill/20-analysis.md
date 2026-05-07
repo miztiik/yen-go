@@ -137,4 +137,4 @@ None. All tasks trace to at least one AC, MH, or Goal.
 > - [Plan](./30-plan.md) — Architecture design
 > - [Tasks](./40-tasks.md) — Dependency-ordered task list
 > - [Charter](./00-charter.md) — Goals and acceptance criteria
-> - [Research](../20260312-research-tsumego-frame-flood-fill/15-research.md) — Evidence base
+> - [Research](./20260312-flood-fill-strategy-research.md) — Evidence base

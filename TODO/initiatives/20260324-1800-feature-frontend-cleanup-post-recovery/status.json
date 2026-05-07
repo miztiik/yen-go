@@ -29,8 +29,8 @@
     }
   },
   "research": {
-    "code_audit": "TODO/initiatives/20260324-research-frontend-cleanup-deep-audit/15-research.md",
-    "docs_audit": "TODO/initiatives/frontend-docs-gap-audit/15-research.md",
+    "code_audit": "TODO/initiatives/20260324-1800-feature-frontend-cleanup-post-recovery/20260324-frontend-cleanup-deep-audit.md",
+    "docs_audit": "TODO/initiatives/20260324-1800-feature-frontend-cleanup-post-recovery/20260324-frontend-docs-gap-audit.md",
     "planning_confidence_score": 88,
     "risk_level": "low"
   },

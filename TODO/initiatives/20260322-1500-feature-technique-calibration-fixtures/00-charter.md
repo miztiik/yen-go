@@ -145,7 +145,7 @@ Per user Q3:D, each fixture's live KataGo test validates:
 
 ## Research Summary
 
-External-sources inventory completed (see [15-research.md](../20260322-research-external-sources-fixture-sourcing/15-research.md)):
+External-sources inventory completed (see [20260322-external-sources-fixture-sourcing.md](./20260322-external-sources-fixture-sourcing.md)):
 
 - **16 collections** inventoried, 4 graded A/A+ (goproblems, goproblems_difficulty_based, ogs, kisvadim)
 - **Recommended sourcing strategy**: Grep `goproblems/` + `ogs/` for pre-tagged technique SGFs (covers ~6/8 gaps)
@@ -153,5 +153,5 @@ External-sources inventory completed (see [15-research.md](../20260322-research-
 
 > **See also**:
 > - [Clarifications](./10-clarifications.md) — User decisions and directives
-> - [Research](../20260322-research-external-sources-fixture-sourcing/15-research.md) — External sources inventory
+> - [Research](./20260322-external-sources-fixture-sourcing.md) — External sources inventory
 > - [Audit](../../tools/puzzle-enrichment-lab/tests/fixtures/TECHNIQUE_FIXTURE_AUDIT.md) — 3-expert fixture review

@@ -6,7 +6,7 @@ Last Updated: 2026-03-22
 
 Full external-sources inventory research was conducted by Feature-Researcher and is stored at:
 
-**[15-research.md](../20260322-research-external-sources-fixture-sourcing/15-research.md)**
+**[20260322-external-sources-fixture-sourcing.md](./20260322-external-sources-fixture-sourcing.md)**
 
 ## Key Findings Summary
 

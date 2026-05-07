@@ -5,7 +5,7 @@
 
 ---
 
-Full research brief is at: `TODO/initiatives/20260309-research-enrichment-lab-gui-v4-feasibility/15-research.md`
+Full research brief is at: `TODO/initiatives/20260309-1000-feature-enrichment-lab-gui-v4/20260309-gui-v4-feasibility.md`
 
 ## Summary
 

@@ -7,7 +7,7 @@
 
 ## Current State Assessment
 
-The GUI was built in initiative `2026-03-07-feature-enrichment-lab-gui` as a "lightweight visual pipeline observer." It successfully delivers: BesoGo SVG board, solution tree with correct/wrong coloring, streaming logs, SGF I/O, and the Enrich/Analyze workflow via bridge.py. However, the UX was deprioritized in favor of functional completeness.
+The GUI was built in initiative `20260307-0000-feature-enrichment-lab-gui` as a "lightweight visual pipeline observer." It successfully delivers: BesoGo SVG board, solution tree with correct/wrong coloring, streaming logs, SGF I/O, and the Enrich/Analyze workflow via bridge.py. However, the UX was deprioritized in favor of functional completeness.
 
 ### Current Layout
 

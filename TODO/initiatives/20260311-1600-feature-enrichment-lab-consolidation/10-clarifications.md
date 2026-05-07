@@ -7,7 +7,7 @@ Last Updated: 2026-03-10
 This initiative consolidates all pending enrichment-lab work from:
 - `TODO/kishimoto-mueller-tasks.md` (6 gate reviews)
 - `TODO/ai-solve-remediation-sprints.md` (20 items need sign-off, 4 docs)
-- `TODO/initiatives/2026-03-08-fix-katago-perspective/40-tasks.md` (5 partially done tasks)
+- `TODO/initiatives/20260308-0000-bugfix-katago-perspective/40-tasks.md` (5 partially done tasks)
 - `TODO/initiatives/20260310-research-tsumego-solver-pns/15-research.md` (R-A-1 Benson, R-A-2 interior-point)
 - `TODO/katago-puzzle-enrichment/009-principal-review-gap-plan.md` (P0-P2 priorities)
 - sgfmill library evaluation (conditional replacement)

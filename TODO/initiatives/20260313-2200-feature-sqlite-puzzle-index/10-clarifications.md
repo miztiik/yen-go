@@ -39,7 +39,7 @@
 |------|----------|------------|--------|
 | Q17 | Planning confidence score | 90/100 — architecture clear, tech proven, all decisions made | ✅ resolved |
 | Q18 | Risk level | Low — localized change, mature library, clean break | ✅ resolved |
-| Q19 | Research needed? | Completed: `20260313-research-sqlite-puzzle-index/15-research.md` | ✅ resolved |
+| Q19 | Research needed? | Completed: `20260313-sqlite-puzzle-index-research.md` | ✅ resolved |
 
 ---
 

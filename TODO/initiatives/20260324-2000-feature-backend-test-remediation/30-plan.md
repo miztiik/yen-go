@@ -96,7 +96,7 @@ Then the 3 `test_stage_metrics.py` tests should pass.
 
 | Action | File | Reason |
 |--------|------|--------|
-| CREATE | `TODO/initiatives/20260324-dead-code-decommissioning.md` | Track dead code paths (trace_map.py, sidecar docs) for cleanup |
+| CREATE | `TODO/initiatives/20260324-2000-feature-backend-test-remediation/20260324-dead-code-decommissioning.md` | Track dead code paths (trace_map.py, sidecar docs) for cleanup |
 | UPDATE | This initiative's `20-analysis.md` | Record all verdicts and dead code inventory |
 
 _Last updated: 2026-03-24_

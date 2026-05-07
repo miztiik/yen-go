@@ -137,6 +137,6 @@ This table maps the overlapping IDs from the 3 original agent reports to the con
 | PI-8 | F4 | — | 7 | Diversified harvesting |
 
 > **See also**:
-> - [Research: 15-research.md](../starter/15-research.md) — Feature-Researcher codebase audit (59 findings)
+> - [Research: 20260315-feature-researcher-audit.md](./20260315-feature-researcher-audit.md) — Feature-Researcher codebase audit (59 findings)
 > - [Config: katago-enrichment.json](../../config/katago-enrichment.json) — Current config source of truth
 > - [AGENTS.md](../../tools/puzzle-enrichment-lab/AGENTS.md) — Lab architecture map

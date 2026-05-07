@@ -21,7 +21,7 @@
 
 ## Prior Research Reference
 
-Existing research initiative: `TODO/initiatives/20260310-research-sgfmill-replacement/15-research.md`
+Existing research initiative: `TODO/initiatives/20260313-1600-feature-katrain-sgf-parser-swap/20260310-sgfmill-replacement-research.md`
 
 Key findings:
 - sgfmill has 12 API call sites across 2 files (parser: 5, enricher: 7)

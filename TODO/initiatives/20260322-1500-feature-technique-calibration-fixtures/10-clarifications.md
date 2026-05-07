@@ -30,5 +30,5 @@ Last Updated: 2026-03-22
 **Answer**: No backward compatibility required. Old fixtures with structural bugs (7 REMOVE, 1 REPLACE per audit) should be deleted and replaced with sourced alternatives. Test imports should be updated accordingly.
 
 > **See also**:
-> - [Research: External Sources Inventory](../../20260322-research-external-sources-fixture-sourcing/15-research.md)
+> - [Research: External Sources Inventory](./20260322-external-sources-fixture-sourcing.md)
 > - [Audit: Technique Fixture Audit](../../../../tools/puzzle-enrichment-lab/tests/fixtures/TECHNIQUE_FIXTURE_AUDIT.md)

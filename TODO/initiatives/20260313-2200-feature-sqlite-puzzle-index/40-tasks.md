@@ -135,4 +135,4 @@ T1 → T2 → T4 → T8 → T10 → T11 → T15 → T28 → T38 → T46 → T47
 > **See also**:
 > - [Plan](./30-plan.md) — Architecture, risks, contracts
 > - [Charter](./00-charter.md) — Acceptance criteria
-> - [Research](../20260313-research-sqlite-puzzle-index/15-research.md) — Full SQL schema
+> - [Research](./20260313-sqlite-puzzle-index-research.md) — Full SQL schema

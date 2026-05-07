@@ -86,5 +86,5 @@ Replace the shard-file index system with two SQLite databases: a search/metadata
 ---
 
 > **See also**:
-> - [Research: SQLite Puzzle Index](../20260313-research-sqlite-puzzle-index/15-research.md) — Full research brief with schema design, governance opinions, size estimates
+> - [Research: SQLite Puzzle Index](./20260313-sqlite-puzzle-index-research.md) — Full research brief with schema design, governance opinions, size estimates
 > - [Numeric ID Scheme](../../docs/concepts/numeric-id-scheme.md) — ID ranges for levels, tags, collections

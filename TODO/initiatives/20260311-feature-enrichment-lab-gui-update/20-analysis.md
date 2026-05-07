@@ -7,7 +7,7 @@
 
 ## Current State Assessment
 
-The GUI was built in initiative `2026-03-07-feature-enrichment-lab-gui` and refined in `20260309-1000-feature-enrichment-lab-gui-v4`. It is a vanilla HTML/CSS/JS application served by `bridge.py` (FastAPI on port 8999) alongside KataGo analysis API endpoints. It successfully delivers:
+The GUI was built in initiative `20260307-0000-feature-enrichment-lab-gui` and refined in `20260309-1000-feature-enrichment-lab-gui-v4`. It is a vanilla HTML/CSS/JS application served by `bridge.py` (FastAPI on port 8999) alongside KataGo analysis API endpoints. It successfully delivers:
 
 - BesoGo SVG board with kaya-wood theme, Go rules, captures, ko
 - Solution tree with correct (green) / wrong (red) branch coloring

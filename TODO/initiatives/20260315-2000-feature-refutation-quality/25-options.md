@@ -58,4 +58,4 @@
 
 > **See also**:
 > - [Charter: 00-charter.md](00-charter.md) — Scope, goals, classification tables
-> - [Research: 15-research.md](../starter/15-research.md) — Codebase audit
+> - [Research: 20260315-feature-researcher-audit.md](./20260315-feature-researcher-audit.md) — Codebase audit

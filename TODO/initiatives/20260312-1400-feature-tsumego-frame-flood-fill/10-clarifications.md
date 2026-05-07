@@ -57,5 +57,5 @@
 
 > **See also**:
 >
-> - [Research: Flood-Fill Strategy](../../initiatives/20260312-research-tsumego-frame-flood-fill/15-research.md) — Full research brief
+> - [Research: Flood-Fill Strategy](./20260312-flood-fill-strategy-research.md) — Full research brief
 > - [Concepts: Tsumego Frame](../../docs/concepts/tsumego-frame.md) — Current algorithm docs

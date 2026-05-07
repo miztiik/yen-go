@@ -9,7 +9,7 @@
 
 Two comprehensive research passes were completed:
 
-1. **Code Audit** (`20260324-research-frontend-cleanup-deep-audit/15-research.md`):
+1. **Code Audit** (`20260324-frontend-cleanup-deep-audit.md`):
    - 26 confirmed dead files + 2 dead directories
    - 9 duplicate functionality pairs
    - 4 stale type files
@@ -17,7 +17,7 @@ Two comprehensive research passes were completed:
    - ~3,000 lines removable in Phase 1 safe deletes
    - Service worker has 2 stale caching patterns
 
-2. **Docs/README/AGENTS.md Audit** (`frontend-docs-gap-audit/15-research.md`):
+2. **Docs/README/AGENTS.md Audit** (`20260324-frontend-docs-gap-audit.md`):
    - README.md is severely broken (describes old JSON shard architecture)
    - 3 architecture docs describe fully superseded system
    - 6 architecture/frontend/ docs have factual errors
