@@ -51,9 +51,9 @@ tools/yengo_dashboard/
     models.py           # Pydantic response schemas
   web/
     index.html          # tab shell (Library / Pipeline / Operations / Logs / Guide)
-    app.js              # vanilla ES module — fetch + render + EventSource. Every render* function MUST emit its title via viewHeader() so the .view-header typography stays pinned (Theme 0 invariant).
+    app.js              # vanilla ES module — fetch + render + EventSource. Every render* function MUST emit its title via viewHeader() so the .view-header typography stays pinned (Theme 0 invariant). Operations cards expose a Preview button that opens #preview-dialog via openPreviewModal() — GET /api/{op}/preview, render via PREVIEW_RENDERERS, then "Run for real" reuses startMaintenance() with dry_run=false (Theme 1e).
     view-guide.js       # docs-tree viewer for the Guide tab (own layout, no view-header)
-    styles.css          # minimal complement to Tailwind CDN. Owns .view-header / .view-header-title / .view-header-sub and the .logs-stage-grid responsive template.
+    styles.css          # minimal complement to Tailwind CDN. Owns .view-header / .view-header-title / .view-header-sub, the .logs-stage-grid responsive template, and dialog.preview-dialog (Theme 1e impact modal).
   tests/
     test_routes_read.py        # real-fixture TestClient tests (no mocks)
     test_routes_run.py         # real-subprocess SSE tests via TestClient

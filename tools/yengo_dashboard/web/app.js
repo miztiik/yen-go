@@ -1102,6 +1102,178 @@ function readVacuumForm() {
   return { rebuild: $("#mv-rebuild").checked, dry_run: $("#mv-dry").checked };
 }
 
+// ---------- Theme 1e: dry-run preview modal ----------
+//
+// Each Operations card grows a "Preview" button next to "Run". Clicking
+// it fetches GET /api/{op}/preview synchronously, renders a structured
+// impact summary (counts + sample rows) into the shared <dialog>, and
+// offers a "Run for real" button that re-uses startMaintenance() with
+// dry_run=false so the operator never has to retype the form.
+//
+// The dashboard is the consumer side of principle #6: it renders the
+// CLI's preview payload as-is and never re-derives counts or labels.
+
+const PREVIEW_SAMPLE_LIMIT = 20;
+
+function _formatPreviewBytes(n) {
+  if (n == null) return "—";
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KiB`;
+  if (n < 1024 * 1024 * 1024) return `${(n / 1024 / 1024).toFixed(1)} MiB`;
+  return `${(n / 1024 / 1024 / 1024).toFixed(2)} GiB`;
+}
+
+function _previewStat(label, value) {
+  return `<div class="preview-stat">
+    <span class="preview-stat-label">${escapeHtml(label)}</span>
+    <span class="preview-stat-value">${escapeHtml(String(value))}</span>
+  </div>`;
+}
+
+function _previewSampleList(items, formatter) {
+  if (!items || items.length === 0) {
+    return `<div class="text-xs text-slate-500 italic">none</div>`;
+  }
+  const sample = items.slice(0, PREVIEW_SAMPLE_LIMIT);
+  const more = items.length > PREVIEW_SAMPLE_LIMIT
+    ? `<div class="preview-list-row text-slate-500">… and ${items.length - PREVIEW_SAMPLE_LIMIT} more</div>`
+    : ``;
+  return `<div class="preview-list">
+    ${sample.map(it => `<div class="preview-list-row" title="${escapeHtml(formatter(it))}">${escapeHtml(formatter(it))}</div>`).join("")}
+    ${more}
+  </div>`;
+}
+
+function _previewErrors(errors) {
+  if (!errors || errors.length === 0) return ``;
+  return `<div class="preview-warn">
+    <div class="font-semibold mb-1">CLI warnings</div>
+    ${errors.map(e => `<div>${escapeHtml(e)}</div>`).join("")}
+  </div>`;
+}
+
+function _renderCleanPreview(raw) {
+  const target = raw.target == null ? "(retention default)" : raw.target;
+  return [
+    _previewStat("Target", target),
+    _previewStat("Retention days", raw.retention_days),
+    _previewStat("Files to delete", raw.total_files),
+    _previewStat("Bytes to free", _formatPreviewBytes(raw.total_bytes)),
+    `<div class="text-xs text-slate-500 uppercase tracking-wider">Sample (first ${PREVIEW_SAMPLE_LIMIT})</div>`,
+    _previewSampleList(raw.would_delete, (it) => `${it.path}  ·  ${_formatPreviewBytes(it.bytes)}`),
+    _previewErrors(raw.errors),
+  ].join("");
+}
+
+function _renderRollbackPreview(raw) {
+  const reversibleNote = raw.reversible
+    ? ``
+    : `<div class="preview-warn">
+         <strong>Irreversible</strong> — rollback deletes SGF files and
+         rebuilds the search DB. The publish-log entries remain so the
+         operator can re-run the ingest, but the original SGF bytes are
+         gone unless backed up.
+       </div>`;
+  return [
+    _previewStat("Puzzles affected", raw.puzzles_affected),
+    _previewStat("Runs touched", (raw.affected_runs || []).join(", ") || "—"),
+    `<div class="text-xs text-slate-500 uppercase tracking-wider">Affected puzzle IDs (first ${PREVIEW_SAMPLE_LIMIT})</div>`,
+    _previewSampleList(raw.affected_puzzles, (id) => id),
+    reversibleNote,
+    _previewErrors(raw.errors),
+  ].join("");
+}
+
+function _renderVacuumPreview(raw) {
+  const dbNote = raw.has_content_db
+    ? ``
+    : `<div class="preview-warn">No <code>yengo-content.db</code> on disk — vacuum would be a no-op.</div>`;
+  return [
+    dbNote,
+    _previewStat("Orphan rows", raw.orphan_rows),
+    _previewStat("On-disk SGF files", raw.on_disk_files),
+    _previewStat("Estimated bytes freed", _formatPreviewBytes(raw.freed_bytes_estimate)),
+    _previewStat("Rebuild requested", raw.rebuild ? "yes" : "no"),
+  ].join("");
+}
+
+const PREVIEW_RENDERERS = {
+  clean:       _renderCleanPreview,
+  rollback:    _renderRollbackPreview,
+  "vacuum-db": _renderVacuumPreview,
+};
+
+// Open the preview modal for one op. The caller passes the GET query
+// params, the POST runUrl + bodyForReal that "Run for real" should use,
+// and an optional confirm step (for destructive ops).
+async function openPreviewModal({
+  op,                // "clean" | "rollback" | "vacuum-db"
+  previewUrl,        // full URL incl. query string
+  runUrl,            // POST URL (e.g. "/api/clean")
+  buildRunBody,      // () => body for the real run (already has dry_run=false)
+  verb,              // human label for toasts ("clean", "rollback", ...)
+  originBtn,         // the card's Run button — startMaintenance() uses it for the status pill
+  confirmRun,        // optional () => Promise<boolean> to gate "Run for real"
+}) {
+  const dlg = $("#preview-dialog");
+  const title = $("#pv-title");
+  const body = $("#pv-body");
+  const goBtn = $("#pv-go");
+  title.textContent = `${verb} preview`;
+  body.innerHTML = `<div class="text-xs text-slate-500">loading preview…</div>`;
+  goBtn.disabled = true;
+  dlg.showModal();
+
+  let payload = null;
+  try {
+    const resp = await getJSON(previewUrl);
+    payload = resp.raw || {};
+    const renderer = PREVIEW_RENDERERS[op];
+    body.innerHTML = renderer
+      ? renderer(payload)
+      : `<pre class="text-xs whitespace-pre-wrap">${escapeHtml(JSON.stringify(payload, null, 2))}</pre>`;
+    goBtn.disabled = false;
+  } catch (err) {
+    body.innerHTML = errorBlock(`GET ${previewUrl}`, err);
+    goBtn.disabled = true;
+  }
+
+  const onClose = async () => {
+    dlg.removeEventListener("close", onClose);
+    if (dlg.returnValue !== "ok") return;
+    if (confirmRun) {
+      const ok = await confirmRun();
+      if (!ok) return;
+    }
+    startMaintenance(runUrl, buildRunBody(), verb, originBtn);
+  };
+  dlg.addEventListener("close", onClose);
+}
+
+function _previewQueryFromClean() {
+  const params = new URLSearchParams();
+  const target = $("#mc-target").value;
+  const days = $("#mc-days").value.trim();
+  if (target) params.set("target", target);
+  if (days !== "") params.set("retention_days", days);
+  return params;
+}
+
+function _previewQueryFromRollback() {
+  const params = new URLSearchParams();
+  const runId = $("#mr-run-id").value.trim();
+  const reason = $("#mr-reason").value.trim();
+  if (runId) params.set("run_id", runId);
+  if (reason) params.set("reason", reason);
+  return params;
+}
+
+function _previewQueryFromVacuum() {
+  const params = new URLSearchParams();
+  if ($("#mv-rebuild").checked) params.set("rebuild", "true");
+  return params;
+}
+
 async function runPublishLogSearch() {
   const params = new URLSearchParams();
   for (const [id, key] of [
@@ -1167,9 +1339,17 @@ function renderPublishLogResults(raw) {
 }
 
 function maintCard(opts) {
-  // opts: { title, group, body, button: {label, id, variant, destructive} }
+  // opts: { title, group, body, button: {label, id, variant, destructive},
+  //         preview?: {id, label} }   ← Theme 1e: optional Preview button
   const variantCls = PILL_VARIANTS[opts.button.variant] || PILL_VARIANTS.info;
   const destructive = opts.button.destructive ? `data-destructive` : ``;
+  const previewBtn = opts.preview
+    ? `<button id="${opts.preview.id}" type="button"
+              class="maint-preview-btn shrink-0 text-xs rounded-md px-3 py-1.5
+                     bg-sky-500/10 text-sky-300 ring-1 ring-sky-500/30 hover:brightness-125">
+         ${escapeHtml(opts.preview.label || "Preview")}
+       </button>`
+    : ``;
   return `
     <section data-maint-card data-maint-verb="${escapeHtml(opts.button.label)}"
              class="maint-card rounded-md border border-slate-800 bg-slate-900 p-4 space-y-3
@@ -1179,10 +1359,13 @@ function maintCard(opts) {
         <span class="text-[10px] uppercase tracking-wider text-slate-500">${escapeHtml(opts.group)}</span>
       </header>
       ${opts.body}
-      <button id="${opts.button.id}" ${destructive}
-              class="w-full ${variantCls} hover:brightness-125 text-sm rounded-md px-3 py-1.5">
-        ${escapeHtml(opts.button.label)}
-      </button>
+      <div class="flex gap-2">
+        ${previewBtn}
+        <button id="${opts.button.id}" ${destructive}
+                class="flex-1 ${variantCls} hover:brightness-125 text-sm rounded-md px-3 py-1.5">
+          ${escapeHtml(opts.button.label)}
+        </button>
+      </div>
       <div class="card-status"></div>
     </section>`;
 }
@@ -1242,6 +1425,7 @@ function renderMaintenance() {
             <p class="text-[11px] text-slate-500">Reclaims free space in <code>yengo-search.db</code>. Rebuild is slow (minutes).</p>
           `,
           button: { id: "mv-go", label: "Run vacuum-db", variant: "info" },
+          preview: { id: "mv-preview", label: "Preview" },
         })}
 
         ${maintCard({
@@ -1270,6 +1454,7 @@ function renderMaintenance() {
             </label>
           `,
           button: { id: "mc-go", label: "Run clean", variant: "info" },
+          preview: { id: "mc-preview", label: "Preview" },
         })}
       </div>
     </section>
@@ -1301,6 +1486,7 @@ function renderMaintenance() {
             </div>
           `,
           button: { id: "mr-go", label: "Run rollback", variant: "destructive", destructive: true },
+          preview: { id: "mr-preview", label: "Preview" },
         })}
       </div>
     </section>
@@ -1322,6 +1508,53 @@ function renderMaintenance() {
     });
     if (!ok) return;
     startMaintenance("/api/rollback", body, "rollback", originBtn);
+  });
+
+  // Theme 1e: Preview buttons. Each opens the impact modal against the
+  // GET /api/<op>/preview endpoint; "Run for real" inside the modal hands
+  // off to the same startMaintenance() path, with dry_run forced false.
+  $("#mv-preview").addEventListener("click", () => {
+    const params = _previewQueryFromVacuum();
+    openPreviewModal({
+      op: "vacuum-db",
+      previewUrl: `/api/vacuum-db/preview?${params}`,
+      runUrl: "/api/vacuum-db",
+      buildRunBody: () => ({ ...readVacuumForm(), dry_run: false }),
+      verb: "vacuum-db",
+      originBtn: $("#mv-go"),
+    });
+  });
+
+  $("#mc-preview").addEventListener("click", () => {
+    const params = _previewQueryFromClean();
+    openPreviewModal({
+      op: "clean",
+      previewUrl: `/api/clean/preview?${params}`,
+      runUrl: "/api/clean",
+      buildRunBody: () => ({ ...readCleanForm(), dry_run: false }),
+      verb: "clean",
+      originBtn: $("#mc-go"),
+    });
+  });
+
+  $("#mr-preview").addEventListener("click", () => {
+    const body = readRollbackForm();
+    if (!body.run_id) { toast("warn", "run ID is required"); return; }
+    if (!body.reason) { toast("warn", "rollback reason is required"); return; }
+    const params = _previewQueryFromRollback();
+    openPreviewModal({
+      op: "rollback",
+      previewUrl: `/api/rollback/preview?${params}`,
+      runUrl: "/api/rollback",
+      buildRunBody: () => ({ ...readRollbackForm(), dry_run: false }),
+      verb: "rollback",
+      originBtn: $("#mr-go"),
+      confirmRun: () => confirmDialog({
+        title: "Confirm rollback",
+        body: `Permanently roll back run ${body.run_id}. This is destructive.`,
+        verb: "rollback",
+      }),
+    });
   });
 
   if (window.lucide?.createIcons) window.lucide.createIcons();

@@ -569,3 +569,67 @@ def test_logs_stage_grid_is_responsive(app_js: str, styles_css: str) -> None:
         styles_css, flags=re.DOTALL,
     ), "Theme 0: .logs-stage-grid must define grid-template-columns."
 
+
+# ---------- Dry-run preview modal (Theme 1e) ---------------------------------
+
+
+def test_preview_dialog_present(index_html: str) -> None:
+    """Theme 1e: a #preview-dialog modal must exist in index.html, with the
+    title slot, body slot, and 'Run for real' confirm button."""
+    assert 'id="preview-dialog"' in index_html, (
+        "Theme 1e: index.html must declare <dialog id='preview-dialog'>."
+    )
+    assert 'id="pv-title"' in index_html
+    assert 'id="pv-body"' in index_html
+    assert 'id="pv-go"' in index_html, (
+        "Theme 1e: preview dialog must expose a #pv-go 'Run for real' button."
+    )
+
+
+def test_preview_dialog_styled(styles_css: str) -> None:
+    """Theme 1e: the preview dialog needs a wider modal + stat/list styling
+    so long file paths and big counts don't overflow."""
+    assert "dialog.preview-dialog" in styles_css, (
+        "Theme 1e: styles.css must define dialog.preview-dialog overrides."
+    )
+    assert ".preview-stat" in styles_css and ".preview-list" in styles_css, (
+        "Theme 1e: stat-row and sample-list classes must be styled."
+    )
+
+
+def test_open_preview_modal_defined(app_js: str) -> None:
+    """Theme 1e: openPreviewModal() owns the GET-preview → modal → run flow."""
+    assert "function openPreviewModal" in app_js or "openPreviewModal({" in app_js, (
+        "Theme 1e: openPreviewModal() must be defined and invoked."
+    )
+    # Renderers map must wire all three ops.
+    assert "PREVIEW_RENDERERS" in app_js, (
+        "Theme 1e: PREVIEW_RENDERERS map must dispatch per-op rendering."
+    )
+    for op_key in ('clean', 'rollback', '"vacuum-db"'):
+        assert op_key in app_js, (
+            f"Theme 1e: PREVIEW_RENDERERS must include {op_key}."
+        )
+
+
+def test_maintenance_cards_have_preview_buttons(app_js: str) -> None:
+    """Theme 1e: each Operations card must expose a Preview button alongside Run."""
+    maint = re.search(
+        r"function\s+renderMaintenance\s*\([^)]*\)\s*\{(.*?)\n\}",
+        app_js, flags=re.DOTALL,
+    )
+    assert maint, "renderMaintenance not found"
+    body = maint.group(1)
+    for pid in ("mv-preview", "mc-preview", "mr-preview"):
+        assert pid in body, (
+            f"Theme 1e: renderMaintenance must wire a Preview button #{pid}."
+        )
+
+
+def test_preview_endpoints_used_by_ui(app_js: str) -> None:
+    """Theme 1e: the Preview clicks must hit the GET /api/{op}/preview endpoints."""
+    for url in ("/api/vacuum-db/preview", "/api/clean/preview", "/api/rollback/preview"):
+        assert url in app_js, (
+            f"Theme 1e: app.js must call {url} from a Preview handler."
+        )
+

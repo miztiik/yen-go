@@ -91,9 +91,9 @@ None — pure frontend / CSS.
 
 ---
 
-## Theme 1 — Dry-run Preview as First-Class (P0) ◐
+## Theme 1 — Dry-run Preview as First-Class (P0) ☑
 
-**Status (2026-05-07)**: 1a + 1b + 1c + 1d shipped (CLI + dashboard endpoints complete). 1e (UI Preview button) pending.
+**Status (2026-05-07)**: 1a + 1b + 1c + 1d + 1e shipped — Theme 1 complete.
 
 **Jobs covered**: "Preview before I break something."
 
@@ -109,21 +109,20 @@ None — pure frontend / CSS.
 - ☑ `GET /api/vacuum-db/preview?rebuild=…` → `{raw: VacuumDbPreview}`
 - All three are GET (idempotent, cacheable, safe). CLI failure → 502 with `{message, returncode, stderr}`. Real-fixture TestClient tests cover happy path, query-param threading, error mapping, and idempotency. Dashboard never re-validates the schema (principle #6).
 
-### UI surfaces (1e — pending)
-- Each Operations card grows a **"Preview"** button beside "Run".
-- Preview opens a modal with the structured impact summary (counts, sample
-  IDs, byte estimates).
-- After preview, the modal offers "Run for real" (which re-issues the same
-  request without `--dry-run`).
+### UI surfaces (1e — ☑ shipped)
+- ☑ Each Operations card (Vacuum / Clean / Rollback) grew a **"Preview"** button beside "Run".
+- ☑ Preview opens `<dialog id="preview-dialog">` with the structured impact summary (counts, sample IDs capped at 20, byte estimates, irreversible warning for rollback, "no content DB" no-op for vacuum).
+- ☑ "Run for real" inside the modal hands off to the existing `startMaintenance()` path with `dry_run=false`. Rollback keeps the verb-typed `confirmDialog` as a second gate.
+- ☑ Pin tests in `test_web_assets.py` cover the dialog markup, CSS classes, button IDs, and `/api/{op}/preview` URL wiring.
 
 ### Acceptance criteria
 - [x] CLI: `--dry-run --json` returns a stable Pydantic-validated shape for
       all three subcommands; backend tests pin schema.
 - [x] Dashboard: GET preview endpoints surface the verbatim CLI payload as
       `{raw}`; real-fixture tests pin the wire contract.
-- [ ] Dashboard: each destructive card has a Preview button; the modal
+- [x] Dashboard: each destructive card has a Preview button; the modal
       shows counts AND a sample (max 20 IDs).
-- [ ] Real-fixture test: preview → run real, the affected set matches.
+- [x] Real-fixture test: preview → run real, the affected set matches.
 
 ### Dependencies
 None.
