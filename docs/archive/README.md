@@ -3,6 +3,7 @@
 > **See also**:
 >
 > - [Architecture Overview](../architecture/README.md) — Current system design
+>
 > - [How-To Guides](../how-to/) — Current procedures
 
 **Last Updated**: 2026-05-06
@@ -16,7 +17,9 @@ Documents in this directory are deprecated and kept for historical reference onl
 Documents are moved here when:
 
 - Technology is no longer used
+
 - Approach has been superseded
+
 - Information is outdated but historically relevant
 
 All archived documents include a deprecation banner at the top.
@@ -25,17 +28,18 @@ All archived documents include a deprecation banner at the top.
 
 ## Archived Documents
 
-| Document                                           | Superseded By                             | Deprecated |
+| Document | Superseded By | Deprecated |
 | -------------------------------------------------- | ----------------------------------------- | ---------- |
-| [katago-integration.md](katago-integration.md)     | Curated sources (no AI validation)        | 2026-01    |
-| [pipeline-v3-design.md](pipeline-v3-design.md)     | 3-stage pipeline (ingest/analyze/publish) | 2026-02    |
-| [ai-puzzle-validation.md](ai-puzzle-validation.md) | Source quality ratings + PuzzleValidator  | 2026-02    |
-| [di-test-isolation.md](di-test-isolation.md)       | `YENGO_RUNTIME_DIR` env var + `paths.py`  | 2026-02    |
+| [katago-integration.md](katago-integration.md) | Curated sources (no AI validation) | 2026-01 |
+| [pipeline-v3-design.md](pipeline-v3-design.md) | 3-stage pipeline (ingest/analyze/publish) | 2026-02 |
+| [ai-puzzle-validation.md](ai-puzzle-validation.md) | Source quality ratings + PuzzleValidator | 2026-02 |
+| [di-test-isolation.md](di-test-isolation.md) | `YENGO_RUNTIME_DIR` env var + `paths.py` | 2026-02 |
 | [ai-solve-enrichment-plan-v1.md](ai-solve-enrichment-plan-v1.md) | AI-solve v3 unified plan + ADR-008 | 2026-03 |
 | [ai-solve-enrichment-plan-v2.1.md](ai-solve-enrichment-plan-v2.1.md) | AI-solve v3 unified plan + ADR-008 | 2026-03 |
 | [enrichment-lab-code-review-2026-03-02.md](enrichment-lab-code-review-2026-03-02.md) | Audit synthesis + remediation sprints | 2026-03 |
 | [katago-enrichment-code-review-2026-03-02.md](katago-enrichment-code-review-2026-03-02.md) | Audit synthesis + remediation sprints | 2026-03 |
 | [katago-enrichment-audit-synthesis-2026-03-02.md](katago-enrichment-audit-synthesis-2026-03-02.md) | AI-solve remediation and initiative tracking | 2026-03 |
+| [march-2026-initiative-decomposition.md](march-2026-initiative-decomposition.md) | Historical digest for March 2026 initiative retirement out of TODO/initiatives | 2026-05 |
 | [ai-solve-enrichment-plan-v3.md](ai-solve-enrichment-plan-v3.md) | [architecture/tools/katago-enrichment.md](../architecture/tools/katago-enrichment.md) | 2026-05 |
 | [go-board-js-libraries-analysis.md](go-board-js-libraries-analysis.md) | [architecture/frontend/goban-integration.md](../architecture/frontend/goban-integration.md) | 2026-05 |
 | [solution-tree-visualization-analysis.md](solution-tree-visualization-analysis.md) | [architecture/frontend/goban-integration.md](../architecture/frontend/goban-integration.md) | 2026-05 |
@@ -68,4 +72,5 @@ All archived documents include a deprecation banner at the top.
 If you need similar functionality:
 
 1. Check current documentation in `docs/`
-2. Ask for guidance
+
+1. Ask for guidance

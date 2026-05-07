@@ -14,6 +14,8 @@ Defines the on-disk artifact contract used by `Feature-Planner`, `Refactor-Plann
 
 The contract enables pause/resume at every phase gate without relying on agent memory.
 
+Historical initiative directories are not permanent repository memory. Once an initiative bundle has been decomposed into canonical `docs/` content and any required historical digest in `docs/archive/`, the old initiative directory may be deleted from `TODO/initiatives/`.
+
 ## Initiative Naming
 
 - Initiative artifacts live outside the canonical `docs/` tree in a dedicated planning workspace managed by the planner/executor workflow.
@@ -31,6 +33,18 @@ The contract enables pause/resume at every phase gate without relying on agent m
 - `<type>` values: `feature`, `refactor`, `bugfix`, `docs`
 
 Use "initiative" as the neutral term for both feature and refactor work.
+
+## Historical Retirement
+
+- `TODO/initiatives/` is the active planning workspace, not the long-term archive.
+
+- Historical initiatives may be retired out of `TODO/initiatives/` when both conditions are met:
+
+  - durable knowledge has been moved into canonical docs or confirmed as already covered there
+
+  - historical context is preserved in `docs/archive/` at a level that avoids one-to-one folder copying where practical
+
+- When retiring historical initiative directories, prefer thematic or time-bounded archive digests over verbatim folder preservation.
 
 ## Artifact Set
 
