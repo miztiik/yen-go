@@ -81,6 +81,9 @@ tools/yengo_dashboard/
 | POST   | `/api/clean`                  | RunController → `clean [--target …] [--retention-days N] [--dry-run BOOL]` | 202; 409 shared with /api/run |
 | POST   | `/api/rollback`               | RunController → `rollback --run-id ID --reason TEXT [--dry-run] [--yes] [--verify]` | 422 if `run_id`/`reason` missing or empty (per-puzzle rollback was removed in Theme 17 — the CLI never supported it) |
 | POST   | `/api/vacuum-db`              | RunController → `vacuum-db [--rebuild] [--dry-run]` | 202; 409 shared                       |
+| GET    | `/api/clean/preview`          | subprocess `clean --dry-run --json [--target …] [--retention-days N]` | 200 with `{raw: CleanPreview}`; 502 on CLI failure |
+| GET    | `/api/rollback/preview`       | subprocess `rollback --dry-run --json --run-id ID --reason TEXT` | 200 with `{raw: RollbackPreview}`; 422 if `run_id` missing; 502 on CLI failure. `reason` defaults to `"preview-only"` (CLI requires it even in dry-run) |
+| GET    | `/api/vacuum-db/preview`      | subprocess `vacuum-db --dry-run --json [--rebuild]` | 200 with `{raw: VacuumDbPreview}`; 502 on CLI failure |
 | POST   | `/api/adapter/enable`         | subprocess `enable-adapter ID [--force]` | 200 with `{ok, returncode, stdout, stderr}` even on non-zero |
 | POST   | `/api/adapter/disable`        | subprocess `disable-adapter [--force]`| same shape; clears active adapter                |
 | GET    | `/api/publish-log/search`     | subprocess `publish-log search --format json …` | 400 if CLI rejects (no filter, etc.); raw payload otherwise |
@@ -125,6 +128,15 @@ The cockpit **never reformats** pipeline-owned shapes:
   `RunSnapshot` as `/api/run`. The UI subscribes to `/api/run/{handle}/events`
   regardless of which subcommand spawned the run; `command[3:]` carries
   the subcommand identifier (e.g. `["vacuum-db", "--dry-run"]`).
+- `/api/clean/preview`, `/api/rollback/preview`, `/api/vacuum-db/preview`
+  → wrap `raw` around the verbatim CLI JSON (CleanPreview / RollbackPreview /
+  VacuumDbPreview from `backend.puzzle_manager.models.previews`). The
+  cockpit MUST NOT re-validate the shape — the schema is owned by the
+  backend and is allowed to evolve without a coordinated cockpit release.
+  GET because previews are idempotent; the operator can poll without
+  side effects. Synchronous (no `RunController`) because dry-run is fast
+  and the operator wants the impact summary inline before deciding whether
+  to commit. CLI failure → 502 with `{message, returncode, stderr}`.
 - `/api/publish-log/search` → wraps `raw` around the verbatim CLI JSON
   (list or dict — the schema is owned by the publish-log subcommand). On
   CLI failure (no filter, parse error, etc.) the route returns 400 with

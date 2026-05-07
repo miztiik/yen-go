@@ -93,7 +93,7 @@ None — pure frontend / CSS.
 
 ## Theme 1 — Dry-run Preview as First-Class (P0) ◐
 
-**Status (2026-05-07)**: 1a + 1b + 1c shipped (CLI side complete). 1d (preview endpoints), 1e (UI Preview button) pending.
+**Status (2026-05-07)**: 1a + 1b + 1c + 1d shipped (CLI + dashboard endpoints complete). 1e (UI Preview button) pending.
 
 **Jobs covered**: "Preview before I break something."
 
@@ -103,7 +103,13 @@ None — pure frontend / CSS.
 - ☑ `vacuum-db --dry-run --json` → `VacuumDbPreview` (same module).
 - All three keep stdout structured-only when `--json` is passed (no chatter).
 
-### UI surfaces
+### Dashboard preview endpoints (1d)
+- ☑ `GET /api/clean/preview?target=…&retention_days=…` → `{raw: CleanPreview}`
+- ☑ `GET /api/rollback/preview?run_id=…&reason=…` → `{raw: RollbackPreview}` (422 if `run_id` missing)
+- ☑ `GET /api/vacuum-db/preview?rebuild=…` → `{raw: VacuumDbPreview}`
+- All three are GET (idempotent, cacheable, safe). CLI failure → 502 with `{message, returncode, stderr}`. Real-fixture TestClient tests cover happy path, query-param threading, error mapping, and idempotency. Dashboard never re-validates the schema (principle #6).
+
+### UI surfaces (1e — pending)
 - Each Operations card grows a **"Preview"** button beside "Run".
 - Preview opens a modal with the structured impact summary (counts, sample
   IDs, byte estimates).
@@ -111,8 +117,10 @@ None — pure frontend / CSS.
   request without `--dry-run`).
 
 ### Acceptance criteria
-- [ ] CLI: `--dry-run --json` returns a stable Pydantic-validated shape for
+- [x] CLI: `--dry-run --json` returns a stable Pydantic-validated shape for
       all three subcommands; backend tests pin schema.
+- [x] Dashboard: GET preview endpoints surface the verbatim CLI payload as
+      `{raw}`; real-fixture tests pin the wire contract.
 - [ ] Dashboard: each destructive card has a Preview button; the modal
       shows counts AND a sample (max 20 IDs).
 - [ ] Real-fixture test: preview → run real, the affected set matches.

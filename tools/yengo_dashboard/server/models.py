@@ -327,6 +327,53 @@ class VacuumDbRequest(BaseModel):
     dry_run: bool = Field(default=False, description="--dry-run")
 
 
+# ---- Theme 1d: dry-run preview passthroughs ------------------------------
+#
+# Each preview endpoint runs the corresponding mutating subcommand with
+# ``--dry-run --json`` synchronously and returns the parsed CLI payload as
+# a free-form ``raw`` dict. The Pydantic shape is owned by the backend
+# (``backend.puzzle_manager.models.previews``) — the cockpit MUST NOT
+# re-validate it here, both because principle #6 forbids importing
+# backend models and because the preview schema is allowed to evolve
+# without a coordinated cockpit release.
+
+
+class CleanPreviewResponse(BaseModel):
+    """``GET /api/clean/preview`` payload — verbatim CleanPreview JSON."""
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON of `clean --dry-run --json`. Shape owned by "
+            "`backend.puzzle_manager.models.previews.CleanPreview`."
+        ),
+    )
+
+
+class RollbackPreviewResponse(BaseModel):
+    """``GET /api/rollback/preview`` payload — verbatim RollbackPreview JSON."""
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON of `rollback --dry-run --json`. Shape owned by "
+            "`backend.puzzle_manager.models.previews.RollbackPreview`."
+        ),
+    )
+
+
+class VacuumDbPreviewResponse(BaseModel):
+    """``GET /api/vacuum-db/preview`` payload — verbatim VacuumDbPreview JSON."""
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON of `vacuum-db --dry-run --json`. Shape owned by "
+            "`backend.puzzle_manager.models.previews.VacuumDbPreview`."
+        ),
+    )
+
+
 # ---------------- Phase 3: short-running adapter + log lookups -----------
 
 

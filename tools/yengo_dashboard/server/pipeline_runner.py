@@ -97,6 +97,51 @@ class PipelineRunner:
         """
         return self._run_json(["config-lock", "status"])
 
+    def clean_preview(
+        self,
+        *,
+        target: str | None = None,
+        retention_days: int | None = None,
+    ) -> dict:
+        """Wraps ``puzzle_manager clean --dry-run --json``.
+
+        Returns the parsed CleanPreview JSON. Schema is owned by the CLI
+        (``backend.puzzle_manager.models.previews.CleanPreview``); the
+        cockpit forwards the dict verbatim per principle #6.
+        """
+        args = ["clean", "--dry-run", "--json"]
+        if target is not None:
+            args += ["--target", target]
+        if retention_days is not None:
+            args += ["--retention-days", str(retention_days)]
+        return self._run_json_from_args(args)
+
+    def rollback_preview(self, *, run_id: str, reason: str) -> dict:
+        """Wraps ``puzzle_manager rollback --dry-run --json``.
+
+        Returns the parsed RollbackPreview JSON. ``reason`` is required
+        by the CLI even in preview mode (it pre-validates the audit
+        message that the real run will use).
+        """
+        args = [
+            "rollback",
+            "--dry-run",
+            "--json",
+            "--run-id", run_id,
+            "--reason", reason,
+        ]
+        return self._run_json_from_args(args)
+
+    def vacuum_db_preview(self, *, rebuild: bool = False) -> dict:
+        """Wraps ``puzzle_manager vacuum-db --dry-run --json``.
+
+        Returns the parsed VacuumDbPreview JSON.
+        """
+        args = ["vacuum-db", "--dry-run", "--json"]
+        if rebuild:
+            args.append("--rebuild")
+        return self._run_json_from_args(args)
+
     def lock_release(self, *, force: bool = False) -> dict:
         """Wraps ``puzzle_manager config-lock release [--force]``.
 

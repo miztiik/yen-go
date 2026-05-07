@@ -84,7 +84,7 @@ def create_app(
         )
     )
     app.include_router(build_run_router(controller=run_controller, runner=runner))
-    app.include_router(build_maintenance_router(controller=run_controller))
+    app.include_router(build_maintenance_router(controller=run_controller, runner=runner))
     app.include_router(build_lock_router(runner=runner))
     app.include_router(build_admin_router(runner=runner))
     app.include_router(build_logs_router(state_reader=state_reader))

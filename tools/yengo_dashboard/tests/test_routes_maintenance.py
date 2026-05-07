@@ -17,7 +17,7 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 from tools.yengo_dashboard.server.app import create_app
-from tools.yengo_dashboard.server.run_controller import RunController, TERMINAL_STATUSES
+from tools.yengo_dashboard.server.run_controller import TERMINAL_STATUSES, RunController
 
 REAL_REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -285,3 +285,242 @@ class TestSerializationAcrossSubcommands:
                     lambda: controller.active()["status"] in TERMINAL_STATUSES,
                     timeout=10.0,
                 )
+
+
+# ---------------- preview endpoints (Theme 1d) ----------------
+#
+# Preview endpoints flow through ``PipelineRunner`` (subprocess + JSON
+# parse), not ``RunController``. The fake-repo shim therefore needs to
+# emit valid CleanPreview/RollbackPreview/VacuumDbPreview JSON when the
+# CLI is invoked with ``--dry-run --json``. The runner is rooted at the
+# fake repo (``create_app(repo_root=fake_repo)``) so the subprocess path
+# is real but no actual pipeline state is touched.
+
+
+def _make_fake_preview_repo(tmp_path: Path) -> Path:
+    """Build a tmp 'repo' whose ``__main__`` emits valid preview JSON.
+
+    Each subcommand recognises ``--dry-run --json`` and writes a stable
+    payload that matches the corresponding ``CleanPreview`` /
+    ``RollbackPreview`` / ``VacuumDbPreview`` shape. Anything else exits 2
+    so a misrouted invocation surfaces immediately.
+    """
+    pkg = tmp_path / "backend" / "puzzle_manager"
+    pkg.mkdir(parents=True)
+    (pkg.parent / "__init__.py").write_text("", encoding="utf-8")
+    (pkg / "__init__.py").write_text("", encoding="utf-8")
+    (pkg / "__main__.py").write_text(
+        textwrap.dedent(
+            """
+            import json
+            import sys
+
+            argv = sys.argv[1:]
+            cmd = argv[0] if argv else ""
+            rest = argv[1:]
+            is_dry = "--dry-run" in rest
+            is_json = "--json" in rest
+
+            def _val(flag, default=None):
+                if flag in rest:
+                    i = rest.index(flag)
+                    if i + 1 < len(rest):
+                        return rest[i + 1]
+                return default
+
+            if cmd == "clean" and is_dry and is_json:
+                target = _val("--target")
+                retention = int(_val("--retention-days") or 45)
+                payload = {
+                    "target": target,
+                    "retention_days": retention,
+                    "would_delete": [
+                        {"path": ".pm-runtime/logs/old.log", "bytes": 123}
+                    ],
+                    "total_files": 1,
+                    "total_bytes": 123,
+                    "errors": [],
+                }
+                print(json.dumps(payload))
+                sys.exit(0)
+
+            if cmd == "rollback" and is_dry and is_json:
+                run_id = _val("--run-id") or ""
+                payload = {
+                    "affected_puzzles": ["abc123def4567890"],
+                    "affected_runs": [run_id],
+                    "puzzles_affected": 1,
+                    "reversible": False,
+                    "errors": [],
+                }
+                print(json.dumps(payload))
+                sys.exit(0)
+
+            if cmd == "vacuum-db" and is_dry and is_json:
+                rebuild = "--rebuild" in rest
+                payload = {
+                    "orphan_rows": 3,
+                    "on_disk_files": 42,
+                    "freed_bytes_estimate": 12288,
+                    "rebuild": rebuild,
+                    "has_content_db": True,
+                }
+                print(json.dumps(payload))
+                sys.exit(0)
+
+            print(f"unexpected argv: {argv!r}", file=sys.stderr)
+            sys.exit(2)
+            """
+        ).strip(),
+        encoding="utf-8",
+    )
+    return tmp_path
+
+
+def _make_preview_test_app(tmp_path: Path) -> TestClient:
+    """Build a TestClient whose runner points at a preview-emitting shim."""
+    fake_repo = _make_fake_preview_repo(tmp_path)
+    # Controller still uses the same fake repo so nothing else breaks if a
+    # preview test accidentally hits a mutating route.
+    controller = RunController(repo_root=fake_repo)
+    app = create_app(repo_root=fake_repo, controller=controller)
+    return TestClient(app)
+
+
+class TestCleanPreview:
+    def test_default_invocation_returns_raw_payload(self, tmp_path: Path) -> None:
+        client = _make_preview_test_app(tmp_path)
+        with client:
+            resp = client.get("/api/clean/preview")
+        assert resp.status_code == 200, resp.text
+        body = resp.json()
+        assert "raw" in body
+        raw = body["raw"]
+        assert raw["target"] is None
+        assert raw["retention_days"] == 45
+        assert raw["total_files"] == 1
+        assert raw["would_delete"][0]["path"].endswith("old.log")
+
+    def test_target_and_retention_flow_through(self, tmp_path: Path) -> None:
+        client = _make_preview_test_app(tmp_path)
+        with client:
+            resp = client.get(
+                "/api/clean/preview",
+                params={"target": "logs", "retention_days": 7},
+            )
+        assert resp.status_code == 200
+        raw = resp.json()["raw"]
+        assert raw["target"] == "logs"
+        assert raw["retention_days"] == 7
+
+    def test_cli_failure_maps_to_502(self, tmp_path: Path) -> None:
+        # Replace shim to fail clean/--dry-run/--json deterministically.
+        fake_repo = _make_fake_preview_repo(tmp_path)
+        (fake_repo / "backend" / "puzzle_manager" / "__main__.py").write_text(
+            "import sys\nprint('boom', file=sys.stderr)\nsys.exit(1)\n",
+            encoding="utf-8",
+        )
+        controller = RunController(repo_root=fake_repo)
+        app = create_app(repo_root=fake_repo, controller=controller)
+        with TestClient(app) as client:
+            resp = client.get("/api/clean/preview")
+        assert resp.status_code == 502
+        detail = resp.json()["detail"]
+        assert detail["returncode"] == 1
+        assert "boom" in detail["stderr"]
+
+
+class TestRollbackPreview:
+    def test_run_id_required(self, tmp_path: Path) -> None:
+        client = _make_preview_test_app(tmp_path)
+        with client:
+            resp = client.get("/api/rollback/preview")
+        assert resp.status_code == 422
+
+    def test_run_id_threads_through(self, tmp_path: Path) -> None:
+        client = _make_preview_test_app(tmp_path)
+        with client:
+            resp = client.get(
+                "/api/rollback/preview",
+                params={"run_id": "20260505-deadbeef"},
+            )
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["affected_runs"] == ["20260505-deadbeef"]
+        assert raw["puzzles_affected"] == 1
+        assert raw["reversible"] is False
+
+    def test_explicit_reason_overrides_default(self, tmp_path: Path) -> None:
+        # The cockpit supplies "preview-only" when the operator hasn't
+        # entered a reason yet; an explicit reason must override it.
+        # Augment the shim to fail loudly if --reason is missing and to
+        # echo the value back through affected_runs.
+        fake_repo = _make_fake_preview_repo(tmp_path)
+        (fake_repo / "backend" / "puzzle_manager" / "__main__.py").write_text(
+            textwrap.dedent(
+                """
+                import json, sys
+                argv = sys.argv[1:]
+                if argv[:1] == ["rollback"] and "--reason" not in argv:
+                    print("missing --reason", file=sys.stderr)
+                    sys.exit(2)
+                i = argv.index("--reason")
+                reason = argv[i + 1]
+                print(json.dumps({
+                    "affected_puzzles": [],
+                    "affected_runs": [reason],
+                    "puzzles_affected": 0,
+                    "reversible": False,
+                    "errors": [],
+                }))
+                sys.exit(0)
+                """
+            ).strip(),
+            encoding="utf-8",
+        )
+        controller = RunController(repo_root=fake_repo)
+        app = create_app(repo_root=fake_repo, controller=controller)
+        with TestClient(app) as client:
+            resp = client.get(
+                "/api/rollback/preview",
+                params={"run_id": "abc", "reason": "operator-supplied"},
+            )
+        assert resp.status_code == 200
+        raw = resp.json()["raw"]
+        assert raw["affected_runs"] == ["operator-supplied"]
+
+
+class TestVacuumDbPreview:
+    def test_default_invocation(self, tmp_path: Path) -> None:
+        client = _make_preview_test_app(tmp_path)
+        with client:
+            resp = client.get("/api/vacuum-db/preview")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["orphan_rows"] == 3
+        assert raw["on_disk_files"] == 42
+        assert raw["rebuild"] is False
+        assert raw["has_content_db"] is True
+
+    def test_rebuild_flag_threads_through(self, tmp_path: Path) -> None:
+        client = _make_preview_test_app(tmp_path)
+        with client:
+            resp = client.get(
+                "/api/vacuum-db/preview", params={"rebuild": True}
+            )
+        assert resp.status_code == 200
+        assert resp.json()["raw"]["rebuild"] is True
+
+
+class TestPreviewIsIdempotent:
+    """Preview endpoints are GET so they MUST be safe to retry without
+    side effects. This is asserted indirectly by checking the runner is
+    re-entrant — repeated calls return identical payloads."""
+
+    def test_repeated_calls_return_same_payload(self, tmp_path: Path) -> None:
+        client = _make_preview_test_app(tmp_path)
+        with client:
+            r1 = client.get("/api/clean/preview")
+            r2 = client.get("/api/clean/preview")
+        assert r1.status_code == r2.status_code == 200
+        assert r1.json() == r2.json()
