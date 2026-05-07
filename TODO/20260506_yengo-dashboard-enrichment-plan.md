@@ -303,7 +303,7 @@ heal it without dropping to a terminal."
 - [x] CLI test seeds a corpus with one missing + one orphan + one hash
       mismatch; check reports all three; reconcile dry-run lists exact
       affected files; reconcile real heals them. _(Theme 14a, this commit: missing_file + orphan_file kinds shipped via `IntegrityReport` Pydantic contract; hash_mismatch deferred — requires deep-scan rehash)_
-- [ ] Dashboard test pins the new sub-section + badge state transitions.
+- [x] Dashboard test pins the new sub-section + badge state transitions. _(Theme 14b, this commit: `/api/inventory/check` endpoint passthrough + `integrityBlock()` renderer on Library/Overview view; pin tests cover endpoint wiring + badge presence + both issue kinds. Healing actions deferred to Theme 14c.)_
 - [ ] Healing actions appear in the unified activity surface (Theme 13).
 
 ### Dependencies

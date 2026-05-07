@@ -663,3 +663,88 @@ class TestActivityEndpoint:
         with TestClient(app) as client:
             resp = client.get("/api/activity", params={"kinds": "bogus"})
         assert resp.status_code == 400
+
+
+def _seed_inventory_check_corpus(yengo_root: Path) -> None:
+    """Theme 14b: build a real publication root + publish-log under
+    ``yengo_root/yengo-puzzle-collections/`` that yields exactly one
+    ``missing_file`` and one ``orphan_file`` row.
+
+    Also copies ``config/`` from the real repo because the CLI loads the
+    SGF schema from ``<YENGO_ROOT>/config/`` at import time.
+    """
+    import shutil
+
+    shutil.copytree(REPO_ROOT / "config", yengo_root / "config")
+    pub = yengo_root / "yengo-puzzle-collections"
+    sgf_dir = pub / "sgf" / "0001"
+    sgf_dir.mkdir(parents=True)
+    # Healthy: file on disk + publish-log entry → ignored.
+    (sgf_dir / "aaaaaaaaaaaaaaaa.sgf").write_text("(;FF[4])", encoding="utf-8")
+    # Orphan: file on disk, no log entry.
+    (sgf_dir / "ffffffffffffffff.sgf").write_text("(;FF[4])", encoding="utf-8")
+    log_dir = pub / ".puzzle-inventory-state" / "publish-log"
+    log_dir.mkdir(parents=True)
+    (log_dir / "2026-05-07.jsonl").write_text(
+        "\n".join([
+            json.dumps({
+                "puzzle_id": "aaaaaaaaaaaaaaaa",
+                "path": "sgf/0001/aaaaaaaaaaaaaaaa.sgf",
+                "run_id": "fixture", "source_id": "src",
+                "quality": 3, "trace_id": "t-aaa", "level": "intermediate",
+                "tags": [], "collections": [],
+            }),
+            json.dumps({
+                "puzzle_id": "1111111111111111",
+                "path": "sgf/0001/1111111111111111.sgf",
+                "run_id": "fixture", "source_id": "src",
+                "quality": 3, "trace_id": "t-bbb", "level": "intermediate",
+                "tags": [], "collections": [],
+            }),
+        ]) + "\n",
+        encoding="utf-8",
+    )
+
+
+class TestInventoryCheckEndpoint:
+    """Theme 14b: drives the real ``inventory --check --json`` subprocess
+    via the cockpit. Validates the IntegrityReport wire shape passthrough
+    and the exit-code-1-is-still-success nuance for the runner."""
+
+    def test_returns_report_with_one_missing_one_orphan(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _seed_inventory_check_corpus(tmp_path)
+        monkeypatch.setenv("YENGO_ROOT", str(tmp_path))
+        monkeypatch.setenv("YENGO_RUNTIME_DIR", str(tmp_path / ".pm-runtime"))
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.get("/api/inventory/check")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["ok"] is False
+        assert raw["summary"]["missing_file"] == 1
+        assert raw["summary"]["orphan_file"] == 1
+        kinds = {(i["kind"], i["puzzle_id"]) for i in raw["issues"]}
+        assert kinds == {
+            ("missing_file", "1111111111111111"),
+            ("orphan_file", "ffffffffffffffff"),
+        }
+
+    def test_clean_corpus_returns_ok(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        import shutil
+        shutil.copytree(REPO_ROOT / "config", tmp_path / "config")
+        # Empty publication root → no orphans, no missing.
+        (tmp_path / "yengo-puzzle-collections" / "sgf").mkdir(parents=True)
+        monkeypatch.setenv("YENGO_ROOT", str(tmp_path))
+        monkeypatch.setenv("YENGO_RUNTIME_DIR", str(tmp_path / ".pm-runtime"))
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.get("/api/inventory/check")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["ok"] is True
+        assert raw["issues"] == []
+        assert raw["summary"] == {"missing_file": 0, "orphan_file": 0}

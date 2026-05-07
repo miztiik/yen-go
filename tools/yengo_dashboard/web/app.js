@@ -369,10 +369,13 @@ async function renderOverview() {
   const root = $("#view-overview");
   root.innerHTML = `<div class="text-slate-400 text-sm">loading inventory…</div>`;
   try {
-    // Inventory + adapters in parallel; adapters powers the per-source mini-table.
-    const [inv, adapters] = await Promise.all([
+    // Inventory + adapters + integrity in parallel. Integrity is the slowest
+    // (subprocess) but graceful-degrades to a "—" badge if it errors so the
+    // rest of the view still renders.
+    const [inv, adapters, integrity] = await Promise.all([
       getJSON("/api/inventory"),
       loadConfigMaps().then(() => getJSON("/api/adapters").catch(() => ({ sources: [] }))),
+      getJSON("/api/inventory/check").catch(() => null),
     ]);
     const levels = Object.entries(inv.by_level_id).sort((a, b) => Number(a[0]) - Number(b[0]));
     const types = Object.entries(inv.by_content_type).sort((a, b) => Number(a[0]) - Number(b[0]));
@@ -397,6 +400,7 @@ async function renderOverview() {
           <span class="font-semibold uppercase tracking-wider text-amber-300">Snapshot</span>
           <span>${escapeHtml(inv.advice)}</span>
         </div>` : ""}
+      ${integrityBlock(integrity)}
       ${empty ? `
         <div class="mt-6 rounded-lg border border-dashed border-slate-700 p-8 text-center">
           <p class="text-sm text-slate-400">No published puzzles yet.</p>
@@ -425,6 +429,66 @@ async function renderOverview() {
       </div>
     `;
   } catch (e) { root.innerHTML = errorBlock("/api/inventory", e); }
+}
+
+// Theme 14b: Inventory health surface — badge + per-issue table.
+// `report` is the parsed `/api/inventory/check` payload's `raw` field, or null
+// when the endpoint failed (graceful degrade — we still want the rest of the
+// Library view to render).
+function integrityBlock(resp) {
+  if (resp === null) {
+    return `
+      <div class="mt-4 rounded-md ring-1 ring-slate-700 bg-slate-900/40 px-3 py-2 text-xs text-slate-400 flex items-center gap-2">
+        <span class="font-semibold uppercase tracking-wider text-slate-500">Integrity</span>
+        <span>check unavailable</span>
+      </div>`;
+  }
+  const r = resp.raw || resp;
+  const summary = r.summary || { missing_file: 0, orphan_file: 0 };
+  const total = (summary.missing_file || 0) + (summary.orphan_file || 0);
+  const variant = r.ok ? "ok" : (total > 50 ? "error" : "warn");
+  const label = r.ok ? "healthy" : `${total} issue${total === 1 ? "" : "s"}`;
+  const badge = `<span class="pill ${PILL_VARIANTS[variant]}"><span class="glyph"></span>${escapeHtml(label)}</span>`;
+  const counts = r.ok ? "" : `
+    <span class="ml-3 text-xs text-slate-500 font-mono">
+      missing_file: <span class="text-slate-300">${summary.missing_file}</span>
+      &nbsp;·&nbsp; orphan_file: <span class="text-slate-300">${summary.orphan_file}</span>
+    </span>`;
+  const issuesTable = r.ok || !Array.isArray(r.issues) || r.issues.length === 0
+    ? ""
+    : `
+      <div class="mt-3 overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead><tr class="text-left text-slate-500 uppercase tracking-wider">
+            <th class="font-normal pb-1 pr-3">kind</th>
+            <th class="font-normal pb-1 pr-3">puzzle_id</th>
+            <th class="font-normal pb-1">path</th>
+          </tr></thead>
+          <tbody class="font-mono">
+            ${r.issues.slice(0, 50).map((i) => {
+              const kindCls = i.kind === "missing_file"
+                ? "text-rose-300"
+                : "text-amber-300";
+              return `<tr class="border-t border-slate-800/60">
+                <td class="py-1 pr-3 ${kindCls}">${escapeHtml(i.kind)}</td>
+                <td class="py-1 pr-3 text-slate-300">${escapeHtml(i.puzzle_id || "—")}</td>
+                <td class="py-1 text-slate-400">${escapeHtml(i.path || "")}</td>
+              </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+        ${r.issues.length > 50
+          ? `<div class="mt-2 text-[11px] text-slate-500">… ${r.issues.length - 50} more (run <code class="text-slate-400">inventory --check --json</code> in a terminal for the full list).</div>`
+          : ""}
+      </div>`;
+  return `
+    <div id="integrity-block" class="mt-4 rounded-md ring-1 ring-slate-800 bg-slate-900/40 px-3 py-2">
+      <div class="flex items-center">
+        <span class="font-semibold uppercase tracking-wider text-xs text-slate-500 mr-3">Integrity</span>
+        ${badge}${counts}
+      </div>
+      ${issuesTable}
+    </div>`;
 }
 
 function levelsTable(rows) {

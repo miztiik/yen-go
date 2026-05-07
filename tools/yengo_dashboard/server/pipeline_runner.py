@@ -317,6 +317,46 @@ class PipelineRunner:
             )
         return result
 
+    def inventory_check(self) -> dict:
+        """Wraps ``puzzle_manager inventory --check --json``.
+
+        Returns the parsed ``IntegrityReport`` JSON dict verbatim. Schema is
+        owned by the CLI (``backend.puzzle_manager.models.integrity``); the
+        cockpit forwards fields unchanged per principle #6.
+
+        Exit-code nuance: the CLI exits 1 when issues exist (matches the
+        pre-Theme-14a human-output behavior). That is a *valid* report — not
+        a crash — so we tolerate returncode 0 *and* 1 as long as stdout parses
+        as JSON. Any other returncode, or unparseable stdout, raises.
+        """
+        args = ["inventory", "--check", "--json"]
+        cmd = self._base_cmd()
+        if self.config_dir is not None:
+            cmd += ["--config", str(self.config_dir)]
+        cmd += args
+        result = subprocess.run(
+            cmd,
+            cwd=str(self.repo_root),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=self.timeout_s,
+            env=self._env(),
+        )
+        if result.returncode not in (0, 1):
+            raise PipelineCommandError(cmd, result.returncode, result.stderr, result.stdout)
+        try:
+            payload = json.loads(result.stdout)
+        except json.JSONDecodeError as exc:
+            raise PipelineCommandError(cmd, result.returncode, result.stderr, result.stdout) from exc
+        if not isinstance(payload, dict):
+            raise PipelineCommandError(
+                cmd, result.returncode,
+                f"expected JSON object, got {type(payload).__name__}", result.stdout,
+            )
+        return payload
+
     def _run_json_any(self, subcommand: list[str]) -> object:
         """Like ``_run_json_from_args`` but returns parsed JSON of any type
         (list or dict). Used by subcommands whose JSON output is a bare list."""

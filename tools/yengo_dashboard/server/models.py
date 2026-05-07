@@ -490,6 +490,23 @@ class RuntimeInfoResponse(BaseModel):
     )
 
 
+class InventoryCheckResponse(BaseModel):
+    """``GET /api/inventory/check`` payload — verbatim ``inventory --check --json`` output.
+
+    Mirrors ``backend.puzzle_manager.models.integrity.IntegrityReport`` (Theme 14a).
+    Per principle #6 the cockpit forwards the dict unchanged so the schema can
+    evolve in the pipeline without a coordinated dashboard release.
+    """
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON object of `inventory --check --json`. Shape owned by "
+            "`backend.puzzle_manager.models.integrity.IntegrityReport`."
+        ),
+    )
+
+
 class ActivityResponse(BaseModel):
     """``GET /api/activity`` payload — verbatim ``activity --json`` output.
 

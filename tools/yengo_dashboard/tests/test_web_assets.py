@@ -741,3 +741,21 @@ def test_activity_endpoint_and_renderer_present(app_js: str) -> None:
     assert "activity-chip" in app_js, (
         "Theme 13b: kind-filter chips must be present so users can scope the timeline."
     )
+
+
+def test_inventory_check_endpoint_and_block_wired(app_js: str) -> None:
+    """Theme 14b: app.js must call /api/inventory/check and render an
+    integrity block with badge + per-issue table on the Library/Overview view."""
+    assert "/api/inventory/check" in app_js, (
+        "Theme 14b: app.js must call GET /api/inventory/check from renderOverview."
+    )
+    assert "integrityBlock" in app_js, (
+        "Theme 14b: app.js must define integrityBlock() that renders the badge + table."
+    )
+    assert "id=\"integrity-block\"" in app_js, (
+        "Theme 14b: integrity block must carry a stable id so pin tests + future "
+        "interactions can target it."
+    )
+    # Both Theme 14a issue kinds must be reachable from the renderer.
+    assert "missing_file" in app_js
+    assert "orphan_file" in app_js

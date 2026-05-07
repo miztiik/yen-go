@@ -17,6 +17,7 @@ from tools.yengo_dashboard.server.models import (
     AdaptersResponse,
     FailuresSummaryResponse,
     HealthResponse,
+    InventoryCheckResponse,
     InventoryResponse,
     RunsResponse,
     RuntimeInfoResponse,
@@ -162,5 +163,28 @@ def build_read_router(
                 },
             ) from exc
         return RuntimeInfoResponse(raw=payload)
+
+    @router.get("/inventory/check", response_model=InventoryCheckResponse)
+    def inventory_check(_request: Request) -> InventoryCheckResponse:
+        """Theme 14b: passthrough of ``inventory --check --json``.
+
+        Library tab renders a green/amber/rose health badge from
+        ``raw.ok`` and an issues table from ``raw.issues``. The CLI
+        exits 1 when issues are present — not a failure for our
+        purposes — so the runner tolerates returncode 0 and 1.
+        """
+        try:
+            payload = runner.inventory_check()
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "puzzle_manager inventory --check --json failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return InventoryCheckResponse(raw=payload)
 
     return router
