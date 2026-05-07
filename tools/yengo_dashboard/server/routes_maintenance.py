@@ -34,6 +34,9 @@ from fastapi import APIRouter, HTTPException, Query
 from tools.yengo_dashboard.server.models import (
     CleanPreviewResponse,
     CleanRequest,
+    InventoryMutationApplyResponse,
+    InventoryMutationPreviewResponse,
+    InventoryMutationRequest,
     RollbackPreviewResponse,
     RollbackRequest,
     RunSnapshot,
@@ -183,5 +186,53 @@ def build_maintenance_router(
                 },
             ) from exc
         return VacuumDbPreviewResponse(raw=payload)
+
+    @router.post(
+        "/inventory/preview",
+        response_model=InventoryMutationPreviewResponse,
+    )
+    def inventory_preview(body: InventoryMutationRequest) -> InventoryMutationPreviewResponse:
+        """Theme 14c3: synchronous dry-run preview for the modal's first step.
+
+        Inventory ops are fast (single-digit seconds even on 9K puzzles), so
+        the preview runs inline rather than through ``RunController``. The
+        modal renders ``raw`` directly — schema is owned by the CLI.
+        """
+        try:
+            payload = runner.inventory_mutation_preview(op=body.op)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": f"puzzle_manager inventory --{body.op} --dry-run --json failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                },
+            ) from exc
+        return InventoryMutationPreviewResponse(raw=payload)
+
+    @router.post(
+        "/inventory/apply",
+        response_model=InventoryMutationApplyResponse,
+    )
+    def inventory_apply(body: InventoryMutationRequest) -> InventoryMutationApplyResponse:
+        """Theme 14c3: synchronous apply for the modal's commit step.
+
+        The CLI takes ``PipelineLock`` internally; if a pipeline run is
+        already in flight the subprocess exits non-zero and we surface that
+        as 502 (operator should retry once the run frees the lock).
+        """
+        try:
+            payload = runner.inventory_mutation_apply(op=body.op)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": f"puzzle_manager inventory --{body.op} --json failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                },
+            ) from exc
+        return InventoryMutationApplyResponse(raw=payload)
 
     return router

@@ -12,6 +12,8 @@ produces (``ingested``, ``skipped``, ``failed``, ``total`` from
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -504,6 +506,46 @@ class InventoryCheckResponse(BaseModel):
             "Parsed JSON object of `inventory --check --json`. Shape owned by "
             "`backend.puzzle_manager.models.integrity.IntegrityReport`."
         ),
+    )
+
+
+class InventoryMutationPreviewResponse(BaseModel):
+    """``POST /api/inventory/preview`` payload — verbatim
+    ``inventory --{op} --dry-run --json`` output (Theme 14c1).
+
+    Shape owned by ``backend.puzzle_manager.models.inventory_preview.InventoryMutationPreview``.
+    """
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON object of `inventory --{op} --dry-run --json`. Shape "
+            "owned by `backend.puzzle_manager.models.inventory_preview.InventoryMutationPreview`."
+        ),
+    )
+
+
+class InventoryMutationApplyResponse(BaseModel):
+    """``POST /api/inventory/apply`` payload — verbatim
+    ``inventory --{op} --json`` output (Theme 14c2).
+
+    Shape owned by ``backend.puzzle_manager.models.inventory_preview.InventoryMutationResult``.
+    """
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON object of `inventory --{op} --json`. Shape owned by "
+            "`backend.puzzle_manager.models.inventory_preview.InventoryMutationResult`."
+        ),
+    )
+
+
+class InventoryMutationRequest(BaseModel):
+    """Body for ``POST /api/inventory/{preview,apply}`` (Theme 14c3)."""
+
+    op: Literal["rebuild", "reconcile", "fix"] = Field(
+        ..., description="Which inventory mutation to preview or apply."
     )
 
 

@@ -357,6 +357,61 @@ class PipelineRunner:
             )
         return payload
 
+    def inventory_mutation_preview(self, op: str) -> dict:
+        """Wraps ``puzzle_manager inventory --{op} --dry-run --json`` (Theme 14c1).
+
+        ``op`` must be one of ``rebuild``/``reconcile``/``fix``. Returns the
+        parsed ``InventoryMutationPreview`` dict verbatim.
+        """
+        if op not in ("rebuild", "reconcile", "fix"):
+            raise ValueError(f"unknown inventory op: {op!r}")
+        return self._run_inventory_json(["inventory", f"--{op}", "--dry-run", "--json"])
+
+    def inventory_mutation_apply(self, op: str) -> dict:
+        """Wraps ``puzzle_manager inventory --{op} --json`` (Theme 14c2).
+
+        ``op`` must be one of ``rebuild``/``reconcile``/``fix``. Returns the
+        parsed ``InventoryMutationResult`` dict verbatim. Tolerates rc=1 from
+        ``--fix`` when post-fix issues remain (still a valid result row).
+        """
+        if op not in ("rebuild", "reconcile", "fix"):
+            raise ValueError(f"unknown inventory op: {op!r}")
+        return self._run_inventory_json(["inventory", f"--{op}", "--json"])
+
+    def _run_inventory_json(self, args: list[str]) -> dict:
+        """Subprocess wrapper shared by inventory_check / preview / apply.
+
+        Tolerates rc=0 *and* rc=1 — for ``--check`` and ``--fix`` rc=1 means
+        "issues present" rather than crash. Any other rc, or unparseable
+        stdout, raises ``PipelineCommandError``.
+        """
+        cmd = self._base_cmd()
+        if self.config_dir is not None:
+            cmd += ["--config", str(self.config_dir)]
+        cmd += args
+        result = subprocess.run(
+            cmd,
+            cwd=str(self.repo_root),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=self.timeout_s,
+            env=self._env(),
+        )
+        if result.returncode not in (0, 1):
+            raise PipelineCommandError(cmd, result.returncode, result.stderr, result.stdout)
+        try:
+            payload = json.loads(result.stdout)
+        except json.JSONDecodeError as exc:
+            raise PipelineCommandError(cmd, result.returncode, result.stderr, result.stdout) from exc
+        if not isinstance(payload, dict):
+            raise PipelineCommandError(
+                cmd, result.returncode,
+                f"expected JSON object, got {type(payload).__name__}", result.stdout,
+            )
+        return payload
+
     def _run_json_any(self, subcommand: list[str]) -> object:
         """Like ``_run_json_from_args`` but returns parsed JSON of any type
         (list or dict). Used by subcommands whose JSON output is a bare list."""

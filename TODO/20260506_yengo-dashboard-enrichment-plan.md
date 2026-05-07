@@ -304,7 +304,7 @@ heal it without dropping to a terminal."
       mismatch; check reports all three; reconcile dry-run lists exact
       affected files; reconcile real heals them. _(Theme 14a, this commit: missing_file + orphan_file kinds shipped via `IntegrityReport` Pydantic contract; hash_mismatch deferred — requires deep-scan rehash)_
 - [x] Dashboard test pins the new sub-section + badge state transitions. _(Theme 14b, this commit: `/api/inventory/check` endpoint passthrough + `integrityBlock()` renderer on Library/Overview view; pin tests cover endpoint wiring + badge presence + both issue kinds. Healing actions deferred to Theme 14c.)_
-- [ ] Healing actions appear in the unified activity surface (Theme 13). _(Theme 14c1+14c2 in progress: `inventory --{rebuild,reconcile,fix} [--dry-run] --json` ships `InventoryMutationPreview` / `InventoryMutationResult` shapes; apply path takes `PipelineLock` and appends `inventory_{op}` rows to `audit.jsonl` (which Theme 13's activity feed already reads). Dashboard Preview→Apply modal deferred to 14c3.)_
+- [x] Healing actions appear in the unified activity surface (Theme 13). _(Themes 14c1–14c3: `inventory --{rebuild,reconcile,fix} [--dry-run] --json` ships `InventoryMutationPreview` / `InventoryMutationResult` shapes; apply path takes `PipelineLock` and appends `inventory_{op}` rows to `audit.jsonl` (Theme 13's activity feed already reads it). Dashboard wires Preview→Apply buttons on the integrity block — `openInventoryMutationModal()` drives POST `/api/inventory/preview` → POST `/api/inventory/apply` against the shared `#preview-dialog`.)_
 
 ### Dependencies
 

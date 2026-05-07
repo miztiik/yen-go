@@ -759,3 +759,30 @@ def test_inventory_check_endpoint_and_block_wired(app_js: str) -> None:
     # Both Theme 14a issue kinds must be reachable from the renderer.
     assert "missing_file" in app_js
     assert "orphan_file" in app_js
+
+
+def test_inventory_mutation_modal_wired(app_js: str) -> None:
+    """Theme 14c3: app.js must offer Preview→Apply modal entries on the
+    integrity block and call the new POST endpoints."""
+    # Buttons are tagged so the delegated handler can find them after each
+    # renderOverview() rebuild — the wiring helper is the contract surface.
+    assert "data-inv-op" in app_js, (
+        "Theme 14c3: integrity block must carry data-inv-op buttons."
+    )
+    assert "_wireInventoryActionButtons" in app_js, (
+        "Theme 14c3: app.js must wire click handlers for the inventory op buttons."
+    )
+    assert "openInventoryMutationModal" in app_js, (
+        "Theme 14c3: a dedicated modal opener must drive the Preview→Apply flow."
+    )
+    assert "/api/inventory/preview" in app_js, (
+        "Theme 14c3: modal must POST to /api/inventory/preview for the dry-run leg."
+    )
+    assert "/api/inventory/apply" in app_js, (
+        "Theme 14c3: modal must POST to /api/inventory/apply for the commit leg."
+    )
+    # All three ops must be entry points so the operator can reach each from UI.
+    for op in ("rebuild", "reconcile", "fix"):
+        assert f'data-inv-op="{op}"' in app_js, (
+            f"Theme 14c3: missing button for inventory op {op!r}."
+        )

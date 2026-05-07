@@ -428,6 +428,7 @@ async function renderOverview() {
         <span>db_version: ${dbVer}${schemaPill}</span>
       </div>
     `;
+    _wireInventoryActionButtons(root);
   } catch (e) { root.innerHTML = errorBlock("/api/inventory", e); }
 }
 
@@ -486,9 +487,124 @@ function integrityBlock(resp) {
       <div class="flex items-center">
         <span class="font-semibold uppercase tracking-wider text-xs text-slate-500 mr-3">Integrity</span>
         ${badge}${counts}
+        <span class="ml-auto flex gap-2">
+          <button data-inv-op="reconcile"
+                  class="rounded-md px-2 py-0.5 text-xs bg-slate-800/60 hover:bg-slate-700/60 ring-1 ring-slate-700 text-slate-300">
+            Reconcile…
+          </button>
+          <button data-inv-op="rebuild"
+                  class="rounded-md px-2 py-0.5 text-xs bg-slate-800/60 hover:bg-slate-700/60 ring-1 ring-slate-700 text-slate-300">
+            Rebuild…
+          </button>
+          ${r.ok ? "" : `
+          <button data-inv-op="fix"
+                  class="rounded-md px-2 py-0.5 text-xs bg-amber-500/15 hover:bg-amber-500/25 ring-1 ring-amber-500/40 text-amber-200">
+            Fix…
+          </button>`}
+        </span>
       </div>
       ${issuesTable}
     </div>`;
+}
+
+// Theme 14c3: wire the Preview→Apply buttons inside `integrityBlock`. We
+// rebind on every renderOverview() because the DOM is recreated each time.
+function _wireInventoryActionButtons(root) {
+  root.querySelectorAll("[data-inv-op]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      openInventoryMutationModal({ op: btn.dataset.invOp });
+    });
+  });
+}
+
+function _renderInventoryPreviewBody(raw) {
+  const rows = [
+    _previewStat("Op", raw.op),
+    _previewStat("Snapshot present", raw.snapshot_exists ? "yes" : "no"),
+    _previewStat("Snapshot total (before)", raw.snapshot_total_before == null ? "—" : raw.snapshot_total_before),
+    _previewStat("Disk total", raw.disk_total),
+    _previewStat("Delta", raw.delta > 0 ? `+${raw.delta}` : String(raw.delta)),
+    _previewStat("Would rewrite snapshot", raw.would_rewrite_snapshot ? "yes" : "no"),
+    _previewStat("Would rebuild search DB", raw.would_rebuild_search_db ? "yes" : "no"),
+  ].join("");
+  const skip = raw.fix_skip_reason
+    ? `<div class="preview-warn">${escapeHtml(raw.fix_skip_reason)}</div>`
+    : ``;
+  return rows + skip;
+}
+
+function _renderInventoryResultBody(raw) {
+  const rows = [
+    _previewStat("Op", raw.op),
+    _previewStat("Executed", raw.executed ? "yes" : "no"),
+    _previewStat("Snapshot total (before)", raw.snapshot_total_before == null ? "—" : raw.snapshot_total_before),
+    _previewStat("Snapshot total (after)", raw.snapshot_total_after),
+    _previewStat("Delta", raw.delta > 0 ? `+${raw.delta}` : String(raw.delta)),
+    _previewStat("Rewrote snapshot", raw.rewrote_snapshot ? "yes" : "no"),
+    _previewStat("Rebuilt search DB", raw.rebuilt_search_db ? "yes" : "no"),
+    _previewStat("Audit timestamp", raw.audit_timestamp || "—"),
+  ].join("");
+  const skip = raw.fix_skip_reason
+    ? `<div class="preview-warn">${escapeHtml(raw.fix_skip_reason)}</div>`
+    : ``;
+  return rows + skip;
+}
+
+// Open the shared <preview-dialog> wired for the two-stage inventory flow:
+// Preview (sync POST) → Apply (sync POST that morphs the body to result).
+async function openInventoryMutationModal({ op }) {
+  const dlg = $("#preview-dialog");
+  const title = $("#pv-title");
+  const body = $("#pv-body");
+  const goBtn = $("#pv-go");
+  title.textContent = `inventory --${op}`;
+  body.innerHTML = `<div class="text-xs text-slate-500">loading preview…</div>`;
+  goBtn.disabled = true;
+  goBtn.textContent = "Apply";
+  dlg.showModal();
+
+  try {
+    const resp = await postJSON("/api/inventory/preview", { op });
+    const preview = resp.raw || {};
+    body.innerHTML = `<div id="inv-preview-body">${_renderInventoryPreviewBody(preview)}</div>`;
+    // ``fix`` may report a skip reason — still allow Apply (the apply path
+    // will short-circuit identically and write no audit row).
+    goBtn.disabled = false;
+  } catch (err) {
+    body.innerHTML = errorBlock(`POST /api/inventory/preview {op:${op}}`, err);
+    goBtn.disabled = true;
+  }
+
+  // Intercept the Apply click so the dialog does not close on the form
+  // submit. Replace the button to drop any prior listeners.
+  const newGoBtn = goBtn.cloneNode(true);
+  goBtn.parentNode.replaceChild(newGoBtn, goBtn);
+  newGoBtn.addEventListener("click", async (e) => {
+    e.preventDefault();
+    newGoBtn.disabled = true;
+    body.innerHTML = `<div class="text-xs text-slate-500">applying…</div>`;
+    try {
+      const resp = await postJSON("/api/inventory/apply", { op });
+      const result = resp.raw || {};
+      body.innerHTML = `<div id="inv-result-body">${_renderInventoryResultBody(result)}</div>`;
+      newGoBtn.style.display = "none";
+      toast("ok", `inventory --${op} applied`);
+    } catch (err) {
+      body.innerHTML = errorBlock(`POST /api/inventory/apply {op:${op}}`, err);
+    }
+  });
+
+  // On dialog close, refresh the Library view so the integrity badge picks
+  // up the post-apply state. Cheap because renderOverview is idempotent.
+  dlg.addEventListener("close", function _onClose() {
+    dlg.removeEventListener("close", _onClose);
+    // Restore the original Apply button shape for the next opener.
+    newGoBtn.style.display = "";
+    newGoBtn.textContent = "Apply";
+    if (location.hash === "#overview" || location.hash === "" || location.hash === "#") {
+      renderOverview();
+    }
+  });
 }
 
 function levelsTable(rows) {

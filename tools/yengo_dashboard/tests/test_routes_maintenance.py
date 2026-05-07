@@ -368,6 +368,41 @@ def _make_fake_preview_repo(tmp_path: Path) -> Path:
                 print(json.dumps(payload))
                 sys.exit(0)
 
+            if cmd == "inventory" and is_json:
+                inv_op = (
+                    "rebuild" if "--rebuild" in rest
+                    else "reconcile" if "--reconcile" in rest
+                    else "fix" if "--fix" in rest
+                    else None
+                )
+                if inv_op is not None and is_dry:
+                    payload = {
+                        "op": inv_op,
+                        "snapshot_exists": True,
+                        "snapshot_total_before": 3,
+                        "disk_total": 5,
+                        "delta": 2,
+                        "would_rewrite_snapshot": True,
+                        "would_rebuild_search_db": False,
+                        "fix_skip_reason": None,
+                    }
+                    print(json.dumps(payload))
+                    sys.exit(0)
+                if inv_op is not None and not is_dry:
+                    payload = {
+                        "op": inv_op,
+                        "executed": True,
+                        "snapshot_total_before": 3,
+                        "snapshot_total_after": 5,
+                        "delta": 2,
+                        "rewrote_snapshot": True,
+                        "rebuilt_search_db": False,
+                        "audit_timestamp": "2026-05-07T12:00:00+00:00",
+                        "fix_skip_reason": None,
+                    }
+                    print(json.dumps(payload))
+                    sys.exit(0)
+
             print(f"unexpected argv: {argv!r}", file=sys.stderr)
             sys.exit(2)
             """
@@ -524,3 +559,52 @@ class TestPreviewIsIdempotent:
             r2 = client.get("/api/clean/preview")
         assert r1.status_code == r2.status_code == 200
         assert r1.json() == r2.json()
+
+
+class TestInventoryMutationPreviewAndApply:
+    """Theme 14c3: drives the new POST endpoints that wrap
+    ``inventory --{rebuild,reconcile,fix} [--dry-run] --json``."""
+
+    def test_preview_returns_passthrough_payload(self, tmp_path: Path) -> None:
+        client = _make_preview_test_app(tmp_path)
+        with client:
+            resp = client.post("/api/inventory/preview", json={"op": "reconcile"})
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["op"] == "reconcile"
+        assert raw["disk_total"] == 5
+        assert raw["snapshot_total_before"] == 3
+        assert raw["delta"] == 2
+        assert raw["would_rewrite_snapshot"] is True
+
+    def test_apply_returns_passthrough_result(self, tmp_path: Path) -> None:
+        client = _make_preview_test_app(tmp_path)
+        with client:
+            resp = client.post("/api/inventory/apply", json={"op": "rebuild"})
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["op"] == "rebuild"
+        assert raw["executed"] is True
+        assert raw["snapshot_total_after"] == 5
+        assert raw["audit_timestamp"]
+
+    def test_unknown_op_rejected_by_pydantic(self, tmp_path: Path) -> None:
+        client = _make_preview_test_app(tmp_path)
+        with client:
+            resp = client.post("/api/inventory/preview", json={"op": "purge"})
+        # Literal validation → 422.
+        assert resp.status_code == 422
+
+    def test_cli_failure_maps_to_502(self, tmp_path: Path) -> None:
+        # Replace shim to fail inventory deterministically.
+        fake_repo = _make_fake_preview_repo(tmp_path)
+        (fake_repo / "backend" / "puzzle_manager" / "__main__.py").write_text(
+            "import sys\nprint('boom', file=sys.stderr)\nsys.exit(2)\n",
+            encoding="utf-8",
+        )
+        controller = RunController(repo_root=fake_repo)
+        app = create_app(repo_root=fake_repo, controller=controller)
+        with TestClient(app) as client:
+            resp = client.post("/api/inventory/apply", json={"op": "fix"})
+        assert resp.status_code == 502
+        assert "boom" in resp.json()["detail"]["stderr"]
