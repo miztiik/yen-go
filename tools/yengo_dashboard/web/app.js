@@ -1742,6 +1742,60 @@ async function _fetchOpsCatalog() {
   }
 }
 
+// Theme 16c: cross-cutting typed-confirm guard. A button declared
+// `reversible: false && preview_supported: false` in the catalog must
+// always present a typed-confirm dialog before its handler runs — no
+// matter which view hosts it, no matter which event listener wired the
+// click. The capture-phase listener intercepts before any bubble-phase
+// handler fires and re-dispatches the click only after the operator
+// types the verb. Marker on the element keeps re-dispatch from looping.
+let _opsCatalogCache = null;
+let _opsCatalogGuardInstalled = false;
+
+async function _ensureOpsCatalogGuard() {
+  if (_opsCatalogGuardInstalled) return _opsCatalogCache || [];
+  _opsCatalogGuardInstalled = true;
+  _opsCatalogCache = await _fetchOpsCatalog();
+  document.addEventListener("click", _opsCatalogConfirmGuard, true); // capture
+  return _opsCatalogCache;
+}
+
+async function _opsCatalogConfirmGuard(ev) {
+  const btn = ev.target?.closest?.("[data-op]");
+  if (!btn) return;
+  if (btn.dataset.opsConfirmed === "yes") return; // user already cleared
+  const op = btn.dataset.op;
+  const catalog = _opsCatalogCache || [];
+  const entry = catalog.find((e) => e.op === op);
+  if (!entry) return; // unknown op → no enforcement
+  // Strict criterion (acceptance criterion verbatim):
+  // "a button declared `reversible: false` and `preview_supported: false`
+  //  always presents a typed-confirm dialog regardless of which view hosts it."
+  if (!(entry.reversible === false && entry.preview_supported === false)) return;
+
+  // Block the original handler from seeing this event.
+  ev.stopImmediatePropagation();
+  ev.preventDefault();
+
+  // Verb for typed confirm — first whitespace-delimited token of the op.
+  // ("run --fresh" → "run", "inventory fix" → "inventory")
+  const verb = op.split(/\s+/)[0];
+  const ok = await confirmDialog({
+    title: `Confirm ${op}`,
+    body: `${entry.summary}\n\nScope: ${(entry.scope || []).join(", ") || "—"}\n` +
+          `Reversible: ${_formatReversible(entry.reversible)}\n` +
+          `Preview supported: ${entry.preview_supported ? "yes" : "no"}`,
+    verb,
+  });
+  if (!ok) return;
+
+  // Re-fire the click; capture handler short-circuits via the marker.
+  btn.dataset.opsConfirmed = "yes";
+  btn.click();
+  // Reset for the next interaction so a future click re-prompts.
+  setTimeout(() => { delete btn.dataset.opsConfirmed; }, 0);
+}
+
 async function renderMaintenance() {
   const root = $("#view-maintenance");
   // Theme 16b: catalog is fetched first so a backend re-classification (e.g.,
@@ -1750,7 +1804,7 @@ async function renderMaintenance() {
   // by `entry.section`; entries with no card spec are skipped silently —
   // the catalog can carry CLI-only ops (e.g., enable-adapter) without
   // forcing a UI surface for each one.
-  const catalog = await _fetchOpsCatalog();
+  const catalog = await _ensureOpsCatalogGuard();
   const byOp = Object.fromEntries(catalog.map((e) => [e.op, e]));
 
   const cardForOp = (op) => {
@@ -2932,6 +2986,12 @@ showTab(initialNav);
 if (initialGuidePath) loadGuideDoc(initialGuidePath);
 masterTick();
 setInterval(refreshRelTimes, 30_000);   // relative-time labels tick every 30s
+
+// Theme 16c: install the typed-confirm guard at boot so any destructive
+// button rendered later (Operations, Library, Pipeline, anywhere) is
+// already covered when it appears in the DOM. The capture-phase listener
+// is idempotent — the cache + installed-flag prevent double registration.
+_ensureOpsCatalogGuard();
 
 // Pause polling while the tab is hidden; immediate tick + resume on focus.
 document.addEventListener("visibilitychange", () => {

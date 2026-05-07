@@ -812,3 +812,34 @@ def test_operations_page_consumes_ops_catalog(app_js: str) -> None:
         "Theme 16b: rendered cards must carry data-op so cross-cutting "
         "typed-confirm logic can look up the catalog row."
     )
+
+
+def test_destructive_buttons_have_global_typed_confirm_guard(app_js: str) -> None:
+    """Theme 16c acceptance criterion (verbatim): a button declared
+    `reversible: false` and `preview_supported: false` always presents a
+    typed-confirm dialog regardless of which view hosts it.
+
+    The guard is implemented as a capture-phase document click listener so
+    it intercepts before any view-local handler can run, and the strict
+    catalog check (both flags negative) matches the acceptance text.
+    """
+    assert "_opsCatalogConfirmGuard" in app_js, (
+        "Theme 16c: a named confirm-guard function must exist so the "
+        "capture-phase contract is auditable."
+    )
+    assert "_ensureOpsCatalogGuard" in app_js, (
+        "Theme 16c: install helper must be a named function reachable "
+        "from boot and from renderMaintenance."
+    )
+    assert 'addEventListener("click", _opsCatalogConfirmGuard, true)' in app_js, (
+        "Theme 16c: guard must be registered with capture=true so it "
+        "intercepts before view-local click handlers."
+    )
+    assert "entry.reversible === false && entry.preview_supported === false" in app_js, (
+        "Theme 16c: guard's predicate must mirror the acceptance criterion "
+        "exactly — reversible=false AND preview_supported=false."
+    )
+    assert "_ensureOpsCatalogGuard();" in app_js, (
+        "Theme 16c: guard must be installed at boot so destructive buttons "
+        "on other views are also covered, not just Operations."
+    )

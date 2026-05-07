@@ -360,7 +360,7 @@ action appears (not just on the Operations page).
       registering it fails a backend test.
 - [x] Dashboard: Operations page rendering is data-driven from the catalog
       (a backend-only edit can re-classify a button's blast-radius).
-- [ ] Test: a button declared `reversible: false` and `preview_supported: false`
+- [x] Test: a button declared `reversible: false` and `preview_supported: false`
       always presents a typed-confirm dialog regardless of which view hosts it.
 
 ### Dependencies
