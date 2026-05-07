@@ -288,6 +288,23 @@ class PipelineRunner:
             )
         return result
 
+    def ops_catalog(self) -> list:
+        """Wraps ``puzzle_manager ops catalog --json`` (Theme 16a).
+
+        Returns the parsed JSON list verbatim. Schema is owned by the CLI
+        (``backend.puzzle_manager.models.ops_catalog.OpsCatalogEntry``); the
+        cockpit forwards rows unchanged so a backend-only edit can re-classify
+        a button's blast-radius without a coordinated cockpit release.
+        """
+        args = ["ops", "catalog", "--json"]
+        result = self._run_json_any(args)
+        if not isinstance(result, list):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON list, got {type(result).__name__}", "",
+            )
+        return result
+
     def activity(
         self,
         *,

@@ -748,3 +748,36 @@ class TestInventoryCheckEndpoint:
         assert raw["ok"] is True
         assert raw["issues"] == []
         assert raw["summary"] == {"missing_file": 0, "orphan_file": 0}
+
+
+class TestOpsCatalogEndpoint:
+    """Theme 16b: drives the real ``ops catalog --json`` subprocess via the cockpit.
+
+    No fixture seeding needed — the catalog is a static module-level list in
+    ``backend.puzzle_manager.models.ops_catalog``. The endpoint exists so the
+    Operations page can re-classify cards from a backend-only edit; this test
+    pins the passthrough wire and the presence of the canonical fields.
+    """
+
+    def test_returns_catalog_list(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("YENGO_ROOT", str(REPO_ROOT))
+        monkeypatch.setenv("YENGO_RUNTIME_DIR", str(tmp_path / ".pm-runtime"))
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.get("/api/ops/catalog")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert isinstance(raw, list)
+        assert raw, "ops catalog must not be empty"
+        ops = {row["op"] for row in raw}
+        # Drift fence — these ops MUST appear so the dashboard can render
+        # the Operations page. Remove only when the corresponding card is
+        # also removed.
+        assert {"clean", "vacuum-db", "rollback"}.issubset(ops)
+        # Each row carries the catalog fields the cockpit relies on.
+        for row in raw:
+            assert row["op"]
+            assert isinstance(row["scope"], list) and row["scope"]
+            assert "reversible" in row
+            assert "preview_supported" in row
+            assert row["section"] in {"maintenance", "destructive", "diagnostic"}

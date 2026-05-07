@@ -358,7 +358,7 @@ action appears (not just on the Operations page).
 - [x] CLI: `ops catalog --json` is Pydantic-validated; every mutating
       subcommand registered. Adding a new mutating command without
       registering it fails a backend test.
-- [ ] Dashboard: Operations page rendering is data-driven from the catalog
+- [x] Dashboard: Operations page rendering is data-driven from the catalog
       (a backend-only edit can re-classify a button's blast-radius).
 - [ ] Test: a button declared `reversible: false` and `preview_supported: false`
       always presents a typed-confirm dialog regardless of which view hosts it.

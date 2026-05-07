@@ -1621,9 +1621,13 @@ function renderPublishLogResults(raw) {
 
 function maintCard(opts) {
   // opts: { title, group, body, button: {label, id, variant, destructive},
-  //         preview?: {id, label} }   ← Theme 1e: optional Preview button
+  //         preview?: {id, label}, op?: string, tooltip?: string }
+  //         ↑ Theme 16b: op + tooltip carry the catalog row's op token and
+  //         a "scope: …; reversible: …" hint for hover-to-explain.
   const variantCls = PILL_VARIANTS[opts.button.variant] || PILL_VARIANTS.info;
   const destructive = opts.button.destructive ? `data-destructive` : ``;
+  const opAttr = opts.op ? ` data-op="${escapeHtml(opts.op)}"` : ``;
+  const titleAttr = opts.tooltip ? ` title="${escapeHtml(opts.tooltip)}"` : ``;
   const previewBtn = opts.preview
     ? `<button id="${opts.preview.id}" type="button"
               class="maint-preview-btn shrink-0 text-xs rounded-md px-3 py-1.5
@@ -1632,9 +1636,9 @@ function maintCard(opts) {
        </button>`
     : ``;
   return `
-    <section data-maint-card data-maint-verb="${escapeHtml(opts.button.label)}"
+    <section data-maint-card${opAttr} data-maint-verb="${escapeHtml(opts.button.label)}"
              class="maint-card rounded-md border border-slate-800 bg-slate-900 p-4 space-y-3
-                    ${opts.group === 'destructive' ? 'border-l-2 border-l-rose-500/40' : ''}">
+                    ${opts.group === 'destructive' ? 'border-l-2 border-l-rose-500/40' : ''}"${titleAttr}>
       <header class="flex items-baseline justify-between">
         <h3 class="text-sm font-semibold text-slate-200">${escapeHtml(opts.title)}</h3>
         <span class="text-[10px] uppercase tracking-wider text-slate-500">${escapeHtml(opts.group)}</span>
@@ -1651,8 +1655,134 @@ function maintCard(opts) {
     </section>`;
 }
 
-function renderMaintenance() {
+// Theme 16b: card-body specs keyed by catalog `op` token. The catalog drives
+// section placement (maintenance / destructive); these specs only describe
+// the form fields + button IDs the existing handlers depend on.
+const OPS_CARD_SPECS = {
+  "vacuum-db": {
+    title: "Vacuum DB",
+    body: `
+      <label class="flex items-center gap-2 text-xs"><input id="mv-rebuild" type="checkbox" /> --rebuild (full rebuild from disk)</label>
+      <label class="flex items-center gap-2 text-xs"><input id="mv-dry" type="checkbox" /> --dry-run</label>
+      <p class="text-[11px] text-slate-500">Reclaims free space in <code>yengo-search.db</code>. Rebuild is slow (minutes).</p>
+    `,
+    button: { id: "mv-go", label: "Run vacuum-db", variant: "info" },
+    preview: { id: "mv-preview", label: "Preview" },
+  },
+  "clean": {
+    title: "Clean",
+    body: `
+      <label class="block text-xs text-slate-400">Target
+        <select id="mc-target" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm">
+          <option value="">(retention-based)</option>
+          <option value="staging">staging</option>
+          <option value="state">state</option>
+          <option value="logs">logs</option>
+          <option value="puzzles-collection">puzzles-collection</option>
+          <option value="publish-logs">publish-logs</option>
+        </select>
+      </label>
+      <label class="block text-xs text-slate-400">Retention days
+        <input id="mc-days" type="number" min="0" placeholder="(CLI default: 45)" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm font-mono" />
+      </label>
+      <label class="block text-xs text-slate-400">Dry run
+        <select id="mc-dry" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm">
+          <option value="">(let CLI decide)</option>
+          <option value="true">true</option>
+          <option value="false">false</option>
+        </select>
+      </label>
+    `,
+    button: { id: "mc-go", label: "Run clean", variant: "info" },
+    preview: { id: "mc-preview", label: "Preview" },
+  },
+  "rollback": {
+    title: "Rollback",
+    body: `
+      <label class="block text-xs text-slate-400">Run ID <span class="text-rose-400">*</span>
+        <input id="mr-run-id" type="text" placeholder="20260505-deadbeef" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm font-mono" />
+      </label>
+      <label class="block text-xs text-slate-400">Reason <span class="text-rose-400">*</span>
+        <input id="mr-reason" type="text" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm" />
+      </label>
+      <div class="space-y-1.5">
+        <label class="flex items-center gap-2 text-xs"><input id="mr-dry" type="checkbox" checked /> --dry-run</label>
+        <label class="flex items-center gap-2 text-xs"><input id="mr-yes" type="checkbox" /> --yes (skip prompt)</label>
+        <label class="flex items-center gap-2 text-xs"><input id="mr-verify" type="checkbox" /> --verify</label>
+      </div>
+    `,
+    button: { id: "mr-go", label: "Run rollback", variant: "destructive" },
+    preview: { id: "mr-preview", label: "Preview" },
+  },
+};
+
+function _formatReversible(rev) {
+  if (rev === true) return "yes";
+  if (rev === false) return "no";
+  return String(rev); // "by-audit-trail"
+}
+
+function _opsCardTooltip(entry) {
+  const scope = (entry.scope || []).join(", ") || "—";
+  return `scope: ${scope}\nreversible: ${_formatReversible(entry.reversible)}`;
+}
+
+async function _fetchOpsCatalog() {
+  // Returns the raw list of catalog entries, or [] if the cockpit is offline /
+  // the CLI errors. The Operations page falls back to the hardcoded layout
+  // when the catalog is empty so an offline backend never wipes the page.
+  try {
+    const res = await fetch("/api/ops/catalog");
+    if (!res.ok) return [];
+    const payload = await res.json();
+    const entries = Array.isArray(payload?.raw) ? payload.raw : [];
+    return entries;
+  } catch {
+    return [];
+  }
+}
+
+async function renderMaintenance() {
   const root = $("#view-maintenance");
+  // Theme 16b: catalog is fetched first so a backend re-classification (e.g.,
+  // moving "clean" from maintenance → destructive) reshapes the page without
+  // a coordinated cockpit release. Cards we know how to render are placed
+  // by `entry.section`; entries with no card spec are skipped silently —
+  // the catalog can carry CLI-only ops (e.g., enable-adapter) without
+  // forcing a UI surface for each one.
+  const catalog = await _fetchOpsCatalog();
+  const byOp = Object.fromEntries(catalog.map((e) => [e.op, e]));
+
+  const cardForOp = (op) => {
+    const spec = OPS_CARD_SPECS[op];
+    const entry = byOp[op];
+    if (!spec || !entry) return "";
+    return maintCard({
+      ...spec,
+      op,
+      group: entry.section,
+      tooltip: _opsCardTooltip(entry),
+      preview: entry.preview_supported ? spec.preview : undefined,
+      button: {
+        ...spec.button,
+        // destructive flag is catalog-driven so 16c's typed-confirm logic can
+        // key off `data-destructive` everywhere consistently.
+        destructive: entry.section === "destructive",
+        // override variant so destructive pill colour matches the section.
+        variant: entry.section === "destructive" ? "destructive" : (spec.button.variant || "info"),
+      },
+    });
+  };
+
+  // Group renderable cards by catalog section. Order within each section
+  // follows OPS_CARD_SPECS declaration order for a stable layout.
+  const renderableOps = Object.keys(OPS_CARD_SPECS).filter((op) => byOp[op]);
+  const cardsBySection = { maintenance: [], destructive: [] };
+  for (const op of renderableOps) {
+    const section = byOp[op].section;
+    if (cardsBySection[section]) cardsBySection[section].push(cardForOp(op));
+  }
+
   root.innerHTML = `
     ${viewHeader("Operations", {
       subtext: "grouped by blast radius — diagnose first, mutate second, destroy last",
@@ -1697,46 +1827,7 @@ function renderMaintenance() {
         <span class="ops-group-sub">reversible — safe to dry-run, safe to retry</span>
       </header>
       <div class="grid lg:grid-cols-2 gap-4">
-        ${maintCard({
-          title: "Vacuum DB",
-          group: "maintenance",
-          body: `
-            <label class="flex items-center gap-2 text-xs"><input id="mv-rebuild" type="checkbox" /> --rebuild (full rebuild from disk)</label>
-            <label class="flex items-center gap-2 text-xs"><input id="mv-dry" type="checkbox" /> --dry-run</label>
-            <p class="text-[11px] text-slate-500">Reclaims free space in <code>yengo-search.db</code>. Rebuild is slow (minutes).</p>
-          `,
-          button: { id: "mv-go", label: "Run vacuum-db", variant: "info" },
-          preview: { id: "mv-preview", label: "Preview" },
-        })}
-
-        ${maintCard({
-          title: "Clean",
-          group: "maintenance",
-          body: `
-            <label class="block text-xs text-slate-400">Target
-              <select id="mc-target" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm">
-                <option value="">(retention-based)</option>
-                <option value="staging">staging</option>
-                <option value="state">state</option>
-                <option value="logs">logs</option>
-                <option value="puzzles-collection">puzzles-collection</option>
-                <option value="publish-logs">publish-logs</option>
-              </select>
-            </label>
-            <label class="block text-xs text-slate-400">Retention days
-              <input id="mc-days" type="number" min="0" placeholder="(CLI default: 45)" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm font-mono" />
-            </label>
-            <label class="block text-xs text-slate-400">Dry run
-              <select id="mc-dry" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm">
-                <option value="">(let CLI decide)</option>
-                <option value="true">true</option>
-                <option value="false">false</option>
-              </select>
-            </label>
-          `,
-          button: { id: "mc-go", label: "Run clean", variant: "info" },
-          preview: { id: "mc-preview", label: "Preview" },
-        })}
+        ${cardsBySection.maintenance.join("\n")}
       </div>
     </section>
 
@@ -1750,33 +1841,20 @@ function renderMaintenance() {
         <span class="ops-group-sub ops-group-sub--destructive">irreversible — dry-run first, type to confirm</span>
       </header>
       <div class="grid lg:grid-cols-2 gap-4">
-        ${maintCard({
-          title: "Rollback",
-          group: "destructive",
-          body: `
-            <label class="block text-xs text-slate-400">Run ID <span class="text-rose-400">*</span>
-              <input id="mr-run-id" type="text" placeholder="20260505-deadbeef" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm font-mono" />
-            </label>
-            <label class="block text-xs text-slate-400">Reason <span class="text-rose-400">*</span>
-              <input id="mr-reason" type="text" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm" />
-            </label>
-            <div class="space-y-1.5">
-              <label class="flex items-center gap-2 text-xs"><input id="mr-dry" type="checkbox" checked /> --dry-run</label>
-              <label class="flex items-center gap-2 text-xs"><input id="mr-yes" type="checkbox" /> --yes (skip prompt)</label>
-              <label class="flex items-center gap-2 text-xs"><input id="mr-verify" type="checkbox" /> --verify</label>
-            </div>
-          `,
-          button: { id: "mr-go", label: "Run rollback", variant: "destructive", destructive: true },
-          preview: { id: "mr-preview", label: "Preview" },
-        })}
+        ${cardsBySection.destructive.join("\n")}
       </div>
     </section>
   `;
 
-  $("#mv-go").addEventListener("click", (e) => startMaintenance("/api/vacuum-db", readVacuumForm(), "vacuum-db", e.currentTarget));
-  $("#mc-go").addEventListener("click", (e) => startMaintenance("/api/clean", readCleanForm(), "clean", e.currentTarget));
+  // Wire each rendered button defensively — a card is absent when its
+  // catalog row is missing or its op was re-classified out of the renderable
+  // section set, so guard every getElementById.
+  const wire = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener("click", fn); };
+
+  wire("mv-go", (e) => startMaintenance("/api/vacuum-db", readVacuumForm(), "vacuum-db", e.currentTarget));
+  wire("mc-go", (e) => startMaintenance("/api/clean", readCleanForm(), "clean", e.currentTarget));
   _decorateCleanTargets();
-  $("#mr-go").addEventListener("click", async (e) => {
+  wire("mr-go", async (e) => {
     const originBtn = e.currentTarget;
     const body = readRollbackForm();
     if (!body.reason) { toast("warn", "rollback reason is required"); return; }
@@ -1795,7 +1873,9 @@ function renderMaintenance() {
   // Theme 1e: Preview buttons. Each opens the impact modal against the
   // GET /api/<op>/preview endpoint; "Run for real" inside the modal hands
   // off to the same startMaintenance() path, with dry_run forced false.
-  $("#mv-preview").addEventListener("click", () => {
+  // Theme 16b: catalog drives whether a card has a Preview button (via
+  // entry.preview_supported) — if absent, the wire is a no-op.
+  wire("mv-preview", () => {
     const params = _previewQueryFromVacuum();
     openPreviewModal({
       op: "vacuum-db",
@@ -1807,7 +1887,7 @@ function renderMaintenance() {
     });
   });
 
-  $("#mc-preview").addEventListener("click", () => {
+  wire("mc-preview", () => {
     const params = _previewQueryFromClean();
     openPreviewModal({
       op: "clean",
@@ -1819,7 +1899,7 @@ function renderMaintenance() {
     });
   });
 
-  $("#mr-preview").addEventListener("click", () => {
+  wire("mr-preview", () => {
     const body = readRollbackForm();
     if (!body.run_id) { toast("warn", "run ID is required"); return; }
     if (!body.reason) { toast("warn", "rollback reason is required"); return; }

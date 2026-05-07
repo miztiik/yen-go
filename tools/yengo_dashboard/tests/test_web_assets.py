@@ -786,3 +786,29 @@ def test_inventory_mutation_modal_wired(app_js: str) -> None:
         assert f'data-inv-op="{op}"' in app_js, (
             f"Theme 14c3: missing button for inventory op {op!r}."
         )
+
+
+def test_operations_page_consumes_ops_catalog(app_js: str) -> None:
+    """Theme 16b: renderMaintenance must fetch /api/ops/catalog and use it
+    to drive section placement so a backend-only re-classification of an
+    op (e.g., moving "clean" from maintenance → destructive) reshapes the
+    Operations page without a coordinated cockpit release."""
+    assert "/api/ops/catalog" in app_js, (
+        "Theme 16b: Operations page must call /api/ops/catalog for blast-radius taxonomy."
+    )
+    assert "_fetchOpsCatalog" in app_js, (
+        "Theme 16b: catalog fetch must be a named helper so callers can reuse it."
+    )
+    assert "OPS_CARD_SPECS" in app_js, (
+        "Theme 16b: card-body specs must be keyed by catalog op token, not section."
+    )
+    # async signature — render must await the catalog before painting.
+    assert "async function renderMaintenance" in app_js, (
+        "Theme 16b: renderMaintenance must be async so it can await the catalog."
+    )
+    # data-op attribute carries the catalog op token through to the DOM so
+    # 16c's typed-confirm can look up reversibility/scope without parsing labels.
+    assert "data-op=" in app_js, (
+        "Theme 16b: rendered cards must carry data-op so cross-cutting "
+        "typed-confirm logic can look up the catalog row."
+    )

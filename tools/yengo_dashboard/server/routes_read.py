@@ -19,6 +19,7 @@ from tools.yengo_dashboard.server.models import (
     HealthResponse,
     InventoryCheckResponse,
     InventoryResponse,
+    OpsCatalogResponse,
     RunsResponse,
     RuntimeInfoResponse,
 )
@@ -186,5 +187,29 @@ def build_read_router(
                 },
             ) from exc
         return InventoryCheckResponse(raw=payload)
+
+    @router.get("/ops/catalog", response_model=OpsCatalogResponse)
+    def ops_catalog(_request: Request) -> OpsCatalogResponse:
+        """Theme 16b: passthrough of ``ops catalog --json``.
+
+        Operations page consumes this to drive section grouping (maintenance
+        / destructive / diagnostic) and decoration (preview button gate,
+        typed-confirm trigger via the ``destructive`` section). Per principle
+        #6 the catalog is the single source of truth — re-classifying an op
+        on the backend reshapes the UI without a coordinated cockpit release.
+        """
+        try:
+            payload = runner.ops_catalog()
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "puzzle_manager ops catalog --json failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return OpsCatalogResponse(raw=payload)
 
     return router

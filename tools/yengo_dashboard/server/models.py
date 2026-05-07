@@ -564,3 +564,22 @@ class ActivityResponse(BaseModel):
             "`backend.puzzle_manager.models.activity.ActivityEvent`."
         ),
     )
+
+
+class OpsCatalogResponse(BaseModel):
+    """``GET /api/ops/catalog`` payload — verbatim ``ops catalog --json`` output.
+
+    Each ``raw`` entry mirrors ``backend.puzzle_manager.models.ops_catalog.OpsCatalogEntry``
+    (Theme 16a). Per principle #6 the cockpit does not re-validate the items
+    so a backend-only re-classification (e.g., moving a card from
+    ``maintenance`` to ``destructive``) ships without a coordinated dashboard
+    release.
+    """
+
+    raw: list = Field(
+        ...,
+        description=(
+            "Parsed JSON list of `ops catalog --json`. Item shape owned by "
+            "`backend.puzzle_manager.models.ops_catalog.OpsCatalogEntry`."
+        ),
+    )
