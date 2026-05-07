@@ -23,7 +23,7 @@
 | Path | Purpose |
 |------|---------|
 | `__main__.py` | `python -m backend.puzzle_manager` entry; delegates to `cli.py` |
-| `cli.py` | 13-command argparse CLI: `run`, `status`, `sources`, `daily`, `clean`, `validate`, `publish-log`, `rollback`, `vacuum-db`, `inventory` |
+| `cli.py` | 14-command argparse CLI: `run`, `status`, `sources`, `daily`, `clean`, `validate`, `publish-log`, `logs` (Theme 4: `grep`), `rollback`, `vacuum-db`, `inventory` |
 | `pm_logging.py` | `setup_logging()`, `create_trace_logger()` — structured JSON logs |
 | `paths.py` | `get_output_dir()`, `get_pm_staging_dir()`, `get_pm_state_dir()`, etc. — all path resolution |
 | `exceptions.py` | `PuzzleManagerError`, `SGFParseError`, `AdapterNotFoundError`, `ValidationError` |

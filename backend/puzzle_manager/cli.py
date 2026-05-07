@@ -32,6 +32,7 @@ Adapter Management:
 import argparse
 import json
 import logging
+import re
 import sys
 from collections.abc import Sequence
 from datetime import datetime
@@ -860,6 +861,54 @@ Examples:
         default=50,
         metavar="N",
         help="Maximum results to show (default: 50)",
+    )
+
+    # logs command (Theme 4: grep across stage logs)
+    logs_parser = subparsers.add_parser(
+        "logs",
+        help="Search and inspect pipeline stage logs",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Stage logs live under .pm-runtime/logs/ and follow the pattern
+YYYY-MM-DD-{stage}.log (stages: ingest, analyze, publish, puzzle_manager).
+
+Subcommands:
+  grep PATTERN     Find lines matching PATTERN across all stage logs
+
+Examples:
+  %(prog)s grep "ERROR"                              All ERROR lines, all stages
+  %(prog)s grep "trace_id" --stage publish           Publish-stage only
+  %(prog)s grep "rollback" --from 2026-05-01 --json  Date filter, JSON output
+        """,
+    )
+    logs_subparsers = logs_parser.add_subparsers(dest="logs_command")
+
+    logs_grep = logs_subparsers.add_parser(
+        "grep", help="Find lines matching a regex across stage logs"
+    )
+    logs_grep.add_argument(
+        "pattern", type=str, metavar="PATTERN",
+        help="Python regex (use inline (?i) for case-insensitive).",
+    )
+    logs_grep.add_argument(
+        "--stage", type=str, metavar="NAME", default=None,
+        help="Restrict to one stage (ingest|analyze|publish|puzzle_manager).",
+    )
+    logs_grep.add_argument(
+        "--from", dest="from_date", type=str, metavar="YYYY-MM-DD", default=None,
+        help="Earliest log date to scan (inclusive).",
+    )
+    logs_grep.add_argument(
+        "--to", dest="to_date", type=str, metavar="YYYY-MM-DD", default=None,
+        help="Latest log date to scan (inclusive).",
+    )
+    logs_grep.add_argument(
+        "--limit", type=int, default=200, metavar="N",
+        help="Cap the number of hits (default: 200).",
+    )
+    logs_grep.add_argument(
+        "--json", action="store_true",
+        help="Emit a JSON array of LogsGrepHit instead of human text.",
     )
 
     # config-lock command (for managing pipeline config lock)
@@ -2201,6 +2250,119 @@ def _entry_to_dict(entry: PublishLogEntry) -> dict:
     }
 
 
+def cmd_logs(args: argparse.Namespace) -> int:
+    """Dispatch the ``logs`` subcommand (Theme 4)."""
+    if args.logs_command == "grep":
+        return _cmd_logs_grep(args)
+    print("Usage: logs grep PATTERN [--stage NAME] [--from DATE] [--to DATE] [--limit N] [--json]")
+    return 1
+
+
+# Stage logs are named YYYY-MM-DD-{stage}.log under .pm-runtime/logs/.
+# Pinning the regex here keeps the CLI's discovery logic in lockstep with
+# the dashboard's _SAFE_LOG_NAME guard.
+_LOGS_GREP_NAME_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-(.+)\.log$")
+
+
+def _cmd_logs_grep(args: argparse.Namespace) -> int:
+    """Implement ``logs grep PATTERN`` — scan stage logs for matches.
+
+    Returns a JSON array of LogsGrepHit on --json, or a `file:line text`
+    listing otherwise. Emits to stdout; structured-only when --json so
+    the dashboard never has to filter chatter.
+    """
+    from backend.puzzle_manager.models.logs import LogsGrepHit
+
+    try:
+        pattern = re.compile(args.pattern)
+    except re.error as exc:
+        msg = f"invalid regex: {exc}"
+        if args.json:
+            print(json.dumps({"error": "invalid_regex", "message": msg}))
+        else:
+            print(f"Error: {msg}", file=sys.stderr)
+        return 2
+
+    runtime_dir = get_runtime_dir()
+    logs_dir = runtime_dir / "logs"
+    if not logs_dir.is_dir():
+        if args.json:
+            print("[]")
+        else:
+            print("No logs directory at .pm-runtime/logs/")
+        return 0
+
+    repo_root = get_project_root()
+
+    # Two-pass file selection so the date / stage filters are obvious in
+    # the test failure when one of them rejects too aggressively.
+    candidates: list[tuple[str, str, Path]] = []
+    for p in sorted(logs_dir.iterdir()):
+        if not p.is_file():
+            continue
+        m = _LOGS_GREP_NAME_RE.match(p.name)
+        if not m:
+            continue
+        date_str, stage = m.group(1), m.group(2)
+        if args.stage and args.stage != stage:
+            continue
+        if args.from_date and date_str < args.from_date:
+            continue
+        if args.to_date and date_str > args.to_date:
+            continue
+        candidates.append((date_str, stage, p))
+
+    hits: list[LogsGrepHit] = []
+    limit = max(1, int(args.limit))
+    for _date_str, _stage, p in candidates:
+        try:
+            lines = p.read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError:
+            continue
+        for i, line in enumerate(lines):
+            if not pattern.search(line):
+                continue
+            ts: str | None = None
+            try:
+                obj = json.loads(line)
+                if isinstance(obj, dict):
+                    raw_ts = obj.get("ts")
+                    ts = raw_ts if isinstance(raw_ts, str) else None
+            except (ValueError, TypeError):
+                ts = None
+            ctx_before = lines[max(0, i - 2):i]
+            ctx_after = lines[i + 1:i + 3]
+            if p.is_relative_to(repo_root):
+                rel = p.relative_to(repo_root).as_posix()
+            else:
+                rel = p.as_posix().replace("\\", "/")
+            hits.append(LogsGrepHit(
+                file=rel,
+                line_no=i + 1,
+                ts=ts,
+                stream="stdout",
+                text=line,
+                context_before=ctx_before,
+                context_after=ctx_after,
+            ))
+            if len(hits) >= limit:
+                break
+        if len(hits) >= limit:
+            break
+
+    if args.json:
+        print(json.dumps([h.model_dump() for h in hits], indent=2))
+    else:
+        if not hits:
+            print("No matches.")
+        else:
+            for h in hits:
+                print(f"{h.file}:{h.line_no} {h.text}")
+            if len(hits) >= limit:
+                print(f"-- truncated at limit={limit} --")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Main entry point."""
     parser = create_parser()
@@ -2244,6 +2406,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_vacuum_db(args)
     elif args.command == "publish-log":
         return cmd_publish_log(args)
+    elif args.command == "logs":
+        return cmd_logs(args)
     elif args.command == "config-lock":
         return cmd_config_lock(args)
     else:
