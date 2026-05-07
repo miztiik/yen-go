@@ -1,6 +1,7 @@
 # Research Brief: config.py Decomposition
 
-**Initiative**: `20260314-refactor-config-decomposition`  
+**Supporting Audit**: `20260314-refactor-config-decomposition`  
+**Owner Initiative**: `20260314-2200-refactor-config-py-decomposition`  
 **Research question**: What is the full import dependency graph of `tools/puzzle-enrichment-lab/config.py`, what semantic domains do its 71 models span, and how should it be decomposed?  
 **Last Updated**: 2026-03-14
 
@@ -358,7 +359,7 @@ No license or compliance concerns — this is purely internal refactoring.
 | Field | Value |
 |-------|-------|
 | `research_completed` | true |
-| `initiative_path` | `TODO/initiatives/20260314-refactor-config-decomposition/` |
+| `artifact_path` | `TODO/initiatives/20260314-2200-refactor-config-py-decomposition/20260314-config-decomposition-research.md` |
 | `artifact` | `15-research.md` |
 | `top_recommendations` | 1. Option C (config/ package), 2. Six domain sub-modules, 3. EnrichmentConfig stays in root, 4. Level 3 execution |
 | `open_questions` | none — all findings are internally consistent |

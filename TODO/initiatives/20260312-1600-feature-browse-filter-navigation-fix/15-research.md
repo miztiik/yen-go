@@ -5,7 +5,7 @@
 **Mode:** Feature-Researcher  
 **Confidence after research:** 88 / 100  
 **Risk level:** Medium  
-**Source:** Copied from Feature-Researcher output (20260312-ux-audit-filter-navigation)
+**Source:** Copied from Feature-Researcher output and retained as supporting audit at `TODO/initiatives/20260312-1600-feature-browse-filter-navigation-fix/20260312-filter-navigation-ux-audit.md`
 
 ---
 

@@ -81,7 +81,7 @@ These folders contain only `15-research.md` (sometimes multiple research files) 
 
 | R-ID | Initiative ID | Category | Artifacts | Fed Into |
 |------|--------------|----------|-----------|----------|
-| R-34 | 20260314-refactor-config-decomposition | backend | 15-research.md | R-2 (config-py-decomposition) |
+| R-34 | 20260314-refactor-config-decomposition | nested initiative artifact | 20260314-config-decomposition-research.md | R-2 (config-py-decomposition) |
 | R-35 | 20260314-research-101weiqi-sources-architecture | backend | 15-research.md | — |
 | R-36 | 20260314-research-db1-schema-tag-storage | backend | 15-research.md | — |
 | R-37 | 20260314-research-enrichment-lab-rewrite | nested initiative artifact | 20260314-enrichment-lab-rewrite-research.md | R-1 (enrichment-lab-v2) |

@@ -1,6 +1,7 @@
 # UX Audit — Filter & Navigation Gaps (DDK + SDK Personas)
 
-**Initiative:** `20260312-ux-audit-filter-navigation`  
+**Supporting Audit:** `20260312-ux-audit-filter-navigation`  
+**Owner Initiative:** `20260312-1600-feature-browse-filter-navigation-fix`  
 **Date:** 2026-03-12  
 **Mode:** Feature-Researcher  
 **Confidence after research:** 88 / 100  

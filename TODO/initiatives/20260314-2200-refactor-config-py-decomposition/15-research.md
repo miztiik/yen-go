@@ -2,6 +2,7 @@
 
 > Initiative: `20260314-2200-refactor-config-py-decomposition`
 > Last Updated: 2026-03-14
+> Supporting audit: `TODO/initiatives/20260314-2200-refactor-config-py-decomposition/20260314-config-decomposition-research.md`
 
 ## Planning Confidence
 
