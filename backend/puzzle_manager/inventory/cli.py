@@ -127,6 +127,16 @@ def cmd_inventory(args: "argparse.Namespace") -> int:
     try:
         manager = InventoryManager()
 
+        # Theme 14c1: --dry-run for the mutating ops emits an
+        # InventoryMutationPreview without touching disk. Routed before the
+        # apply branches so the preview path never accidentally writes.
+        if getattr(args, "dry_run", False) and (
+            getattr(args, "rebuild", False)
+            or getattr(args, "reconcile", False)
+            or getattr(args, "fix", False)
+        ):
+            return _emit_mutation_preview(args, manager)
+
         # T030, T031, T032 (Spec 107): Handle --check and --fix flags
         if getattr(args, "check", False):
             from backend.puzzle_manager.inventory.check import (
@@ -245,3 +255,97 @@ def cmd_inventory(args: "argparse.Namespace") -> int:
         logger.error(f"Failed to load inventory: {e}")
         print(f"[ERROR] {e}")
         return 1
+
+
+def _emit_mutation_preview(
+    args: "argparse.Namespace",
+    manager: InventoryManager,
+) -> int:
+    """Theme 14c1: build and emit ``InventoryMutationPreview`` for a dry-run.
+
+    Selects the op (rebuild → reconcile → fix in argparse priority order),
+    counts SGFs on disk via ``rglob``, reads the current snapshot total
+    (or treats it as absent), and — for ``op=fix`` only — runs the
+    metadata-only integrity check to decide whether the apply path would
+    no-op.
+
+    Returns exit code 0 on success, 1 on uncaught failure (matches the
+    existing inventory CLI convention).
+    """
+    from backend.puzzle_manager.inventory.check import check_integrity
+    from backend.puzzle_manager.models.inventory_preview import (
+        InventoryMutationPreview,
+    )
+    from backend.puzzle_manager.paths import get_output_dir
+
+    op: str
+    if getattr(args, "rebuild", False):
+        op = "rebuild"
+    elif getattr(args, "reconcile", False):
+        op = "reconcile"
+    else:
+        op = "fix"
+
+    output_dir = get_output_dir()
+    sgf_dir = output_dir / "sgf"
+    disk_total = sum(1 for _ in sgf_dir.rglob("*.sgf")) if sgf_dir.exists() else 0
+
+    snapshot_exists = manager.exists()
+    snapshot_total: int | None = None
+    if snapshot_exists:
+        try:
+            snapshot_total = manager.load().collection.total_puzzles
+        except Exception as exc:
+            logger.warning("Snapshot present but unreadable; treating as absent: %s", exc)
+            snapshot_exists = False
+
+    delta = disk_total - (snapshot_total or 0)
+
+    fix_skip_reason: str | None = None
+    would_rewrite_snapshot = True
+    if op == "fix":
+        inventory = manager.load() if snapshot_exists else None
+        result = check_integrity(inventory=inventory)
+        if result.is_valid:
+            fix_skip_reason = (
+                "Inventory is already consistent — `inventory --fix` would no-op."
+            )
+            would_rewrite_snapshot = False
+
+    preview = InventoryMutationPreview(
+        op=op,  # type: ignore[arg-type]
+        snapshot_exists=snapshot_exists,
+        snapshot_total_before=snapshot_total,
+        disk_total=disk_total,
+        delta=delta,
+        would_rewrite_snapshot=would_rewrite_snapshot,
+        # Only --rebuild also rewrites yengo-search.db today; reconcile/fix
+        # leave the search DB alone.
+        would_rebuild_search_db=(op == "rebuild"),
+        fix_skip_reason=fix_skip_reason,
+    )
+
+    if getattr(args, "json", False):
+        print(preview.model_dump_json())
+    else:
+        print(_format_mutation_preview_human(preview))
+    return 0
+
+
+def _format_mutation_preview_human(preview: object) -> str:
+    """Plain-text rendering of the preview for terminal use."""
+    p = preview  # local alias for brevity
+    lines = [
+        f"Inventory --{p.op} --dry-run",  # type: ignore[attr-defined]
+        "─" * 40,
+        f"Snapshot present:  {p.snapshot_exists}",  # type: ignore[attr-defined]
+        f"Snapshot total:    {p.snapshot_total_before if p.snapshot_total_before is not None else '—'}",  # type: ignore[attr-defined]
+        f"Disk total:        {p.disk_total}",  # type: ignore[attr-defined]
+        f"Delta:             {p.delta:+d}",  # type: ignore[attr-defined]
+        f"Would rewrite snapshot:    {p.would_rewrite_snapshot}",  # type: ignore[attr-defined]
+        f"Would rebuild search DB:   {p.would_rebuild_search_db}",  # type: ignore[attr-defined]
+    ]
+    if p.fix_skip_reason:  # type: ignore[attr-defined]
+        lines.append("")
+        lines.append(f"Note: {p.fix_skip_reason}")  # type: ignore[attr-defined]
+    return "\n".join(lines)

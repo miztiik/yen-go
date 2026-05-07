@@ -588,6 +588,14 @@ File Locations:
         action="store_true",
         help="Fix inventory by rebuilding from publish logs",
     )
+    inventory_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help=(
+            "Preview the impact of --rebuild/--reconcile/--fix without writing. "
+            "With --json, emits an InventoryMutationPreview shape (Theme 14c1)."
+        ),
+    )
 
     # sources command
     sources_parser = subparsers.add_parser("sources", help="List configured sources")
