@@ -11,7 +11,6 @@ Usage:
     python -m backend.puzzle_manager validate
     python -m backend.puzzle_manager sources
     python -m backend.puzzle_manager rollback --run-id 20260129-abc12345
-    python -m backend.puzzle_manager rollback --puzzle-id puzzle-001 puzzle-002
     python -m backend.puzzle_manager publish-log search --run-id 20260129-abc12345
 
 Source Selection Behavior:
@@ -675,7 +674,6 @@ Examples:
         epilog="""
 Rollback Modes:
   --run-id ID        Rollback all puzzles from a specific pipeline run
-  --puzzle-id ID...  Rollback specific puzzle(s) by ID
 
 Options:
   --dry-run          Preview what would be rolled back without making changes
@@ -685,7 +683,6 @@ Options:
 Examples:
   %(prog)s --run-id 20260129-abc12345           Roll back all puzzles from run
   %(prog)s --run-id 20260129-abc12345 --dry-run Preview rollback
-  %(prog)s --puzzle-id puzzle-001 puzzle-002    Roll back specific puzzles
   %(prog)s --run-id a1b2c3d4e5f6 --yes          Legacy format also supported
 
 Run ID Formats:
@@ -698,19 +695,12 @@ Safety:
   Daily tables are regenerated after rollback (post-step)
         """,
     )
-    rollback_group = rollback_parser.add_mutually_exclusive_group(required=True)
-    rollback_group.add_argument(
+    rollback_parser.add_argument(
         "--run-id",
         type=str,
         metavar="ID",
+        required=True,
         help="Rollback all puzzles from a pipeline run (YYYYMMDD-xxxxxxxx or legacy 12-char hex)",
-    )
-    rollback_group.add_argument(
-        "--puzzle-id",
-        type=str,
-        nargs="+",
-        metavar="ID",
-        help="Rollback specific puzzle(s) by ID",
     )
     rollback_parser.add_argument(
         "--dry-run",
@@ -1849,11 +1839,11 @@ def cmd_rollback(args: argparse.Namespace) -> int:
             log_reader=log_reader,
         )
 
-        # Execute rollback by run_id
-        if not args.run_id:
-            print("Error: --run-id is required for rollback")
-            return 1
-
+        # Execute rollback by run_id (argparse marks --run-id as required,
+        # so args.run_id is guaranteed to be set here). Per-puzzle rollback
+        # is intentionally not supported — the prior --puzzle-id surface was
+        # a dead UI that the CLI rejected at runtime; it was removed in
+        # Theme 17 of the dashboard enrichment plan.
         result = manager.rollback_by_run(
             run_id=args.run_id,
             dry_run=args.dry_run,

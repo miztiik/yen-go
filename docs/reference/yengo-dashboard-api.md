@@ -16,34 +16,43 @@ This document is the stable, human-readable index. Pydantic schemas in
 ## Conventions
 
 - **Base URL**: `http://127.0.0.1:8201` (loopback only — never bind elsewhere).
+
 - **Content-Type**: `application/json` for request bodies and JSON responses.
+
 - **SSE endpoints**: `Content-Type: text/event-stream`; frames carry an
+
   `event:` line plus a `data:` JSON line.
+
 - **Verbatim passthrough**: routes that mirror a CLI subcommand (`/api/lock`,
+
   `/api/publish-log/search`, `/api/adapter/{enable,disable}`, `/api/lock/release`)
   do **not** reshape the CLI payload. The CLI owns the schema; the cockpit
   forwards it under a `raw` key (for JSON-emitting subcommands) or as
   `{ok, returncode, stdout, stderr}` (for non-JSON short calls).
+
 - **Single-active-run guard**: every long-running mutation (`run`, `clean`,
+
   `rollback`, `vacuum-db`) shares one in-process slot. A second POST while
   one is active returns `409 Conflict` with the active run's snapshot in the
   detail body.
+
 - **Path semantics**: paths in responses are POSIX-relative to the repo
+
   root. Absolute paths leaking through indicate a fixture/configuration bug.
 
 ---
 
 ## Status code taxonomy
 
-| Code | Meaning in cockpit context                                                  |
+| Code | Meaning in cockpit context |
 | ---- | --------------------------------------------------------------------------- |
-| 200  | Synchronous success (passthrough JSON, short CLI call completed).           |
-| 202  | Long-running run accepted; subscribe to SSE for live progress.              |
-| 400  | CLI rejected the inputs (e.g. `publish-log search` with no filter).         |
-| 404  | Unknown run handle on `/api/run/{handle}/cancel`.                           |
-| 409  | A pipeline mutation is already active; retry after it ends.                 |
-| 422  | Pydantic validation failure (missing/invalid request body).                 |
-| 500  | Pydantic schema mismatch — CLI JSON contract drift; fix both sides.         |
+| 200 | Synchronous success (passthrough JSON, short CLI call completed). |
+| 202 | Long-running run accepted; subscribe to SSE for live progress. |
+| 400 | CLI rejected the inputs (e.g. `publish-log search` with no filter). |
+| 404 | Unknown run handle on `/api/run/{handle}/cancel`. |
+| 409 | A pipeline mutation is already active; retry after it ends. |
+| 422 | Pydantic validation failure (missing/invalid request body). |
+| 500 | Pydantic schema mismatch — CLI JSON contract drift; fix both sides. |
 
 The cockpit deliberately **never** maps a CLI non-zero exit to a `502`. Failed
 short calls (`/api/adapter/*`, `/api/lock/release`) return `200` with `ok:false`
@@ -53,24 +62,24 @@ so the operator sees the same stdout/stderr they would see at a terminal.
 
 ## Endpoint index
 
-| Method | Path                            | Purpose                                 |
+| Method | Path | Purpose |
 | ------ | ------------------------------- | --------------------------------------- |
-| GET    | `/api/health`                   | Process liveness + version + uptime     |
-| GET    | `/api/adapters`                 | Per-source ingest counts (named buckets)|
-| GET    | `/api/inventory`                | Published-corpus aggregate counts       |
-| GET    | `/api/runs`                     | Past runs (newest-first, header only)   |
-| GET    | `/api/run/active`               | Cockpit-managed active run snapshot     |
-| POST   | `/api/run`                      | Start `puzzle_manager run …`            |
-| POST   | `/api/run/{handle}/cancel`      | SIGTERM → SIGKILL escalation            |
-| GET    | `/api/run/{handle}/events`      | SSE stream: `line` / `status` / `end`   |
-| GET    | `/api/lock`                     | `config-lock status --json` passthrough |
-| POST   | `/api/lock/release`             | `config-lock release [--force]`         |
-| POST   | `/api/clean`                    | Long-running `clean …`                  |
-| POST   | `/api/rollback`                 | Long-running `rollback …`               |
-| POST   | `/api/vacuum-db`                | Long-running `vacuum-db …`              |
-| POST   | `/api/adapter/enable`           | `enable-adapter ID [--force]`           |
-| POST   | `/api/adapter/disable`          | `disable-adapter [--force]`             |
-| GET    | `/api/publish-log/search`       | `publish-log search --format json …`    |
+| GET | `/api/health` | Process liveness + version + uptime |
+| GET | `/api/adapters` | Per-source ingest counts (named buckets) |
+| GET | `/api/inventory` | Published-corpus aggregate counts |
+| GET | `/api/runs` | Past runs (newest-first, header only) |
+| GET | `/api/run/active` | Cockpit-managed active run snapshot |
+| POST | `/api/run` | Start `puzzle_manager run …` |
+| POST | `/api/run/{handle}/cancel` | SIGTERM → SIGKILL escalation |
+| GET | `/api/run/{handle}/events` | SSE stream: `line` / `status` / `end` |
+| GET | `/api/lock` | `config-lock status --json` passthrough |
+| POST | `/api/lock/release` | `config-lock release [--force]` |
+| POST | `/api/clean` | Long-running `clean …` |
+| POST | `/api/rollback` | Long-running `rollback …` |
+| POST | `/api/vacuum-db` | Long-running `vacuum-db …` |
+| POST | `/api/adapter/enable` | `enable-adapter ID [--force]` |
+| POST | `/api/adapter/disable` | `disable-adapter [--force]` |
+| GET | `/api/publish-log/search` | `publish-log search --format json …` |
 
 Static UI is mounted at `/`, `/app.js`, `/styles.css`. The `/api/*` mount
 takes precedence over the static catch-all.
@@ -215,7 +224,9 @@ Request body (`RunStartRequest` — all fields optional):
 ```
 
 - `202` with `RunSnapshot` on accept.
+
 - `409` with the active snapshot in `detail` if any pipeline mutation is
+
   already in flight.
 
 ### `POST /api/run/{handle}/cancel`
@@ -223,13 +234,14 @@ Request body (`RunStartRequest` — all fields optional):
 Idempotent. Sends `SIGTERM`; escalates to `SIGKILL` after 5 s.
 
 - `202` with the updated snapshot.
+
 - `404` if the handle doesn't match the current/last run.
 
 ### `GET /api/run/{handle}/events` (SSE)
 
 Live log stream. Three event types:
 
-```
+```text
 event: line
 data: {"ts":"2026-05-05T09:01:15.123Z","stream":"stdout","text":"[ingest] starting …","seq":1}
 
@@ -241,11 +253,17 @@ data: { "handle":"r-7f3c1", "status":"completed", "exit_code":0, … }
 ```
 
 - `stream` is exactly `"stdout"` or `"stderr"`.
+
 - `seq` is monotonic per run.
+
 - On connect, the most recent 2000 buffered lines are replayed before live
+
   frames begin (so a late subscriber doesn't miss early chatter).
+
 - 15 s keepalive comments (`: keep-alive`) prevent proxy timeouts even
+
   though the cockpit is loopback-only.
+
 - `event: end` is always last; the connection then closes.
 
 ---
@@ -274,7 +292,6 @@ is tri-state: `null` (omit flag entirely), `true`, `false`.
 ```json
 {
   "run_id": "20260505-abc12345",
-  "puzzle_ids": null,
   "reason": "duplicate ingest from sanderland adapter",
   "dry_run": false,
   "yes": true,
@@ -282,9 +299,15 @@ is tri-state: `null` (omit flag entirely), `true`, `false`.
 }
 ```
 
-- Exactly one of `run_id` or `puzzle_ids` must be set; the cockpit returns
-  `400` if neither or both are present.
+- `run_id` is required (`min_length: 1`); missing or empty returns `422`.
+
 - `reason` is required (`min_length: 1`); empty string returns `422`.
+
+- Per-puzzle rollback (`puzzle_ids`) was removed in Theme 17 (2026-05).
+  The CLI never implemented `RollbackManager.rollback_by_puzzle`, so the
+  prior `--puzzle-id` argparse arm was dead UI that rejected every
+  invocation. Use `publish-log search` to identify the run that
+  introduced an unwanted puzzle, then roll the whole run back.
 
 ### `POST /api/vacuum-db`
 
@@ -360,16 +383,16 @@ Wraps `publish-log search --format json [filters…]`.
 
 Query parameters (all optional, but the CLI rejects a no-filter call):
 
-| Param        | CLI flag       | Notes                              |
+| Param | CLI flag | Notes |
 | ------------ | -------------- | ---------------------------------- |
-| `run_id`     | `--run-id`     |                                    |
-| `puzzle_id`  | `--puzzle-id`  |                                    |
-| `trace_id`   | `--trace-id`   |                                    |
-| `from`       | `--from`       | ISO date (`YYYY-MM-DD`)            |
-| `to`         | `--to`         | ISO date                           |
-| `date`       | `--date`       | Single ISO date (shorthand)        |
-| `event`      | `--event`      | e.g. `published`, `rolled_back`    |
-| `limit`      | `--limit`      | Forwarded as string                |
+| `run_id` | `--run-id` |  |
+| `puzzle_id` | `--puzzle-id` |  |
+| `trace_id` | `--trace-id` |  |
+| `from` | `--from` | ISO date (`YYYY-MM-DD`) |
+| `to` | `--to` | ISO date |
+| `date` | `--date` | Single ISO date (shorthand) |
+| `event` | `--event` | e.g. `published`, `rolled_back` |
+| `limit` | `--limit` | Forwarded as string |
 
 Response on success:
 
@@ -403,10 +426,15 @@ Pydantic models in `tools/yengo_dashboard/server/models.py` validate every
 response that isn't `raw`-wrapped. When the CLI's JSON contract changes:
 
 1. The cockpit's `model_validate` either accepts the new shape (additive
+
    change with `extra = ignore`) or raises `500`.
-2. A `500` from a passthrough route is a **loud signal** to update the
+
+1. A `500` from a passthrough route is a **loud signal** to update the
+
    cockpit's schema in the same commit as the CLI change.
-3. The cockpit deliberately does **not** silently swallow unknown fields by
+
+1. The cockpit deliberately does **not** silently swallow unknown fields by
+
    reformatting — that would mask drift.
 
 For verbatim-passthrough routes (`/api/lock`, `/api/publish-log/search`,

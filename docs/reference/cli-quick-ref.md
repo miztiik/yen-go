@@ -3,6 +3,7 @@
 > **See also**:
 >
 > - [CLI Reference](../how-to/backend/cli-reference.md) — Complete documentation
+>
 > - [Run Pipeline](../how-to/backend/run-pipeline.md) — Pipeline guide
 
 **Last Updated**: 2026-02-24
@@ -85,9 +86,6 @@ python -m backend.puzzle_manager rollback --run-id 20260130-abc12345 --dry-run
 python -m backend.puzzle_manager rollback --run-id 20260130-abc12345
 python -m backend.puzzle_manager rollback --run-id 20260130-abc12345 --yes     # Skip confirmation
 python -m backend.puzzle_manager rollback --run-id 20260130-abc12345 --verify  # Verify integrity
-
-# Rollback specific puzzles
-python -m backend.puzzle_manager rollback --puzzle-ids puz-001,puz-002
 ```
 
 ## Publish Log Commands
@@ -121,29 +119,29 @@ python -m backend.puzzle_manager daily --date 2026-01-28
 
 ## Common Flags
 
-| Flag                 | Description                                      |
+| Flag | Description |
 | -------------------- | ------------------------------------------------ |
-| `--source SOURCE`    | **REQUIRED** for ingest. Source adapter to use.  |
-| `--stage STAGE`      | Run specific stage only. Can be repeated.        |
-| `--batch-size N`     | Override batch size (default: 2000)              |
-| `--drain`            | Process all pending files (overrides batch size) |
-| `--dry-run`          | Preview changes without writing                  |
-| `--resume`           | Resume from last checkpoint                      |
-| `--no-enrichment`    | Skip all enrichment sub-stages                   |
-| `--no-hints`         | Skip hint generation                             |
-| `--no-region`        | Skip region detection                            |
-| `--no-ko`            | Skip ko detection                                |
-| `--source-override`  | Allow source mismatch with active_adapter        |
-| `--flush-interval N` | Sub-batch state flush interval (default: 500)    |
-| `-v, --verbose`      | Increase verbosity (-vv for debug)               |
-| `--json`             | Output as JSON                                   |
+| `--source SOURCE` | **REQUIRED** for ingest. Source adapter to use. |
+| `--stage STAGE` | Run specific stage only. Can be repeated. |
+| `--batch-size N` | Override batch size (default: 2000) |
+| `--drain` | Process all pending files (overrides batch size) |
+| `--dry-run` | Preview changes without writing |
+| `--resume` | Resume from last checkpoint |
+| `--no-enrichment` | Skip all enrichment sub-stages |
+| `--no-hints` | Skip hint generation |
+| `--no-region` | Skip region detection |
+| `--no-ko` | Skip ko detection |
+| `--source-override` | Allow source mismatch with active_adapter |
+| `--flush-interval N` | Sub-batch state flush interval (default: 500) |
+| `-v, --verbose` | Increase verbosity (-vv for debug) |
+| `--json` | Output as JSON |
 
 ---
 
 ## Environment Variables
 
-| Variable            | Purpose           | Default                          |
+| Variable | Purpose | Default |
 | ------------------- | ----------------- | -------------------------------- |
-| `YENGO_RUNTIME_DIR` | Runtime directory | `.pm-runtime/`                   |
-| `YENGO_LOG_LEVEL`   | Log verbosity     | `INFO`                           |
-| `YENGO_CONFIG_DIR`  | Config directory  | `backend/puzzle_manager/config/` |
+| `YENGO_RUNTIME_DIR` | Runtime directory | `.pm-runtime/` |
+| `YENGO_LOG_LEVEL` | Log verbosity | `INFO` |
+| `YENGO_CONFIG_DIR` | Config directory | `backend/puzzle_manager/config/` |

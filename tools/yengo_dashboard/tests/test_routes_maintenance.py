@@ -169,43 +169,38 @@ class TestRollback:
             assert "--reason" in cmd and cmd[cmd.index("--reason") + 1] == "test cleanup"
             _wait_until(lambda: controller.active()["status"] in TERMINAL_STATUSES)
 
-    def test_puzzle_ids_path_passes_multi_value_flag(self, tmp_path: Path) -> None:
+    def test_puzzle_ids_field_rejected_as_extra_or_ignored(self, tmp_path: Path) -> None:
+        """Per Theme 17, the rollback contract no longer accepts puzzle_ids.
+        The CLI never implemented per-puzzle rollback (RollbackManager only
+        had ``rollback_by_run``); the prior --puzzle-id surface was a dead
+        argparse arm. Sending the field today must NOT smuggle a
+        --puzzle-id flag back into the CLI invocation."""
         client, controller = _make_test_app(tmp_path)
         with client:
             resp = client.post(
                 "/api/rollback",
                 json={
-                    "puzzle_ids": ["abc123def4567890", "cafef00dbaadc0de"],
-                    "reason": "duplicate",
+                    "run_id": "20260505-deadbeef",
+                    "puzzle_ids": ["abc123def4567890"],
+                    "reason": "regression guard",
                 },
             )
-            assert resp.status_code == 202
-            cmd = resp.json()["command"]
-            i = cmd.index("--puzzle-id")
-            # Multi-value: the two ids should appear consecutively after the flag
-            assert cmd[i + 1] == "abc123def4567890"
-            assert cmd[i + 2] == "cafef00dbaadc0de"
-            _wait_until(lambda: controller.active()["status"] in TERMINAL_STATUSES)
+            # Either Pydantic rejects unknown fields (422) or it silently
+            # drops them (202). Both are acceptable; the load-bearing
+            # assertion is that --puzzle-id never reaches the CLI.
+            assert resp.status_code in (202, 422), resp.text
+            if resp.status_code == 202:
+                cmd = resp.json()["command"]
+                assert "--puzzle-id" not in cmd
+                assert "--run-id" in cmd
+                _wait_until(lambda: controller.active()["status"] in TERMINAL_STATUSES)
 
-    def test_rejects_neither_run_id_nor_puzzle_ids_with_400(self, tmp_path: Path) -> None:
+    def test_missing_run_id_returns_422(self, tmp_path: Path) -> None:
+        # run_id is a required field on RollbackRequest (Theme 17).
         client, _ = _make_test_app(tmp_path)
         with client:
             resp = client.post("/api/rollback", json={"reason": "x"})
-        assert resp.status_code == 400
-        assert "exactly one" in resp.json()["detail"]
-
-    def test_rejects_both_run_id_and_puzzle_ids_with_400(self, tmp_path: Path) -> None:
-        client, _ = _make_test_app(tmp_path)
-        with client:
-            resp = client.post(
-                "/api/rollback",
-                json={
-                    "run_id": "x",
-                    "puzzle_ids": ["y"],
-                    "reason": "z",
-                },
-            )
-        assert resp.status_code == 400
+        assert resp.status_code == 422
 
     def test_empty_reason_returns_422(self, tmp_path: Path) -> None:
         # The cockpit refuses an empty reason at the schema layer; the audit

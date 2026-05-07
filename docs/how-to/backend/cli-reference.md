@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [CLI Quick Reference](../../reference/cli-quick-ref.md) — One-page cheat sheet
+>
 > - [Run Pipeline](./run-pipeline.md) — Pipeline operations guide
+>
 > - [Architecture: Pipeline](../../architecture/backend/pipeline.md) — Pipeline design
 
 **Last Updated**: 2026-03-15  
@@ -17,18 +19,18 @@ Complete reference for the puzzle manager command-line interface.
 
 The puzzle manager runs a **3-stage pipeline**:
 
-```
+```text
 INGEST → ANALYZE → PUBLISH
    ↓         ↓         ↓
  Fetch    Enrich    Write to
  puzzles  & tag     collection
 ```
 
-| Stage       | Input               | Output                          | What It Does                                     |
+| Stage | Input | Output | What It Does |
 | ----------- | ------------------- | ------------------------------- | ------------------------------------------------ |
-| **ingest**  | External source     | `.pm-runtime/staging/ingest/`   | Fetches puzzles from source, validates SGF       |
-| **analyze** | `staging/ingest/`   | `.pm-runtime/staging/analyzed/` | Classifies difficulty, adds tags, enriches hints |
-| **publish** | `staging/analyzed/` | `yengo-puzzle-collections/`     | Writes to collection, updates indexes            |
+| **ingest** | External source | `.pm-runtime/staging/ingest/` | Fetches puzzles from source, validates SGF |
+| **analyze** | `staging/ingest/` | `.pm-runtime/staging/analyzed/` | Classifies difficulty, adds tags, enriches hints |
+| **publish** | `staging/analyzed/` | `yengo-puzzle-collections/` | Writes to collection, updates indexes |
 
 ---
 
@@ -38,12 +40,12 @@ INGEST → ANALYZE → PUBLISH
 python -m backend.puzzle_manager [OPTIONS] COMMAND [ARGS]
 ```
 
-| Option          | Description                            |
+| Option | Description |
 | --------------- | -------------------------------------- |
-| `--version`     | Show version and exit                  |
+| `--version` | Show version and exit |
 | `-v, --verbose` | Increase verbosity (use -vv for debug) |
-| `--config PATH` | Path to config directory               |
-| `-h, --help`    | Show help                              |
+| `--config PATH` | Path to config directory |
+| `-h, --help` | Show help |
 
 ---
 
@@ -79,21 +81,21 @@ python -m backend.puzzle_manager run --source yengo-source --drain
 python -m backend.puzzle_manager run --source yengo-source --flush-interval 200
 ```
 
-| Option               | Description                                                                                   |
+| Option | Description |
 | -------------------- | --------------------------------------------------------------------------------------------- |
 | `--source SOURCE_ID` | **REQUIRED**: Source adapter to run (use IDs from `python -m backend.puzzle_manager sources`) |
-| `--stage STAGE`      | Run specific stage(s) only. Can be repeated.                                                  |
-| `--batch-size N`     | Override batch size (default: 2000 for `run`, 100 for `ingest`)                               |
-| `--drain`            | Process all pending files (overrides `--batch-size`)                                          |
-| `--flush-interval N` | Flush batch state every N processed files (default: 500, 0 to disable)                        |
-| `--resume`           | Resume from last checkpoint if pipeline was interrupted                                       |
-| `--dry-run`          | Preview changes without writing files                                                         |
-| `--skip-cleanup`     | Skip cleanup after run                                                                        |
-| `--no-enrichment`    | Disable all enrichment (hints, region, ko, etc.)                                              |
-| `--no-hints`         | Disable hint generation (YH)                                                                  |
-| `--no-region`        | Disable region detection (YC)                                                                 |
-| `--no-ko`            | Disable ko detection (YK)                                                                     |
-| `--source-override`  | Allow `--source` to override `active_adapter`                                                 |
+| `--stage STAGE` | Run specific stage(s) only. Can be repeated. |
+| `--batch-size N` | Override batch size (default: 2000 for `run`, 100 for `ingest`) |
+| `--drain` | Process all pending files (overrides `--batch-size`) |
+| `--flush-interval N` | Flush batch state every N processed files (default: 500, 0 to disable) |
+| `--resume` | Resume from last checkpoint if pipeline was interrupted |
+| `--dry-run` | Preview changes without writing files |
+| `--skip-cleanup` | Skip cleanup after run |
+| `--no-enrichment` | Disable all enrichment (hints, region, ko, etc.) |
+| `--no-hints` | Disable hint generation (YH) |
+| `--no-region` | Disable region detection (YC) |
+| `--no-ko` | Disable ko detection (YK) |
+| `--source-override` | Allow `--source` to override `active_adapter` |
 
 **Source-Specific Options** (for adapters that support them):
 
@@ -113,7 +115,7 @@ python -m backend.puzzle_manager status
 python -m backend.puzzle_manager status --json
 ```
 
-| Option   | Description    |
+| Option | Description |
 | -------- | -------------- |
 | `--json` | Output as JSON |
 
@@ -134,10 +136,10 @@ python -m backend.puzzle_manager sources --check
 python -m backend.puzzle_manager sources --json
 ```
 
-| Option    | Description              |
+| Option | Description |
 | --------- | ------------------------ |
 | `--check` | Test source connectivity |
-| `--json`  | Output as JSON           |
+| `--json` | Output as JSON |
 
 ---
 
@@ -165,25 +167,25 @@ python -m backend.puzzle_manager inventory --check
 python -m backend.puzzle_manager inventory --check --fix
 ```
 
-| Option        | Description                                                       |
+| Option | Description |
 | ------------- | ----------------------------------------------------------------- |
-| `--json`      | Output as JSON                                                    |
-| `--rebuild`   | Rebuild inventory from publish logs                               |
+| `--json` | Output as JSON |
+| `--rebuild` | Rebuild inventory from publish logs |
 | `--reconcile` | Reconcile inventory by scanning SGF files on disk (most accurate) |
-| `--check`     | Verify inventory matches actual files (FR-018)                    |
-| `--fix`       | Auto-fix by rebuilding if --check finds issues (FR-024)           |
+| `--check` | Verify inventory matches actual files (FR-018) |
+| `--fix` | Auto-fix by rebuilding if --check finds issues (FR-024) |
 
 **`--reconcile` vs `--rebuild`:**
 
-|                  | `--reconcile`                                  | `--rebuild`                                        |
+|  | `--reconcile` | `--rebuild` |
 | ---------------- | ---------------------------------------------- | -------------------------------------------------- |
-| **Data source**  | SGF files on disk                              | Publish log entries                                |
-| **SGF parsing**  | Root properties only (fast)                    | None — metadata from logs                          |
-| **Parallelism**  | ThreadPoolExecutor (8 workers)                 | Sequential JSONL scan                              |
-| **When to use**  | Inventory counts don't match actual files      | Publish logs are intact but inventory is corrupted |
-| **Preserves**    | stages, metrics, audit from existing inventory | Nothing (fresh inventory)                          |
-| **Handles**      | Files added/removed outside pipeline           | Ghost entries (log entry without file)             |
-| **Auto-trigger** | Every `reconcile_interval` runs (default: 20)  | Never (explicit only)                              |
+| **Data source** | SGF files on disk | Publish log entries |
+| **SGF parsing** | Root properties only (fast) | None — metadata from logs |
+| **Parallelism** | ThreadPoolExecutor (8 workers) | Sequential JSONL scan |
+| **When to use** | Inventory counts don't match actual files | Publish logs are intact but inventory is corrupted |
+| **Preserves** | stages, metrics, audit from existing inventory | Nothing (fresh inventory) |
+| **Handles** | Files added/removed outside pipeline | Ghost entries (log entry without file) |
+| **Auto-trigger** | Every `reconcile_interval` runs (default: 20) | Never (explicit only) |
 
 **Periodic Reconciliation:**
 
@@ -196,14 +198,18 @@ The counter (`runs_since_last_reconcile`) is tracked in `AuditMetrics` and reset
 The `--check` flag compares inventory against actual files:
 
 - Verifies `total_puzzles` equals SGF file count
+
 - Verifies each level count matches files in that level directory
+
 - Detects orphan entries (publish log entry without file)
+
 - Detects orphan files (file without publish log entry)
+
 - Returns exit code 0 if all checks pass, non-zero if any fail
 
 Example output:
 
-```
+```text
 ✓ Total puzzles: inventory=4, actual=4
 ✓ Level 'beginner': inventory=1, actual=1
 ✗ Level 'advanced': inventory=2, actual=3 (MISMATCH)
@@ -231,11 +237,11 @@ python -m backend.puzzle_manager clean --target state
 python -m backend.puzzle_manager clean --target all
 ```
 
-| Option               | Description                                      |
+| Option | Description |
 | -------------------- | ------------------------------------------------ |
-| `--target TARGET`    | What to clean: `staging`, `state`, `logs`, `all` |
-| `--retention-days N` | Days to retain (default: 45)                     |
-| `--dry-run`          | Preview what would be deleted                    |
+| `--target TARGET` | What to clean: `staging`, `state`, `logs`, `all` |
+| `--retention-days N` | Days to retain (default: 45) |
+| `--dry-run` | Preview what would be deleted |
 
 ---
 
@@ -249,18 +255,15 @@ python -m backend.puzzle_manager rollback --run-id 20260130-abc12345 --dry-run
 
 # Execute rollback
 python -m backend.puzzle_manager rollback --run-id 20260130-abc12345
-
-# Rollback specific puzzles
-python -m backend.puzzle_manager rollback --puzzle-ids puz-001,puz-002
 ```
 
-| Option             | Description                                    |
+| Option | Description |
 | ------------------ | ---------------------------------------------- |
-| `--run-id ID`      | Rollback all puzzles from this run             |
-| `--puzzle-ids IDS` | Comma-separated list of puzzle IDs to rollback |
-| `--dry-run`        | Preview without executing                      |
-| `--yes`            | Skip confirmation prompt                       |
-| `--verify`         | Verify file counts after rollback              |
+| `--run-id ID` | Rollback all puzzles from this run (required) |
+| `--reason TEXT` | Reason for the rollback (required, audit trail) |
+| `--dry-run` | Preview without executing |
+| `--yes` | Skip confirmation prompt |
+| `--verify` | Verify file counts after rollback |
 
 ---
 
@@ -305,13 +308,13 @@ python -m backend.puzzle_manager daily --rolling-window 90
 python -m backend.puzzle_manager daily --dry-run
 ```
 
-| Option                  | Description                                          |
+| Option | Description |
 | ----------------------- | ---------------------------------------------------- |
-| `--date YYYY-MM-DD`     | Generate for specific date                           |
-| `--start YYYY-MM-DD`    | Start date for range                                 |
-| `--end YYYY-MM-DD`      | End date for range                                   |
-| `--rolling-window N`    | Rolling window in days (default: 90); prunes old dates |
-| `--dry-run`             | Preview without writing                              |
+| `--date YYYY-MM-DD` | Generate for specific date |
+| `--start YYYY-MM-DD` | Start date for range |
+| `--end YYYY-MM-DD` | End date for range |
+| `--rolling-window N` | Rolling window in days (default: 90); prunes old dates |
+| `--dry-run` | Preview without writing |
 
 ---
 
@@ -334,22 +337,22 @@ python -m backend.puzzle_manager validate --config-only
 
 ## Environment Variables
 
-| Variable            | Description                             | Default                          |
+| Variable | Description | Default |
 | ------------------- | --------------------------------------- | -------------------------------- |
-| `YENGO_RUNTIME_DIR` | Override runtime directory              | `.pm-runtime/`                   |
-| `YENGO_LOG_LEVEL`   | Log level (DEBUG, INFO, WARNING, ERROR) | `INFO`                           |
-| `YENGO_CONFIG_DIR`  | Override config directory               | `backend/puzzle_manager/config/` |
+| `YENGO_RUNTIME_DIR` | Override runtime directory | `.pm-runtime/` |
+| `YENGO_LOG_LEVEL` | Log level (DEBUG, INFO, WARNING, ERROR) | `INFO` |
+| `YENGO_CONFIG_DIR` | Override config directory | `backend/puzzle_manager/config/` |
 
 ---
 
 ## Exit Codes
 
-| Code | Meaning             |
+| Code | Meaning |
 | ---- | ------------------- |
-| 0    | Success             |
-| 1    | General error       |
-| 2    | Configuration error |
-| 3    | Invalid arguments   |
+| 0 | Success |
+| 1 | General error |
+| 2 | Configuration error |
+| 3 | Invalid arguments |
 
 ---
 
@@ -357,22 +360,22 @@ python -m backend.puzzle_manager validate --config-only
 
 The `--source` flag is **required** for the ingest stage.
 
-| Scenario                                 | Behavior               |
+| Scenario | Behavior |
 | ---------------------------------------- | ---------------------- |
-| `--source` specified                     | Uses specified adapter |
-| `--source` matches `active_adapter`      | Proceeds normally      |
-| `--source` differs from `active_adapter` | Warning, proceeds      |
-| No `--source` for ingest                 | Error, exit(1)         |
+| `--source` specified | Uses specified adapter |
+| `--source` matches `active_adapter` | Proceeds normally |
+| `--source` differs from `active_adapter` | Warning, proceeds |
+| No `--source` for ingest | Error, exit(1) |
 
 ---
 
 ## Runtime Directories
 
-| Directory                       | Purpose                          |
+| Directory | Purpose |
 | ------------------------------- | -------------------------------- |
-| `.pm-runtime/staging/ingest/`   | Raw SGF files after ingest       |
+| `.pm-runtime/staging/ingest/` | Raw SGF files after ingest |
 | `.pm-runtime/staging/analyzed/` | Enriched SGF files after analyze |
-| `.pm-runtime/staging/failed/`   | Files that failed processing     |
-| `.pm-runtime/state/`            | Pipeline state and checkpoints   |
-| `.pm-runtime/logs/`             | Log files                        |
-| `yengo-puzzle-collections/`     | Published SGF files              |
+| `.pm-runtime/staging/failed/` | Files that failed processing |
+| `.pm-runtime/state/` | Pipeline state and checkpoints |
+| `.pm-runtime/logs/` | Log files |
+| `yengo-puzzle-collections/` | Published SGF files |

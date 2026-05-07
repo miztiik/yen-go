@@ -203,13 +203,6 @@ python -m backend.puzzle_manager rollback --run-id abc123def456 --reason "Bad so
 python -m backend.puzzle_manager rollback --run-id abc123def456 --yes
 ```
 
-### Rollback by Puzzle ID
-
-```bash
-# Rollback specific puzzles
-python -m backend.puzzle_manager rollback --puzzle-id gp-12345 --puzzle-id gp-67890 --dry-run
-```
-
 ### Publish Log Commands
 
 ```bash

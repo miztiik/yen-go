@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Architecture: Integrity](../../architecture/backend/integrity.md) — Why this design
+>
 > - [Run Pipeline](./run-pipeline.md) — Operating the pipeline
+>
 > - [Monitor](./monitor.md) — Observability and logs
 
 **Last Updated**: 2026-03-14
@@ -15,7 +17,9 @@ This guide covers how to rollback puzzles published by the pipeline.
 ## When to Use Rollback
 
 - **Bad import**: A pipeline run imported corrupted or incorrect puzzles
+
 - **Quality issue**: Specific puzzles failed quality review after publication
+
 - **Testing cleanup**: Remove test puzzles from production collections
 
 ---
@@ -34,17 +38,11 @@ python -m backend.puzzle_manager rollback --run-id 20260129-a1b2c3d4 --dry-run
 python -m backend.puzzle_manager rollback --run-id 20260129-a1b2c3d4
 ```
 
-### Rollback Specific Puzzles
-
-Remove specific puzzles by ID:
-
-```bash
-# Preview
-python -m backend.puzzle_manager rollback --puzzle-ids puz-001,puz-002 --dry-run
-
-# Execute
-python -m backend.puzzle_manager rollback --puzzle-ids puz-001,puz-002
-```
+> **Note**: The CLI only supports rollback by `--run-id`. Per-puzzle rollback
+> (`--puzzle-id`) was an unimplemented argparse surface that always failed at
+> runtime; it was removed in 2026-05. To narrow a rollback below run
+> granularity, use `publish-log search` to identify the run, then roll the
+> whole run back.
 
 ---
 
@@ -64,7 +62,7 @@ Output shows what would be deleted without making changes.
 
 Rollbacks affecting >100 puzzles require confirmation:
 
-```
+```text
 About to delete 150 puzzles. Continue? [y/N]
 ```
 
@@ -111,11 +109,16 @@ python -m backend.puzzle_manager publish-log search --puzzle-id puz-001
 ## What Rollback Does
 
 1. **Validates** all puzzle IDs exist in publish log (fails fast if none found)
-2. **Acquires lock** to prevent concurrent rollbacks
-3. **Deletes** SGF files from collections
-4. **Rebuilds database** — reads existing entries from `yengo-content.db`, removes deleted puzzle IDs, rebuilds `yengo-search.db` with remaining entries
-5. **Rebuilds inventory** from disk (puzzle totals, tag counts)
-6. **Releases** lock
+
+1. **Acquires lock** to prevent concurrent rollbacks
+
+1. **Deletes** SGF files from collections
+
+1. **Rebuilds database** — reads existing entries from `yengo-content.db`, removes deleted puzzle IDs, rebuilds `yengo-search.db` with remaining entries
+
+1. **Rebuilds inventory** from disk (puzzle totals, tag counts)
+
+1. **Releases** lock
 
 If all puzzles are deleted, `db-version.json` is updated to reflect zero puzzles.
 
@@ -138,8 +141,11 @@ python -m backend.puzzle_manager inventory --check --fix
 The integrity check verifies:
 
 - `total_puzzles` matches actual SGF file count
+
 - Level counts match files per level directory
+
 - No orphan publish log entries (entry exists, file missing)
+
 - No orphan files (file exists, no publish log entry)
 
 ---
@@ -148,7 +154,7 @@ The integrity check verifies:
 
 All rollback operations are logged to:
 
-```
+```text
 yengo-puzzle-collections/.puzzle-inventory-state/audit.jsonl
 ```
 
@@ -195,6 +201,9 @@ If backup directory exists with files, restoration was incomplete. Contact maint
 ## Best Practices
 
 1. **Always dry-run first**: Preview before executing
-2. **Document reason**: Note why rollback was needed
-3. **Verify after**: Check indexes are correct
-4. **Small scope**: Prefer targeted rollbacks over full-run rollbacks
+
+1. **Document reason**: Note why rollback was needed
+
+1. **Verify after**: Check indexes are correct
+
+1. **Small scope**: Prefer targeted rollbacks over full-run rollbacks

@@ -32,7 +32,7 @@ get done; the order is the prioritization, not the filter.
 | 13 | Unified activity surface           | ☐      |  P0   | NEW: correlate runs + maintenance + publish-log + audit + lock events into one timeline |
 | 14 | Inventory health surface           | ☐      |  P0   | NEW: surface CLI's --rebuild/--reconcile/--check/--fix as actions, not just counts |
 | 16 | Reset blast-radius (backend concept)| ☐     |  P0   | NEW: name `clean / run --fresh / rollback / vacuum-db / reconcile` as one taxonomy in CLI + UI |
-| 17 | Puzzle-ID rollback audit           | ☐      |  P0   | NEW: verify rollback by puzzle-ID actually works end-to-end; either implement fully or remove from UI/docs |
+| 17 | Puzzle-ID rollback audit           | ☑      |  P0   | Dead UI removed (2026-05-07): CLI `--puzzle-id` stripped, dashboard contract slimmed to `run_id`-only |
 | 5  | Tag/Level inspector (read-only)    | ☐      |  P1   | Surfaces taxonomy that's invisible today |
 | 6  | Adapter detail page                | ☐      |  P1   | Drill-in from existing adapters table. Includes per-source ingest-DB management |
 | 7  | Adapter configuration management   | ☐      |  P1   | NEW: scaffold / clone / bulk-bootstrap sources.json + pipeline.json |
@@ -367,28 +367,62 @@ The dashboard exposes a "rollback by puzzle-ID" affordance, but the
 backend's primary rollback path is by `run_id`. We need to confirm
 which (if any) puzzle-ID-targeted rollback API actually exists end-to-end.
 
-### Audit checklist
+### Audit findings (2026-05-07)
 
-- [ ] Grep the backend for `rollback` handlers; map each to its accepted
-      identifiers (`run_id`, `puzzle_id`, `content_hash`, batch).
-- [ ] Confirm whether `rollback --puzzle-id ID` is a real CLI surface or
-      a UI-only fiction.
-- [ ] If real: pin its JSON contract and add a real-fixture test.
-- [ ] If absent: either (a) implement it with full audit-trail support,
-      or (b) remove the affordance from the dashboard + docs and replace
-      it with the supported `--run-id` flow + a "find the run that produced
-      this puzzle" helper.
+**Status: dead UI confirmed.** Evidence:
+
+- `backend/puzzle_manager/cli.py:709` — argparse accepts `--puzzle-id ID...`
+  inside a `required=True` mutually-exclusive group with `--run-id`. Help
+  text and module-level docstring both advertise the flag.
+- `backend/puzzle_manager/cli.py:1853-1855` — `cmd_rollback()` immediately
+  rejects anything without `--run-id`:
+
+  ```python
+  if not args.run_id:
+      print("Error: --run-id is required for rollback")
+      return 1
+  ```
+
+  The implementation has no branch consuming `args.puzzle_id`.
+- `tools/yengo_dashboard/server/routes_maintenance.py:48-68` — the dashboard
+  happily builds `--puzzle-id ID1 ID2…` argv when the operator fills in
+  the textarea. The CLI then rejects it with the cryptic `--run-id is
+  required` error, surfacing to the SSE log only.
+- `RollbackManager` has no public `rollback_by_puzzle_ids()` method;
+  every rollback path joins through `rollback_by_run()`.
+
+### Decision required
+
+Two paths:
+
+- **(a) Implement properly** — add `RollbackManager.rollback_by_puzzle_ids()`,
+  wire it through `cmd_rollback`, audit the publish-log writer to ensure
+  per-puzzle rollback emits the right event rows. Substantial — touches
+  manager, CLI, audit-trail, tests.
+- **(b) Remove the dead surface** — strip `--puzzle-id` from the rollback
+  argparser, drop the textarea from the dashboard form, update the help
+  text + docs. Small, clean, restores honesty.
+
+**Recommendation: (b)** — there is no operator demand for puzzle-ID
+rollback today, and the misleading affordance has been silently failing
+for an unknown duration. Fix the lie now; revisit (a) under a real
+feature request.
 
 ### Acceptance criteria
-
-- [ ] One of: working `rollback --puzzle-id` with tests, OR UI/docs
-      cleaned of the misleading affordance.
+- [ ] One of (a) or (b) executed.
+- [ ] `tools/yengo_dashboard/server/routes_maintenance.py` no longer
+      builds the broken `--puzzle-id` argv path (or builds it correctly
+      against a working backend).
 - [ ] Outcome documented in `docs/architecture/backend/inventory-operations.md`.
+- [ ] Real-fixture test: if (a), rollback by puzzle-id reduces published
+      corpus by exactly the requested set; if (b), no `--puzzle-id`
+      reachable code path remains.
 
 ### Dependencies
 
-- None to start the audit. If we choose to implement rather than remove,
-  Theme 13 (activity feed) and Theme 16 (ops catalog) consume the result.
+- None to start. Resolution should land before Theme 1 (Preview button)
+  ships for rollback, otherwise we'd be wiring a Preview button onto a
+  dead form.
 
 ---
 

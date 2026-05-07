@@ -286,21 +286,23 @@ class CleanRequest(BaseModel):
 
 
 class RollbackRequest(BaseModel):
-    """``POST /api/rollback`` body. Either ``run_id`` XOR ``puzzle_ids`` must
-    be provided — the CLI rejects neither/both.
+    """``POST /api/rollback`` body. Mirrors ``puzzle_manager rollback`` flags.
+
+    Per-puzzle rollback was removed in Theme 17 of the dashboard enrichment
+    plan: the CLI never implemented a ``RollbackManager.rollback_by_puzzle``
+    method, so the prior ``--puzzle-id`` argparse surface was dead UI that
+    rejected every invocation at runtime. The cockpit now exposes only the
+    real, working surface — rollback by run.
 
     A ``reason`` is required for the audit trail; the cockpit refuses to
     forward an empty reason rather than letting the CLI fail with a vague
     message.
     """
 
-    run_id: str | None = Field(
-        default=None,
+    run_id: str = Field(
+        ...,
         description="--run-id ID. Roll back all puzzles from this pipeline run.",
-    )
-    puzzle_ids: list[str] | None = Field(
-        default=None,
-        description="--puzzle-id ID [ID ...]. Roll back specific puzzles.",
+        min_length=1,
     )
     reason: str = Field(
         ...,

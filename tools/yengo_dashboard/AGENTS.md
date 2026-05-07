@@ -79,7 +79,7 @@ tools/yengo_dashboard/
 | GET    | `/api/lock`                   | subprocess `config-lock status --json`| verbatim passthrough as `{raw: …}`              |
 | POST   | `/api/lock/release`           | subprocess `config-lock release [--force]` | non-zero rc returns 200 with `ok:false` (UI shows it) |
 | POST   | `/api/clean`                  | RunController → `clean [--target …] [--retention-days N] [--dry-run BOOL]` | 202; 409 shared with /api/run |
-| POST   | `/api/rollback`               | RunController → `rollback (--run-id ID \| --puzzle-id ID …) --reason TEXT [--dry-run] [--yes] [--verify]` | 400 if neither/both id flags; 422 if reason empty |
+| POST   | `/api/rollback`               | RunController → `rollback --run-id ID --reason TEXT [--dry-run] [--yes] [--verify]` | 422 if `run_id`/`reason` missing or empty (per-puzzle rollback was removed in Theme 17 — the CLI never supported it) |
 | POST   | `/api/vacuum-db`              | RunController → `vacuum-db [--rebuild] [--dry-run]` | 202; 409 shared                       |
 | POST   | `/api/adapter/enable`         | subprocess `enable-adapter ID [--force]` | 200 with `{ok, returncode, stdout, stderr}` even on non-zero |
 | POST   | `/api/adapter/disable`        | subprocess `disable-adapter [--force]`| same shape; clears active adapter                |

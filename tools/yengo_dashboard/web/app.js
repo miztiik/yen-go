@@ -1088,12 +1088,10 @@ function readCleanForm() {
 }
 
 function readRollbackForm() {
-  const runId = $("#mr-run-id").value.trim();
-  const ids = $("#mr-puzzle-ids").value
-    .split(/[\s,]+/).map((s) => s.trim()).filter(Boolean);
-  const body = { reason: $("#mr-reason").value.trim() };
-  if (runId) body.run_id = runId;
-  if (ids.length) body.puzzle_ids = ids;
+  const body = {
+    reason: $("#mr-reason").value.trim(),
+    run_id: $("#mr-run-id").value.trim(),
+  };
   body.dry_run = $("#mr-dry").checked;
   body.yes = $("#mr-yes").checked;
   body.verify = $("#mr-verify").checked;
@@ -1290,12 +1288,8 @@ function renderMaintenance() {
           title: "Rollback",
           group: "destructive",
           body: `
-            <label class="block text-xs text-slate-400">Run ID
+            <label class="block text-xs text-slate-400">Run ID <span class="text-rose-400">*</span>
               <input id="mr-run-id" type="text" placeholder="20260505-deadbeef" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm font-mono" />
-            </label>
-            <div class="text-[10px] text-slate-500 -my-1">— or —</div>
-            <label class="block text-xs text-slate-400">Puzzle IDs <span class="text-slate-500">(comma/space separated)</span>
-              <textarea id="mr-puzzle-ids" rows="2" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm font-mono"></textarea>
             </label>
             <label class="block text-xs text-slate-400">Reason <span class="text-rose-400">*</span>
               <input id="mr-reason" type="text" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm" />
@@ -1318,17 +1312,12 @@ function renderMaintenance() {
     const originBtn = e.currentTarget;
     const body = readRollbackForm();
     if (!body.reason) { toast("warn", "rollback reason is required"); return; }
-    if (!body.run_id && !(body.puzzle_ids?.length)) {
-      toast("warn", "provide a run ID or puzzle IDs"); return;
-    }
-    if (body.run_id && body.puzzle_ids?.length) {
-      toast("warn", "provide a run ID OR puzzle IDs, not both"); return;
-    }
+    if (!body.run_id) { toast("warn", "run ID is required"); return; }
     const ok = await confirmDialog({
       title: "Confirm rollback",
       body: body.dry_run
-        ? `Dry-run: simulate rollback of ${body.run_id ? `run ${body.run_id}` : `${body.puzzle_ids.length} puzzles`}.`
-        : `Permanently roll back ${body.run_id ? `run ${body.run_id}` : `${body.puzzle_ids.length} puzzles`}. This is destructive.`,
+        ? `Dry-run: simulate rollback of run ${body.run_id}.`
+        : `Permanently roll back run ${body.run_id}. This is destructive.`,
       verb: "rollback",
     });
     if (!ok) return;

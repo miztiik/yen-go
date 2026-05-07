@@ -15,7 +15,7 @@ Endpoints
 ---------
 
 - ``POST /api/clean``      — ``clean [--target T] [--retention-days N] [--dry-run [BOOL]]``
-- ``POST /api/rollback``   — ``rollback (--run-id ID | --puzzle-id ID...) [--reason TEXT] …``
+- ``POST /api/rollback``   — ``rollback --run-id ID --reason TEXT [--dry-run] [--yes] [--verify]``
 - ``POST /api/vacuum-db``  — ``vacuum-db [--rebuild] [--dry-run]``
 """
 
@@ -46,19 +46,9 @@ def _build_clean_args(req: CleanRequest) -> list[str]:
 
 
 def _build_rollback_args(req: RollbackRequest) -> list[str]:
-    if (req.run_id is None) == (not req.puzzle_ids):
-        # Mirrors the CLI's mutually-exclusive group requirement. We fail
-        # fast at the cockpit boundary so the operator gets a 400 instead of
-        # a generic non-zero CLI exit.
-        raise HTTPException(
-            status_code=400,
-            detail="exactly one of 'run_id' or 'puzzle_ids' must be provided",
-        )
-    args = ["rollback", "--reason", req.reason]
-    if req.run_id is not None:
-        args += ["--run-id", req.run_id]
-    else:
-        args += ["--puzzle-id", *req.puzzle_ids]  # type: ignore[misc]
+    # Per Theme 17, only run-id rollback is supported. RollbackRequest pins
+    # run_id as required so Pydantic catches missing values before we get here.
+    args = ["rollback", "--reason", req.reason, "--run-id", req.run_id]
     if req.dry_run:
         args.append("--dry-run")
     if req.yes:
