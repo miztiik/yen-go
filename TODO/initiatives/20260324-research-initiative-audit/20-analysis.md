@@ -253,17 +253,19 @@ These were identified in `15-research-standalone-todo-audit.md` but were not con
 
 ## Residual Non-Contract Directory Decisions (2026-05-07)
 
-After the May initiative-normalization passes, **17 non-contract directories remain**. These are no longer treated as unprocessed cleanup debt. They are the explicit residual set after all defensible `fold with owner rewrite` moves were completed.
+After the May initiative-normalization passes, **19 non-contract directories remain**. These are no longer treated as unprocessed cleanup debt. They are the explicit residual set after all defensible `fold with owner rewrite` moves were completed. The previous residual summary omitted two live directories that sit outside the original March 14-24 scoped status table: `20260313-research-katrain-config-comparison` and `20260315-research-gogogo-tactics-patterns`.
 
 ### Keep Standalone
 
 - `2026-03-06-fix-enrichment-lab-logging-scope` — historical cross-initiative regression note cited by multiple historical initiatives; no single canonical owner.
 - `2026-03-08-research-ghostban-katago-webgl` — exploratory external research with zero downstream initiative references.
+- `20260313-research-katrain-config-comparison` — archived two-file KaTrain research bundle spanning config comparison and SGF parser swap blast-radius analysis; referenced by historical implementation work, but the directory does not reduce to one owner artifact without inventing a split.
 - `20260314-research-101weiqi-sources-architecture` — standalone source-architecture investigation; only referenced by this audit.
 - `20260314-research-db1-schema-tag-storage` — backend schema design note; only referenced by this audit.
 - `20260314-research-incremental-db-feasibility` — backend feasibility note; only referenced by this audit.
 - `20260314-research-lizgoban-katrain-patterns` — two-file research bundle with cross-cutting enrichment-lab value; not a single supporting artifact.
 - `20260314-research-sequence-number-removal` — referenced by another research directory rather than by a single owner initiative.
+- `20260315-research-gogogo-tactics-patterns` — already formalized as a blocked research initiative with charter and clarifications; later tactical-analysis and production-readiness work cite it, so it is not a docs-only leftover.
 - `20260317-research-capability-audit` — three-file meta-audit that informed multiple downstream initiatives; should remain standalone evidence.
 - `20260318-research-hinting-system-comparison` — cross-cutting comparison referenced outside a single initiative; not safe to assign one owner retroactively.
 - `20260319-research-katago-allowmoves-occupied` — low-level engine behavior note; no owner initiative artifact cites it directly beyond audit synthesis.

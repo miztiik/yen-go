@@ -75,6 +75,10 @@
 
 ---
 
+Note: the March 14-24 status table above remains scoped to that audit window. The live May 2026 residual standalone-directory reconciliation in `20-analysis.md` also tracks older/out-of-window legacy research bundles such as `20260313-research-katrain-config-comparison` and the pre-contract March 6-8 directories.
+
+---
+
 ## 4. Research-Only Initiatives (no `status.json`)
 
 These folders contain only `15-research.md` (sometimes multiple research files) and serve as input artifacts for feature initiatives.
