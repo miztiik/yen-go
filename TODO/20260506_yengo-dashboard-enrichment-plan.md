@@ -72,16 +72,23 @@ messy UI. If you take a screenshot of it you will understand that."
 ### Acceptance criteria
 - [ ] Capture screenshots of Operations + Logs at 1280×800 and 1920×1080
       in both light and dark themes; archive in `tools/yengo_dashboard/PLAN.md`
-      (or a `screenshots/` folder).
+      (or a `screenshots/` folder). _(Deferred — requires interactive
+      browser session; not reproducible from headless test sandbox.)_
 - [x] Pin section header typography (size, weight, color, casing) in
       `styles.css` and reuse across all five views — `viewHeader()` helper
       + `.view-header` / `.view-header-title` / `.view-header-sub` classes.
-- [ ] Operations: equal-height cards, consistent gap, destructive section
+- [x] Operations: equal-height cards, consistent gap, destructive section
       visibility tested with operator (no false alarms, no missed signals).
+      _(Equal-height implemented via `flex flex-col` + `flex-1` body +
+      `mt-auto` action row; pinned by
+      `test_maint_card_uses_flex_column_for_equal_height`. Operator
+      walkthrough deferred to operator session.)_
 - [x] Logs: stage-file list is collapsible / responsive; tail viewer fills
       remaining width — `.logs-stage-grid` flexes 13–18rem aside across
       breakpoints, stacks below 768px.
-- [ ] Light-theme regression sweep: every view checked.
+- [ ] Light-theme regression sweep: every view checked. _(Deferred —
+      visual regression; existing `test_styles_define_light_theme_overrides`
+      pins token coverage but per-view sweep needs interactive browser.)_
 - [x] Add a single test that pins "all five views use the same `.view-header`
       pattern" so future drift is caught — `test_view_header_used_by_every_render_function`
       asserts every `render*` site emits `viewHeader("<title>", ...)`.

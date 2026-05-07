@@ -843,3 +843,22 @@ def test_destructive_buttons_have_global_typed_confirm_guard(app_js: str) -> Non
         "Theme 16c: guard must be installed at boot so destructive buttons "
         "on other views are also covered, not just Operations."
     )
+
+
+def test_maint_card_uses_flex_column_for_equal_height(app_js: str) -> None:
+    """Theme 0: Operations cards must stretch to the row's height and pin
+    their action row to the bottom so a tall card next to a short card
+    doesn't leave a ragged button alignment.
+
+    Implemented by giving the card section ``flex flex-col`` and the body
+    container ``flex-1`` / action row ``mt-auto``.
+    """
+    assert 'class="maint-card flex flex-col' in app_js, (
+        "Theme 0: maintCard root must be a flex column so children stretch."
+    )
+    assert '<div class="flex-1">${opts.body}</div>' in app_js, (
+        "Theme 0: body wrapper must be flex-1 so it absorbs vertical slack."
+    )
+    assert 'class="flex gap-2 mt-auto"' in app_js, (
+        "Theme 0: action-row must use mt-auto so buttons hug the bottom edge."
+    )

@@ -1637,14 +1637,14 @@ function maintCard(opts) {
     : ``;
   return `
     <section data-maint-card${opAttr} data-maint-verb="${escapeHtml(opts.button.label)}"
-             class="maint-card rounded-md border border-slate-800 bg-slate-900 p-4 space-y-3
+             class="maint-card flex flex-col rounded-md border border-slate-800 bg-slate-900 p-4 space-y-3
                     ${opts.group === 'destructive' ? 'border-l-2 border-l-rose-500/40' : ''}"${titleAttr}>
       <header class="flex items-baseline justify-between">
         <h3 class="text-sm font-semibold text-slate-200">${escapeHtml(opts.title)}</h3>
         <span class="text-[10px] uppercase tracking-wider text-slate-500">${escapeHtml(opts.group)}</span>
       </header>
-      ${opts.body}
-      <div class="flex gap-2">
+      <div class="flex-1">${opts.body}</div>
+      <div class="flex gap-2 mt-auto">
         ${previewBtn}
         <button id="${opts.button.id}" ${destructive}
                 class="flex-1 ${variantCls} hover:brightness-125 text-sm rounded-md px-3 py-1.5">
