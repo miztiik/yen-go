@@ -591,3 +591,75 @@ class TestRuntimeInfoEndpoint:
         assert raw["logs_bytes"] == 0
         assert raw["state_bytes"] == 0
         assert raw["staging_bytes"] == 0
+
+
+def _seed_activity_run(runtime: Path, *, run_id: str, status: str, ts: str) -> None:
+    """Theme 13b: seed minimal RunState JSON the `activity` CLI consumes."""
+    runs_dir = runtime / "state" / "runs"
+    runs_dir.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "run_id": run_id,
+        "status": status,
+        "started_at": ts,
+        "completed_at": ts,
+        "failures": [],
+    }
+    (runs_dir / f"{run_id}.json").write_text(json.dumps(payload), encoding="utf-8")
+
+
+class TestActivityEndpoint:
+    """Theme 13b: drives the real ``activity --json`` subprocess via the cockpit.
+
+    Audit and publish-log live under the collections ops dir (separate from
+    runtime); seeding a single run is enough to validate the wire contract,
+    since the CLI's source merging is exercised by ``test_activity.py``.
+    """
+
+    def test_returns_run_event(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        runtime = tmp_path / "runtime"
+        _seed_activity_run(
+            runtime, run_id="20260507-aaaaaaaa", status="completed",
+            ts="2026-05-07T10:00:00+00:00",
+        )
+        monkeypatch.setenv("YENGO_RUNTIME_DIR", str(runtime))
+        monkeypatch.setenv("YENGO_ROOT", str(REPO_ROOT))
+        app = create_app(repo_root=REPO_ROOT, runtime_dir=runtime)
+        with TestClient(app) as client:
+            resp = client.get("/api/activity", params={"limit": 50})
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert isinstance(raw, list)
+        run_events = [e for e in raw if e["kind"] == "run"]
+        assert any(e["subject_id"] == "20260507-aaaaaaaa" for e in run_events)
+
+    def test_kinds_filter_excludes_run_events(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        runtime = tmp_path / "runtime"
+        _seed_activity_run(
+            runtime, run_id="20260507-bbbbbbbb", status="completed",
+            ts="2026-05-07T11:00:00+00:00",
+        )
+        monkeypatch.setenv("YENGO_RUNTIME_DIR", str(runtime))
+        monkeypatch.setenv("YENGO_ROOT", str(REPO_ROOT))
+        app = create_app(repo_root=REPO_ROOT, runtime_dir=runtime)
+        with TestClient(app) as client:
+            resp = client.get("/api/activity", params={"kinds": "publish"})
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        # No publish-log seeded → empty result when filtered to publish.
+        assert all(e["kind"] != "run" for e in raw)
+
+    def test_invalid_kind_returns_400(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        runtime = tmp_path / "runtime"
+        runtime.mkdir()
+        monkeypatch.setenv("YENGO_RUNTIME_DIR", str(runtime))
+        monkeypatch.setenv("YENGO_ROOT", str(REPO_ROOT))
+        app = create_app(repo_root=REPO_ROOT, runtime_dir=runtime)
+        with TestClient(app) as client:
+            resp = client.get("/api/activity", params={"kinds": "bogus"})
+        assert resp.status_code == 400

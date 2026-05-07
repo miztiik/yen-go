@@ -13,6 +13,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 
 from tools.yengo_dashboard import __version__
 from tools.yengo_dashboard.server.models import (
+    ActivityResponse,
     AdaptersResponse,
     FailuresSummaryResponse,
     HealthResponse,
@@ -103,6 +104,42 @@ def build_read_router(
                 },
             ) from exc
         return FailuresSummaryResponse(raw=payload)
+
+    @router.get("/activity", response_model=ActivityResponse)
+    def activity(
+        _request: Request,
+        from_ts: str | None = Query(default=None, alias="from"),
+        to_ts: str | None = Query(default=None, alias="to"),
+        kinds: str | None = Query(
+            default=None,
+            description="Comma-separated subset of {run,maintenance,publish}.",
+        ),
+        limit: int = Query(100, ge=1, le=1000),
+    ) -> ActivityResponse:
+        """Theme 13b: passthrough of ``activity --json``.
+
+        Activity tab merges run/audit/publish-log events into a single
+        timeline. Errors propagate as 400 so the UI can surface CLI stderr.
+        """
+        kind_list = [k.strip() for k in kinds.split(",") if k.strip()] if kinds else None
+        try:
+            payload = runner.activity(
+                from_ts=from_ts,
+                to_ts=to_ts,
+                kinds=kind_list,
+                limit=limit,
+            )
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "puzzle_manager activity --json failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return ActivityResponse(raw=payload)
 
     @router.get("/runtime-info", response_model=RuntimeInfoResponse)
     def runtime_info(_request: Request) -> RuntimeInfoResponse:

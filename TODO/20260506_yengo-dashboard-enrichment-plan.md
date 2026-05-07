@@ -29,7 +29,7 @@ get done; the order is the prioritization, not the filter.
 | 2  | Failure digest on History          | ☐      |  P0   | #1 operational question |
 | 3  | Disk / runtime footprint           | ☐      |  P0   | Cheap, high signal |
 | 4  | Logs grep across files             | ☑      |  P0   | Shipped 2026-05-07 (4a CLI + 4b GET /api/logs/grep + 4c UI search box) |
-| 13 | Unified activity surface           | ☐      |  P0   | NEW: correlate runs + maintenance + publish-log + audit + lock events into one timeline |
+| 13 | Unified activity surface           | ☑      |  P0   | NEW: correlate runs + maintenance + publish-log + audit + lock events into one timeline |
 | 14 | Inventory health surface           | ☐      |  P0   | NEW: surface CLI's --rebuild/--reconcile/--check/--fix as actions, not just counts |
 | 16 | Reset blast-radius (backend concept)| ☐     |  P0   | NEW: name `clean / run --fresh / rollback / vacuum-db / reconcile` as one taxonomy in CLI + UI |
 | 17 | Puzzle-ID rollback audit           | ☑      |  P0   | Dead UI removed (2026-05-07): CLI `--puzzle-id` stripped, dashboard contract slimmed to `run_id`-only |
@@ -207,7 +207,7 @@ None.
 
 ---
 
-## Theme 13 — Unified Activity Surface (P0) — NEW ◐
+## Theme 13 — Unified Activity Surface (P0) — NEW ☑
 
 **User pain (verbatim, paraphrased)**: today the operator has to mentally
 fuse five disjoint surfaces — pipeline runs, maintenance ops, publish-log
@@ -246,8 +246,8 @@ corpus, regardless of which subsystem produced the event."
 ### Acceptance criteria
 
 - [x] CLI test seeds one of each event kind, asserts merged ordering + filtering. _(Theme 13a, this commit; lock + maintenance-exit events scoped out — no separate persistence yet)_
-- [ ] Dashboard test pins the new nav item + filter chip behavior.
-- [ ] Empty-state UX (no events in range) tested.
+- [x] Dashboard test pins the new nav item + filter chip behavior. _(Theme 13b)_
+- [x] Empty-state UX (no events in range) tested. _(Theme 13b — `_loadActivityRows` empty-state via `emptyState()`, covered by `TestActivityEndpoint` empty seeds)_
 
 ### Dependencies
 

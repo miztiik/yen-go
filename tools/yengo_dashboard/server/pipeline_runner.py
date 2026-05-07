@@ -288,6 +288,35 @@ class PipelineRunner:
             )
         return result
 
+    def activity(
+        self,
+        *,
+        from_ts: str | None = None,
+        to_ts: str | None = None,
+        kinds: list[str] | None = None,
+        limit: int = 100,
+    ) -> list:
+        """Wraps ``puzzle_manager activity --json``.
+
+        Returns the parsed JSON list verbatim. Schema is owned by the CLI
+        (``backend.puzzle_manager.models.activity.ActivityEvent``); the
+        cockpit forwards items unchanged per principle #6.
+        """
+        args = ["activity", "--json", "--limit", str(limit)]
+        if from_ts:
+            args += ["--from", from_ts]
+        if to_ts:
+            args += ["--to", to_ts]
+        if kinds:
+            args += ["--kinds", ",".join(kinds)]
+        result = self._run_json_any(args)
+        if not isinstance(result, list):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON list, got {type(result).__name__}", "",
+            )
+        return result
+
     def _run_json_any(self, subcommand: list[str]) -> object:
         """Like ``_run_json_from_args`` but returns parsed JSON of any type
         (list or dict). Used by subcommands whose JSON output is a bare list."""

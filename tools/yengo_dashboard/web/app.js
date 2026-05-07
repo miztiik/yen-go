@@ -2228,6 +2228,92 @@ async function _loadFailuresSummaryCard() {
   });
 }
 
+// ---------- Theme 13b: Activity timeline ----------
+//
+// Unified view of run/maintenance/publish events from `activity --json`.
+// Kind-filter chips drive the CLI's --kinds flag so the cockpit never
+// reinterprets the merge order; that lives in
+// `backend.puzzle_manager.models.activity.compute_activity`.
+
+const _ACTIVITY_KIND_VARIANTS = {
+  run:         "info",
+  maintenance: "warn",
+  publish:     "ok",
+};
+let _activityKinds = new Set(["run", "maintenance", "publish"]);
+
+function _activityRow(ev) {
+  const variant = _ACTIVITY_KIND_VARIANTS[ev.kind] || "neutral";
+  return `
+    <div class="rounded-md border border-slate-800 bg-slate-900 p-3">
+      <div class="flex items-baseline gap-3 flex-wrap">
+        ${pill(variant, ev.kind)}
+        <span class="font-mono text-sm">${escapeHtml(ev.subject_id)}</span>
+        <span class="text-xs text-slate-400" data-rel-time="${escapeHtml(ev.ts || "")}">${relTime(ev.ts)}</span>
+        <span class="text-[11px] text-slate-500 font-mono">by ${escapeHtml(ev.actor)}</span>
+      </div>
+      <div class="text-sm text-slate-200 mt-1.5">${escapeHtml(ev.summary)}</div>
+    </div>`;
+}
+
+async function _loadActivityRows() {
+  const list = $("#activity-rows");
+  if (!list) return;
+  const kinds = [..._activityKinds];
+  if (kinds.length === 0) {
+    list.innerHTML = `<div class="text-sm text-slate-500 italic px-3 py-4">No event kinds selected.</div>`;
+    return;
+  }
+  list.innerHTML = `<div class="text-slate-400 text-sm">loading activity…</div>`;
+  let raw;
+  try {
+    const params = new URLSearchParams({ limit: "100", kinds: kinds.join(",") });
+    const resp = await getJSON(`/api/activity?${params.toString()}`);
+    raw = Array.isArray(resp?.raw) ? resp.raw : [];
+  } catch (e) {
+    list.innerHTML = errorBlock("/api/activity", e);
+    return;
+  }
+  if (raw.length === 0) {
+    list.innerHTML = emptyState(
+      "No activity yet.",
+      "Run the pipeline or perform a maintenance op (clean / rollback / vacuum-db) to populate the timeline.",
+    );
+    return;
+  }
+  list.innerHTML = raw.map(_activityRow).join("");
+  refreshRelTimes(list);
+  if (window.lucide) window.lucide.createIcons({ container: list });
+}
+
+async function renderActivity() {
+  const root = $("#view-activity");
+  const chips = ["run", "maintenance", "publish"].map((k) => {
+    const on = _activityKinds.has(k);
+    const cls = on
+      ? "bg-teal-500/15 text-teal-200 ring-teal-500/40"
+      : "bg-slate-900 text-slate-500 ring-slate-700";
+    return `<button type="button" data-kind="${k}"
+                    class="activity-chip px-2.5 py-1 rounded-full text-xs font-mono ring-1 ${cls}"
+                    aria-pressed="${on}">${k}</button>`;
+  }).join("");
+  root.innerHTML = `
+    ${viewHeader("Activity", { subtext: "Unified timeline of run, maintenance, and publish events." })}
+    <div class="flex items-center gap-2 mb-3 flex-wrap">
+      <span class="text-[11px] uppercase tracking-wider text-slate-500">filter</span>
+      ${chips}
+    </div>
+    <div id="activity-rows" class="grid gap-2"></div>`;
+  root.querySelectorAll(".activity-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const k = btn.dataset.kind;
+      if (_activityKinds.has(k)) _activityKinds.delete(k); else _activityKinds.add(k);
+      renderActivity();
+    });
+  });
+  await _loadActivityRows();
+}
+
 // ---------- Lock release (from alarm bar action) ----------
 
 async function tryReleaseLock() {
@@ -2394,6 +2480,7 @@ const LEGACY_NAV_ALIASES = { workshop: "operations" };
 const NAV_VIEWS = {
   library:    ["overview", "adapters"],
   pipeline:   ["run", "history"],
+  activity:   ["activity"],
   operations: ["maintenance"],
   logs:       ["logs"],
   guide:      ["guide"],
@@ -2403,6 +2490,7 @@ const RENDERERS = {
   overview:    renderOverview,
   adapters:    renderAdapters,
   run:         renderLiveRun,
+  activity:    renderActivity,
   maintenance: renderMaintenance,
   history:     renderHistory,
   logs:        renderLogs,

@@ -714,3 +714,30 @@ def test_clean_target_dropdown_decorated(app_js: str) -> None:
     assert "_CLEAN_TARGET_BYTE_KEYS" in app_js, (
         "Theme 3b: target→bytes mapping must be present so options show estimates."
     )
+
+
+# ---------- Theme 13b: Activity timeline -----------------------------------
+
+
+def test_activity_nav_and_view_present(index_html: str) -> None:
+    """Theme 13b: Activity nav button + view section must exist in the SPA shell."""
+    assert 'data-nav="activity"' in index_html, (
+        "Theme 13b: index.html must declare a data-nav=\"activity\" sidebar entry."
+    )
+    assert 'id="view-activity"' in index_html, (
+        "Theme 13b: index.html must declare a #view-activity section for the renderer."
+    )
+
+
+def test_activity_endpoint_and_renderer_present(app_js: str) -> None:
+    """Theme 13b: app.js must wire renderActivity and call /api/activity."""
+    assert "renderActivity" in app_js, (
+        "Theme 13b: app.js must define renderActivity and register it in RENDERERS."
+    )
+    assert "/api/activity" in app_js, (
+        "Theme 13b: app.js must call GET /api/activity (no client-side merge)."
+    )
+    # Kind chips drive the CLI's --kinds filter.
+    assert "activity-chip" in app_js, (
+        "Theme 13b: kind-filter chips must be present so users can scope the timeline."
+    )

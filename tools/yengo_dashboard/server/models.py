@@ -488,3 +488,20 @@ class RuntimeInfoResponse(BaseModel):
             "`backend.puzzle_manager.models.runtime_info.RuntimeInfo`."
         ),
     )
+
+
+class ActivityResponse(BaseModel):
+    """``GET /api/activity`` payload — verbatim ``activity --json`` output.
+
+    Each ``raw`` entry mirrors ``backend.puzzle_manager.models.activity.ActivityEvent``
+    (Theme 13a). Per principle #6 the cockpit does not re-validate the items so
+    the schema can evolve in the pipeline without a coordinated dashboard release.
+    """
+
+    raw: list = Field(
+        ...,
+        description=(
+            "Parsed JSON list of `activity --json`. Item shape owned by "
+            "`backend.puzzle_manager.models.activity.ActivityEvent`."
+        ),
+    )
