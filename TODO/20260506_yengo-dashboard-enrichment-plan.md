@@ -355,7 +355,7 @@ action appears (not just on the Operations page).
 
 ### Acceptance criteria
 
-- [ ] CLI: `ops catalog --json` is Pydantic-validated; every mutating
+- [x] CLI: `ops catalog --json` is Pydantic-validated; every mutating
       subcommand registered. Adding a new mutating command without
       registering it fails a backend test.
 - [ ] Dashboard: Operations page rendering is data-driven from the catalog

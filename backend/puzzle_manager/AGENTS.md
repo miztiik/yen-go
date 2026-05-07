@@ -23,7 +23,7 @@
 | Path | Purpose |
 |------|---------|
 | `__main__.py` | `python -m backend.puzzle_manager` entry; delegates to `cli.py` |
-| `cli.py` | 14-command argparse CLI: `run`, `status` (Theme 2a: `--failures-summary`), `sources`, `daily`, `clean`, `validate`, `publish-log`, `logs` (Theme 4: `grep`), `rollback`, `vacuum-db`, `inventory` (Theme 14a: `--check --json` emits `IntegrityReport`; Theme 14c1/14c2: `--{rebuild,reconcile,fix} [--dry-run] --json` emits `InventoryMutationPreview` / `InventoryMutationResult` — apply path takes `PipelineLock` and writes an `inventory_{op}` row to `audit.jsonl`), `runtime-info` (Theme 3a), `activity` (Theme 13a) |
+| `cli.py` | 14-command argparse CLI: `run`, `status` (Theme 2a: `--failures-summary`), `sources`, `daily`, `clean`, `validate`, `publish-log`, `logs` (Theme 4: `grep`), `rollback`, `vacuum-db`, `inventory` (Theme 14a: `--check --json` emits `IntegrityReport`; Theme 14c1/14c2: `--{rebuild,reconcile,fix} [--dry-run] --json` emits `InventoryMutationPreview` / `InventoryMutationResult` — apply path takes `PipelineLock` and writes an `inventory_{op}` row to `audit.jsonl`), `runtime-info` (Theme 3a), `activity` (Theme 13a), `ops catalog` (Theme 16a: `--json` emits the blast-radius taxonomy from `models/ops_catalog.py`) |
 | `pm_logging.py` | `setup_logging()`, `create_trace_logger()` — structured JSON logs |
 | `paths.py` | `get_output_dir()`, `get_pm_staging_dir()`, `get_pm_state_dir()`, etc. — all path resolution |
 | `exceptions.py` | `PuzzleManagerError`, `SGFParseError`, `AdapterNotFoundError`, `ValidationError` |
@@ -87,6 +87,7 @@
 | `models/activity.py` | `ActivityEvent` (Pydantic) + `compute_activity(runs_dir, audit_file, publish_log_dir, ...)` — Theme 13a wire contract for `activity` CLI; merges run/audit/publish-log events, no new persistence |
 | `models/integrity.py` | `IntegrityReport` / `IntegrityIssue` / `IntegritySummary` (Pydantic) — Theme 14a wire contract for `inventory --check --json`. Adapts the legacy `IntegrityResult` dataclass into a list-of-issues shape (kinds: `missing_file`, `orphan_file`); `hash_mismatch` deferred. |
 | `models/inventory_preview.py` | `InventoryMutationPreview` + `InventoryMutationResult` (Pydantic, `op = rebuild|reconcile|fix`) — Theme 14c1/14c2 wire contracts for `inventory --{rebuild,reconcile,fix} [--dry-run] --json`. Preview reports the impact summary without touching disk; Result mirrors the same shape post-apply with `executed=True`, `audit_timestamp`, and post-state totals. |
+| `models/ops_catalog.py` | `OpsCatalogEntry` (Pydantic) + `OPS_CATALOG` registry + `get_ops_catalog()` — Theme 16a wire contract for `ops catalog --json`. Single source of truth for blast-radius classification (scope, reversible, preview_supported, section) of every mutating CLI subcommand. The drift-fence test in `tests/unit/test_ops_catalog.py` enforces that registering a new mutating subcommand without a catalog row fails CI. |
 | `config/loader.py` | `ConfigLoader` — load `sources.json`, `config/*.json`, `get_active_adapter()` |
 | `inventory/manager.py` | `InventoryManager` — load/rebuild/reconcile `inventory.json` |
 | `daily/generator.py` | `DailyGenerator` — select puzzles by level/tag, write via db_writer |

@@ -936,6 +936,29 @@ Examples:
         help="Emit a JSON array of LogsGrepHit instead of human text.",
     )
 
+    # ops command (Theme 16a) — blast-radius catalog
+    ops_parser = subparsers.add_parser(
+        "ops",
+        help="Inspect mutating-operation catalog (blast-radius taxonomy)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Subcommands:
+  catalog   List every mutating subcommand with its scope/reversibility.
+
+Examples:
+  %(prog)s catalog --json
+  %(prog)s catalog
+        """,
+    )
+    ops_subparsers = ops_parser.add_subparsers(dest="ops_action", help="Ops actions")
+    ops_catalog_parser = ops_subparsers.add_parser(
+        "catalog", help="Emit the mutating-operation catalog"
+    )
+    ops_catalog_parser.add_argument(
+        "--json", action="store_true",
+        help="Emit JSON list of OpsCatalogEntry instead of human text.",
+    )
+
     # runtime-info command (Theme 3a)
     runtime_info_parser = subparsers.add_parser(
         "runtime-info",
@@ -2425,6 +2448,30 @@ def _print_runtime_info(info) -> None:
     print(f"  captured_at    {info.captured_at}")
 
 
+def cmd_ops(args: argparse.Namespace) -> int:
+    """Theme 16a: emit the mutating-operation catalog (blast-radius taxonomy)."""
+    from backend.puzzle_manager.models.ops_catalog import get_ops_catalog
+
+    if getattr(args, "ops_action", None) != "catalog":
+        print("Usage: ops catalog [--json]")
+        return 0
+
+    entries = get_ops_catalog()
+    if args.json:
+        print(json.dumps([e.model_dump() for e in entries], indent=2))
+        return 0
+
+    print("\nMutating-operation catalog")
+    print("-" * 72)
+    print(f"  {'op':24s} {'section':12s} {'reversible':16s} preview  scope")
+    for e in entries:
+        rev = "yes" if e.reversible is True else ("no" if e.reversible is False else "by-audit")
+        prv = "yes" if e.preview_supported else "no "
+        scope = ",".join(e.scope)
+        print(f"  {e.op:24s} {e.section:12s} {rev:16s} {prv:7s} {scope}")
+    return 0
+
+
 def cmd_activity(args: argparse.Namespace) -> int:
     """Theme 13a: emit a unified timeline of run/maintenance/publish events."""
     from backend.puzzle_manager.models.activity import compute_activity
@@ -2624,6 +2671,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_runtime_info(args)
     elif args.command == "activity":
         return cmd_activity(args)
+    elif args.command == "ops":
+        return cmd_ops(args)
     elif args.command == "config-lock":
         return cmd_config_lock(args)
     else:
