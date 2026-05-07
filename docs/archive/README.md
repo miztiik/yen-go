@@ -6,7 +6,7 @@
 >
 > - [How-To Guides](../how-to/) — Current procedures
 
-**Last Updated**: 2026-05-06
+**Last Updated**: 2026-05-07
 
 Documents in this directory are deprecated and kept for historical reference only.
 
@@ -40,6 +40,8 @@ All archived documents include a deprecation banner at the top.
 | [katago-enrichment-code-review-2026-03-02.md](katago-enrichment-code-review-2026-03-02.md) | Audit synthesis + remediation sprints | 2026-03 |
 | [katago-enrichment-audit-synthesis-2026-03-02.md](katago-enrichment-audit-synthesis-2026-03-02.md) | AI-solve remediation and initiative tracking | 2026-03 |
 | [march-2026-initiative-decomposition.md](march-2026-initiative-decomposition.md) | Historical digest for March 2026 initiative retirement out of TODO/initiatives | 2026-05 |
+| [puzzle-quality-strategy-2026-02-25.md](puzzle-quality-strategy-2026-02-25.md) | Historical Strategy D quality-control plan and classifier roadmap | 2026-05 |
+| [puzzle-quality-scorer-research-2026-02-27.md](puzzle-quality-scorer-research-2026-02-27.md) | Historical symbolic tactical-analyzer proposal and clean-room research digest | 2026-05 |
 | [ai-solve-enrichment-plan-v3.md](ai-solve-enrichment-plan-v3.md) | [architecture/tools/katago-enrichment.md](../architecture/tools/katago-enrichment.md) | 2026-05 |
 | [go-board-js-libraries-analysis.md](go-board-js-libraries-analysis.md) | [architecture/frontend/goban-integration.md](../architecture/frontend/goban-integration.md) | 2026-05 |
 | [solution-tree-visualization-analysis.md](solution-tree-visualization-analysis.md) | [architecture/frontend/goban-integration.md](../architecture/frontend/goban-integration.md) | 2026-05 |
