@@ -129,7 +129,7 @@ None.
 
 ---
 
-## Theme 2 — Failure Digest on History (P0)
+## Theme 2 — Failure Digest on History (P0) ◐ (2a shipped)
 
 **Jobs covered**: "Why did this run fail / skip puzzles?"
 
@@ -147,7 +147,7 @@ None.
 - History row: failure-count badge per run; click → drilldown.
 
 ### Acceptance criteria
-- [ ] Backend test with seeded run-state files asserts grouping logic.
+- [x] Backend test with seeded run-state files asserts grouping logic.
 - [ ] Dashboard test pins the new card renders even on empty fixture.
 - [ ] Click flow from card → Logs view works under SPA routing.
 

@@ -441,6 +441,22 @@ Examples:
         metavar="N",
         help="Show last N runs (default: 10)",
     )
+    status_parser.add_argument(
+        "--failures-summary",
+        action="store_true",
+        help=(
+            "Group RunState.failures[] across recent runs into "
+            "[{stage, error_type, count, sample_message, sample_puzzle_ids, "
+            "affected_runs}] (Theme 2). Pair with --json for machine output."
+        ),
+    )
+    status_parser.add_argument(
+        "--last",
+        type=int,
+        default=10,
+        metavar="N",
+        help="With --failures-summary: number of recent runs to scan (default: 10).",
+    )
 
     # clean command
     clean_parser = subparsers.add_parser(
@@ -1143,6 +1159,16 @@ def cmd_status(args: argparse.Namespace) -> int:
         )
         status = coordinator.get_status()
 
+        if getattr(args, "failures_summary", False):
+            from backend.puzzle_manager.models.failures import summarize_failures
+            history = coordinator.state_manager.get_history(limit=args.last)
+            groups = summarize_failures(history)
+            if args.json:
+                print(json.dumps([g.model_dump(mode="json") for g in groups], indent=2))
+            else:
+                _print_failures_summary(groups, scanned=len(history))
+            return 0
+
         # Check for history flag
         if args.history:
             history = coordinator.state_manager.get_history(limit=args.history)
@@ -1186,6 +1212,24 @@ def _print_history(history: list) -> None:
             status_icon = "[...]"
         processed = run.get_total_processed()
         print(f"  {status_icon} {run.run_id} | {run.started_at.strftime('%Y-%m-%d %H:%M')} | {processed} processed")
+
+
+def _print_failures_summary(groups: list, *, scanned: int) -> None:
+    """Pretty print the failures-summary groups for human eyes."""
+    print(f"\nFailure digest (scanned {scanned} run{'' if scanned == 1 else 's'})")
+    print("-" * 60)
+    if not groups:
+        print("  No failures recorded.")
+        return
+    for g in groups:
+        print(f"  [{g.stage:8s}] {g.error_type} (x{g.count})")
+        if g.sample_message:
+            msg = g.sample_message if len(g.sample_message) <= 100 else g.sample_message[:100] + "..."
+            print(f"      msg: {msg}")
+        if g.sample_puzzle_ids:
+            print(f"      ids: {', '.join(g.sample_puzzle_ids)}")
+        if g.affected_runs:
+            print(f"      runs: {', '.join(g.affected_runs)}")
 
 
 def _print_status(status: dict) -> None:
