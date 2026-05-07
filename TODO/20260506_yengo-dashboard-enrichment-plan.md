@@ -377,29 +377,29 @@ The dashboard exposes a "rollback by puzzle-ID" affordance, but the
 backend's primary rollback path is by `run_id`. We need to confirm
 which (if any) puzzle-ID-targeted rollback API actually exists end-to-end.
 
-### Audit findings (2026-05-07)
+### Audit findings (2026-05-07, refreshed)
 
-**Status: dead UI confirmed.** Evidence:
+**Status: resolved via path (b).** A prior session executed the recommendation
+end-to-end; this entry is retained as historical context.
 
-- `backend/puzzle_manager/cli.py:709` — argparse accepts `--puzzle-id ID...`
-  inside a `required=True` mutually-exclusive group with `--run-id`. Help
-  text and module-level docstring both advertise the flag.
-- `backend/puzzle_manager/cli.py:1853-1855` — `cmd_rollback()` immediately
-  rejects anything without `--run-id`:
-
-  ```python
-  if not args.run_id:
-      print("Error: --run-id is required for rollback")
-      return 1
-  ```
-
-  The implementation has no branch consuming `args.puzzle_id`.
-- `tools/yengo_dashboard/server/routes_maintenance.py:48-68` — the dashboard
-  happily builds `--puzzle-id ID1 ID2…` argv when the operator fills in
-  the textarea. The CLI then rejects it with the cryptic `--run-id is
-  required` error, surfacing to the SSE log only.
-- `RollbackManager` has no public `rollback_by_puzzle_ids()` method;
-  every rollback path joins through `rollback_by_run()`.
+- `backend/puzzle_manager/cli.py` — `rollback_parser` declares `--run-id` as
+  `required=True`. There is no `--puzzle-id` argument. `cmd_rollback` carries
+  an explicit comment ("the prior --puzzle-id surface was a dead UI… removed
+  in Theme 17") at the rollback dispatch site.
+- `tools/yengo_dashboard/server/routes_maintenance.py:_build_rollback_args` —
+  emits only `--run-id`; the helper's docstring references Theme 17. The
+  `RollbackRequest` Pydantic model pins `run_id` as required so missing
+  values fail at the schema layer (HTTP 422), not deep in CLI rejection.
+- `RollbackManager` exposes only `rollback_by_run()`; no
+  `rollback_by_puzzle_ids()` method exists.
+- Guard tests:
+  - `backend/puzzle_manager/tests/unit/test_rollback.py::TestTheme17NoPuzzleIdSurface`
+    pins (1) the argparser rejects `--puzzle-id`, (2) `--run-id` remains
+    required, (3) `RollbackManager` has no per-puzzle method.
+  - `tools/yengo_dashboard/tests/test_routes_maintenance.py` pins that the
+    dashboard never emits `--puzzle-id` and that missing `run_id` returns 422.
+- Documentation: `docs/architecture/backend/inventory-operations.md` §
+  "Rollback Granularity (Theme 17)" records the decision.
 
 ### Decision required
 
@@ -419,12 +419,12 @@ for an unknown duration. Fix the lie now; revisit (a) under a real
 feature request.
 
 ### Acceptance criteria
-- [ ] One of (a) or (b) executed.
-- [ ] `tools/yengo_dashboard/server/routes_maintenance.py` no longer
+- [x] One of (a) or (b) executed. _(b — completed.)_
+- [x] `tools/yengo_dashboard/server/routes_maintenance.py` no longer
       builds the broken `--puzzle-id` argv path (or builds it correctly
       against a working backend).
-- [ ] Outcome documented in `docs/architecture/backend/inventory-operations.md`.
-- [ ] Real-fixture test: if (a), rollback by puzzle-id reduces published
+- [x] Outcome documented in `docs/architecture/backend/inventory-operations.md`.
+- [x] Real-fixture test: if (a), rollback by puzzle-id reduces published
       corpus by exactly the requested set; if (b), no `--puzzle-id`
       reachable code path remains.
 

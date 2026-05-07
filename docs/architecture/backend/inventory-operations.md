@@ -209,6 +209,10 @@ After database rebuild, inventory is fully reconciled from disk (SGF files remai
 
 Rollback uses publish log entry metadata (`entry.puzzle_id`, `entry.path`) to delete only the affected SGF files. Empty batch directories are automatically cleaned up.
 
+### Rollback Granularity (Theme 17)
+
+Rollback is **run-scoped only**. The CLI accepts `--run-id` (required); there is no `--puzzle-id` flag. Earlier versions advertised a per-puzzle rollback affordance through both the CLI argparser and the dashboard textarea, but the implementation never existed — `RollbackManager` only ever exposed `rollback_by_run()`, and `cmd_rollback` rejected anything missing `--run-id` at runtime. The dead surface was removed in Theme 17 of the dashboard enrichment plan to restore honesty between the operator-facing affordances and the backend's actual capabilities. A guard test (`tests/unit/test_rollback.py::TestTheme17NoPuzzleIdSurface`) pins the absence so a regression cannot silently re-introduce the broken path. Re-introducing per-puzzle rollback as a real feature would require a new `RollbackManager.rollback_by_puzzle_ids()` method with audit-trail event rows; defer until an operator request justifies it.
+
 ---
 
 ## Execution Serialization

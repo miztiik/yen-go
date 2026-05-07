@@ -193,3 +193,30 @@ class TestRollbackResult:
 
         assert result.success is False
         assert "max=" in result.errors[0]
+
+
+class TestTheme17NoPuzzleIdSurface:
+    """Theme 17 guard: rollback exposes no --puzzle-id reachable code path.
+
+    Per the dashboard enrichment plan, the puzzle-ID rollback affordance was
+    a dead UI (CLI rejected it at runtime, no manager method existed). It was
+    removed. This test pins the absence so a regression cannot silently
+    re-introduce the broken surface.
+    """
+
+    def test_rollback_argparser_rejects_puzzle_id_flag(self) -> None:
+        from backend.puzzle_manager.cli import create_parser
+
+        parser = create_parser()
+        with pytest.raises(SystemExit):
+            parser.parse_args(["rollback", "--puzzle-id", "abc123", "--reason", "x"])
+
+    def test_rollback_argparser_requires_run_id(self) -> None:
+        from backend.puzzle_manager.cli import create_parser
+
+        parser = create_parser()
+        with pytest.raises(SystemExit):
+            parser.parse_args(["rollback", "--reason", "x"])
+
+    def test_rollback_manager_exposes_no_rollback_by_puzzle_ids(self) -> None:
+        assert not hasattr(RollbackManager, "rollback_by_puzzle_ids")
