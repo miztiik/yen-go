@@ -59,7 +59,7 @@
 
 ## Research Inputs
 
-Prior research from `TODO/initiatives/2026-03-08-research-goproblems-tsumego-frame/15-research.md`:
+Prior research from `TODO/initiatives/20260308-1500-feature-tsumego-frame-rewrite/20260308-goproblems-tsumego-frame-research.md`:
 
 - KaTrain source: MIT, SHA `877684f9a2ff913120e2d608a4eb8202dc1fc8ed` (verbatim)
 - ghostban source: MIT, `https://github.com/goproblems/ghostban` v3.0.0-alpha.155 (verbatim JS)
@@ -68,5 +68,5 @@ Prior research from `TODO/initiatives/2026-03-08-research-goproblems-tsumego-fra
 
 > **See also**:
 >
-> - [Research: goproblems tsumego frame](../2026-03-08-research-goproblems-tsumego-frame/15-research.md) — Verbatim source analysis
+> - [Research: goproblems tsumego frame](./20260308-goproblems-tsumego-frame-research.md) — Verbatim source analysis
 > - [Architecture: puzzle-enrichment-lab](../../../docs/architecture/) — Tool isolation rules

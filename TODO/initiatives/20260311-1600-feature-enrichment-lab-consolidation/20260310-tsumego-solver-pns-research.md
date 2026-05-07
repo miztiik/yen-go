@@ -1,6 +1,7 @@
 # Research: cameron-martin/tsumego-solver — What Can puzzle-enrichment-lab Learn?
 
-**Initiative:** `20260310-research-tsumego-solver-pns`
+**Supporting Audit:** `20260310-research-tsumego-solver-pns`
+**Owner Initiative:** `20260311-1600-feature-enrichment-lab-consolidation`
 **Last Updated:** 2026-03-10
 **Status:** Research Complete
 **Researcher Role:** Feature-Researcher (read-only, no implementation)

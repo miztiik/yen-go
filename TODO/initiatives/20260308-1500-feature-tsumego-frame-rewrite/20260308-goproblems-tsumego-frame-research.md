@@ -1,6 +1,7 @@
 # Research: goproblems.com Tsumego Frame Implementation
 
-**Initiative:** `2026-03-08-research-goproblems-tsumego-frame`  
+**Supporting Audit:** `2026-03-08-research-goproblems-tsumego-frame`  
+**Owner Initiative:** `20260308-1500-feature-tsumego-frame-rewrite`  
 **Last Updated:** 2026-03-08 (updated again: §3.5 added — ghostban `e.FO` verbatim from live bundle 920; corrected R-17, R-50; added R-51 through R-63; updated confidence and recommendations)  
 **Researcher:** Feature-Researcher mode
 
@@ -556,7 +557,7 @@ Based on prior research and KataGo analysis protocol documentation:
 ## Handoff
 
 - `research_completed`: true
-- `initiative_path`: `TODO/initiatives/2026-03-08-research-goproblems-tsumego-frame/`
+- `artifact_path`: `TODO/initiatives/20260308-1500-feature-tsumego-frame-rewrite/20260308-goproblems-tsumego-frame-research.md`
 - `artifact`: `15-research.md`
 - `top_recommendations`:
   1. Adopt KaTrain's **count-based fill** (NOT y%2 row alternation — prior description was wrong): row-major scan, first ~half of non-puzzle cells → defense, rest → offense; `(i+j)%2==0 AND |count-defense_area|>board_width` skips cells only in non-seam zones
@@ -825,7 +826,7 @@ Yen-Go currently inherits KaTrain's `offence_to_win = 5` constant (embedded in `
 ## Updated Handoff
 
 - `research_completed`: true
-- `initiative_path`: `TODO/initiatives/2026-03-08-research-goproblems-tsumego-frame/`
+- `artifact_path`: `TODO/initiatives/20260308-1500-feature-tsumego-frame-rewrite/20260308-goproblems-tsumego-frame-research.md`
 - `artifact`: `15-research.md`
 - `top_recommendations`:
   1. Adopt KaTrain's **count-based fill** (verbatim algorithm verified against both KaTrain SHA and ghostban live bundle): row-major scan; first `floor((board_size² - bbox_area) / 2) - komi - 10` non-puzzle cells → defense; rest → offense; `(i+j)%2==0 AND |count-threshold| > board_width` → empty

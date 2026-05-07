@@ -1,7 +1,8 @@
 # Research Brief: Playing Mode DRY/SRP/SOLID/KISS Compliance Audit
 
 **Date**: 2026-03-29
-**Initiative**: `20260329-research-playing-mode-dry-audit`
+**Supporting Audit**: `20260329-research-playing-mode-dry-audit`
+**Owner Initiative**: `20260329-1500-feature-playing-modes-dry-compliance`
 **Status**: Complete
 
 ---
@@ -171,7 +172,7 @@ Random mode is close enough to Daily (sequential puzzles, no timer) to use Puzzl
 
 ```yaml
 research_completed: true
-initiative_path: TODO/initiatives/20260329-research-playing-mode-dry-audit/
+artifact_path: TODO/initiatives/20260329-1500-feature-playing-modes-dry-compliance/20260329-playing-mode-dry-audit.md
 artifact: 15-research.md
 top_recommendations:
   - "R-REC-1: Hybrid approach — Random to PuzzleSetPlayer, Rush keeps separate page with shared sub-components"

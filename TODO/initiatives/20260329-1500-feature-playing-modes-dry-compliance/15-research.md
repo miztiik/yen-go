@@ -3,7 +3,7 @@
 **Initiative**: `20260329-1500-feature-playing-modes-dry-compliance`
 **Last Updated**: 2026-03-29
 
-See full research at: `TODO/initiatives/20260329-research-playing-mode-dry-audit/15-research.md`
+See full research at: `TODO/initiatives/20260329-1500-feature-playing-modes-dry-compliance/20260329-playing-mode-dry-audit.md`
 
 ## Key Findings Summary
 

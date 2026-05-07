@@ -58,4 +58,4 @@
 | Filter data loading slows Rush browse page | Low | SQLite queries are fast (~2ms); same pattern as TechniqueBrowsePage |
 
 > **See also**:
-> - [Research: 15-research.md](../20260322-research-rush-timed-puzzle-audit/15-research.md) — Full audit findings
+> - [Research: 20260322-rush-timed-puzzle-audit.md](./20260322-rush-timed-puzzle-audit.md) — Full audit findings

@@ -66,7 +66,7 @@ The crop itself is not the cause; the combination of crop + linear scan + non-co
 
 ### 3.1 KaTrain `tsumego_frame.py` — Zone-Split Algorithm (Authoritative Source)
 
-Fetched live (SHA `877684f9a2ff913120e2d608a4eb8202dc1fc8ed`, MIT license) and already fully documented in `TODO/initiatives/2026-03-08-research-goproblems-tsumego-frame/15-research.md` §3.2.
+Fetched live (SHA `877684f9a2ff913120e2d608a4eb8202dc1fc8ed`, MIT license) and already fully documented in `TODO/initiatives/20260308-1500-feature-tsumego-frame-rewrite/20260308-goproblems-tsumego-frame-research.md` §3.2.
 
 Key finding for this brief: KaTrain uses **count-based zone split with row-major scan**, NOT flood-fill. The canonical diagram is:
 ```
@@ -227,7 +227,7 @@ post_research_risk_level: low
 
 > **See also:**
 >
-> - [Prior Research: goproblems.com frame](../2026-03-08-research-goproblems-tsumego-frame/15-research.md) — KaTrain + ghostban verbatim sources, R-1 through R-63
+> - [Prior Research: goproblems.com frame](../20260308-1500-feature-tsumego-frame-rewrite/20260308-goproblems-tsumego-frame-research.md) — KaTrain + ghostban verbatim sources, R-1 through R-63
 > - [Feature Rewrite: Tsumego Frame](../20260308-1500-feature-tsumego-frame-rewrite/15-research.md) — merged design summary
 > - [Legality Initiative](../20260311-1800-feature-tsumego-frame-legality/00-charter.md) — F1-F25 correctness findings (already implemented)
 > - [Architecture: KataGo Enrichment D33](../../../docs/architecture/tools/katago-enrichment.md) — crop-then-frame decision

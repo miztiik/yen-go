@@ -8,7 +8,7 @@
 ## Research Summary
 
 Extensive prior research was conducted in the research initiative:  
-**`TODO/initiatives/2026-03-08-research-goproblems-tsumego-frame/15-research.md`**
+**`TODO/initiatives/20260308-1500-feature-tsumego-frame-rewrite/20260308-goproblems-tsumego-frame-research.md`**
 
 That document contains:
 

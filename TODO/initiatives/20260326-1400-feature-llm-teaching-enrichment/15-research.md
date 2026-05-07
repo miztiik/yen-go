@@ -2,7 +2,7 @@
 
 > **Initiative**: 20260326-1400-feature-llm-teaching-enrichment
 > **Date**: 2026-03-27 (updated with gap analysis)
-> **Sources**: 20260326-research-katago-llm-team-analysis, 20260326-research-katascript-katago-patterns, internal codebase archaeology
+> **Sources**: [20260326-katago-llm-team-analysis.md](./20260326-katago-llm-team-analysis.md), [20260326-katascript-katago-patterns.md](./20260326-katascript-katago-patterns.md), internal codebase archaeology
 
 ---
 

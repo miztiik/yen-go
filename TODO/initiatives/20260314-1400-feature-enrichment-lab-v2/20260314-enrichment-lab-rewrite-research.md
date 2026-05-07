@@ -1,6 +1,7 @@
 # Research: Puzzle-Enrichment-Lab Architecture & State Assessment
 
-**Initiative**: `20260314-research-enrichment-lab-rewrite`
+**Supporting Audit**: `20260314-research-enrichment-lab-rewrite`
+**Owner Initiative**: `20260314-1400-feature-enrichment-lab-v2`
 **Research question**: What is the current architecture, health, and pain-point inventory of `tools/puzzle-enrichment-lab/` to inform a major refactor/rewrite?
 **Last Updated**: 2026-03-14
 
@@ -538,7 +539,7 @@ Output: AiAnalysisResult (JSON-serializable enrichment payload)
 
 ```yaml
 research_completed: true
-initiative_path: TODO/initiatives/20260314-research-enrichment-lab-rewrite/
+artifact_path: TODO/initiatives/20260314-1400-feature-enrichment-lab-v2/20260314-enrichment-lab-rewrite-research.md
 artifact: 15-research.md
 top_recommendations:
   - P1: Keep stage pipeline architecture (clean, tested)

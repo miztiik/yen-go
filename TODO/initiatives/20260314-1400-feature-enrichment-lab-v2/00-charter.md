@@ -105,7 +105,7 @@ This phasing ensures correctness fixes are not blocked by feature development.
 | Artifact | Path | Key Findings |
 |----------|------|--------------|
 | External repos research | `TODO/initiatives/20260314-research-lizgoban-katrain-patterns/15-research.md` | Lizgoban ladder.js (pattern-based detection), area.js (ownership clustering), KaTrain ai.py (complexity metric, ELO mapping) |
-| Current lab assessment | `TODO/initiatives/20260314-research-enrichment-lab-rewrite/15-research.md` | 99.5% test pass rate, 8 config-drift failures, GP frame active, BFS dead code |
+| Current lab assessment | `TODO/initiatives/20260314-1400-feature-enrichment-lab-v2/20260314-enrichment-lab-rewrite-research.md` | 99.5% test pass rate, 8 config-drift failures, GP frame active, BFS dead code |
 | Pipeline stage analysis | `TODO/initiatives/20260314-1400-feature-enrichment-lab-v2/15-research.md` | 2 high-severity cross-stage bugs (P-5.1, F-X.1), 6/28 technique detection, stage flow diagram |
 | Visit count research | `TODO/initiatives/20260314-research-lizgoban-katrain-patterns/15-research-visit-counts.md` | KaTrain 500 standard, recommended T0=50/T1=500/T2=2000/T3=5000 |
 

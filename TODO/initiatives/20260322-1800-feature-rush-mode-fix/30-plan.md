@@ -150,4 +150,4 @@ export function loadRushTagEntries(tagId: number): Promise<readonly { path: stri
 > **See also**:
 > - [Charter: 00-charter.md](./00-charter.md) — Goals and acceptance criteria
 > - [Options: 25-options.md](./25-options.md) — OPT-1 selection rationale
-> - [Research: 15-research.md](../20260322-research-rush-timed-puzzle-audit/15-research.md) — Full audit
+> - [Research: 20260322-rush-timed-puzzle-audit.md](./20260322-rush-timed-puzzle-audit.md) — Full audit    

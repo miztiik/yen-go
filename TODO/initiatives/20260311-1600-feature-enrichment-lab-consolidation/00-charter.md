@@ -94,7 +94,7 @@ This fragmentation blocks progress. No single authoritative task list exists.
 
 ## Research Reference
 
-- Research artifact: `TODO/initiatives/20260310-research-tsumego-solver-pns/15-research.md`
+- Research artifact: `TODO/initiatives/20260311-1600-feature-enrichment-lab-consolidation/20260310-tsumego-solver-pns-research.md`
 - Planning confidence: 90 | Risk: low
 - Key source: David B. Benson (1976) "Life in the Game of Go" — unconditional life algorithm
 - Design authority: Kishimoto & Müller (2005) AAAI-05 — df-pn search

@@ -84,7 +84,7 @@ These folders contain only `15-research.md` (sometimes multiple research files) 
 | R-34 | 20260314-refactor-config-decomposition | backend | 15-research.md | R-2 (config-py-decomposition) |
 | R-35 | 20260314-research-101weiqi-sources-architecture | backend | 15-research.md | — |
 | R-36 | 20260314-research-db1-schema-tag-storage | backend | 15-research.md | — |
-| R-37 | 20260314-research-enrichment-lab-rewrite | enrichment-lab | 15-research.md | R-1 (enrichment-lab-v2) |
+| R-37 | 20260314-research-enrichment-lab-rewrite | nested initiative artifact | 20260314-enrichment-lab-rewrite-research.md | R-1 (enrichment-lab-v2) |
 | R-38 | 20260314-research-incremental-db-feasibility | backend | 15-research.md | — |
 | R-39 | 20260314-research-lizgoban-katrain-patterns | katago | 15-research.md, 15-research-visit-counts.md | R-1 (enrichment-lab-v2) |
 | R-40 | 20260314-research-sequence-number-removal | backend | 15-research.md | — |
@@ -95,7 +95,7 @@ These folders contain only `15-research.md` (sometimes multiple research files) 
 | R-45 | 20260318-research-progress-stats-page-placement | frontend | 15-research.md | R-10 (adaptive-learning-engine) |
 | R-46 | 20260319-research-katago-allowmoves-occupied | katago | 15-research.md | R-17/R-18 (katago tuning) |
 | R-47 | 20260322-research-external-sources-fixture-sourcing | nested initiative artifact | 20260322-external-sources-fixture-sourcing.md | R-24 (technique-calibration-fixtures) |
-| R-48 | 20260322-research-rush-timed-puzzle-audit | frontend | 15-research.md | R-25 (rush-mode-fix), R-30 (timed-puzzle-json-to-sql) |
+| R-48 | 20260322-research-rush-timed-puzzle-audit | nested initiative artifact | 20260322-rush-timed-puzzle-audit.md | R-25 (rush-mode-fix), R-30 (timed-puzzle-json-to-sql) |
 | R-49 | 20260324-research-backend-cleanup-post-recovery | nested initiative artifact | 20260324-backend-cleanup-post-recovery-audit.md | R-28 (backend-dead-code-cleanup) |
 | R-50 | 20260324-research-backend-failing-tests | backend | 15-research.md | R-31 (backend-test-remediation) |
 | R-51 | 20260324-research-enrichment-lab-test-audit | nested initiative artifact | 20260324-enrichment-lab-test-audit-research.md | R-33 (enrichment-lab-test-audit) |

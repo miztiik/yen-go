@@ -1,6 +1,7 @@
 # Research Brief: psy777/katascript Repository Analysis for Yen-Go Puzzle Enrichment
 
-> **Initiative**: 20260326-research-katascript-katago-patterns
+> **Supporting Audit**: 20260326-research-katascript-katago-patterns
+> **Owner Initiative**: 20260326-1400-feature-llm-teaching-enrichment
 > **Date**: 2026-03-26
 > **Status**: research_completed
 

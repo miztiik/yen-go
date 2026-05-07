@@ -213,7 +213,7 @@ A separate test or script that:
 
 ### Cross-References
 
-- Research: `TODO/initiatives/2026-03-08-research-goproblems-tsumego-frame/15-research.md`
+- Research: `TODO/initiatives/20260308-1500-feature-tsumego-frame-rewrite/20260308-goproblems-tsumego-frame-research.md`
 - Charter: `TODO/initiatives/20260308-1500-feature-tsumego-frame-rewrite/00-charter.md`
 
 ---
@@ -230,4 +230,4 @@ If the V2 frame produces worse KataGo evaluations:
 >
 > - [Options: OPT-2 details](25-options.md) — Full algorithm comparison
 > - [Charter: Acceptance criteria](00-charter.md) — AC1-AC11
-> - [Research: Three-way comparison](../2026-03-08-research-goproblems-tsumego-frame/15-research.md) — Verbatim source analysis
+> - [Research: Three-way comparison](./20260308-goproblems-tsumego-frame-research.md) — Verbatim source analysis

@@ -1,6 +1,7 @@
 # Research Brief: Rush/Timed Puzzle Feature Audit
 
-**Initiative**: `20260322-research-rush-timed-puzzle-audit`
+**Supporting Audit**: `20260322-research-rush-timed-puzzle-audit`
+**Owner Initiative**: `20260322-1800-feature-rush-mode-fix`
 **Research Date**: 2026-03-22
 **Status**: Complete
 
@@ -236,7 +237,7 @@ The `frontend/src/AGENTS.md` documents Rush components:
 
 ```yaml
 research_completed: true
-initiative_path: TODO/initiatives/20260322-research-rush-timed-puzzle-audit/
+artifact_path: TODO/initiatives/20260322-1800-feature-rush-mode-fix/20260322-rush-timed-puzzle-audit.md
 artifact: 15-research.md
 top_recommendations:
   - Fix best-score data mismatch (GP-1) — critical one-line fix

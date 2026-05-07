@@ -1,6 +1,7 @@
 # Research Brief: KataGo-LLM-Team Repository Analysis for Yen-Go Puzzle Enrichment
 
-> **Initiative**: 20260326-research-katago-llm-team-analysis
+> **Supporting Audit**: 20260326-research-katago-llm-team-analysis
+> **Owner Initiative**: 20260326-1400-feature-llm-teaching-enrichment
 > **Date**: 2026-03-26
 > **Status**: research_completed
 
@@ -265,7 +266,7 @@ Their use of `rootPolicyTemperature=2.5` is interesting for our refutation gener
 | Metric | Value |
 |--------|-------|
 | `research_completed` | true |
-| `initiative_path` | `TODO/initiatives/20260326-research-katago-llm-team-analysis/` |
+| `artifact_path` | `TODO/initiatives/20260326-1400-feature-llm-teaching-enrichment/20260326-katago-llm-team-analysis.md` |
 | `artifact` | `15-research.md` |
 | `post_research_confidence_score` | 82 |
 | `post_research_risk_level` | medium |
