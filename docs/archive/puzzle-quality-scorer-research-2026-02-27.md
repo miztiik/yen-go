@@ -1,6 +1,6 @@
 # Puzzle Quality Scorer Research (2026-02-27)
 
-> ⚠️ **ARCHIVED** — This document preserves the historical symbolic quality-scorer research bundle that originally lived under `TODO/puzzle-quality-scorer/`.
+> ⚠️ **ARCHIVED** — This document preserves the historical symbolic quality-scorer research bundle after its working-directory copy was retired.
 > Current canonical documentation: [KataGo Enrichment Architecture](../architecture/tools/katago-enrichment.md), [Quality Metrics](../concepts/quality.md), [Enrichment Confidence Scores](../concepts/enrichment-confidence-scores.md)
 > Archived: 2026-05-07
 
@@ -8,7 +8,7 @@
 
 ## Scope
 
-This digest replaces the historical TODO planning bundle:
+This digest replaces the historical planning bundle:
 
 - `README.md`
 - `implementation-plan.md`
@@ -120,4 +120,4 @@ Those materials are historical research input, not the current implementation co
 
 ## Retirement Note
 
-The `TODO/puzzle-quality-scorer/` directory was removed after this digest was created. Current engineering guidance should come from the canonical docs linked above, with this file retained only for historical traceability.
+The original planning directory was removed after this digest was created. Current engineering guidance should come from the canonical docs linked above, with this file retained only for historical traceability.

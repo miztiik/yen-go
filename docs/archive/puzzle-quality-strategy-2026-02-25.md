@@ -1,6 +1,6 @@
 # Puzzle Quality Strategy (2026-02-25)
 
-> ⚠️ **ARCHIVED** — This document preserves the historical puzzle-quality planning bundle that originally lived under `TODO/puzzle-quality-strategy/`.
+> ⚠️ **ARCHIVED** — This document preserves the historical puzzle-quality planning bundle after its working-directory copy was retired.
 > Current canonical documentation: [Quality Metrics](../concepts/quality.md), [SQLite Index Architecture](../concepts/sqlite-index-architecture.md), [Dedup Hashing](../concepts/dedup-hashing.md), [View Index Schema](../reference/view-index-schema.md), [KataGo Enrichment Architecture](../architecture/tools/katago-enrichment.md)
 > Archived: 2026-05-07
 
@@ -8,7 +8,7 @@
 
 ## Scope
 
-This digest replaces the historical TODO planning bundle:
+This digest replaces the historical planning bundle:
 
 - `README.md`
 - `001-research-quality-landscape.md`
@@ -42,7 +42,7 @@ The D2 classifier work was then broken out into a separate research note that au
 
 ## What Became Canonical Elsewhere
 
-The durable technical decisions from the strategy bundle are no longer TODO-only knowledge.
+The durable technical decisions from the strategy bundle are no longer confined to planning artifacts.
 
 ### 1. Content-Type Model
 
@@ -119,4 +119,4 @@ The following items were planning-specific and remain archived rather than promo
 
 ## Retirement Note
 
-The `TODO/puzzle-quality-strategy/` directory was removed after this digest was created. Current engineering guidance should come from the canonical docs linked above, not from the historical strategy plan.
+The original planning directory was removed after this digest was created. Current engineering guidance should come from the canonical docs linked above, not from the historical strategy plan.
