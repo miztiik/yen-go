@@ -504,6 +504,17 @@ Safety:
         metavar="BOOL",
         help="Preview changes without deleting. For puzzles-collection, defaults to true (must pass 'false' to delete)",
     )
+    clean_parser.add_argument(
+        "--json",
+        action="store_true",
+        help=(
+            "Emit structured JSON instead of human-readable output. "
+            "With --dry-run, returns a CleanPreview shape "
+            "(see backend/puzzle_manager/models/previews.py) listing each "
+            "file that would be deleted with size in bytes. Suppresses "
+            "all chatter so the output is parseable."
+        ),
+    )
 
     # validate command
     subparsers.add_parser("validate", help="Validate configuration")
@@ -1307,11 +1318,42 @@ def _parse_dry_run_flag(dry_run_arg: str | None, target: str | None) -> bool:
 
 def cmd_clean(args: argparse.Namespace) -> int:
     """Execute the clean command."""
+    json_mode = getattr(args, "json", False)
+
+    def _emit_json(payload: dict[str, object]) -> None:
+        # Dashboard preview endpoint requires structured-only stdout;
+        # any human-readable chatter must be suppressed in --json mode.
+        print(json.dumps(payload, sort_keys=True))
+
     try:
         dry_run = _parse_dry_run_flag(args.dry_run, args.target)
 
+        if json_mode and dry_run:
+            from backend.puzzle_manager.models.previews import (
+                CleanPreview,
+                CleanPreviewItem,
+            )
+            from backend.puzzle_manager.pipeline.cleanup import preview_clean
+
+            items, errors = preview_clean(
+                target=args.target,
+                retention_days=args.retention_days,
+            )
+            preview = CleanPreview(
+                target=args.target,
+                retention_days=args.retention_days,
+                would_delete=[
+                    CleanPreviewItem(path=p, bytes=b) for p, b in items
+                ],
+                total_files=len(items),
+                total_bytes=sum(b for _, b in items),
+                errors=errors,
+            )
+            _emit_json(preview.model_dump())
+            return 0
+
         # For puzzles-collection dry-run, show helpful message about how to actually delete
-        if args.target == "puzzles-collection" and dry_run:
+        if args.target == "puzzles-collection" and dry_run and not json_mode:
             print("🔍 DRY-RUN: Previewing what would be deleted from yengo-puzzle-collections/")
             print("   To actually delete, run: --target puzzles-collection --dry-run false\n")
 
@@ -1324,41 +1366,68 @@ def cmd_clean(args: argparse.Namespace) -> int:
                     retention_days=args.retention_days,
                     dry_run=dry_run,
                 )
-                action = "Would delete" if dry_run else "Deleted"
-                print(f"{action} publish-logs:")
-                print(f"  Log files: {counts['deleted']} files")
-                print(f"  Preserved: {counts['preserved']} files")
-                if counts['skipped_audit'] > 0:
-                    print("  Audit log: preserved (never deleted)")
+                if json_mode:
+                    _emit_json({
+                        "target": "publish-logs",
+                        "dry_run": dry_run,
+                        "deleted": counts["deleted"],
+                        "preserved": counts["preserved"],
+                        "skipped_audit": counts["skipped_audit"],
+                    })
+                else:
+                    action = "Would delete" if dry_run else "Deleted"
+                    print(f"{action} publish-logs:")
+                    print(f"  Log files: {counts['deleted']} files")
+                    print(f"  Preserved: {counts['preserved']} files")
+                    if counts['skipped_audit'] > 0:
+                        print("  Audit log: preserved (never deleted)")
             else:
                 counts = cleanup_target(
                     target=args.target,
                     dry_run=dry_run,
                 )
-                action = "Would clean" if dry_run else "Cleaned"
-                total = sum(counts.values())
-                print(f"{action} {args.target}: {total} files")
-                # Show per-category breakdown for puzzles-collection
-                if args.target == "puzzles-collection" and total > 0:
-                    for cat, n in counts.items():
-                        if n > 0:
-                            print(f"  {cat}: {n}")
+                if json_mode:
+                    _emit_json({
+                        "target": args.target,
+                        "dry_run": dry_run,
+                        "counts": counts,
+                        "total": sum(counts.values()),
+                    })
+                else:
+                    action = "Would clean" if dry_run else "Cleaned"
+                    total = sum(counts.values())
+                    print(f"{action} {args.target}: {total} files")
+                    # Show per-category breakdown for puzzles-collection
+                    if args.target == "puzzles-collection" and total > 0:
+                        for cat, n in counts.items():
+                            if n > 0:
+                                print(f"  {cat}: {n}")
         else:
             # Retention-based cleanup (default)
             counts = cleanup_old_files(
                 retention_days=args.retention_days,
                 dry_run=dry_run,
             )
-            action = "Would delete" if dry_run else "Deleted"
-            print(f"{action}:")
-            print(f"  Logs: {counts['logs']} files")
-            print(f"  State: {counts['state']} files")
-            print(f"  Failed: {counts['failed']} files")
+            if json_mode:
+                _emit_json({
+                    "target": None,
+                    "dry_run": dry_run,
+                    "counts": counts,
+                })
+            else:
+                action = "Would delete" if dry_run else "Deleted"
+                print(f"{action}:")
+                print(f"  Logs: {counts['logs']} files")
+                print(f"  State: {counts['state']} files")
+                print(f"  Failed: {counts['failed']} files")
 
         return 0
 
     except PuzzleManagerError as e:
-        print(f"Error: {_shorten_paths(e, get_output_dir(), get_project_root())}")
+        if json_mode:
+            _emit_json({"error": "clean_error", "message": str(e)})
+        else:
+            print(f"Error: {_shorten_paths(e, get_output_dir(), get_project_root())}")
         return 1
 
 

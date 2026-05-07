@@ -203,6 +203,55 @@ def _reset_inventory() -> None:
         logger.warning(f"Failed to reset inventory: {e}")
 
 
+def _iter_retention_files(
+    directory: Path,
+    cutoff: datetime,
+    patterns: list[str],
+    recursive: bool = False,
+):
+    """Yield files under ``directory`` matching ``patterns`` whose mtime
+    predates ``cutoff``.
+
+    Shared by ``_cleanup_directory`` (which unlinks) and ``preview_clean``
+    (which only enumerates). Keeping the scan logic in one place is the
+    contract: the preview must list exactly the files the real run would
+    delete.
+    """
+    if not directory.exists():
+        return
+    for pattern in patterns:
+        files = directory.rglob(pattern) if recursive else directory.glob(pattern)
+        for fp in files:
+            if not fp.is_file():
+                continue
+            try:
+                mtime = datetime.fromtimestamp(fp.stat().st_mtime, UTC)
+            except OSError:
+                continue
+            if mtime < cutoff:
+                yield fp
+
+
+def _iter_all_managed_files(
+    directory: Path,
+    exclude_dirs: list[str] | None = None,
+):
+    """Yield every file under ``directory`` that ``_clean_all_files`` would
+    unlink. Honours the same protected-files allowlist (Spec 052).
+    """
+    if not directory.exists():
+        return
+    exclude = exclude_dirs or []
+    for fp in directory.rglob("*"):
+        if not fp.is_file():
+            continue
+        if any(ex in fp.parts for ex in exclude):
+            continue
+        if fp.name in PROTECTED_FILES:
+            continue
+        yield fp
+
+
 def cleanup_old_files(
     retention_days: int = 45,
     dry_run: bool = False,
@@ -318,32 +367,17 @@ def _cleanup_directory(
     Returns:
         Number of files deleted (or would be deleted in dry_run)
     """
-    if not directory.exists():
-        return 0
-
     count = 0
-
-    for pattern in patterns:
-        if recursive:
-            files = directory.rglob(pattern)
-        else:
-            files = directory.glob(pattern)
-
-        for file_path in files:
-            if not file_path.is_file():
-                continue
-
-            try:
-                mtime = datetime.fromtimestamp(file_path.stat().st_mtime, UTC)
-                if mtime < cutoff:
-                    if dry_run:
-                        logger.debug(f"Would delete: {rel_path(file_path)}")
-                    else:
-                        file_path.unlink()
-                        logger.debug(f"Deleted: {rel_path(file_path)}")
-                    count += 1
-            except Exception as e:
-                logger.warning(f"Cannot process {rel_path(file_path)}: {e}")
+    for file_path in _iter_retention_files(directory, cutoff, patterns, recursive):
+        try:
+            if dry_run:
+                logger.debug(f"Would delete: {rel_path(file_path)}")
+            else:
+                file_path.unlink()
+                logger.debug(f"Deleted: {rel_path(file_path)}")
+            count += 1
+        except Exception as e:
+            logger.warning(f"Cannot process {rel_path(file_path)}: {e}")
 
     return count
 
@@ -523,25 +557,8 @@ def _clean_all_files(
     Returns:
         Number of files deleted
     """
-    if not directory.exists():
-        return 0
-
-    exclude_dirs = exclude_dirs or []
     count = 0
-
-    for file_path in directory.rglob("*"):
-        if not file_path.is_file():
-            continue
-
-        # Skip files in excluded directories
-        if any(excluded in file_path.parts for excluded in exclude_dirs):
-            continue
-
-        # Skip protected files (Spec 052 - T043)
-        if file_path.name in PROTECTED_FILES:
-            logger.debug(f"Skipping protected file: {rel_path(file_path)}")
-            continue
-
+    for file_path in _iter_all_managed_files(directory, exclude_dirs):
         try:
             if dry_run:
                 logger.debug(f"Would delete: {rel_path(file_path)}")
@@ -553,3 +570,128 @@ def _clean_all_files(
             logger.warning(f"Cannot delete {rel_path(file_path)}: {e}")
 
     return count
+
+
+def _publish_log_iter_old(log_dir: Path, retention_days: int):
+    """Yield publish-log files older than the retention cutoff.
+
+    Mirrors ``PublishLogReader.cleanup_old_logs`` selection logic exactly:
+    skips audit logs (FR-052) and any non-date-formatted filename. Living
+    in cleanup.py rather than publish_log.py avoids a circular dep —
+    cleanup.py already imports publish_log indirectly.
+    """
+    if not log_dir.exists():
+        return
+    cutoff_str = (
+        datetime.now(UTC) - timedelta(days=retention_days)
+    ).strftime("%Y-%m-%d")
+    for path in log_dir.glob("*.jsonl"):
+        if path.name in ("audit.jsonl", "rollback-audit.jsonl"):
+            continue
+        date_str = path.stem
+        if len(date_str) != 10 or date_str[4] != "-" or date_str[7] != "-":
+            continue
+        if date_str < cutoff_str:
+            yield path
+
+
+def _to_preview_item(path: Path) -> tuple[str, int] | None:
+    """Convert an absolute Path to (rel_posix_path, byte_size).
+
+    Returns None if the file vanished between scan and stat (e.g., a
+    parallel cleanup beat us to it). The caller treats None as "skip".
+    """
+    try:
+        size = path.stat().st_size
+    except OSError:
+        return None
+    posix = Path(rel_path(path)).as_posix()
+    return posix, size
+
+
+def preview_clean(
+    target: str | None = None,
+    retention_days: int = 45,
+) -> tuple[list[tuple[str, int]], list[str]]:
+    """Enumerate files that ``clean`` would delete, without deleting.
+
+    Mirrors ``cleanup_target`` and ``cleanup_old_files`` scan logic via
+    the shared iterators above — the preview must list exactly the same
+    files the real run would unlink (modulo races).
+
+    Args:
+        target: Same semantics as ``cleanup_target.target`` (or None to
+            mirror ``cleanup_old_files``).
+        retention_days: Same semantics as the CLI ``--retention-days``.
+
+    Returns:
+        ``(items, errors)`` where each item is ``(relative_posix_path,
+        byte_size)`` and ``errors`` lists non-fatal scan warnings (e.g.,
+        a directory the scanner could not stat).
+    """
+    items: list[tuple[str, int]] = []
+    errors: list[str] = []
+    cutoff = datetime.now(UTC) - timedelta(days=retention_days)
+
+    def _collect(iter_paths) -> None:
+        for p in iter_paths:
+            entry = _to_preview_item(p)
+            if entry is not None:
+                items.append(entry)
+
+    if target is None:
+        # Retention-based default — mirrors cleanup_old_files()
+        _collect(_iter_retention_files(
+            get_logs_dir(), cutoff, ["*.log", "*.log.*"]
+        ))
+        state_dir = get_pm_state_dir()
+        _collect(_iter_retention_files(
+            state_dir / "runs", cutoff, ["*.json"]
+        ))
+        _collect(_iter_retention_files(
+            state_dir / "failures", cutoff, ["*.json"]
+        ))
+        _collect(_iter_retention_files(
+            get_pm_staging_dir() / "failed", cutoff, ["*.sgf", "*.error"],
+            recursive=True,
+        ))
+        _collect(_iter_retention_files(
+            get_pm_raw_dir(), cutoff, ["*.json"], recursive=True,
+        ))
+    elif target == "staging":
+        _collect(_iter_all_managed_files(get_pm_staging_dir()))
+    elif target == "state":
+        _collect(_iter_all_managed_files(get_pm_state_dir()))
+    elif target == "logs":
+        _collect(_iter_all_managed_files(get_logs_dir()))
+    elif target == "puzzles-collection":
+        output_dir = get_output_dir()
+        ops_dir = output_dir / ".puzzle-inventory-state"
+        _collect(_iter_all_managed_files(output_dir / "sgf"))
+        _collect(_iter_all_managed_files(output_dir / "views"))
+        _collect(_iter_all_managed_files(ops_dir / "publish-log"))
+        _collect(_iter_all_managed_files(ops_dir / "rollback-backup"))
+        for db_name in (
+            "yengo-search.db",
+            "db-version.json",
+            "yengo-content.db",
+        ):
+            db_path = output_dir / db_name
+            if db_path.exists():
+                entry = _to_preview_item(db_path)
+                if entry is not None:
+                    items.append(entry)
+        legacy_pagination = output_dir / "views" / ".pagination-state.json"
+        if legacy_pagination.exists():
+            entry = _to_preview_item(legacy_pagination)
+            if entry is not None:
+                items.append(entry)
+    elif target == "publish-logs":
+        from backend.puzzle_manager.paths import get_publish_log_dir
+        _collect(_publish_log_iter_old(
+            get_publish_log_dir(), retention_days,
+        ))
+    else:
+        errors.append(f"Unknown target: {target}")
+
+    return items, errors

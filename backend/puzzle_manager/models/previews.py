@@ -94,3 +94,68 @@ class VacuumDbPreview(BaseModel):
     has_content_db: bool = Field(
         ..., description="False if yengo-content.db is missing — vacuum is a no-op."
     )
+
+
+class CleanPreviewItem(BaseModel):
+    """One entry in a ``CleanPreview.would_delete`` list."""
+
+    path: str = Field(
+        ...,
+        description=(
+            "Relative POSIX path from the project root. Forward slashes only. "
+            "Mirrors the project-wide path serialization rule (see CLAUDE.md)."
+        ),
+    )
+    bytes: int = Field(
+        ..., ge=0, description="File size in bytes (from stat() at preview time)."
+    )
+
+
+class CleanPreview(BaseModel):
+    """``clean --dry-run --json`` payload.
+
+    The dashboard's Preview modal uses this to render an exact "what
+    would be deleted" list before the operator commits the destructive
+    run. ``would_delete`` is the authoritative enumeration; ``total_*``
+    are convenience aggregates so the modal can render headline numbers
+    without summing in JS.
+    """
+
+    target: str | None = Field(
+        ...,
+        description=(
+            "The --target argument (None when running retention-based default "
+            "cleanup of logs/state/failed/raw)."
+        ),
+    )
+    retention_days: int = Field(
+        ...,
+        ge=0,
+        description=(
+            "Retention threshold in days. Used by the default cleanup and by "
+            "the publish-logs target. Echoed back so the dashboard can show "
+            "'older than N days' in the preview header."
+        ),
+    )
+    would_delete: list[CleanPreviewItem] = Field(
+        default_factory=list,
+        description=(
+            "Files that would be unlinked. Order is the natural enumeration "
+            "order of the underlying scan (glob/rglob) — not lexicographic "
+            "and not by size. The dashboard re-sorts as needed."
+        ),
+    )
+    total_files: int = Field(
+        ..., ge=0, description="len(would_delete); duplicated for cheap rendering."
+    )
+    total_bytes: int = Field(
+        ..., ge=0, description="sum(item.bytes for item in would_delete)."
+    )
+    errors: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Non-fatal scan warnings (e.g., a directory the scanner could not "
+            "stat). Empty on a clean preview. Distinct from CLI errors which "
+            "exit non-zero."
+        ),
+    )

@@ -93,12 +93,12 @@ None — pure frontend / CSS.
 
 ## Theme 1 — Dry-run Preview as First-Class (P0) ◐
 
-**Status (2026-05-07)**: 1a + 1b shipped (rollback / vacuum-db). 1c (clean), 1d (preview endpoints), 1e (UI Preview button) pending.
+**Status (2026-05-07)**: 1a + 1b + 1c shipped (CLI side complete). 1d (preview endpoints), 1e (UI Preview button) pending.
 
 **Jobs covered**: "Preview before I break something."
 
 ### Backend additions
-- ☐ `clean --dry-run --json` → `{would_delete: [{path, bytes}, ...], total_files, total_bytes}`.
+- ☑ `clean --dry-run --json` → `CleanPreview` (`backend/puzzle_manager/models/previews.py`); enumerates every file via shared iterators in `pipeline/cleanup.py`.
 - ☑ `rollback --dry-run --json` → `RollbackPreview` (`backend/puzzle_manager/models/previews.py`).
 - ☑ `vacuum-db --dry-run --json` → `VacuumDbPreview` (same module).
 - All three keep stdout structured-only when `--json` is passed (no chatter).
