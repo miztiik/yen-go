@@ -927,6 +927,27 @@ Examples:
         help="Emit a JSON array of LogsGrepHit instead of human text.",
     )
 
+    # runtime-info command (Theme 3a)
+    runtime_info_parser = subparsers.add_parser(
+        "runtime-info",
+        help="Report on-disk byte totals for .pm-runtime/ and ingest DBs",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Computes per-bucket on-disk sizes for the runtime tree (logs, state, staging,
+raw, per-source ingest DBs, publish logs). Buckets line up 1:1 with the
+targets accepted by `clean --target` so callers can render "this much would
+be freed" estimates.
+
+Examples:
+  %(prog)s --json   Emit RuntimeInfo JSON for the dashboard
+  %(prog)s          Pretty-print the same digest for human eyes
+        """,
+    )
+    runtime_info_parser.add_argument(
+        "--json", action="store_true",
+        help="Emit RuntimeInfo JSON instead of human text.",
+    )
+
     # config-lock command (for managing pipeline config lock)
     config_lock_parser = subparsers.add_parser(
         "config-lock",
@@ -2302,6 +2323,61 @@ def cmd_logs(args: argparse.Namespace) -> int:
     return 1
 
 
+def cmd_runtime_info(args: argparse.Namespace) -> int:
+    """Theme 3a: emit per-bucket on-disk byte totals for `.pm-runtime/`."""
+    from backend.puzzle_manager.config.loader import ConfigLoader
+    from backend.puzzle_manager.models.runtime_info import compute_runtime_info
+
+    runtime_dir = get_runtime_dir()
+    publish_log_dir = get_publish_log_dir()
+
+    sources: list[tuple[str, Path | None]] = []
+    try:
+        loader = ConfigLoader(config_dir=Path(args.config) if args.config else None)
+        for src in loader.load_sources():
+            raw_path = getattr(src.config, "path", None)
+            sources.append((src.id, Path(raw_path) if raw_path else None))
+    except Exception:
+        # Missing/invalid sources.json must not block disk reporting; the
+        # ingest-DB section will simply be empty.
+        sources = []
+
+    info = compute_runtime_info(
+        runtime_dir=runtime_dir,
+        sources=sources,
+        publish_log_dir=publish_log_dir,
+    )
+
+    if args.json:
+        print(info.model_dump_json(indent=2))
+    else:
+        _print_runtime_info(info)
+    return 0
+
+
+def _print_runtime_info(info) -> None:
+    """Pretty print a RuntimeInfo digest for human eyes."""
+    def _fmt(n: int) -> str:
+        for unit in ("B", "KB", "MB", "GB"):
+            if n < 1024 or unit == "GB":
+                return f"{n:,.1f} {unit}" if unit != "B" else f"{n:,} B"
+            n /= 1024
+        return f"{n} B"
+
+    print("\nRuntime footprint")
+    print("-" * 50)
+    print(f"  logs           {_fmt(info.logs_bytes):>15s}")
+    print(f"  state          {_fmt(info.state_bytes):>15s}")
+    print(f"  staging        {_fmt(info.staging_bytes):>15s}")
+    print(f"  raw            {_fmt(info.raw_bytes):>15s}")
+    print(f"  ingest-dbs     {_fmt(info.ingest_dbs_bytes):>15s}")
+    if info.by_source:
+        for sid, b in sorted(info.by_source.items()):
+            print(f"      {sid:24s}  {_fmt(b):>15s}")
+    print(f"  publish-logs   {_fmt(info.publish_logs_bytes):>15s}")
+    print(f"  captured_at    {info.captured_at}")
+
+
 # Stage logs are named YYYY-MM-DD-{stage}.log under .pm-runtime/logs/.
 # Pinning the regex here keeps the CLI's discovery logic in lockstep with
 # the dashboard's _SAFE_LOG_NAME guard.
@@ -2452,6 +2528,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_publish_log(args)
     elif args.command == "logs":
         return cmd_logs(args)
+    elif args.command == "runtime-info":
+        return cmd_runtime_info(args)
     elif args.command == "config-lock":
         return cmd_config_lock(args)
     else:

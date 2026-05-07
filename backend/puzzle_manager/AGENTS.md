@@ -23,7 +23,7 @@
 | Path | Purpose |
 |------|---------|
 | `__main__.py` | `python -m backend.puzzle_manager` entry; delegates to `cli.py` |
-| `cli.py` | 14-command argparse CLI: `run`, `status` (Theme 2a: `--failures-summary`), `sources`, `daily`, `clean`, `validate`, `publish-log`, `logs` (Theme 4: `grep`), `rollback`, `vacuum-db`, `inventory` |
+| `cli.py` | 14-command argparse CLI: `run`, `status` (Theme 2a: `--failures-summary`), `sources`, `daily`, `clean`, `validate`, `publish-log`, `logs` (Theme 4: `grep`), `rollback`, `vacuum-db`, `inventory`, `runtime-info` (Theme 3a) |
 | `pm_logging.py` | `setup_logging()`, `create_trace_logger()` — structured JSON logs |
 | `paths.py` | `get_output_dir()`, `get_pm_staging_dir()`, `get_pm_state_dir()`, etc. — all path resolution |
 | `exceptions.py` | `PuzzleManagerError`, `SGFParseError`, `AdapterNotFoundError`, `ValidationError` |
@@ -83,6 +83,7 @@
 | `models/publish_log.py` | `PublishLogEntry` — frozen dataclass for JSONL |
 | `models/enums.py` | `SkillLevel`, `BoardRegion`, `RunStatus`, `StageStatus` |
 | `models/failures.py` | `FailureGroup` (Pydantic) + `summarize_failures(runs)` — Theme 2a wire contract for `status --failures-summary` |
+| `models/runtime_info.py` | `RuntimeInfo` (Pydantic) + `compute_runtime_info(runtime_dir, sources, publish_log_dir)` — Theme 3a wire contract for `runtime-info` CLI |
 | `config/loader.py` | `ConfigLoader` — load `sources.json`, `config/*.json`, `get_active_adapter()` |
 | `inventory/manager.py` | `InventoryManager` — load/rebuild/reconcile `inventory.json` |
 | `daily/generator.py` | `DailyGenerator` — select puzzles by level/tag, write via db_writer |
