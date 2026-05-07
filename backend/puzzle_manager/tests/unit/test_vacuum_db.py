@@ -17,7 +17,7 @@ class TestVacuumDbGuard:
     def test_no_content_db_no_rebuild_returns_early(self, tmp_path: Path, capsys):
         """vacuum-db (no --rebuild) returns 0 when content DB missing."""
         with patch(
-            "backend.puzzle_manager.paths.get_output_dir", return_value=tmp_path
+            "backend.puzzle_manager.cli.get_output_dir", return_value=tmp_path
         ):
             rc = cmd_vacuum_db(_make_args(rebuild=False))
 
@@ -35,7 +35,7 @@ class TestVacuumDbGuard:
         (sgf_dir / "abc123.sgf").write_text("(;FF[4])")
 
         with patch(
-            "backend.puzzle_manager.paths.get_output_dir", return_value=tmp_path
+            "backend.puzzle_manager.cli.get_output_dir", return_value=tmp_path
         ):
             rc = cmd_vacuum_db(_make_args(rebuild=True))
 
@@ -54,7 +54,7 @@ class TestVacuumDbGuard:
         (sgf_dir / "abc123.sgf").write_text("(;FF[4])")
 
         with patch(
-            "backend.puzzle_manager.paths.get_output_dir", return_value=tmp_path
+            "backend.puzzle_manager.cli.get_output_dir", return_value=tmp_path
         ):
             rc = cmd_vacuum_db(_make_args(rebuild=True, dry_run=True))
 
@@ -73,7 +73,7 @@ class TestVacuumDbGuard:
         (tmp_path / "yengo-content.db").write_bytes(b"")
 
         with patch(
-            "backend.puzzle_manager.paths.get_output_dir", return_value=tmp_path
+            "backend.puzzle_manager.cli.get_output_dir", return_value=tmp_path
         ):
             rc = cmd_vacuum_db(_make_args(rebuild=False))
 
@@ -90,7 +90,7 @@ class TestVacuumDbGuard:
         (tmp_path / "yengo-content.db").write_bytes(b"")
 
         with patch(
-            "backend.puzzle_manager.paths.get_output_dir", return_value=tmp_path
+            "backend.puzzle_manager.cli.get_output_dir", return_value=tmp_path
         ):
             rc = cmd_vacuum_db(_make_args(rebuild=True))
 

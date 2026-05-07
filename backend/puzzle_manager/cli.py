@@ -665,6 +665,15 @@ Examples:
         action="store_true",
         help="Preview without making changes",
     )
+    vacuum_parser.add_argument(
+        "--json",
+        action="store_true",
+        help=(
+            "Emit structured JSON instead of human-readable output. "
+            "With --dry-run, returns a VacuumDbPreview shape "
+            "(see backend/puzzle_manager/models/previews.py)."
+        ),
+    )
 
     # rollback command
     rollback_parser = subparsers.add_parser(
@@ -722,6 +731,17 @@ Safety:
         "--verify",
         action="store_true",
         help="Verify file counts after rollback (T037)",
+    )
+    rollback_parser.add_argument(
+        "--json",
+        action="store_true",
+        help=(
+            "Emit structured JSON instead of human-readable output. "
+            "With --dry-run, returns a RollbackPreview shape "
+            "(see backend/puzzle_manager/models/previews.py). "
+            "Without --dry-run, returns RollbackResult fields. "
+            "Suppresses all chatter so the output is parseable."
+        ),
     )
 
     # publish-log command
@@ -1347,7 +1367,15 @@ def cmd_vacuum_db(args: argparse.Namespace) -> int:
     from backend.puzzle_manager.core.content_db import vacuum_orphans
     from backend.puzzle_manager.inventory.reconcile import rebuild_search_db_from_disk
     from backend.puzzle_manager.inventory.snapshot import write_inventory_snapshot
-    from backend.puzzle_manager.paths import get_output_dir
+
+    json_mode = getattr(args, "json", False)
+
+    def _emit_json(payload: dict[str, object]) -> None:
+        print(json.dumps(payload, sort_keys=True))
+
+    # Rough average: yengo-content.db rows store SGF content + metadata.
+    # 4KB per row is a conservative ballpark for operator orientation only.
+    _AVG_ROW_BYTES = 4096
 
     try:
         output_dir = get_output_dir()
@@ -1356,7 +1384,20 @@ def cmd_vacuum_db(args: argparse.Namespace) -> int:
         has_content_db = content_db_path.exists()
 
         if not has_content_db and not args.rebuild:
-            print("Content database not found — nothing to vacuum.")
+            if json_mode:
+                from backend.puzzle_manager.models.previews import VacuumDbPreview
+
+                _emit_json(
+                    VacuumDbPreview(
+                        orphan_rows=0,
+                        on_disk_files=0,
+                        freed_bytes_estimate=0,
+                        rebuild=False,
+                        has_content_db=False,
+                    ).model_dump()
+                )
+            else:
+                print("Content database not found — nothing to vacuum.")
             return 0
 
         # Collect published hashes from disk
@@ -1365,11 +1406,12 @@ def cmd_vacuum_db(args: argparse.Namespace) -> int:
             for sgf_path in sgf_dir.rglob("*.sgf"):
                 published_hashes.add(sgf_path.stem)
 
-        print(f"Found {len(published_hashes)} published SGF files on disk.")
+        if not json_mode:
+            print(f"Found {len(published_hashes)} published SGF files on disk.")
 
         if args.dry_run:
+            orphan_count = 0
             if has_content_db:
-                # Count orphans without deleting
                 import sqlite3
 
                 conn = sqlite3.connect(
@@ -1383,17 +1425,32 @@ def cmd_vacuum_db(args: argparse.Namespace) -> int:
                         ).fetchall()
                     }
                     orphan_count = len(all_hashes - published_hashes)
+                finally:
+                    conn.close()
+
+            if json_mode:
+                from backend.puzzle_manager.models.previews import VacuumDbPreview
+
+                _emit_json(
+                    VacuumDbPreview(
+                        orphan_rows=orphan_count,
+                        on_disk_files=len(published_hashes),
+                        freed_bytes_estimate=orphan_count * _AVG_ROW_BYTES,
+                        rebuild=bool(args.rebuild),
+                        has_content_db=has_content_db,
+                    ).model_dump()
+                )
+            else:
+                if has_content_db:
                     print(
                         f"Would remove {orphan_count} orphaned entries"
                         " from content DB."
                     )
-                finally:
-                    conn.close()
-            if args.rebuild:
-                print(
-                    f"Would rebuild search DB from"
-                    f" {len(published_hashes)} SGF files."
-                )
+                if args.rebuild:
+                    print(
+                        f"Would rebuild search DB from"
+                        f" {len(published_hashes)} SGF files."
+                    )
             return 0
 
         if has_content_db:
@@ -1411,7 +1468,10 @@ def cmd_vacuum_db(args: argparse.Namespace) -> int:
         return 0
 
     except Exception as e:
-        print(f"Error: {_shorten_paths(e, get_output_dir(), get_project_root())}")
+        if json_mode:
+            _emit_json({"error": "vacuum_error", "message": str(e)})
+        else:
+            print(f"Error: {_shorten_paths(e, get_output_dir(), get_project_root())}")
         return 1
 
 
@@ -1829,6 +1889,13 @@ def _verify_rollback(
 
 def cmd_rollback(args: argparse.Namespace) -> int:
     """Execute the rollback command (rebuild-centric v12)."""
+    json_mode = getattr(args, "json", False)
+
+    def _emit_json(payload: dict[str, object]) -> None:
+        # The dashboard's preview endpoint requires structured-only stdout;
+        # any human-readable chatter must be suppressed in --json mode.
+        print(json.dumps(payload, sort_keys=True))
+
     try:
         output_dir = get_output_dir()
         log_dir = get_publish_log_dir()
@@ -1848,6 +1915,30 @@ def cmd_rollback(args: argparse.Namespace) -> int:
             run_id=args.run_id,
             dry_run=args.dry_run,
         )
+
+        if json_mode:
+            from backend.puzzle_manager.models.previews import RollbackPreview
+
+            if args.dry_run:
+                preview = RollbackPreview(
+                    affected_puzzles=result.affected_puzzle_ids,
+                    affected_runs=result.affected_runs or [args.run_id],
+                    puzzles_affected=result.puzzles_affected,
+                    reversible=False,
+                    errors=list(result.errors),
+                )
+                _emit_json(preview.model_dump())
+            else:
+                _emit_json(
+                    {
+                        "success": result.success,
+                        "puzzles_affected": result.puzzles_affected,
+                        "files_deleted": result.files_deleted,
+                        "index_rebuilt": result.index_rebuilt,
+                        "errors": list(result.errors),
+                    }
+                )
+            return 0 if (result.success or args.dry_run) else 1
 
         # Print result
         if args.dry_run:
@@ -1878,11 +1969,17 @@ def cmd_rollback(args: argparse.Namespace) -> int:
         return 0
 
     except RollbackError as e:
-        print(f"[FAIL] Rollback error: {_shorten_paths(e, get_output_dir(), get_project_root())}")
+        if json_mode:
+            _emit_json({"error": "rollback_error", "message": str(e)})
+        else:
+            print(f"[FAIL] Rollback error: {_shorten_paths(e, get_output_dir(), get_project_root())}")
         return 1
 
     except PuzzleManagerError as e:
-        print(f"Error: {_shorten_paths(e, get_output_dir(), get_project_root())}")
+        if json_mode:
+            _emit_json({"error": "puzzle_manager_error", "message": str(e)})
+        else:
+            print(f"Error: {_shorten_paths(e, get_output_dir(), get_project_root())}")
         return 1
 
 

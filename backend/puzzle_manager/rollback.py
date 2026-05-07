@@ -41,6 +41,8 @@ class RollbackResult:
     files_deleted: int = 0
     index_rebuilt: bool = False
     errors: list[str] = field(default_factory=list)
+    affected_puzzle_ids: list[str] = field(default_factory=list)
+    affected_runs: list[str] = field(default_factory=list)
 
     def summary(self) -> str:
         """Human-readable summary."""
@@ -127,7 +129,12 @@ class RollbackManager:
         Returns:
             RollbackResult.
         """
-        result = RollbackResult(dry_run=dry_run, puzzles_affected=len(entries))
+        result = RollbackResult(
+            dry_run=dry_run,
+            puzzles_affected=len(entries),
+            affected_puzzle_ids=[e.puzzle_id for e in entries if e.puzzle_id],
+            affected_runs=sorted({e.run_id for e in entries if e.run_id}),
+        )
 
         if dry_run:
             result.success = True

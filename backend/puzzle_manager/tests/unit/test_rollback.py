@@ -79,6 +79,45 @@ class TestRollbackDryRun:
         for entry in entries:
             assert (output_dir / entry.path).exists()
 
+    def test_dry_run_populates_preview_fields(self, rollback_setup):
+        """Theme 1: dry-run must enumerate affected puzzles + runs so the
+        dashboard preview modal can show 'what would be deleted'."""
+        manager, entries, _ = rollback_setup
+
+        result = manager.rollback_by_run("20260220-abc12345", dry_run=True)
+
+        assert result.affected_puzzle_ids == [e.puzzle_id for e in entries]
+        assert result.affected_runs == ["20260220-abc12345"]
+
+    def test_dry_run_serializes_to_rollback_preview(self, rollback_setup):
+        """Theme 1: RollbackResult dry-run output must satisfy the
+        RollbackPreview Pydantic schema verbatim — that's the contract the
+        dashboard depends on."""
+        from backend.puzzle_manager.models.previews import RollbackPreview
+
+        manager, entries, _ = rollback_setup
+
+        result = manager.rollback_by_run("20260220-abc12345", dry_run=True)
+
+        preview = RollbackPreview(
+            affected_puzzles=result.affected_puzzle_ids,
+            affected_runs=result.affected_runs,
+            puzzles_affected=result.puzzles_affected,
+            reversible=False,
+            errors=list(result.errors),
+        )
+        # Schema-side validation must pass and round-trip through model_dump.
+        assert preview.puzzles_affected == 5
+        assert preview.reversible is False
+        dumped = preview.model_dump()
+        assert set(dumped) == {
+            "affected_puzzles",
+            "affected_runs",
+            "puzzles_affected",
+            "reversible",
+            "errors",
+        }
+
 
 class TestRollbackExecution:
     """Tests for actual rollback execution."""
