@@ -140,7 +140,19 @@ def cmd_inventory(args: "argparse.Namespace") -> int:
             inventory = manager.load() if manager.exists() else None
 
             result = check_integrity(inventory=inventory)
-            print(format_integrity_result(result))
+
+            # Theme 14a: --check --json emits the structured IntegrityReport
+            # (Pydantic) so the dashboard can render per-issue rows. Human
+            # output stays unchanged for terminal use.
+            if getattr(args, "json", False):
+                from backend.puzzle_manager.models.integrity import (
+                    IntegrityReport,
+                )
+
+                report = IntegrityReport.from_legacy_result(result)
+                print(report.model_dump_json())
+            else:
+                print(format_integrity_result(result))
 
             return 0 if result.is_valid else 1
 

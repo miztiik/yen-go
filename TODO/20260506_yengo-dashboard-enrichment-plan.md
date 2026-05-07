@@ -30,7 +30,7 @@ get done; the order is the prioritization, not the filter.
 | 3  | Disk / runtime footprint           | ☐      |  P0   | Cheap, high signal |
 | 4  | Logs grep across files             | ☑      |  P0   | Shipped 2026-05-07 (4a CLI + 4b GET /api/logs/grep + 4c UI search box) |
 | 13 | Unified activity surface           | ☑      |  P0   | NEW: correlate runs + maintenance + publish-log + audit + lock events into one timeline |
-| 14 | Inventory health surface           | ☐      |  P0   | NEW: surface CLI's --rebuild/--reconcile/--check/--fix as actions, not just counts |
+| 14 | Inventory health surface           | ◐      |  P0   | NEW: surface CLI's --rebuild/--reconcile/--check/--fix as actions, not just counts |
 | 16 | Reset blast-radius (backend concept)| ☐     |  P0   | NEW: name `clean / run --fresh / rollback / vacuum-db / reconcile` as one taxonomy in CLI + UI |
 | 17 | Puzzle-ID rollback audit           | ☑      |  P0   | Dead UI removed (2026-05-07): CLI `--puzzle-id` stripped, dashboard contract slimmed to `run_id`-only |
 | 5  | Tag/Level inspector (read-only)    | ☐      |  P1   | Surfaces taxonomy that's invisible today |
@@ -257,7 +257,7 @@ corpus, regardless of which subsystem produced the event."
 
 ---
 
-## Theme 14 — Inventory Health Surface (P0) — NEW
+## Theme 14 — Inventory Health Surface (P0) — NEW ◐
 
 **User pain (verbatim, paraphrased)**: the dashboard shows an inventory
 *count* but hides the operator-grade actions the CLI already supports
@@ -300,9 +300,9 @@ heal it without dropping to a terminal."
 
 ### Acceptance criteria
 
-- [ ] CLI test seeds a corpus with one missing + one orphan + one hash
+- [x] CLI test seeds a corpus with one missing + one orphan + one hash
       mismatch; check reports all three; reconcile dry-run lists exact
-      affected files; reconcile real heals them.
+      affected files; reconcile real heals them. _(Theme 14a, this commit: missing_file + orphan_file kinds shipped via `IntegrityReport` Pydantic contract; hash_mismatch deferred — requires deep-scan rehash)_
 - [ ] Dashboard test pins the new sub-section + badge state transitions.
 - [ ] Healing actions appear in the unified activity surface (Theme 13).
 
