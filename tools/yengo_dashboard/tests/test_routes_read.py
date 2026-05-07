@@ -781,3 +781,42 @@ class TestOpsCatalogEndpoint:
             assert "reversible" in row
             assert "preview_supported" in row
             assert row["section"] in {"maintenance", "destructive", "diagnostic"}
+
+
+class TestTaxonomyEndpoints:
+    """Theme 5: tags/levels passthroughs against the real config files."""
+
+    def test_tags_returns_usage_list(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("YENGO_ROOT", str(REPO_ROOT))
+        monkeypatch.setenv("YENGO_RUNTIME_DIR", str(tmp_path / ".pm-runtime"))
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.get("/api/tags")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert isinstance(raw, list) and raw
+        slugs = {row["tag"] for row in raw}
+        assert "life-and-death" in slugs
+        for row in raw:
+            assert "category" in row and "usage_count" in row
+            assert isinstance(row["aliases"], list)
+            assert row["usage_count"] >= 0
+
+    def test_levels_returns_usage_list(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("YENGO_ROOT", str(REPO_ROOT))
+        monkeypatch.setenv("YENGO_RUNTIME_DIR", str(tmp_path / ".pm-runtime"))
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.get("/api/levels")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert isinstance(raw, list) and raw
+        slugs = {row["level"] for row in raw}
+        assert {"novice", "intermediate", "expert"}.issubset(slugs)
+        for row in raw:
+            assert "id" in row and "usage_count" in row
+            assert row["usage_count"] >= 0

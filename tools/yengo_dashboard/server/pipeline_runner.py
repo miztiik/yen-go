@@ -305,6 +305,37 @@ class PipelineRunner:
             )
         return result
 
+    def tags_list(self, *, with_usage: bool = True) -> list:
+        """Wraps ``puzzle_manager tags list [--with-usage] --json`` (Theme 5).
+
+        Returns the parsed JSON list verbatim. Schema is owned by the CLI
+        (``backend.puzzle_manager.models.taxonomy.TagUsageEntry``); the
+        cockpit forwards rows unchanged per principle #6.
+        """
+        args = ["tags", "list", "--json"]
+        if with_usage:
+            args.append("--with-usage")
+        result = self._run_json_any(args)
+        if not isinstance(result, list):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON list, got {type(result).__name__}", "",
+            )
+        return result
+
+    def levels_list(self, *, with_usage: bool = True) -> list:
+        """Wraps ``puzzle_manager levels list [--with-usage] --json`` (Theme 5)."""
+        args = ["levels", "list", "--json"]
+        if with_usage:
+            args.append("--with-usage")
+        result = self._run_json_any(args)
+        if not isinstance(result, list):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON list, got {type(result).__name__}", "",
+            )
+        return result
+
     def activity(
         self,
         *,

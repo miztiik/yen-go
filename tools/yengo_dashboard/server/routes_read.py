@@ -19,9 +19,11 @@ from tools.yengo_dashboard.server.models import (
     HealthResponse,
     InventoryCheckResponse,
     InventoryResponse,
+    LevelsListResponse,
     OpsCatalogResponse,
     RunsResponse,
     RuntimeInfoResponse,
+    TagsListResponse,
 )
 from tools.yengo_dashboard.server.pipeline_runner import PipelineCommandError, PipelineRunner
 from tools.yengo_dashboard.server.state_reader import StateReader
@@ -211,5 +213,37 @@ def build_read_router(
                 },
             ) from exc
         return OpsCatalogResponse(raw=payload)
+
+    @router.get("/tags", response_model=TagsListResponse)
+    def tags_list(_request: Request) -> TagsListResponse:
+        """Theme 5: passthrough of ``tags list --with-usage --json``."""
+        try:
+            payload = runner.tags_list(with_usage=True)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "puzzle_manager tags list --json failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                },
+            ) from exc
+        return TagsListResponse(raw=payload)
+
+    @router.get("/levels", response_model=LevelsListResponse)
+    def levels_list(_request: Request) -> LevelsListResponse:
+        """Theme 5: passthrough of ``levels list --with-usage --json``."""
+        try:
+            payload = runner.levels_list(with_usage=True)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "puzzle_manager levels list --json failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                },
+            ) from exc
+        return LevelsListResponse(raw=payload)
 
     return router

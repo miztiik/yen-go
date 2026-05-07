@@ -459,8 +459,8 @@ feature request.
   that tag (via Theme 10 once landed; for now, link to a stub).
 
 ### Acceptance criteria
-- [ ] CLI tests against seeded inventory + config.
-- [ ] Dashboard test pins the new sub-section.
+- [x] CLI tests against seeded inventory + config.
+- [x] Dashboard test pins the new sub-section.
 
 ---
 

@@ -583,3 +583,27 @@ class OpsCatalogResponse(BaseModel):
             "`backend.puzzle_manager.models.ops_catalog.OpsCatalogEntry`."
         ),
     )
+
+
+class TagsListResponse(BaseModel):
+    """``GET /api/tags`` payload — verbatim ``tags list --json`` output (Theme 5).
+
+    Item shape owned by ``backend.puzzle_manager.models.taxonomy.TagUsageEntry``.
+    """
+
+    raw: list = Field(
+        ...,
+        description="Parsed JSON list of `tags list --json` (TagUsageEntry rows).",
+    )
+
+
+class LevelsListResponse(BaseModel):
+    """``GET /api/levels`` payload — verbatim ``levels list --json`` output (Theme 5).
+
+    Item shape owned by ``backend.puzzle_manager.models.taxonomy.LevelUsageEntry``.
+    """
+
+    raw: list = Field(
+        ...,
+        description="Parsed JSON list of `levels list --json` (LevelUsageEntry rows).",
+    )

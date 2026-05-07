@@ -427,9 +427,70 @@ async function renderOverview() {
         <span class="font-mono">${escapeHtml(inv.db_path || "—")}</span>
         <span>db_version: ${dbVer}${schemaPill}</span>
       </div>
+      <div id="taxonomy-section" class="mt-8">
+        <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-3">Taxonomy</h3>
+        <div class="text-xs text-slate-500">loading taxonomy…</div>
+      </div>
     `;
     _wireInventoryActionButtons(root);
+    _loadTaxonomySection().catch(() => {/* graceful — handled below */});
   } catch (e) { root.innerHTML = errorBlock("/api/inventory", e); }
+}
+
+// Theme 5: lazy-load tag/level usage tables and render below the inventory.
+async function _loadTaxonomySection() {
+  const section = document.getElementById("taxonomy-section");
+  if (!section) return;
+  try {
+    const [tagsResp, levelsResp] = await Promise.all([
+      getJSON("/api/tags"),
+      getJSON("/api/levels"),
+    ]);
+    section.innerHTML = `
+      <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-3">Taxonomy</h3>
+      <div class="grid md:grid-cols-2 gap-6">
+        ${taxonomyTable("Tags", tagsResp.raw, "tag", true)}
+        ${taxonomyTable("Levels", levelsResp.raw, "level", false)}
+      </div>
+    `;
+  } catch (err) {
+    section.innerHTML = `
+      <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-3">Taxonomy</h3>
+      <div class="text-xs text-rose-300">Failed to load taxonomy: ${escapeHtml(String(err?.message || err))}</div>
+    `;
+  }
+}
+
+function taxonomyTable(title, rows, key, showCategory) {
+  const sorted = [...(rows || [])].sort((a, b) => (b.usage_count || 0) - (a.usage_count || 0));
+  const headerCells = showCategory
+    ? `<th class="px-2 py-1 text-left">${escapeHtml(key)}</th><th class="px-2 py-1 text-left">category</th><th class="px-2 py-1 text-right">usage</th>`
+    : `<th class="px-2 py-1 text-left">${escapeHtml(key)}</th><th class="px-2 py-1 text-left">rank</th><th class="px-2 py-1 text-right">usage</th>`;
+  const bodyRows = sorted.map((r) => {
+    const left = escapeHtml(r[key] || "—");
+    const mid = showCategory
+      ? escapeHtml(r.category || "—")
+      : `${escapeHtml(r.rank_min || "?")}–${escapeHtml(r.rank_max || "?")}`;
+    const usage = (r.usage_count || 0).toLocaleString();
+    return `<tr class="border-t border-slate-800/50">
+      <td class="px-2 py-1 font-mono text-slate-200">${left}</td>
+      <td class="px-2 py-1 text-slate-400">${mid}</td>
+      <td class="px-2 py-1 text-right tabular-nums text-slate-200">${usage}</td>
+    </tr>`;
+  }).join("");
+  return `
+    <div class="rounded-md ring-1 ring-slate-800 bg-slate-900/60 overflow-hidden" data-taxonomy="${escapeHtml(key)}">
+      <div class="px-3 py-2 text-xs uppercase tracking-wider text-slate-400 border-b border-slate-800">${escapeHtml(title)}</div>
+      <div class="max-h-72 overflow-auto">
+        <table class="w-full text-xs">
+          <thead class="text-slate-500 sticky top-0 bg-slate-900/95">
+            <tr>${headerCells}</tr>
+          </thead>
+          <tbody>${bodyRows || `<tr><td colspan="3" class="px-2 py-3 text-center text-slate-500">no rows</td></tr>`}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
 }
 
 // Theme 14b: Inventory health surface — badge + per-issue table.

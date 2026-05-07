@@ -862,3 +862,26 @@ def test_maint_card_uses_flex_column_for_equal_height(app_js: str) -> None:
     assert 'class="flex gap-2 mt-auto"' in app_js, (
         "Theme 0: action-row must use mt-auto so buttons hug the bottom edge."
     )
+
+
+def test_taxonomy_section_present_in_overview(app_js: str) -> None:
+    """Theme 5: Library/Overview view exposes a Taxonomy sub-section that
+    consumes /api/tags and /api/levels and renders Tag + Level usage tables.
+
+    The acceptance text calls for a "Taxonomy" sub-section that pins the
+    new tables under the Library nav. The cockpit currently merges Library
+    into the Overview view; this test pins the section, the loader, and
+    the two table renderers.
+    """
+    assert 'id="taxonomy-section"' in app_js, (
+        "Theme 5: a stable id must exist so the lazy loader can target it."
+    )
+    assert "_loadTaxonomySection" in app_js, (
+        "Theme 5: a named loader must exist so the fetch is auditable."
+    )
+    assert '"/api/tags"' in app_js and '"/api/levels"' in app_js, (
+        "Theme 5: loader must hit both Theme 5 endpoints."
+    )
+    assert "function taxonomyTable" in app_js, (
+        "Theme 5: a table renderer must exist for tag/level rows."
+    )

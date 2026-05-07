@@ -959,6 +959,56 @@ Examples:
         help="Emit JSON list of OpsCatalogEntry instead of human text.",
     )
 
+    # tags command (Theme 5) — taxonomy inspector
+    tags_parser = subparsers.add_parser(
+        "tags",
+        help="Inspect tag taxonomy (read-only)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Subcommands:
+  list      List every canonical tag with usage counts and aliases.
+
+Examples:
+  %(prog)s list --with-usage --json
+  %(prog)s list
+        """,
+    )
+    tags_subparsers = tags_parser.add_subparsers(dest="tags_action", help="Tag actions")
+    tags_list_parser = tags_subparsers.add_parser("list", help="List tags")
+    tags_list_parser.add_argument(
+        "--with-usage", action="store_true",
+        help="Include usage counts (reads inventory).",
+    )
+    tags_list_parser.add_argument(
+        "--json", action="store_true",
+        help="Emit JSON list of TagUsageEntry shapes.",
+    )
+
+    # levels command (Theme 5) — taxonomy inspector
+    levels_parser = subparsers.add_parser(
+        "levels",
+        help="Inspect level taxonomy (read-only)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Subcommands:
+  list      List every level slug with usage counts and rank ranges.
+
+Examples:
+  %(prog)s list --with-usage --json
+  %(prog)s list
+        """,
+    )
+    levels_subparsers = levels_parser.add_subparsers(dest="levels_action", help="Level actions")
+    levels_list_parser = levels_subparsers.add_parser("list", help="List levels")
+    levels_list_parser.add_argument(
+        "--with-usage", action="store_true",
+        help="Include usage counts (reads inventory).",
+    )
+    levels_list_parser.add_argument(
+        "--json", action="store_true",
+        help="Emit JSON list of LevelUsageEntry shapes.",
+    )
+
     # runtime-info command (Theme 3a)
     runtime_info_parser = subparsers.add_parser(
         "runtime-info",
@@ -2472,6 +2522,105 @@ def cmd_ops(args: argparse.Namespace) -> int:
     return 0
 
 
+def _load_tags_config() -> dict:
+    """Read config/tags.json (fail-fast if missing)."""
+    config_dir = get_project_root() / "config"
+    with open(config_dir / "tags.json", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _load_levels_config() -> dict:
+    """Read config/puzzle-levels.json (fail-fast if missing)."""
+    config_dir = get_project_root() / "config"
+    with open(config_dir / "puzzle-levels.json", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _load_inventory_counts() -> tuple[dict[str, int], dict[str, int]]:
+    """Return (by_tag, by_puzzle_level) usage counts. Empty if no inventory."""
+    from backend.puzzle_manager.inventory.manager import InventoryManager
+
+    mgr = InventoryManager()
+    if not mgr.exists():
+        return {}, {}
+    inv = mgr.load()
+    return dict(inv.collection.by_tag), dict(inv.collection.by_puzzle_level)
+
+
+def cmd_tags(args: argparse.Namespace) -> int:
+    """Theme 5: list canonical tags with usage counts (read-only)."""
+    from backend.puzzle_manager.models.taxonomy import TagUsageEntry
+
+    if getattr(args, "tags_action", None) != "list":
+        print("Usage: tags list [--with-usage] [--json]")
+        return 0
+
+    cfg = _load_tags_config()
+    by_tag, _by_level = _load_inventory_counts() if args.with_usage else ({}, {})
+
+    entries: list[TagUsageEntry] = []
+    for slug, body in cfg.get("tags", {}).items():
+        entries.append(
+            TagUsageEntry(
+                tag=slug,
+                name=body.get("name", slug),
+                category=body.get("category", "unknown"),
+                usage_count=int(by_tag.get(slug, 0)),
+                aliases=list(body.get("aliases", [])),
+            )
+        )
+    entries.sort(key=lambda e: (-e.usage_count, e.tag))
+
+    if args.json:
+        print(json.dumps([e.model_dump() for e in entries], indent=2))
+        return 0
+
+    print(f"\n{'tag':24s} {'category':12s} {'usage':>7s}  aliases")
+    print("-" * 72)
+    for e in entries:
+        ali = ",".join(e.aliases[:4]) + (f" (+{len(e.aliases) - 4})" if len(e.aliases) > 4 else "")
+        print(f"{e.tag:24s} {e.category:12s} {e.usage_count:7d}  {ali}")
+    return 0
+
+
+def cmd_levels(args: argparse.Namespace) -> int:
+    """Theme 5: list level slugs with usage counts (read-only)."""
+    from backend.puzzle_manager.models.taxonomy import LevelUsageEntry
+
+    if getattr(args, "levels_action", None) != "list":
+        print("Usage: levels list [--with-usage] [--json]")
+        return 0
+
+    cfg = _load_levels_config()
+    _by_tag, by_level = _load_inventory_counts() if args.with_usage else ({}, {})
+
+    entries: list[LevelUsageEntry] = []
+    for body in cfg.get("levels", []):
+        rng = body.get("rankRange") or {}
+        entries.append(
+            LevelUsageEntry(
+                level=body["slug"],
+                name=body.get("name", body["slug"]),
+                id=int(body.get("id", 0)),
+                rank_min=rng.get("min"),
+                rank_max=rng.get("max"),
+                usage_count=int(by_level.get(body["slug"], 0)),
+            )
+        )
+    entries.sort(key=lambda e: e.id)
+
+    if args.json:
+        print(json.dumps([e.model_dump() for e in entries], indent=2))
+        return 0
+
+    print(f"\n{'level':24s} {'id':>4s}  {'rank':>10s}  usage")
+    print("-" * 60)
+    for e in entries:
+        rk = f"{e.rank_min or '?'}-{e.rank_max or '?'}"
+        print(f"{e.level:24s} {e.id:4d}  {rk:>10s}  {e.usage_count}")
+    return 0
+
+
 def cmd_activity(args: argparse.Namespace) -> int:
     """Theme 13a: emit a unified timeline of run/maintenance/publish events."""
     from backend.puzzle_manager.models.activity import compute_activity
@@ -2673,6 +2822,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_activity(args)
     elif args.command == "ops":
         return cmd_ops(args)
+    elif args.command == "tags":
+        return cmd_tags(args)
+    elif args.command == "levels":
+        return cmd_levels(args)
     elif args.command == "config-lock":
         return cmd_config_lock(args)
     else:
