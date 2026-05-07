@@ -1,5 +1,13 @@
 # Configuration Reference
 
+> **See also**:
+>
+> - [Architecture: Backend Overview](../architecture/backend/README.md) — Config consumers and boundaries
+> - [How-To: Configure Sources](../how-to/backend/configure-sources.md) — Operator workflow
+> - [Concepts: Tags](../concepts/tags.md) — Shared taxonomy definitions
+
+**Last Updated**: 2026-05-06
+
 > **Spec Reference**: 035-puzzle-manager-refactor
 
 Complete reference for Yen-Go configuration files.

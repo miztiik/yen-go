@@ -1,3 +1,9 @@
+> ⚠️ **ARCHIVED** — This document records the pre-SQLite client-side filtering research.
+> The current canonical architecture is [Concepts: SQLite Index Architecture](../concepts/sqlite-index-architecture.md).
+> Kept for historical reference only.
+
+---
+
 # Multi-Dimensional Puzzle Filtering — Research & Plan
 
 **Last Updated**: 2026-02-17  

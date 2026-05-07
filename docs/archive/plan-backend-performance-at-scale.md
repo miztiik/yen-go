@@ -1,12 +1,16 @@
 # Backend Performance at Scale — Implementation Plan
 
+> ⚠️ **ARCHIVED** — This document is preserved for historical context.
+> Current canonical documentation: [Architecture: Inventory Operations](../architecture/backend/inventory-operations.md)
+> Archived: 2026-05-06
+
 **Last Updated**: 2026-02-19
 **Status**: PLANNED — 0% Complete
 **Scale Target**: 300,000-500,000 puzzles
 **Migration Strategy**: Clean-slate (no backward compatibility — all legacy code deleted)
 **Publish Log Fields**: All mandatory (level, tags, quality, trace_id, collections)
 **Reconcile Strategy**: Periodic (every N runs, configurable) + explicit CLI
-**Companion Plans**: [plan-compact-schema-filtering.md](./plan-compact-schema-filtering.md)
+**Companion Plans**: Historical companion plan now lives in [plan-compact-schema-filtering.md](./plan-compact-schema-filtering.md).
 
 ---
 

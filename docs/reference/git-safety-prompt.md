@@ -1,5 +1,13 @@
 # Git Safety Prompt for AI Agents
 
+> **See also**:
+>
+> - [Reference: Documentation Structure](documentation-structure.md) — Canonical docs placement rules
+> - [How-To: Troubleshoot](../how-to/backend/troubleshoot.md) — Recovery workflow after mistakes
+> - [Architecture: System Overview](../architecture/system-overview.md) — Repo layout and data boundaries
+
+**Last Updated**: 2026-05-06
+
 Copy and paste this at the start of your conversation with an agent.
 
 ---

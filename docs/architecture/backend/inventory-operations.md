@@ -6,10 +6,11 @@
 > - [Architecture: System Overview](../system-overview.md) — Directory layout and database architecture
 > - [How-To: Rollback](../../how-to/backend/rollback.md) — Rollback operations
 > - [How-To: CLI Reference](../../how-to/backend/cli-reference.md) — CLI commands
+> - [Archive: Backend Performance at Scale Plan](../../archive/plan-backend-performance-at-scale.md) — Historical scaling plan and deleted fallback rationale
 
-**Last Updated**: 2026-03-10
+**Last Updated**: 2026-05-06
 
-Design for inventory management operations at scale (300k–500k puzzles). Covers publish, rebuild, reconcile, rollback, and trace search — all optimized for throughput without sacrificing correctness.
+Design for inventory management operations at scale (300k–500k puzzles). Covers publish, rebuild, reconcile, rollback, and publish-log trace search. Core inventory operations are rebuild-centric; trace search currently uses string-prefiltered scans over date-partitioned logs.
 
 ---
 
@@ -23,7 +24,7 @@ The inventory tracks the complete state of the puzzle collection: counts by leve
 | **Rebuild**      | `--rebuild` flag               | O(total_entries)                 | 0                         |
 | **Reconcile**    | `--reconcile` flag or periodic | O(disk_files)                    | Minimal (root props only) |
 | **Rollback**     | `rollback --run-id`            | O(affected_entities × pages)     | 0                         |
-| **Trace Search** | `trace search` CLI             | O(1) with indexes, O(n) fallback | 0                         |
+| **Trace Search** | `trace search` CLI             | O(total_log_lines) with string pre-filter | 0                         |
 
 ---
 
@@ -210,6 +211,20 @@ Rollback uses publish log entry metadata (`entry.puzzle_id`, `entry.path`) to de
 
 ---
 
+## Execution Serialization
+
+`PipelineLock` is the single serialization point for pipeline runs, rollback, and config-writing commands.
+
+### Design
+
+- Atomic lock-file creation prevents concurrent publish/rollback writers
+- PID-aware stale lock recovery handles crashed processes without manual cleanup
+- The unified lock replaced the older rollback-specific lock and config-only lock paths
+
+This matters because rollback deletes SGF files and rebuilds derived indexes. Running rollback beside publish or config mutation risks partial writes and inconsistent derived state.
+
+---
+
 ## Trace Map
 
 Per-file observability is achieved via an ephemeral trace map file (`.trace-map-{run_id}.json`) in the staging directory. This replaces the previous trace registry JSONL system.
@@ -233,6 +248,16 @@ After publish, trace data is persisted in the **publish log**, which includes:
 - `source_file`: Pipeline-internal puzzle ID
 - `original_filename`: Original filename from source adapter
 
+### Publish-Log Trace Search
+
+The CLI `trace search` commands query the publish log, not the in-memory trace map used during a live run.
+
+- Search methods use a cheap string needle check before `json.loads()` to skip non-matching lines
+- Log files are date-partitioned, so searches scan only the JSONL files needed for the requested date range
+- The current implementation does **not** maintain write-time secondary indexes for `trace_id` or `puzzle_id`
+
+This keeps the read path simple and avoids full deserialization of unrelated lines, but worst-case complexity is still linear in total log lines. Dedicated secondary indexes remain backlog work rather than current architecture.
+
 ---
 
 ## Scale Characteristics
@@ -243,9 +268,9 @@ After publish, trace data is persisted in the **publish log**, which includes:
 | Rebuild (from logs)           | ~5s          | ~15s         | ~25s         |
 | Reconcile (threaded)          | ~10s         | ~30s         | ~50s         |
 | Rollback (batch, 100 puzzles) | <2s          | <2s          | <2s          |
-| Trace lookup (dict access)    | <1ms         | <1ms         | <1ms         |
+| Trace map lookup (pipeline)   | <1ms         | <1ms         | <1ms         |
 
-All operations scale linearly. At 1M puzzles, the architecture remains the same — publish logs and indexes are the primary data structures, not in-memory collections.
+All operations scale linearly. At 1M puzzles, the architecture remains the same — publish logs and rebuildable indexes are the primary data structures, not in-memory collections.
 
 ---
 

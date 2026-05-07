@@ -1,5 +1,9 @@
 # Plan: Hint System Redesign — Pedagogically-Sound Progressive Hints
 
+> ⚠️ **ARCHIVED** — This document is preserved for historical context.
+> Current canonical documentation: [Architecture: Hint Architecture](../architecture/backend/hint-architecture.md)
+> Archived: 2026-05-06
+
 **Created:** 2026-02-22
 **Status:** Not Started
 **Scope:** Backend enrichment (hints.py, tagger.py), frontend HintOverlay, docs

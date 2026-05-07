@@ -285,7 +285,7 @@ Property handling is **config-driven** via [`config/sgf-property-policies.json`]
 | **YM**                      | `override`          | No               | Pipeline metadata JSON                                                          | Pipeline          |
 | **SO**                      | `remove`            | Optional         | Parsed then **removed**                                                         | N/A               |
 | **C[]** (root)              | `configurable`      | Optional         | Cleaned (HTML/CJK stripped), **preserved by default** (`preserve_root_comment`) | Configurable      |
-| **C[]** (moves)             | —                   | Optional         | **Standardized** (Correct/Wrong prefix, CJK stripped)                           | Enricher          |
+| **C[]** (moves)             | —                   | Optional         | **Standardized** (Correct/Wrong prefix, CJK stripped, `Correct {auto-inferred}` for lone inferred winners) | Enricher          |
 | **DT, CA, RE, AP, KM, ...** | `blocked`           | N/A              | **Dropped at parse time**                                                       | N/A               |
 
 > **See also**: [`config/sgf-property-policies.json`](../../config/sgf-property-policies.json) — the single source of truth for property policies.
@@ -317,8 +317,12 @@ This is a general-purpose operation applicable to any source collection that use
 5. `blocked`: dropped at parse time — never enters the pipeline (DT, CA, RE, AP, etc.)
 6. Provenance (SO) is tracked in pipeline state, not in published SGF
 7. Root comments are cleaned (HTML/CJK stripped) and preserved by default (`configurable` policy)
-8. Move comments are standardized with Correct/Wrong prefix and CJK stripped
+8. Move comments are standardized with Correct/Wrong prefix and CJK stripped; single-move structural inference is marked as `Correct {auto-inferred}`
 9. `enable_*` flags in `EnrichmentConfig` are **orthogonal** — they toggle computation, not property policy
+
+### Auto-Inferred Correctness Marker
+
+When the solution tree has exactly one first-level move and the source provides no explicit correctness signal, the enricher emits `C[Correct {auto-inferred}]`. The marker is intentionally machine-greppable: it preserves the normal Correct/Wrong comment contract while showing that the correctness label came from pipeline inference, not an authored SGF marker.
 
 ---
 

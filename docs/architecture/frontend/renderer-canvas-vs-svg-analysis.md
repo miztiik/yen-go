@@ -14,8 +14,7 @@
 
 > **See also**:
 >
-> - [Reference: Go Board JS Libraries](../../reference/go-board-js-libraries-analysis.md) — Full library comparison
-> - [Reference: Solution Tree Visualization](../../reference/solution-tree-visualization-analysis.md) — Tree renderer deep dive
+- [Architecture: Frontend Overview](overview.md) — Frontend design context
 > - [Architecture: Goban Integration](goban-integration.md) — How goban is wired into our app
 > - [Architecture: Board Rendering](svg-board.md) — Board element hierarchy
 

@@ -38,7 +38,6 @@ Validation rules (configurable per-source):
 
 | Adapter                     | Type        | Resume | Validation | Status | Config Docs                |
 | --------------------------- | ----------- | ------ | ---------- | ------ | -------------------------- |
-| [yengo-source](yengo-source.md)     | File System | ✗      | ✗          | Active | [Reference](yengo-source.md)   |
 | [local](local.md)           | File System | ✓      | ✓          | Active | [Reference](local.md)      |
 
 ---

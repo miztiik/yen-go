@@ -497,5 +497,6 @@ After Approach A is working, Approach B can be evaluated as an optimization if t
 > **See also:**
 >
 > - [Architecture: Goban Integration](./goban-integration.md) — Current goban architecture
-> - [Reference: Solution Tree Visualization Analysis](../../reference/solution-tree-visualization-analysis.md) — 4-implementation comparison
+> - [Architecture: Puzzle Solving](./puzzle-solving.md) — Solver lifecycle and state flow
+> - [Renderer Analysis: Canvas vs SVG](./renderer-canvas-vs-svg-analysis.md) — Current renderer trade-offs
 > - [Besogo Source](../../../tools/sgf-viewer-besogo/) — Complete library (~137 KB JS)

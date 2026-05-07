@@ -8,9 +8,10 @@
 > - [Concepts: Teaching Comments](../../concepts/teaching-comments.md) — Post-solve explanations in C[]
 > - [Architecture: Enrichment](./enrichment.md) — Overall enrichment pipeline
 > - [Architecture: KataGo Enrichment](../../architecture/tools/katago-enrichment.md) — Lab enrichment design decisions
+> - [Archive: Hint System Redesign Plan](../../archive/plan-hint-system-redesign.md) — Historical redesign plan and expert review context
 > - [Concepts: SGF Properties](../../concepts/sgf-properties.md) — YH property spec
 
-**Last Updated**: 2026-03-19
+**Last Updated**: 2026-05-06
 
 ---
 

@@ -120,5 +120,5 @@ await page.locator('.timestamp').evaluate(el => el.style.visibility = 'hidden');
 ## See Also
 
 - [Architecture: Frontend Testing](../../architecture/frontend/testing.md) - Testing architecture and conventions
-- [Component Template](../../../frontend/tests/visual/templates/component.visual.template.ts) - Copy for new tests
+- [How-To: Frontend Local Development](./local-development.md) - Current frontend test workflow
 - [Playwright Docs](https://playwright.dev/docs/test-snapshots) - Official snapshot testing docs

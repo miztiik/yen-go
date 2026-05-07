@@ -1,6 +1,10 @@
+> ⚠️ **ARCHIVED** — This audit is preserved for historical context.
+> Current canonical documentation: [Concepts: SQLite Index Architecture](../concepts/sqlite-index-architecture.md)
+> Archived: 2026-05-06
+
 # Collections, Technique, Training Filtering Audit (2026-02-25)
 
-> **Note (2026-03-13)**: This audit was written for the shard-based query architecture which has been replaced by SQLite. See [SQLite Index Architecture](../../concepts/sqlite-index-architecture.md) for the current system.
+> **Note (2026-03-13)**: This audit was written for the shard-based query architecture which has been replaced by SQLite. See [SQLite Index Architecture](../concepts/sqlite-index-architecture.md) for the current system.
 
 **Last Updated**: 2026-03-10
 
@@ -10,9 +14,9 @@ This document captures current-state audit evidence, expert consultation, and ga
 
 > **See also**:
 >
-> - [How-To: Filtering UX Implementation Roadmap](../../how-to/frontend/filtering-ux-implementation-roadmap.md) - Execution plan and sequencing
-> - [Architecture: Frontend Overview](../../architecture/frontend/overview.md) - Frontend architecture context
-> - [Concepts: Mastery](../../concepts/mastery.md) - Progress and mastery model
+- [How-To: Filtering UX Implementation Roadmap](../how-to/frontend/filtering-ux-implementation-roadmap.md) - Execution plan and sequencing
+- [Architecture: Frontend Overview](../architecture/frontend/overview.md) - Frontend architecture context
+- [Concepts: Mastery](../concepts/mastery.md) - Progress and mastery model
 
 ---
 

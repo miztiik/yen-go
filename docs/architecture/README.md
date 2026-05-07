@@ -79,7 +79,7 @@ The SQLite-based query architecture establishes these contracts for routing and 
 ### System-Wide
 
 - [System Overview](system-overview.md) — Static-first design, data flow, principles
-- [Database Deployment Topology](database-deployment-topology.md) — Database deployment contract (DECIDED: Repo-static)
+- [Database Deployment Topology](backend/database-deployment-topology.md) — Database deployment contract (DECIDED: Repo-static)
 
 ### Backend
 

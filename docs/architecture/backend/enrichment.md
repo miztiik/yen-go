@@ -59,14 +59,18 @@ The enricher is **final authority** for all YenGo properties:
 | **YX**          | No               | Computes from tree                                                            |
 | **SO**          | Optional         | **Removes**                                                                   |
 | **C[]** (root)  | Optional         | **Cleans HTML/CJK, preserves** (configurable)                                 |
-| **C[]** (moves) | Optional         | **Standardizes** (Correct/Wrong prefix, CJK stripped)                         |
+| **C[]** (moves) | Optional         | **Standardizes** (Correct/Wrong prefix, CJK stripped, `Correct {auto-inferred}` for lone inferred winners) |
 
 ### Key Principles
 
 1. Adapter data is used as **hints** but enricher validates
 2. Provenance (SO) tracked in pipeline state, not SGF
-3. Root comments are cleaned (HTML/CJK stripped) and preserved by default; move comments standardized with Correct/Wrong prefix
+3. Root comments are cleaned (HTML/CJK stripped) and preserved by default; move comments standardized with Correct/Wrong prefix, using `Correct {auto-inferred}` when correctness is inferred from a lone first move
 4. Source-provided YG levels are preserved if valid; classifier runs only when missing
+
+### Auto-Inferred Correctness Marker
+
+When a puzzle has exactly one first-level move and the source provides no explicit correctness signal, `SgfBuilder` emits `C[Correct {auto-inferred}]`. This preserves the Correct/Wrong convention while marking that correctness came from structural inference rather than source-authored metadata.
 
 ---
 

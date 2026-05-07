@@ -2,9 +2,9 @@
 
 > **See also**:
 >
-> - [Architecture: Frontend](../../architecture/frontend/) — Design decisions
-> - [Reference: Frontend](../../reference/frontend/) — Configuration lookup
-> - [Getting Started](../../getting-started/) — Initial setup
+> - [Architecture: Frontend Overview](../../architecture/frontend/overview.md) — Design decisions
+> - [Reference: GitHub Actions](../../reference/github-actions.md) — Deployment and workflow lookup
+> - [Getting Started: Develop](../../getting-started/develop.md) — Initial setup
 
 **Last Updated**: 2026-02-01
 

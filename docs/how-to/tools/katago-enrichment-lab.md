@@ -544,7 +544,6 @@ Without `initial_stones`, the function falls back to adjacency-based detection (
 > - [Reference: KataGo Enrichment Config](../../reference/katago-enrichment-config.md) — full configuration reference
 > - [Concepts: Quality — Benson Gate](../../concepts/quality.md#benson-gate) — quality signals
 > - [Concepts: Quality](../../concepts/quality.md) — AC quality levels
-> - [Implementation Plan](../../../TODO/katago-puzzle-enrichment/006-implementation-plan-final.md) — task breakdown
 
 ## AI-Solve Unified Enrichment (v3)
 

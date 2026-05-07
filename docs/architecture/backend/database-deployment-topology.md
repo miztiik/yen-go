@@ -104,6 +104,6 @@ The selected topology preserves these locked URL and resolver contracts:
 
 > **See also**:
 >
-> - [Concepts: SQLite Index Architecture](../concepts/sqlite-index-architecture.md) - Terminology and schema
+> - [Concepts: SQLite Index Architecture](../../concepts/sqlite-index-architecture.md) - Terminology and schema
 > - [Architecture docs index](./README.md)
-> - [System Overview](./system-overview.md)
+> - [System Overview](../system-overview.md)

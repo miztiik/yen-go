@@ -1,3 +1,7 @@
+> ⚠️ **ARCHIVED** — This document is preserved for historical context.
+> Current canonical documentation: [Architecture: Goban Integration](../architecture/frontend/goban-integration.md)
+> Archived: 2026-05-06
+
 # Solution Tree / Move Tree Visualization — Deep Analysis
 
 > **Last Updated**: 2026-02-17  
@@ -5,8 +9,8 @@
 
 > **See also**:
 >
-> - [Reference: Go Board JS Libraries](go-board-js-libraries-analysis.md) — Board library comparison
-> - [Architecture: Frontend](../architecture/frontend/) — Yen-Go frontend design decisions
+- [Go Board JavaScript Libraries Analysis](./go-board-js-libraries-analysis.md) — Historical board-library comparison
+- [Architecture: Frontend Overview](../architecture/frontend/overview.md) — Current frontend design decisions
 > - [Concepts: SGF Properties](../concepts/sgf-properties.md) — Custom SGF property definitions
 
 ---

@@ -1,11 +1,15 @@
 # AI-Solve: Unified Puzzle Enrichment Plan — v3
 
+> ⚠️ **ARCHIVED** — This document is preserved for historical context.
+> Current canonical documentation: [Architecture: KataGo Puzzle Enrichment](../architecture/tools/katago-enrichment.md)
+> Archived: 2026-05-06
+
 **Last Updated:** 2026-03-04
-**Status:** SCAFFOLDING COMPLETE, GAPS IDENTIFIED — 220 tests pass but review panel audit found 20 implementation gaps. See `TODO/ai-solve-remediation-sprints.md` for remediation plan.
-**Supersedes:** `TODO/ai-solve-enrichment-plan-v2.md` (v2.1)
+**Status:** SCAFFOLDING COMPLETE, GAPS IDENTIFIED — 220 tests pass but the original review panel audit found 20 implementation gaps.
+**Supersedes:** [ai-solve-enrichment-plan-v2.1.md](./ai-solve-enrichment-plan-v2.1.md)
 **Scope:** `tools/puzzle-enrichment-lab/` — analyzers, models, config, CLI, tests
-**ADR:** `TODO/katago-puzzle-enrichment/008-adr-ai-solve-unified-enrichment.md`
-**Remediation:** `TODO/ai-solve-remediation-sprints.md` (20 gaps, 5 sprints)
+**Historical ADR Context:** The original initiative captured DD-1 through DD-12 in a companion ADR outside the canonical docs tree.
+**Remediation:** The original rollout followed with five remediation sprints to close the audit gaps.
 
 ---
 
@@ -43,7 +47,7 @@ Build complete solution trees for position-only SGFs, and enrich ALL puzzles thr
 
 ## Design Decisions (Consolidated)
 
-All design decisions below were resolved through Review Panel consultation across v1→v2→v2.1→v3. Verbatim panel dialogue is archived in `TODO/ai-solve-enrichment-plan-v2.md` (Topics 1–8, Appendix C).
+All design decisions below were resolved through Review Panel consultation across v1→v2→v2.1→v3. Verbatim panel dialogue is archived in [ai-solve-enrichment-plan-v2.1.md](./ai-solve-enrichment-plan-v2.1.md) (Topics 1–8, Appendix C).
 
 ### DD-1: Solution Tree Depth — Category-Aware Natural Stopping
 
@@ -624,7 +628,7 @@ All integration tests:
 
 | Document                                                               | Change                                                                 |
 | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `TODO/katago-puzzle-enrichment/008-adr-ai-solve-unified-enrichment.md` | **NEW** — ADR capturing all design decisions DD-1 through DD-12        |
+| Historical ADR 008 note | **NEW** — Design record that captured DD-1 through DD-12 during the original initiative |
 | `config/katago-enrichment.json`                                        | Schema v1.14 with`ai_solve` section (done in Phase 1)                  |
 | `CLAUDE.md` (root)                                                     | Add`ac:0-3` to YQ property table                                       |
 | `.github/copilot-instructions.md`                                      | Add`ac:0-3` to YQ property table                                       |
@@ -727,6 +731,6 @@ P12 (Documentation + ADR)
 | v2      | 2026-03-02     | Full solution trees, 4-level AC, unified pipeline, expert panel consultation                                                                                                                                                                                                                                                                     |
 | v2.1    | 2026-03-03     | 27 review panel amendments (ALG/STR/CAL/EDGE/AC/LOG/MIN categories)                                                                                                                                                                                                                                                                              |
 | **v3**  | **2026-03-03** | **Clean rewrite: 12 gated phases, Review Panel definition, duplicate removal, full-refactor policy, ADR integration**                                                                                                                                                                                                                            |
-| v3.1    | 2026-03-04     | Reference to Kishimoto-Mueller Search Optimizations plan (`TODO/kishimoto-mueller-search-optimizations.md`). KM-01 (simulation), KM-02 (transposition), KM-03 (forced move), KM-04 (proof-depth), DD-L3 (depth-dependent policy) integrated into solution tree builder. ADR: `TODO/katago-puzzle-enrichment/009-adr-km-search-optimizations.md`. |
+| v3.1    | 2026-03-04     | Reference to the Kishimoto-Mueller search-optimization follow-through. KM-01 (simulation), KM-02 (transposition), KM-03 (forced move), KM-04 (proof-depth), DD-L3 (depth-dependent policy) integrated into solution tree builder. |
 
-**Archived detail:** Verbatim expert panel dialogue (Topics 1–8) and v2.1 amendment assessment table (Appendix C) are preserved in `TODO/ai-solve-enrichment-plan-v2.md` for historical reference. v3 consolidates all decisions into the DD-1 through DD-12 table above.
+**Archived detail:** Verbatim expert panel dialogue (Topics 1–8) and the v2.1 amendment assessment table (Appendix C) are preserved in [ai-solve-enrichment-plan-v2.1.md](./ai-solve-enrichment-plan-v2.1.md) for historical reference. v3 consolidates all decisions into the DD-1 through DD-12 table above.

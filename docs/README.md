@@ -2,7 +2,7 @@
 
 Welcome to the Yen-Go documentation. This is the central hub for all project documentation.
 
-**Last Updated**: 2026-02-01
+**Last Updated**: 2026-05-06
 
 ---
 
@@ -40,11 +40,12 @@ Welcome to the Yen-Go documentation. This is the central hub for all project doc
 
 | Goal                     | Go to                                                    |
 | ------------------------ | -------------------------------------------------------- |
-| CLI command reference    | [Reference: CLI](reference/cli-reference.md)             |
+| CLI command reference    | [How-To: CLI Reference](how-to/backend/cli-reference.md) |
 | Adapter configuration    | [Reference: Adapters](reference/adapters/)               |
-| Tag definitions          | [Reference: Tags](reference/tags.md)                     |
-| Level definitions        | [Reference: Levels](reference/levels.md)                 |
+| Tag definitions          | [Concepts: Tags](concepts/tags.md)                       |
+| Level definitions        | [Concepts: Levels](concepts/levels.md)                   |
 | GitHub Actions workflows | [Reference: GitHub Actions](reference/github-actions.md) |
+| Historical plans         | [Archive Index](archive/README.md)                       |
 
 ---
 
@@ -75,7 +76,8 @@ docs/
 │   └── glossary.md       # Go/Tsumego terms
 │
 ├── reference/            # Pure lookup (no prose)
-│   ├── cli-reference.md  # CLI commands
+│   ├── puzzle-manager-cli.md # Full CLI reference
+│   ├── cli-quick-ref.md  # CLI cheat sheet
 │   ├── adapters/         # Per-adapter config
 │   └── ...
 │
@@ -86,7 +88,7 @@ docs/
 
 ## Conventions
 
-### Three-Tier Documentation
+### Four-Tier Documentation
 
 | Tier             | Purpose                   | Example                    |
 | ---------------- | ------------------------- | -------------------------- |

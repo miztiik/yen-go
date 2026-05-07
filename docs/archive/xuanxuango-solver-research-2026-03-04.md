@@ -4,7 +4,7 @@
 
 - Target page: http://www.yengo-source.com/solver.htm
 - Goal: find source code, infer algorithm used, and extract lessons for `tools/puzzle-enrichment-lab`.
-- Constraint followed: no code/repo changes; research-only note created in `TODO/`.
+- Constraint followed: no code/repo changes; research-only note was captured outside the canonical docs tree at the time.
 
 ## Executive Summary
 

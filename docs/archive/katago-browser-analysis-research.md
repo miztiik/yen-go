@@ -1,6 +1,10 @@
+> ⚠️ **ARCHIVED** — This document is preserved for historical context.
+> Current canonical documentation: [Architecture: KataGo Enrichment](../architecture/tools/katago-enrichment.md)
+> Archived: 2026-05-06
+
 # Browser Analysis Research: KataGo/Estimator Feasibility
 
-Last Updated: 2026-02-17
+**Last Updated**: 2026-02-17
 
 ## Scope
 
@@ -8,7 +12,7 @@ This research summarizes what is feasible for live Go puzzle analysis in browser
 
 - External signals from KataGo training network distribution and yengo-source runtime behavior.
 - Existing Yen-Go architecture constraints.
-- Review of Feature 134 draft artifacts in `TODO/134-score-estimation-wasm/`.
+- Review of historical browser-estimator draft artifacts from the former planning workspace.
 
 ## Executive Summary
 
@@ -18,25 +22,25 @@ This research summarizes what is feasible for live Go puzzle analysis in browser
 
 ## Findings From Feature 134 Files
 
-### `TODO/134-score-estimation-wasm/analyze_wasm.py`
+### Draft Analyzer Script
 
 - Useful as a local binary introspection script (exports, sections).
 - Not integrated into frontend contract validation (no expected export list/version checks).
 - Hardcoded filename (`OGSScoreEstimator.wasm`) can drift from versioned asset naming used elsewhere.
 
-### `TODO/134-score-estimation-wasm/plan.md`
+### Draft Plan
 
 - Proposes browser Monte Carlo ownership/score estimation with optional worker offloading.
 - Assumes paths/components that appear stale relative to current frontend structure.
 - Worker marked optional, but runtime-heavy computation without worker risks UI blocking.
 
-### `TODO/134-score-estimation-wasm/spec.md`
+### Draft Spec
 
 - Strong user value proposition (heatmap, score lead, off-path exploration).
 - Contains unresolved placeholders and duplicated success criteria blocks.
 - FRs and stories imply runtime analysis behavior that conflicts with current architecture rules.
 
-### `TODO/134-score-estimation-wasm/tasks.md`
+### Draft Task List
 
 - Good phased intent, but has structural inconsistencies:
   - Task file references a non-existent location.

@@ -1,5 +1,13 @@
 ﻿# Puzzle Sources Catalog
 
+> **See also**:
+>
+> - [Architecture: Backend Overview](../architecture/backend/README.md) — Source ingestion context
+> - [How-To: Configure Sources](../how-to/backend/configure-sources.md) — Operational setup
+> - [Reference: Adapters](./adapters/README.md) — Per-adapter notes
+
+**Last Updated**: 2026-05-06
+
 This document describes the schema and metadata format used to catalog puzzle sources in Yen-Go. Specific external source identities are intentionally not enumerated here; consult internal source configuration (`config/sources.json`) for the authoritative list of integrated adapters.
 
 ---

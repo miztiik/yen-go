@@ -4,7 +4,7 @@
 >
 > - [Architecture: Frontend Overview](../../architecture/frontend/overview.md) — PWA, tech stack
 > - [How-To: Local Development](./local-development.md) — Development setup
-> - [Reference: Frontend](../../reference/frontend/) — Configuration options
+> - [Reference: GitHub Actions](../../reference/github-actions.md) — Deployment workflow reference
 
 **Last Updated**: 2026-02-01
 

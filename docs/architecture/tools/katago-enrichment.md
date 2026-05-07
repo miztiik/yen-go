@@ -1,6 +1,13 @@
 # Architecture: KataGo Puzzle Enrichment
 
-**Last Updated:** 2026-03-20
+> **See also**:
+>
+> - [Architecture: Enrichment](../backend/enrichment.md) — Analyze-stage enrichment model
+> - [Architecture: Hint Architecture](../backend/hint-architecture.md) — Progressive hint design used by downstream puzzle presentation
+> - [Concepts: Solution Trees](../../concepts/solution-trees.md) — SGF solution-tree semantics
+> - [Archive: AI-Solve Enrichment Plan v3](../../archive/ai-solve-enrichment-plan-v3.md) — Historical review-panel plan and implementation narrative
+
+**Last Updated:** 2026-05-06
 
 ---
 
@@ -546,7 +553,7 @@ Adapted from Kishimoto & Müller (2005) AAAI-05 and Thomsen (2000) ICGA Journal.
 
 **Paper reference:** §3, §6 — df-pn transposition tables. Reduces 10-30% queries for puzzles with transpositions.
 
-**Hashing evolution:** The original design used `frozenset(moves)` which produced false positives when captures changed the board state. A scan-based `hash(frozenset((color,row,col)))` was considered (O(n) per hash, n=board_size²) but rejected in favor of Zobrist hashing (O(1) incremental) — the standard technique in Go programs and consistent with Kishimoto's paper. See [ADR 009 §Review Panel](../../TODO/katago-puzzle-enrichment/009-adr-km-search-optimizations.md) for the full trade-off analysis.
+**Hashing evolution:** The original design used `frozenset(moves)` which produced false positives when captures changed the board state. A scan-based `hash(frozenset((color,row,col)))` was considered (O(n) per hash, n=board_size²) but rejected in favor of Zobrist hashing (O(1) incremental) — the standard technique in Go programs and consistent with Kishimoto's paper. The KM optimization review confirmed this trade-off before it was folded into the canonical architecture doc.
 
 **Capture resolution:** `_BoardState` implements flood-fill liberty counting. Covers standard captures, snapback, simple ko detection (last single-stone capture tracked), and double ko (different stone configs hash differently). Superko is delegated to KataGo's rules engine.
 
@@ -572,17 +579,17 @@ Adapted from Kishimoto & Müller (2005) AAAI-05 and Thomsen (2000) ICGA Journal.
 
 **Paper reference:** Thomsen (2000) — Lambda search: moves at deeper levels must be more forcing.
 
-**ADR:** `TODO/katago-puzzle-enrichment/009-adr-km-search-optimizations.md`
+**Historical design note:** The original initiative captured this decision in a companion ADR before it was folded into the canonical docs.
 
 ---
 
 > **See also:**
 >
-> - [How-To: Enrichment Lab](../how-to/tools/katago-enrichment-lab.md) — step-by-step usage
-> - [Implementation Plan](../../TODO/katago-puzzle-enrichment/006-implementation-plan-final.md) — task-level breakdown (Phases A, P, R, S, B, C); S.4a = ko-aware analysis
-> - [Research](../../TODO/katago-puzzle-enrichment/001-research-browser-and-local-katago-for-tsumego.md) — feasibility study
-> - [Plan 010](../../TODO/katago-puzzle-enrichment/010-performance-and-config-driven-enrichment.md) — Performance & config-driven enrichment plan
-> - [ADR 009: KM Search Optimizations](../../TODO/katago-puzzle-enrichment/009-adr-km-search-optimizations.md) — design decisions
+> - [How-To: Enrichment Lab](../../how-to/tools/katago-enrichment-lab.md) — step-by-step usage
+> - [Reference: KataGo Enrichment Config](../../reference/katago-enrichment-config.md) — runtime configuration surface
+> - [Concepts: Tsumego Frame](../../concepts/tsumego-frame.md) — frame-generation algorithm
+> - [Concepts: Quality](../../concepts/quality.md) — quality and complexity signals
+> - [Architecture: Enrichment Lab GUI](./enrichment-lab-gui.md) — GUI and orchestration context
 
 ---
 
@@ -677,7 +684,7 @@ XXXX.X???????    ← Wall + margin + puzzle
 - Zone-based fill matches KaTrain's canonical implementation and its empirically validated results
 - yengo-source (which uses the same algorithmic approach) reports reliable analysis with just b10/500 visits
 
-**Source:** KaTrain `put_outside()` (MIT License, SHA `877684f9a2ff913120e2d608a4eb8202dc1fc8ed`). See [Concept: Tsumego Frame](../../concepts/tsumego-frame.md) for the full algorithm description. Research brief: `TODO/initiatives/2026-03-08-research-yengo-source-tsumego-frame/15-research.md` §3.2.
+**Source:** KaTrain `put_outside()` (MIT License, SHA `877684f9a2ff913120e2d608a4eb8202dc1fc8ed`). See [Concept: Tsumego Frame](../../concepts/tsumego-frame.md) for the full algorithm description.
 
 **Scope:** `tools/puzzle-enrichment-lab/analyzers/tsumego_frame.py` — `fill_territory()` function only. No changes to border placement, normalization, ko threats, or the public API. Dead helper `_distance_to_region()` removed (only used by the old interleaving code).
 
@@ -785,7 +792,7 @@ Two algorithmic gates run BEFORE each `engine.query()` call in `_build_tree_recu
 > **See also:**
 >
 > - [Concepts: Teaching Comments](../../concepts/teaching-comments.md) — full template reference
-> - Initiative: `TODO/initiatives/20260315-2000-feature-refutation-quality/30-plan.md` §PI-10
+> - [Concepts: Quality](../../concepts/quality.md) — downstream signal semantics
 
 ### D74: Signal Persistence & Search DB Indexing Strategy (2026-03-24)
 
@@ -859,9 +866,21 @@ The enrichment pipeline is orchestrated by `enrich_single_puzzle()` in `analyzer
 ### Timing & Notification
 
 `StageRunner.run_stage()` wraps each stage call with:
+
 - Monotonic timing (stored in `ctx.timings[stage_name]`)
 - Optional progress notification via `ctx.notify_fn` (used by GUI SSE stream)
 - Error handling per the stage's `ErrorPolicy`
+
+### Existing-Solution Solve Path
+
+`run_has_solution_path()` handles puzzles whose SGF already contains a human-authored solution. These puzzles still go through engine analysis; the existing tree is not a bypass.
+
+1. Validate the human line against KataGo.
+2. Spend root budget on wrong-move refutation roots first (`max_refutation_root_trees`).
+3. Spend remaining root budget on additional correct roots (`max_correct_root_trees`).
+4. Append AI-discovered branches without deleting or reordering existing human branches.
+
+This path is additive-only. If the shared `QueryBudget` is exhausted, lower-priority optional roots are skipped instead of replacing the existing human line. `human_solution_confidence` and `ai_solution_validated` remain Tier 4 diagnostic state and do not persist to SGF or `yengo-search.db`.
 
 ---
 

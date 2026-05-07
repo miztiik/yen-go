@@ -233,5 +233,5 @@ The frontend stores the current `db_version` in `localStorage` on init. A `check
 > **See also**:
 >
 > - [Architecture: System Overview](../architecture/system-overview.md) — High-level architecture
-> - [Architecture: Database Deployment Topology](../architecture/database-deployment-topology.md) — Deployment ADR
+> - [Architecture: Database Deployment Topology](../architecture/backend/database-deployment-topology.md) — Deployment ADR
 > - [Concepts: Numeric ID Scheme](./numeric-id-scheme.md) — ID ranges for levels, tags, collections

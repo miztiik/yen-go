@@ -8,7 +8,7 @@ This guide contains actionable recommendations and phased execution for Collecti
 
 > **See also**:
 >
-> - [Reference: Collections, Technique, Training Filtering Audit](../../reference/frontend/collections-filtering-audit-gaps-2026-02-25.md) - Audit evidence and expert findings
+- [Concepts: SQLite Index Architecture](../../concepts/sqlite-index-architecture.md) - Current query and filtering model
 > - [Architecture: Frontend Overview](../../architecture/frontend/overview.md) - Frontend architecture context
 > - [How-To: Frontend Local Development](./local-development.md) - Dev workflow
 

@@ -6,7 +6,7 @@ _Last Updated: 2026-02-14_
 >
 > - [Concepts: Collections](./collections.md) -- Collection taxonomy and schema
 > - [Concepts: Quality Metrics](./quality.md) -- Per-puzzle YQ/YX metrics
-> - [Tool: sort_collections.py](../../tools/source_adapter/sort_collections.py) -- Implementation
+> - [How-To: Configure Sources](../how-to/backend/configure-sources.md) -- Operational workflow
 
 When YenGo imports puzzle collections from external community platforms, there are thousands of collections to choose from -- but they vary wildly in quality. Some are carefully curated by professional Go players with hundreds of well-structured problems. Others are a single test puzzle named "aaaaaaaa" with zero solvers.
 

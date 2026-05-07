@@ -171,7 +171,7 @@ useBoardMarkers(gobanRef, isReviewMode);
 
 ## Complete Example
 
-See [PuzzleSolvePage.tsx](../../frontend/src/pages/PuzzleSolvePage.tsx) for the full implementation.
+See [Architecture: Puzzle Solving](../../architecture/frontend/puzzle-solving.md) for the full implementation context.
 
 ## Testing
 
@@ -225,6 +225,6 @@ test('puzzle page matches snapshot', async ({ page }) => {
 
 ## See Also
 
-- [Architecture: Goban Integration](../architecture/frontend/goban-integration.md) — Design decisions
-- [Testing Guide](../architecture/frontend/testing.md) — Test patterns
-- [Puzzle Solving Architecture](../architecture/frontend/puzzle-solving.md) — Solving lifecycle
+- [Architecture: Goban Integration](../../architecture/frontend/goban-integration.md) — Design decisions
+- [Testing Guide](../../architecture/frontend/testing.md) — Test patterns
+- [Puzzle Solving Architecture](../../architecture/frontend/puzzle-solving.md) — Solving lifecycle

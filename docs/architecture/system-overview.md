@@ -2,12 +2,12 @@
 
 > **See also**:
 >
-> - [Architecture: Backend](./backend/) — Pipeline and adapters
-> - [Architecture: Frontend](./frontend/) — Browser application
-> - [Architecture: Database Deployment Topology](./database-deployment-topology.md) — Database deployment contract (DECIDED: Repo-static)
+- [Architecture: Backend](./backend/README.md) — Pipeline and adapters
+- [Architecture: Frontend](./frontend/overview.md) — Browser application
+> - [Architecture: Database Deployment Topology](./backend/database-deployment-topology.md) — Database deployment contract (DECIDED: Repo-static)
 > - [Architecture: Index](./README.md) — Architecture documentation map
 > - [Concepts: SQLite Index Architecture](../concepts/sqlite-index-architecture.md) — Canonical terminology reference
-> - [Getting Started](../getting-started/) — Setup guides
+> - [Getting Started: Develop](../getting-started/develop.md) — Setup guide
 
 **Last Updated**: 2026-03-14
 

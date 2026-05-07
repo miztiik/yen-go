@@ -5,7 +5,7 @@
 **Scope:** `tools/puzzle-enrichment-lab/` — analyzers, models, config, CLI, tests  
 **Goal:** Build complete solution trees (not just first moves) for position-only SGFs, and enrich ALL puzzles through AI — whether they already have solutions or not  
 **Status:** DESIGN PLAN v2.1 — v2 + review panel amendments — requires approval before implementation  
-**Supersedes:** `TODO/ai-solve-enrichment-plan.md` (v1)
+**Supersedes:** [ai-solve-enrichment-plan-v1.md](./ai-solve-enrichment-plan-v1.md)
 
 ---
 

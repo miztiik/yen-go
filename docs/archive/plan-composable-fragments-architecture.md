@@ -1,8 +1,14 @@
+> ⚠️ **ARCHIVED** — This document records the snapshot/shard query architecture that was replaced by the SQLite puzzle index.
+> The current canonical architecture is [Concepts: SQLite Index Architecture](../concepts/sqlite-index-architecture.md).
+> Kept for historical reference only.
+
+---
+
 # Snapshot-Centric Query Architecture — Plan V2
 
 **Last Updated**: 2026-02-22
 **Status**: P0–P5 Implemented — Awaiting Review
-**Related**: `TODO/multi-dimensional-puzzle-filtering.md`, `TODO/entry-compression-proposal.md`
+**Related**: [multi-dimensional-puzzle-filtering.md](./multi-dimensional-puzzle-filtering.md), [plan-compact-schema-filtering.md](./plan-compact-schema-filtering.md)
 **Scale Target**: up to 500,000 puzzles within 1 GB GitHub Pages storage
 **Migration Strategy**: Big-bang (no backward compatibility required)
 **Prerequisite**: Compact numeric entry format (Architecture C) already implemented
@@ -38,7 +44,7 @@ Pass only if all are true:
 - Phase scope tasks are implemented and mapped to task IDs in this plan.
 - Unit/integration checks for phase scope are green.
 - Architecture artifacts are updated (contracts, schemas, and diagrams if changed).
-- No unresolved TODO/FIXME in touched phase-scope files.
+- No unresolved follow-up markers in touched phase-scope files.
 - Runtime complexity and data-shape impacts are documented for phase scope.
 
 #### B) Ready for Principal Staff Software Engineer Review

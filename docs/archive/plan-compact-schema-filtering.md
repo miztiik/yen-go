@@ -1,4 +1,10 @@
-﻿# Compact Schema & Multi-Dimensional Filtering — Implementation Plan v3
+﻿> ⚠️ **ARCHIVED** — This document records the compact-envelope filtering migration that was later superseded by the SQLite search database.
+> The current canonical architecture is [Concepts: SQLite Index Architecture](../concepts/sqlite-index-architecture.md).
+> Kept for historical reference only.
+
+---
+
+# Compact Schema & Multi-Dimensional Filtering — Implementation Plan v3
 
 **Last Updated**: 2026-02-20
 **Status**: GAP REMEDIATION — ~39% Complete (52/~133 steps done, 71 gaps identified, WP11 validated)

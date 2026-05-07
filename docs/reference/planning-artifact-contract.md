@@ -1,6 +1,11 @@
 # Planning Artifact Contract
 
-Last Updated: 2026-03-08
+> **See also**:
+>
+> - [Reference: Documentation Artifact Contract](./documentation-artifact-contract.md) — Documentation gate requirements
+> - [Reference: Documentation Structure](./documentation-structure.md) — Canonical docs placement rules
+
+**Last Updated**: 2026-05-06
 
 Defines the on-disk artifact contract used by `Feature-Planner`, `Refactor-Planner`, `Plan-Executor`, and `Governance-Panel`.
 
@@ -10,8 +15,8 @@ The contract enables pause/resume at every phase gate without relying on agent m
 
 ## Initiative Naming
 
-- Root path: `TODO/initiatives/`
-- Initiative path: `TODO/initiatives/<initiative-id>/`
+- Initiative artifacts live outside the canonical `docs/` tree in a dedicated planning workspace managed by the planner/executor workflow.
+- Initiative path pattern: `<initiative-workspace>/<initiative-id>/`
 - `initiative-id` format: `YYYYMMDD-HHMM-<type>-<slug>`
 - `HHMM` is 24-hour local time, zero-padded.
 - Timestamp precision ensures same-day initiatives are lexically sortable by creation order.
@@ -217,7 +222,8 @@ All initiatives must enforce:
 
 > **See also**:
 >
-> - [Reference: copilot-instructions](../../.github/copilot-instructions.md) - Project-level AI guidance
+- [Reference: Documentation Artifact Contract](./documentation-artifact-contract.md) - Documentation lifecycle requirements
+- [Reference: Documentation Structure](./documentation-structure.md) - Canonical placement rules
 > - [Reference: Documentation Artifact Contract](./documentation-artifact-contract.md) - Required docs planning and validation fields
 > - [How-To: Backend CLI Reference](../how-to/backend/cli-reference.md) - Validation command reference patterns
 > - [Architecture: Pipeline](../architecture/backend/pipeline.md) - System context for plan decisions

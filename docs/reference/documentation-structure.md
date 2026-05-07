@@ -223,14 +223,7 @@ Archive docs must include a deprecation header:
 
 ## Current Known Violations (Tracked for Fix)
 
-These are documented deviations from this standard, pending the docs-cleanup initiative:
-
-| File | Violation | Target location |
-|------|-----------|-----------------|
-| `docs/sgf-architecture-design.md` | At `docs/` root | `docs/archive/` (superseded by `docs/architecture/backend/sgf.md`) |
-| `docs/sgf-format-analysis.md` | At `docs/` root, research doc | `docs/archive/sgf-format-analysis.md` |
-| `docs/puzzle-sources.md` | Duplicate of `docs/reference/puzzle-sources.md` | Delete (superseded) |
-| `docs/guides/` | Parallel to `docs/how-to/backend/` | Merge unique content → `docs/how-to/backend/`, delete `docs/guides/` |
+The tracked placement violations covered by the 2026-05 docs hygiene pass have been resolved. Record new entries here only when a concrete structural deviation is verified and still needs follow-through.
 
 ---
 

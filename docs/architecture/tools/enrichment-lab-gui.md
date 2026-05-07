@@ -111,4 +111,4 @@ gui/
 
 > **See also:**
 > - [gui/README.md](../../../tools/puzzle-enrichment-lab/gui/README.md) — Quick start
-> - [Initiative artifacts](../../../TODO/initiatives/20260309-1000-feature-enrichment-lab-gui-v4/) — Full planning package
+> - [How-To: Enrichment Lab](../../how-to/tools/katago-enrichment-lab.md) — Current operational guide

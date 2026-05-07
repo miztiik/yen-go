@@ -1,3 +1,7 @@
+> ⚠️ **ARCHIVED** — This document is preserved for historical context.
+> Current canonical documentation: [Architecture: Goban Integration](../architecture/frontend/goban-integration.md)
+> Archived: 2026-05-06
+
 # Go Board JavaScript Libraries — Comprehensive Analysis
 
 > **Last Updated**: 2026-01-28  
@@ -5,9 +9,9 @@
 
 > **See also**:
 >
-> - [Architecture: Frontend](../architecture/frontend/) — Yen-Go frontend design decisions
+- [Architecture: Frontend Overview](../architecture/frontend/overview.md) — Yen-Go frontend design decisions
 > - [Concepts: SGF Properties](../concepts/sgf-properties.md) — Custom SGF property definitions
-> - [How-To: Frontend](../how-to/frontend/) — Frontend development guides
+- [How-To: Frontend Local Development](../how-to/frontend/local-development.md) — Frontend development guide
 
 ---
 

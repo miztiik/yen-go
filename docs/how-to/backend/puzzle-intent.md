@@ -151,6 +151,6 @@ Alias embeddings are cached as `.npy` files for fast startup:
 
 > **See also**:
 >
-> - [Architecture: Pipeline](../../../specs/035-puzzle-manager-refactor/) — Pipeline context
+> - [Architecture: Pipeline](../../architecture/backend/pipeline.md) — Pipeline context
 > - [How-To: CLI Reference](./cli-reference.md) — Backend CLI commands
 > - [Reference: Puzzle Sources](../../reference/puzzle-sources.md) — Source adapters

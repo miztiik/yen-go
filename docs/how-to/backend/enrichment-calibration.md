@@ -106,5 +106,5 @@ python -B -m pytest tests/test_instinct_calibration.py -v --log-cli-level=INFO -
 >
 > - [Architecture: Enrichment Pipeline](../../architecture/backend/pipeline.md) — Pipeline design
 > - [Concepts: SGF Properties](../../concepts/sgf-properties.md) — SGF schema
-> - [tools/puzzle-enrichment-lab/AGENTS.md](../../../tools/puzzle-enrichment-lab/AGENTS.md) — Module architecture map
-> - [Fixture README](../../../tools/puzzle-enrichment-lab/tests/fixtures/instinct-calibration/README.md) — Labels schema and naming details
+> - [Architecture: KataGo Enrichment](../../architecture/tools/katago-enrichment.md) — Module architecture map
+> - [Reference: KataGo Enrichment Config](../../reference/katago-enrichment-config.md) — Calibration and threshold surface

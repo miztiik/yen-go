@@ -143,6 +143,8 @@ Scoped auto-injection: `.github/instructions/*.instructions.md` files with `appl
 - **SOLID/DRY/KISS/YAGNI** -- Search existing codebase before writing new code. Use `core/` utilities. No premature abstraction.
 - **Test-first** -- Red-Green-Refactor for critical paths. Tests are part of definition of done.
 - **Documentation** -- Update `docs/` for any user-visible or architectural change. Part of definition of done. Use `docs/reference/documentation-structure.md` to determine where each document belongs before creating or moving files.
+- **Documentation memory** -- `docs/` is the canonical long-term memory for the project. Distill durable guidance into `docs/`, keep execution notes outside the canonical docs tree, and treat them as non-authoritative working state.
+- **Historical placement** -- Historical narratives belong in the historical tier under `docs/`, with canonical docs pointing to the current source of truth rather than external planning notes.
 - **Buy, don't build** -- Buy, don’t build — Prefer mature, well-maintained public libraries over custom implementations. Check `pyproject.toml` / `package.json` before adding dependencies. Do not re-implement solved infrastructure problems.Examples:
   1. HTTP client → use `httpx`, not a custom wrapper around sockets.
   2. XML parsing → use `lxml`, not a handwritten parser.

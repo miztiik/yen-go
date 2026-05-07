@@ -1,8 +1,15 @@
 # Puzzle Manager CLI Reference
 
+> **See also**:
+>
+> - [Architecture: Backend Stages](../architecture/backend/stages.md) — Pipeline structure
+> - [How-To: Run Pipeline](../how-to/backend/run-pipeline.md) — Operational walkthrough
+> - [Concepts: SGF Properties](../concepts/sgf-properties.md) — Property semantics used by commands
+
+**Last Updated**: 2026-01-31
+
 > **Spec Reference**: 035-puzzle-manager-refactor  
-> **Entry Point**: `python -m backend.puzzle_manager [command]`  
-> **Last Updated**: 2026-01-31
+> **Entry Point**: `python -m backend.puzzle_manager [command]`
 
 Complete reference for the puzzle manager command-line interface.
 

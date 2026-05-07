@@ -1,5 +1,13 @@
 # Backend Architecture
 
+> **See also**:
+>
+> - [Architecture: System Overview](../system-overview.md) — Repo-level design and constraints
+> - [How-To: Run Pipeline](../../how-to/backend/run-pipeline.md) — Operate the backend pipeline
+> - [Reference: CLI Quick Reference](../../reference/cli-quick-ref.md) — Command cheat sheet
+
+**Last Updated**: 2026-05-06
+
 The Yen-Go backend is the **Puzzle Manager** — a Python pipeline that processes puzzles from raw SGF to published collections.
 
 ## Overview
@@ -27,8 +35,11 @@ puzzle_manager/
 | [Stages](stages.md)                                     | 3-stage pipeline: ingest → analyze → publish |
 | [Adapters](adapters.md)                                 | Source adapter patterns                      |
 | [Adapter Design Standards](adapter-design-standards.md) | Interface contracts, naming conventions      |
-| [Adapter Catalog](adapters/README.md)                   | Per-adapter documentation                    |
+| [Adapter Catalog](../../reference/adapters/README.md)   | Per-adapter documentation                    |
 | [Data Flow](data-flow.md)                               | Sources → staging → collections → views      |
+| [Enrichment](enrichment.md)                             | Analyze-stage level, tag, hint, and quality design |
+| [Hint Architecture](hint-architecture.md)               | Progressive hint generation and pedagogy      |
+| [Inventory Operations](inventory-operations.md)         | Publish, rebuild, reconcile, rollback at scale |
 | [Testing](testing.md)                                   | Pytest patterns                              |
 | [SGF Architecture](sgf.md)                              | SGF design decisions and YenGo extensions    |
 
@@ -62,4 +73,4 @@ See [Stages](stages.md) for details.
 
 ## Component Documentation
 
-See [puzzle_manager/README.md](../../puzzle_manager/README.md) for setup and development.
+See [How-To: Run Pipeline](../../how-to/backend/run-pipeline.md) for setup and execution, and [How-To: Troubleshoot](../../how-to/backend/troubleshoot.md) for recovery workflows.

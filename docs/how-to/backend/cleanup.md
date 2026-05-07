@@ -4,7 +4,7 @@
 >
 > - [Architecture: Integrity](../../architecture/backend/integrity.md) — Cleanup design decisions
 > - [How-To: Run Pipeline](./run-pipeline.md) — Pipeline execution
-> - [Reference: CLI](../../reference/cli-reference.md) — Full command reference
+> - [How-To: CLI Reference](./cli-reference.md) — Full command reference
 
 **Last Updated**: 2026-02-01
 

@@ -1,3 +1,9 @@
+> ⚠️ **ARCHIVED** — This document records the v12 rebuild-centric migration plan that introduced `YM` metadata flow and `PipelineLock`.
+> The current canonical docs are [Architecture: Inventory Operations](../architecture/backend/inventory-operations.md) and [Concepts: SGF Properties](../concepts/sgf-properties.md).
+> Kept for historical reference only.
+
+---
+
 # Plan: Rebuild-Centric Pipeline Architecture (Schema v12)
 
 > **Status**: Phase 1-2 Complete, Phase 3A+3B Complete, Phase 5-6 Pending  

@@ -4,7 +4,7 @@
 >
 > - [How-To: Create Adapter](../how-to/backend/create-adapter.md) — Handling move alternation
 > - [Concepts: SQLite Index Architecture](./sqlite-index-architecture.md) — Position-hash dedup context
-> - [Architecture: SGF Parsing](../architecture/backend/sgf-parsing.md) — Parser design
+> - [Architecture: SGF](../architecture/backend/sgf.md) — Parser and property design
 
 **Last Updated**: 2026-04-12
 
@@ -220,4 +220,4 @@ YO[flexible]  ; Move order is flexible
 
 - [How-To: Create Adapter](../how-to/backend/create-adapter.md) — Implementing miai detection
 - [Reference: SGF Properties](../reference/sgf-properties.md) — YenGo custom properties
-- [Architecture: SGF Parsing](../architecture/backend/sgf-parsing.md) — Parser implementation
+- [Architecture: SGF](../architecture/backend/sgf.md) — Parser implementation
