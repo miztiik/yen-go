@@ -670,6 +670,70 @@ input.workshop-input::placeholder {
 }
 
 /* =============================================================================
+   VIEW HEADER — pinned typography for every top-of-view title
+   =============================================================================
+   Every render* function emits its title via the viewHeader() helper in
+   app.js. This block locks the wrapper / title / sub typography so a
+   future caller cannot reintroduce the mb-3 vs mb-4 / bare-h2 vs
+   flex-wrapper drift Theme 0 set out to fix.
+
+   The class names are stable contracts — test_web_assets.py asserts each
+   view emits .view-header at least once. */
+
+.view-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;        /* matches the old mb-3 default */
+  flex-wrap: wrap;
+}
+
+.view-header-title {
+  font-size: 0.75rem;            /* text-xs */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;        /* tracking-wider */
+  color: rgb(100 116 139);       /* slate-500 */
+  font-weight: 500;
+  margin: 0;
+}
+
+.view-header-sub {
+  font-size: 0.75rem;
+  color: rgb(100 116 139);       /* slate-500 */
+}
+
+body[data-theme="light"] .view-header-title,
+body[data-theme="light"] .view-header-sub {
+  color: rgb(71 85 105);         /* slate-600 — slightly darker for contrast */
+}
+
+/* =============================================================================
+   LOGS STAGE PANE — responsive aside / tail-viewer split
+   =============================================================================
+   The stage logs pane has a file list aside + a tail viewer. Before this
+   block it used a fixed `lg:grid-cols-[20rem,1fr]` template — the aside
+   ate horizontal real estate on narrow desktops and stayed full-width on
+   tablet portrait. We now flex the aside between 14rem and 18rem so the
+   tail viewer (the actual content) gets more breathing room. */
+
+.logs-stage-grid {
+  /* Default: stack on narrow viewports. */
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .logs-stage-grid {
+    grid-template-columns: minmax(13rem, 16rem) 1fr;
+  }
+}
+
+@media (min-width: 1280px) {
+  .logs-stage-grid {
+    grid-template-columns: minmax(14rem, 18rem) 1fr;
+  }
+}
+
+/* =============================================================================
    THEME — bright ops cockpit (default) + dark (opt-in)
    =============================================================================
    The base CSS above (and most inline Tailwind classes) target the dark

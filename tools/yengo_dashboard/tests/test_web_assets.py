@@ -85,8 +85,8 @@ def test_show_tab_uses_alias_resolution(app_js: str) -> None:
 def test_operations_h2_uses_renamed_label(app_js: str) -> None:
     """The maintenance view header should read 'Operations'."""
     assert re.search(
-        r"#view-maintenance.*?>Operations<", app_js, flags=re.DOTALL
-    ), "renderMaintenance must title the section 'Operations'."
+        r'viewHeader\(\s*["\']Operations["\']', app_js
+    ), "renderMaintenance must title the section 'Operations' via viewHeader()."
 
 
 # ---------- 'Last failure' window-scope clarification ------------------------
@@ -477,4 +477,95 @@ def test_publish_log_pointer_removed_from_operations(app_js: str) -> None:
     assert "Looking for publish-log search" not in maint.group(1), (
         "Slice 6: the transitional pointer must be removed."
     )
+
+
+# ---------- View-header consistency (Theme 0) --------------------------------
+
+
+def test_view_header_helper_defined(app_js: str) -> None:
+    """Theme 0: a single viewHeader() helper is the source of truth for
+    every top-of-view title. Before this existed, Overview was bare,
+    LiveRun used mb-4, and the rest used mb-3 with a flex wrapper —
+    six render functions, three different patterns."""
+    assert re.search(r"function\s+viewHeader\s*\(", app_js), (
+        "Theme 0: viewHeader() helper must be defined in app.js."
+    )
+
+
+def test_view_header_class_styled(styles_css: str) -> None:
+    """Theme 0: .view-header / .view-header-title / .view-header-sub must
+    be defined in styles.css so the helper renders consistently."""
+    for cls in (".view-header", ".view-header-title", ".view-header-sub"):
+        assert cls in styles_css, (
+            f"Theme 0: {cls} must be styled in styles.css."
+        )
+
+
+def test_view_header_used_by_every_render_function(app_js: str) -> None:
+    """Every top-level render* function (except the Guide doc viewer, which
+    has its own layout) MUST emit its title via viewHeader(). Catching
+    drift early prevents the Operations/Logs 'messy UI' regression that
+    Theme 0 set out to fix."""
+    expected_titles = {
+        "renderOverview":    "Published Inventory",
+        "renderAdapters":    "Adapters",
+        "renderLiveRun":     "Live Run",
+        "renderHistory":     "Run History",
+        "renderMaintenance": "Operations",
+        "renderLogs":        "Logs",
+    }
+    for fn_name, title in expected_titles.items():
+        body = re.search(
+            rf"function\s+{fn_name}\s*\([^)]*\)\s*\{{(.*?)\n\}}",
+            app_js, flags=re.DOTALL,
+        )
+        assert body, f"{fn_name}() not found in app.js"
+        assert re.search(
+            rf'viewHeader\(\s*["\']{re.escape(title)}["\']', body.group(1)
+        ), (
+            f"Theme 0: {fn_name}() must emit its '{title}' title via "
+            "viewHeader() — not a bare h2 or hand-rolled flex wrapper."
+        )
+
+
+def test_no_legacy_hand_rolled_view_header_remains(app_js: str) -> None:
+    """No render* site may still hand-roll the old
+    `<h2 class="text-xs uppercase tracking-wider text-slate-500">VIEW</h2>`
+    pattern. The helper exists; everyone uses it."""
+    # We allow the pattern to appear in nested contexts (h3 column headers,
+    # form labels, inline stat labels). The legacy *view-level* shape was
+    # `<h2 class="text-xs uppercase tracking-wider text-slate-500">` —
+    # that's what we're forbidding.
+    assert not re.search(
+        r'<h2\s+class="text-xs uppercase tracking-wider text-slate-500">',
+        app_js,
+    ), (
+        "Theme 0: a render function still hand-rolls the legacy view-header "
+        "<h2>. Use viewHeader() instead so the typography stays pinned."
+    )
+
+
+# ---------- Logs stage pane responsive grid (Theme 0) ------------------------
+
+
+def test_logs_stage_grid_is_responsive(app_js: str, styles_css: str) -> None:
+    """Theme 0: the stage-logs aside used to be a fixed 20rem column at
+    lg+ which ate horizontal space on narrow desktops. The new
+    .logs-stage-grid CSS class must own the column template, and the
+    JS markup must reference it instead of inlining the grid template."""
+    # JS must use the class, not a Tailwind arbitrary-value template.
+    assert "logs-stage-grid" in app_js, (
+        "Theme 0: stage logs pane must use the .logs-stage-grid class."
+    )
+    assert "lg:grid-cols-[20rem,1fr]" not in app_js, (
+        "Theme 0: legacy fixed 20rem column template must be removed."
+    )
+    # CSS must define the responsive template.
+    assert ".logs-stage-grid" in styles_css, (
+        "Theme 0: .logs-stage-grid must be defined in styles.css."
+    )
+    assert re.search(
+        r"\.logs-stage-grid\s*\{[^}]*grid-template-columns",
+        styles_css, flags=re.DOTALL,
+    ), "Theme 0: .logs-stage-grid must define grid-template-columns."
 

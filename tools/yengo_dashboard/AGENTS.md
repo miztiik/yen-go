@@ -50,9 +50,10 @@ tools/yengo_dashboard/
     routes_logs.py      # GET stage-log file list + tail (read-only filesystem under .pm-runtime/logs)
     models.py           # Pydantic response schemas
   web/
-    index.html          # tab shell (Overview / Adapters / Live Run / Maintenance / History)
-    app.js              # vanilla ES module — fetch + render + EventSource
-    styles.css          # minimal complement to Tailwind CDN
+    index.html          # tab shell (Library / Pipeline / Operations / Logs / Guide)
+    app.js              # vanilla ES module — fetch + render + EventSource. Every render* function MUST emit its title via viewHeader() so the .view-header typography stays pinned (Theme 0 invariant).
+    view-guide.js       # docs-tree viewer for the Guide tab (own layout, no view-header)
+    styles.css          # minimal complement to Tailwind CDN. Owns .view-header / .view-header-title / .view-header-sub and the .logs-stage-grid responsive template.
   tests/
     test_routes_read.py        # real-fixture TestClient tests (no mocks)
     test_routes_run.py         # real-subprocess SSE tests via TestClient

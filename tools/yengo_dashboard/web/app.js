@@ -284,7 +284,7 @@ async function renderOverview() {
       ? `<span class="ml-2 pill ${PILL_VARIANTS.ok}"><span class="glyph"></span>schema v${inv.schema_version}</span>`
       : "";
     root.innerHTML = `
-      <h2 class="text-xs uppercase tracking-wider text-slate-500 mb-3">Published Inventory</h2>
+      ${viewHeader("Published Inventory")}
       <dl class="grid grid-cols-2 md:grid-cols-4 gap-3">
         ${statCard("Puzzles",       inv.puzzles_total.toLocaleString())}
         ${statCard("Collections",   inv.collections_total.toLocaleString())}
@@ -517,12 +517,11 @@ async function renderAdapters() {
       ? `active: <span class="font-mono text-lime-300">${escapeHtml(_activeAdapter)}</span>`
       : `<span class="text-orange-300">no active adapter</span>`;
     root.innerHTML = `
-      <div class="flex items-baseline gap-3 mb-3">
-        <h2 class="text-xs uppercase tracking-wider text-slate-500">Adapters</h2>
-        <span class="text-xs text-slate-500">${rows.length} source${rows.length === 1 ? "" : "s"}</span>
-        <span class="text-xs text-slate-400">·</span>
+      ${viewHeader("Adapters", { metaHtml: `
+        <span class="view-header-sub">${rows.length} source${rows.length === 1 ? "" : "s"}</span>
+        <span class="view-header-sub">·</span>
         <span class="text-xs text-slate-400">${activeNote}</span>
-      </div>
+      ` })}
       <div class="overflow-x-auto rounded-md border border-slate-800 bg-slate-900">
         <table class="w-full text-sm">
           <thead class="text-slate-500 text-xs uppercase tracking-wider sticky top-0 bg-slate-900">
@@ -549,6 +548,24 @@ function emptyState(headline, hintHtml = "") {
   return `<div class="rounded-lg border border-dashed border-slate-700 p-8 text-center">
     <p class="text-sm text-slate-300">${escapeHtml(headline)}</p>
     ${hintHtml ? `<p class="text-xs text-slate-500 mt-2">${hintHtml}</p>` : ""}
+  </div>`;
+}
+
+// Single source of truth for top-of-view headers. Every render* function MUST
+// emit its title via this helper so the five views stay visually aligned —
+// before this existed, Overview was bare, LiveRun used mb-4, the rest used
+// mb-3, and the subtext slot was inlined inconsistently. The accompanying
+// .view-header CSS rule pins the wrapper.
+//
+// `metaHtml` is rendered raw on purpose so callers can pass a status pill or
+// a counter span; `subtext` is plain text (escaped). Pass one or neither.
+function viewHeader(title, { subtext = "", metaHtml = "" } = {}) {
+  const trailing = metaHtml
+    ? metaHtml
+    : (subtext ? `<span class="view-header-sub">${escapeHtml(subtext)}</span>` : "");
+  return `<div class="view-header">
+    <h2 class="view-header-title">${escapeHtml(title)}</h2>
+    ${trailing}
   </div>`;
 }
 
@@ -813,11 +830,10 @@ function renderLiveRun() {
   }
   const hasActive = !!_activeAdapter;
   root.innerHTML = `
-    <div class="flex items-baseline gap-3 mb-4">
-      <h2 class="text-xs uppercase tracking-wider text-slate-500">Live Run</h2>
+    ${viewHeader("Live Run", { metaHtml: `
       <span id="run-status">${pill("muted", "idle")}</span>
       <div id="run-stepper" class="stepper ml-2"></div>
-    </div>
+    ` })}
 
     <div class="grid lg:grid-cols-[18rem,1fr] gap-6">
       <aside class="rounded-md border border-slate-800 bg-slate-900 p-4 space-y-3 self-start">
@@ -1176,10 +1192,9 @@ function maintCard(opts) {
 function renderMaintenance() {
   const root = $("#view-maintenance");
   root.innerHTML = `
-    <div class="flex items-baseline gap-3 mb-3">
-      <h2 class="text-xs uppercase tracking-wider text-slate-500">Operations</h2>
-      <span class="text-xs text-slate-500">grouped by blast radius — diagnose first, mutate second, destroy last</span>
-    </div>
+    ${viewHeader("Operations", {
+      subtext: "grouped by blast radius — diagnose first, mutate second, destroy last",
+    })}
     <div id="maint-error" class="mb-3"></div>
 
     <!-- ===== Diagnostics (read-only) =================================== -->
@@ -1356,10 +1371,7 @@ function renderLogs() {
   const root = $("#view-logs");
   const sub = _readLogsSubtab();
   root.innerHTML = `
-    <div class="flex items-baseline gap-3 mb-3">
-      <h2 class="text-xs uppercase tracking-wider text-slate-500">Logs</h2>
-      <span class="text-xs text-slate-500">read-only investigation</span>
-    </div>
+    ${viewHeader("Logs", { subtext: "read-only investigation" })}
     <nav id="logs-subtabs" role="tablist" class="flex gap-1 mb-4 border-b border-slate-800">
       <button role="tab" data-subtab="stage" class="logs-subtab px-3 py-1.5 text-xs uppercase tracking-wider">Stage logs</button>
       <button role="tab" data-subtab="audit" class="logs-subtab px-3 py-1.5 text-xs uppercase tracking-wider">Audit · publish-log</button>
@@ -1400,8 +1412,8 @@ async function _renderLogsStagePane() {
       return;
     }
     pane.innerHTML = `
-      <div class="grid lg:grid-cols-[20rem,1fr] gap-4">
-        <aside class="rounded-md border border-slate-800 bg-slate-900 p-2 max-h-[70vh] overflow-y-auto">
+      <div class="grid gap-4 logs-stage-grid">
+        <aside class="rounded-md border border-slate-800 bg-slate-900 p-2 max-h-[70vh] overflow-y-auto logs-stage-aside">
           <div class="text-[10px] uppercase tracking-wider text-slate-500 px-2 py-1">${data.files.length} files</div>
           <ul id="stage-files-list" class="text-xs">
             ${data.files.map((f) => `
@@ -1627,10 +1639,9 @@ async function renderHistory() {
     }
     const sum = summarizeRuns(_historyData.runs);
     root.innerHTML = `
-      <div class="flex items-baseline gap-3 mb-3">
-        <h2 class="text-xs uppercase tracking-wider text-slate-500">Run History</h2>
-        <span id="history-shown-count" class="text-xs text-slate-500">showing ${_historyData.runs.length} of ${_historyData.runs.length} (disk: ${_historyData.total})</span>
-      </div>
+      ${viewHeader("Run History", { metaHtml: `
+        <span id="history-shown-count" class="view-header-sub">showing ${_historyData.runs.length} of ${_historyData.runs.length} (disk: ${_historyData.total})</span>
+      ` })}
       <div class="grid grid-cols-3 gap-3 mb-5">
         <div class="rounded-md border border-slate-800 bg-slate-900 p-4">
           <div class="text-[10px] uppercase tracking-wider text-slate-500">Recent runs</div>
