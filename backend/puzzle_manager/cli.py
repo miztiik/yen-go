@@ -50,6 +50,7 @@ from backend.puzzle_manager.inventory.cli import cmd_inventory
 from backend.puzzle_manager.models.enums import RunStatus
 from backend.puzzle_manager.models.publish_log import PublishLogEntry
 from backend.puzzle_manager.paths import (
+    get_audit_log_path,
     get_output_dir,
     get_project_root,
     get_publish_log_dir,
@@ -946,6 +947,44 @@ Examples:
     runtime_info_parser.add_argument(
         "--json", action="store_true",
         help="Emit RuntimeInfo JSON instead of human text.",
+    )
+
+    # activity command (Theme 13a)
+    activity_parser = subparsers.add_parser(
+        "activity",
+        help="Unified timeline of run/maintenance/publish events",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Merges three on-disk event sources (state/runs/*.json, audit.jsonl, and the
+publish-log JSONL files) into a single newest-first timeline. Pure read-side
+— no new persistence. Use to answer "what happened in the last hour?"
+without juggling five subsystems.
+
+Examples:
+  %(prog)s --json
+  %(prog)s --kinds run,maintenance --limit 50 --json
+  %(prog)s --from 2026-05-01T00:00:00+00:00 --to 2026-05-07T23:59:59+00:00 --json
+        """,
+    )
+    activity_parser.add_argument(
+        "--from", dest="from_ts", default=None,
+        help="Inclusive lower bound (ISO-8601). Default: no lower bound.",
+    )
+    activity_parser.add_argument(
+        "--to", dest="to_ts", default=None,
+        help="Inclusive upper bound (ISO-8601). Default: no upper bound.",
+    )
+    activity_parser.add_argument(
+        "--kinds", default=None,
+        help="Comma-separated allowlist: run, maintenance, publish. Default: all.",
+    )
+    activity_parser.add_argument(
+        "--limit", type=int, default=100,
+        help="Maximum events to return after filtering. Default: 100.",
+    )
+    activity_parser.add_argument(
+        "--json", action="store_true",
+        help="Emit JSON list of ActivityEvent instead of human text.",
     )
 
     # config-lock command (for managing pipeline config lock)
@@ -2378,6 +2417,51 @@ def _print_runtime_info(info) -> None:
     print(f"  captured_at    {info.captured_at}")
 
 
+def cmd_activity(args: argparse.Namespace) -> int:
+    """Theme 13a: emit a unified timeline of run/maintenance/publish events."""
+    from backend.puzzle_manager.models.activity import compute_activity
+
+    runs_dir = get_runtime_dir() / "state" / "runs"
+    audit_file = get_audit_log_path()
+    publish_log_dir = get_publish_log_dir()
+
+    kinds: list[str] | None = None
+    if args.kinds:
+        kinds = [k.strip() for k in args.kinds.split(",") if k.strip()]
+
+    try:
+        events = compute_activity(
+            runs_dir=runs_dir,
+            audit_file=audit_file,
+            publish_log_dir=publish_log_dir,
+            from_ts=args.from_ts,
+            to_ts=args.to_ts,
+            kinds=kinds,
+            limit=args.limit,
+        )
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 2
+
+    if args.json:
+        # Pydantic-driven dump keeps the wire shape authoritative.
+        print(json.dumps([e.model_dump() for e in events], indent=2))
+    else:
+        _print_activity(events)
+    return 0
+
+
+def _print_activity(events) -> None:
+    """Pretty-print an ActivityEvent list for human eyes."""
+    if not events:
+        print("(no activity)")
+        return
+    print(f"\nActivity ({len(events)} event(s), newest first)")
+    print("-" * 80)
+    for ev in events:
+        print(f"  {ev.ts}  {ev.kind:<12s}  {ev.subject_id[:24]:<24s}  {ev.summary}")
+
+
 # Stage logs are named YYYY-MM-DD-{stage}.log under .pm-runtime/logs/.
 # Pinning the regex here keeps the CLI's discovery logic in lockstep with
 # the dashboard's _SAFE_LOG_NAME guard.
@@ -2530,6 +2614,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_logs(args)
     elif args.command == "runtime-info":
         return cmd_runtime_info(args)
+    elif args.command == "activity":
+        return cmd_activity(args)
     elif args.command == "config-lock":
         return cmd_config_lock(args)
     else:

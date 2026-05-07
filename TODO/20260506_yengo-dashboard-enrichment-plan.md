@@ -207,7 +207,7 @@ None.
 
 ---
 
-## Theme 13 — Unified Activity Surface (P0) — NEW
+## Theme 13 — Unified Activity Surface (P0) — NEW ◐
 
 **User pain (verbatim, paraphrased)**: today the operator has to mentally
 fuse five disjoint surfaces — pipeline runs, maintenance ops, publish-log
@@ -245,7 +245,7 @@ corpus, regardless of which subsystem produced the event."
 
 ### Acceptance criteria
 
-- [ ] CLI test seeds one of each event kind, asserts merged ordering + filtering.
+- [x] CLI test seeds one of each event kind, asserts merged ordering + filtering. _(Theme 13a, this commit; lock + maintenance-exit events scoped out — no separate persistence yet)_
 - [ ] Dashboard test pins the new nav item + filter chip behavior.
 - [ ] Empty-state UX (no events in range) tested.
 
