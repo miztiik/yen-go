@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         weiqi Puzzle Capture for YenGo
 // @namespace    https://github.com/yengo
-// @version      5.53.8
+// @version      5.53.9
 // @description  Auto-captures puzzle data from weiqi.com and sends to local YenGo receiver. Start server, browse any puzzle page, it just works.
 // @match        *://www.101weiqi.com/q/*
 // @match        *://www.101weiqi.com/chessmanual/*
@@ -1242,6 +1242,15 @@
   // Only one tab may drive the sweep.  Other tabs observe silently.
   let _heartbeatIv = null;
 
+  // BUGFIX v5.53.9: one-shot "force fresh discovery" flag.
+  // Set by the Restart Discovery overlay button and consumed by the
+  // very next continueDiscovery() entry to bypass the
+  // existing-status=="complete" branch (which would otherwise re-open
+  // the same overlay forever, since clearBookDiscovery doesn't touch
+  // the backend manifest). Module-scoped because Restart Discovery
+  // does not navigate; the flag never needs to survive a page reload.
+  let _forceFreshDiscovery = false;
+
   function isOwnerTab() {
     return GM_getValue(KEY_OWNER_TAB, null) === TAB_ID;
   }
@@ -2176,8 +2185,21 @@
     if (!bookDiscovery || !bookDiscovery.phase) {
       if (bookPath.type !== "book") return;
 
+      // BUGFIX v5.53.9: honor one-shot force-fresh flag set by the
+      // Restart Discovery overlay button. Without this, clearing the
+      // local discovery checkpoint and calling continueDiscovery()
+      // re-fetches the backend manifest, finds it complete, and
+      // re-opens the same overlay -> infinite loop.
+      const forceFresh = _forceFreshDiscovery;
+      _forceFreshDiscovery = false;
+
       // Check backend for existing discovery state (checkpoint/restart)
-      const existing = await checkBackendDiscoveryState(bookPath.book_id);
+      const existing = forceFresh
+        ? { status: "none" }
+        : await checkBackendDiscoveryState(bookPath.book_id);
+      if (forceFresh) {
+        plog("INFO", `Book ${bookPath.book_id}: force-fresh discovery (ignoring backend manifest for this run)`);
+      }
 
       if (existing.status === "complete") {
         // When a waitlist cascade is in flight, skip the manual
@@ -3442,12 +3464,15 @@
 
     const title = document.createElement("h2");
     title.style.cssText = "margin:0 0 12px;color:#4fc3f7;";
-    title.textContent = "Discover Book for YenGo?";
+    // BUGFIX v5.53.9: include book ID in title so the overlay clearly
+    // identifies which book is being acted on (helps debugging when
+    // multiple tabs/books are involved).
+    title.textContent = `Discover Book ${bookId} for YenGo?`;
     dialog.appendChild(title);
 
     const info = document.createElement("p");
     info.style.cssText = "color:#ccc;margin:0 0 8px;";
-    info.textContent = `"${bookName}" — ${chapters.length} chapters detected`;
+    info.textContent = `"${bookName}" (ID: ${bookId}) — ${chapters.length} chapters detected`;
     dialog.appendChild(info);
 
     // Show existing backend state if any
@@ -3501,6 +3526,45 @@
         };
         btnRow.appendChild(chapterBtn);
       }
+
+      // BUGFIX v5.53.9: when the book is already complete AND there
+      // are queued waitlist books, give the user a one-click action
+      // to advance to the next book. Without this, the only paths
+      // out of the overlay are Cancel (do nothing), Restart Discovery
+      // (re-runs the loop), or Capture (alert: "already fully
+      // captured") — none of which advance the chain.
+      const queue = getBookWaitlist();
+      if (queue.length > 0) {
+        const anchor = getWaitlistAnchor();
+        const nextId = queue[0];
+        const anchorOk = anchor == null || Number(anchor) === Number(bookId);
+        const advBtn = document.createElement("button");
+        advBtn.textContent = `Skip & Advance Waitlist → ${nextId}`;
+        advBtn.title = anchorOk
+          ? `Treat book ${bookId} as done and cascade into book ${nextId} (${queue.length} queued).`
+          : `Re-anchor chain to book ${bookId} (current anchor: ${anchor}) and cascade into book ${nextId}.`;
+        advBtn.style.cssText = btnStyle + "background:#4caf50;color:#1a1a2e;font-weight:bold;";
+        advBtn.onclick = () => {
+          overlay.remove();
+          if (!anchorOk) {
+            const ok = confirm(
+              `Waitlist anchor mismatch.\n\n` +
+              `Current anchor: book ${anchor}\n` +
+              `This book:      book ${bookId}\n\n` +
+              `Re-anchor chain to book ${bookId} and advance to book ${nextId}?`,
+            );
+            if (!ok) return;
+            // Re-anchor in place; queue stays the same.
+            _writeWaitlistRaw({ anchor: Number(bookId), queue });
+          }
+          plog("NEXT", `Manual waitlist advance: book ${bookId} -> book ${nextId} (${queue.length} queued)`);
+          finishBookAndAdvanceWaitlist({
+            bookId,
+            reason: "manual_advance_from_overlay",
+          });
+        };
+        btnRow.appendChild(advBtn);
+      }
     }
 
     // If partial, offer "Resume" button
@@ -3531,6 +3595,12 @@
       overlay.remove();
       clearBookDiscovery();
       clearBookPlan();
+      // BUGFIX v5.53.9: arm the one-shot force-fresh flag so the
+      // continueDiscovery call below bypasses the backend manifest
+      // check. Without this, when existing.status was "complete",
+      // continueDiscovery would re-detect "complete" from the backend
+      // and re-open this same overlay -> infinite loop.
+      _forceFreshDiscovery = true;
       // See Resume Discovery button comment above for why we claim
       // ownership and start running here — without it, the very first
       // chapter-page navigation lands with running=false.
