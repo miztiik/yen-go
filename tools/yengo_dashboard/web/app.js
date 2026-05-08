@@ -3158,10 +3158,14 @@ function renderHistoryRows(runs) {
   }
   list.innerHTML = runs.map((r) => {
     const failed = r.status === "failed";
+    const checked = _runsDiffSelection.has(r.run_id) ? "checked" : "";
     return `
       <div class="rounded-md border border-slate-800 bg-slate-900 p-3
                   ${failed ? 'border-l-2 border-l-rose-500/60' : ''}">
         <div class="flex items-baseline gap-3 flex-wrap">
+          <input type="checkbox" class="runs-diff-check accent-teal-500"
+                 data-run-id="${escapeHtml(r.run_id)}" ${checked}
+                 aria-label="Select ${escapeHtml(r.run_id)} for comparison" />
           <span class="font-mono text-sm">${escapeHtml(r.run_id)}</span>
           <button class="copy-run-id text-slate-500 hover:text-slate-200 transition"
                   data-run-id="${escapeHtml(r.run_id)}"
@@ -3176,6 +3180,7 @@ function renderHistoryRows(runs) {
         <div class="text-xs text-slate-500 font-mono mt-2 truncate" title="Source: run-state JSON at ${escapeHtml(r.state_file)}">${escapeHtml(r.state_file)}</div>
       </div>`;
   }).join("");
+  _refreshRunsDiffBar();
 }
 
 function refreshHistoryView() {
@@ -3184,6 +3189,79 @@ function refreshHistoryView() {
   const counter = $("#history-shown-count");
   if (counter) counter.textContent = `showing ${filtered.length} of ${_historyData.runs.length} (disk: ${_historyData.total})`;
   renderHistoryRows(filtered);
+}
+
+// ---------- Theme 9: Run Diff / Compare ----------
+const _runsDiffSelection = new Set();
+
+function _refreshRunsDiffBar() {
+  const bar = $("#runs-diff-bar");
+  if (!bar) return;
+  const ids = [..._runsDiffSelection];
+  const enabled = ids.length === 2;
+  bar.innerHTML = `
+    <span class="text-xs text-slate-400">selected: ${ids.length} / 2</span>
+    ${ids.map((id) => `<span class="font-mono text-xs px-2 py-0.5 rounded bg-slate-800">${escapeHtml(id)}</span>`).join("")}
+    <button id="runs-diff-compare-btn"
+            class="ml-auto px-3 py-1 rounded text-xs font-medium ${enabled ? 'bg-teal-600 hover:bg-teal-500 text-white' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}"
+            ${enabled ? '' : 'disabled'}
+            data-runs-diff-compare>Compare runs</button>
+    <button class="px-2 py-1 text-xs text-slate-400 hover:text-slate-200"
+            data-runs-diff-clear>clear</button>
+  `;
+}
+
+async function _runRunsDiff(runA, runB) {
+  const card = $("#runs-diff-result");
+  if (!card) return;
+  card.innerHTML = `<div class="text-sm text-slate-400">loading diff…</div>`;
+  try {
+    const params = new URLSearchParams({ run_a: runA, run_b: runB, max_samples: "20" });
+    const resp = await getJSON(`/api/runs/diff?${params.toString()}`);
+    const r = resp.raw;
+    const sd = r.stats_diff || {};
+    const fmtDelta = (n) => (n > 0 ? `+${n}` : String(n));
+    card.innerHTML = `
+      <div class="rounded-md border border-slate-800 bg-slate-900 p-4">
+        <div class="flex items-baseline gap-3 mb-3 flex-wrap">
+          <span class="text-xs uppercase tracking-wider text-slate-500">runs-diff</span>
+          <span class="font-mono text-sm">${escapeHtml(runA)} → ${escapeHtml(runB)}</span>
+        </div>
+        <div class="grid grid-cols-3 gap-3 mb-4">
+          <div class="rounded bg-slate-950 border border-slate-800 p-3">
+            <div class="text-[10px] uppercase text-slate-500">Δ ingested</div>
+            <div class="text-xl font-semibold tabular-nums">${fmtDelta(sd.ingested ?? 0)}</div>
+          </div>
+          <div class="rounded bg-slate-950 border border-slate-800 p-3">
+            <div class="text-[10px] uppercase text-slate-500">Δ failed</div>
+            <div class="text-xl font-semibold tabular-nums">${fmtDelta(sd.failed ?? 0)}</div>
+          </div>
+          <div class="rounded bg-slate-950 border border-slate-800 p-3">
+            <div class="text-[10px] uppercase text-slate-500">Δ skipped</div>
+            <div class="text-xl font-semibold tabular-nums">${fmtDelta(sd.skipped ?? 0)}</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          ${_diffColumn("Added", r.added_puzzles, "text-emerald-300")}
+          ${_diffColumn("Removed", r.removed_puzzles, "text-rose-300")}
+          ${_diffColumn("Common", { count: r.common_count, samples: [] }, "text-slate-300")}
+        </div>
+      </div>
+    `;
+  } catch (e) {
+    card.innerHTML = errorBlock("/api/runs/diff", e);
+  }
+}
+
+function _diffColumn(label, bucket, accent) {
+  const samples = (bucket && bucket.samples) || [];
+  return `
+    <div class="rounded bg-slate-950 border border-slate-800 p-3">
+      <div class="text-[10px] uppercase text-slate-500">${label}</div>
+      <div class="text-xl font-semibold tabular-nums ${accent}">${bucket ? bucket.count : 0}</div>
+      ${samples.length ? `<ul class="mt-2 text-xs font-mono text-slate-400 space-y-0.5">${samples.map((s) => `<li class="truncate">${escapeHtml(s)}</li>`).join("")}</ul>` : ""}
+    </div>
+  `;
 }
 
 async function renderHistory() {
@@ -3226,6 +3304,11 @@ async function renderHistory() {
       </div>
 
       <div id="failures-summary-card" class="mb-5"></div>
+
+      <div id="runs-diff-bar"
+           class="flex items-center gap-2 mb-3 px-2 py-2 rounded border border-slate-800 bg-slate-900/40"
+           data-runs-diff-bar></div>
+      <div id="runs-diff-result" class="mb-5"></div>
 
       <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-2 mb-3">
         <input id="history-q" type="search" placeholder="filter by run_id substring…"
@@ -3677,10 +3760,45 @@ async function tryReleaseLock() {
 
 // ---------- Click delegation (adapter actions, alarm-bar buttons) ----------
 
+// Theme 9: runs-diff selection (history page checkboxes).
+document.addEventListener("change", (e) => {
+  const cb = e.target.closest("input.runs-diff-check");
+  if (!cb) return;
+  const id = cb.dataset.runId;
+  if (!id) return;
+  if (cb.checked) {
+    if (_runsDiffSelection.size >= 2) {
+      cb.checked = false;
+      toast("warn", "select exactly 2 runs to compare");
+      return;
+    }
+    _runsDiffSelection.add(id);
+  } else {
+    _runsDiffSelection.delete(id);
+  }
+  _refreshRunsDiffBar();
+});
+
 document.addEventListener("click", async (e) => {
   // History row: click-to-copy run_id
   const copyBtn = e.target.closest("button.copy-run-id");
   if (copyBtn) { copyToClipboard(copyBtn.dataset.runId, copyBtn); return; }
+
+  // Theme 9: runs-diff Compare / clear buttons.
+  const cmpBtn = e.target.closest("[data-runs-diff-compare]");
+  if (cmpBtn && !cmpBtn.disabled) {
+    const ids = [..._runsDiffSelection];
+    if (ids.length === 2) await _runRunsDiff(ids[0], ids[1]);
+    return;
+  }
+  const clrBtn = e.target.closest("[data-runs-diff-clear]");
+  if (clrBtn) {
+    _runsDiffSelection.clear();
+    refreshHistoryView();
+    const card = $("#runs-diff-result");
+    if (card) card.innerHTML = "";
+    return;
+  }
 
   // Slice 5: in-app cross-tab links (e.g. Operations → Logs/Audit) must
   // route via showTab + pushState so we don't trigger a full page reload.

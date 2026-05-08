@@ -676,8 +676,8 @@ the file (write-tmp + os.replace).
   and counts.
 
 ### Acceptance criteria
-- [ ] CLI test against two seeded run-state JSONs.
-- [ ] Dashboard test pins the checkbox + Compare flow.
+- [x] CLI test against two seeded run-state JSONs.
+- [x] Dashboard test pins the checkbox + Compare flow.
 
 ---
 

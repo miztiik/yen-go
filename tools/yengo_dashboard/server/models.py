@@ -901,3 +901,15 @@ class DailyBackfillResponse(BaseModel):
             "({ok, dry_run, window, missing_dates[], generated_count, failures[]})."
         ),
     )
+
+
+class RunsDiffResponse(BaseModel):
+    """``GET /api/runs/diff`` payload (Theme 9).
+
+    Cockpit principle #6: full passthrough; the CLI owns the schema
+    ({ok, run_a{run_id, exists, stats, puzzle_count}, run_b{...},
+      added_puzzles{count, samples[]}, removed_puzzles{count, samples[]},
+      common_count, changed_puzzles{count, samples[]}, stats_diff{...}}).
+    """
+
+    raw: dict = Field(..., description="Parsed JSON from `runs-diff --json`.")

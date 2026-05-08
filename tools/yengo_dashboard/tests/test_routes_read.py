@@ -1294,3 +1294,42 @@ class TestDailyEndpoints:
         assert raw["window"]["days"] == 5
         assert isinstance(raw["missing_dates"], list)
 
+
+class TestRunsDiffEndpoint:
+    """Theme 9: real subprocess against the real repo (read-only).
+
+    We use unique synthetic run-ids that aren't in any publish-log fixture, so
+    the assertion is on the response *shape* (cockpit principle #6 passthrough)
+    rather than seeded data — the CLI itself owns the diff semantics, which is
+    covered by ``backend/.../test_runs_diff_cli.py``.
+    """
+
+    def test_diff_returns_passthrough_payload(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.get(
+                "/api/runs/diff",
+                params={
+                    "run_a": "yengo-cockpit-test-A-zzz",
+                    "run_b": "yengo-cockpit-test-B-zzz",
+                    "max_samples": 5,
+                },
+            )
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["ok"] is True
+        assert raw["run_a"]["run_id"] == "yengo-cockpit-test-A-zzz"
+        assert raw["run_b"]["run_id"] == "yengo-cockpit-test-B-zzz"
+        assert raw["added_puzzles"]["count"] == 0
+        assert raw["removed_puzzles"]["count"] == 0
+        assert raw["common_count"] == 0
+        assert "stats_diff" in raw
+
+    def test_diff_missing_query_param_returns_422(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.get("/api/runs/diff", params={"run_a": "x"})
+        assert resp.status_code == 422
+
+
+

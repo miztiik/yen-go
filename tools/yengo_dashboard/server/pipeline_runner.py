@@ -563,6 +563,20 @@ class PipelineRunner:
             )
         return result
 
+    def runs_diff(
+        self, *, run_a: str, run_b: str, max_samples: int = 20,
+    ) -> dict:
+        """Theme 9: wraps ``runs-diff RUN_A RUN_B --json``."""
+        args = ["runs-diff", run_a, run_b,
+                "--max-samples", str(max_samples), "--json"]
+        result = self._run_json_any(args)
+        if not isinstance(result, dict):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON object, got {type(result).__name__}", "",
+            )
+        return result
+
     def pipeline_config_set(
         self, *, set_pairs: list[str], force: bool = False,
     ) -> dict:

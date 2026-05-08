@@ -25,6 +25,7 @@ from tools.yengo_dashboard.server.models import (
     LevelsListResponse,
     OpsCatalogResponse,
     RunsResponse,
+    RunsDiffResponse,
     RuntimeInfoResponse,
     SourceDetailsResponse,
     SourceIngestStateResponse,
@@ -90,6 +91,30 @@ def build_read_router(
         limit: int = Query(50, ge=0, le=500),
     ) -> RunsResponse:
         return RunsResponse.model_validate(state_reader.read_runs(limit=limit))
+
+    @router.get("/runs/diff", response_model=RunsDiffResponse)
+    def runs_diff(
+        _request: Request,
+        run_a: str = Query(..., min_length=1),
+        run_b: str = Query(..., min_length=1),
+        max_samples: int = Query(20, ge=0, le=500),
+    ) -> RunsDiffResponse:
+        """Theme 9: read-only set diff over published puzzle IDs + stats Δ."""
+        try:
+            payload = runner.runs_diff(
+                run_a=run_a, run_b=run_b, max_samples=max_samples,
+            )
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": "puzzle_manager runs-diff failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return RunsDiffResponse(raw=payload)
 
     @router.get("/status/failures-summary", response_model=FailuresSummaryResponse)
     def failures_summary(

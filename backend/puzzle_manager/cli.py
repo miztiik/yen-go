@@ -497,6 +497,21 @@ Examples:
     daily_backfill_parser.add_argument("--json", action="store_true",
                                         help="Emit JSON.")
 
+    # Theme 9: runs-diff (read-only run-vs-run comparison)
+    runs_diff_parser = subparsers.add_parser(
+        "runs-diff",
+        help="Compare two pipeline runs — set diff over published puzzle IDs + stats.",
+    )
+    runs_diff_parser.add_argument("run_a", type=str,
+                                   help="First (baseline) run ID.")
+    runs_diff_parser.add_argument("run_b", type=str,
+                                   help="Second (comparison) run ID.")
+    runs_diff_parser.add_argument("--max-samples", dest="max_samples",
+                                   type=int, default=20,
+                                   help="Max IDs to include per added/removed list (default 20).")
+    runs_diff_parser.add_argument("--json", action="store_true",
+                                   help="Emit JSON.")
+
     # status command
     status_parser = subparsers.add_parser("status", help="Show pipeline status")
     status_parser.add_argument(
@@ -2187,6 +2202,99 @@ def cmd_daily_backfill(args: argparse.Namespace) -> int:
         return _emit({"ok": False, "error": str(exc)}, rc=1)
 
     return _emit(payload)
+
+
+def _load_run_state(run_id: str) -> dict | None:
+    """Theme 9: locate ``state/runs/<...>_<run_id>.json`` and parse it.
+
+    Files are archived as ``{datetime_prefix}_{run_id}.json`` by the state
+    manager, so we glob by suffix; bare ``<run_id>.json`` is also accepted
+    for tests/fixtures.
+    """
+    from backend.puzzle_manager.paths import get_pm_state_dir
+    runs_dir = get_pm_state_dir() / "runs"
+    if not runs_dir.exists():
+        return None
+    candidates = sorted(runs_dir.glob(f"*_{run_id}.json"))
+    bare = runs_dir / f"{run_id}.json"
+    if bare.exists():
+        candidates.append(bare)
+    if not candidates:
+        return None
+    try:
+        return json.loads(candidates[-1].read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def _run_stats(state: dict | None) -> dict:
+    """Aggregate ingested/failed/skipped across stages."""
+    if not state:
+        return {"ingested": 0, "failed": 0, "skipped": 0,
+                "status": "missing"}
+    stages = state.get("stages") or []
+    return {
+        "ingested": sum(int(s.get("processed_count") or 0)
+                         for s in stages if s.get("name") == "ingest"),
+        "failed": sum(int(s.get("failed_count") or 0) for s in stages),
+        "skipped": sum(int(s.get("skipped_count") or 0) for s in stages),
+        "status": state.get("status", ""),
+    }
+
+
+def cmd_runs_diff(args: argparse.Namespace) -> int:
+    """Theme 9: compare two pipeline runs by published puzzle IDs + stats."""
+    json_out = bool(getattr(args, "json", False))
+    max_samples = max(0, int(getattr(args, "max_samples", 20) or 0))
+
+    state_a = _load_run_state(args.run_a)
+    state_b = _load_run_state(args.run_b)
+
+    try:
+        reader = PublishLogReader(log_dir=get_publish_log_dir())
+        ids_a = {e.puzzle_id for e in reader.search_by_run_id(args.run_a)}
+        ids_b = {e.puzzle_id for e in reader.search_by_run_id(args.run_b)}
+    except (OSError, PuzzleManagerError) as exc:
+        msg = f"failed to read publish-log: {exc}"
+        if json_out:
+            print(json.dumps({"ok": False, "error": msg}))
+        else:
+            print(f"Error: {msg}")
+        return 1
+
+    added = sorted(ids_b - ids_a)
+    removed = sorted(ids_a - ids_b)
+    common = ids_a & ids_b
+
+    stats_a = _run_stats(state_a)
+    stats_b = _run_stats(state_b)
+    stats_diff = {
+        k: stats_b[k] - stats_a[k]
+        for k in ("ingested", "failed", "skipped")
+    }
+
+    payload = {
+        "ok": True,
+        "run_a": {"run_id": args.run_a, "exists": state_a is not None,
+                   "stats": stats_a, "puzzle_count": len(ids_a)},
+        "run_b": {"run_id": args.run_b, "exists": state_b is not None,
+                   "stats": stats_b, "puzzle_count": len(ids_b)},
+        "added_puzzles": {"count": len(added),
+                           "samples": added[:max_samples]},
+        "removed_puzzles": {"count": len(removed),
+                             "samples": removed[:max_samples]},
+        "common_count": len(common),
+        "changed_puzzles": {"count": 0, "samples": []},
+        "stats_diff": stats_diff,
+    }
+    if json_out:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(f"{args.run_a} → {args.run_b}: "
+              f"+{len(added)} -{len(removed)} ={len(common)}  "
+              f"stats Δ ingested={stats_diff['ingested']} "
+              f"failed={stats_diff['failed']} skipped={stats_diff['skipped']}")
+    return 0
 
 
 def cmd_clean(args: argparse.Namespace) -> int:
@@ -4344,6 +4452,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_daily_cancel(args)
     elif args.command == "daily-backfill":
         return cmd_daily_backfill(args)
+    elif args.command == "runs-diff":
+        return cmd_runs_diff(args)
     elif args.command == "status":
         return cmd_status(args)
     elif args.command == "clean":

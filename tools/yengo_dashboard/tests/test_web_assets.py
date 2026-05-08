@@ -1046,3 +1046,14 @@ def test_daily_backfill_wired(app_js: str) -> None:
     assert "data-daily-backfill-btn" in app_js
     assert "/api/daily/backfill/preview" in app_js
     assert "/api/daily/backfill/apply" in app_js
+
+
+def test_runs_diff_wired(app_js: str) -> None:
+    """Theme 9: history page exposes per-row checkbox + Compare runs button."""
+    assert "runs-diff-check" in app_js
+    assert "data-runs-diff-compare" in app_js
+    assert "data-runs-diff-clear" in app_js
+    assert "_runRunsDiff" in app_js
+    assert "/api/runs/diff" in app_js
+    assert "_runsDiffSelection" in app_js
+
