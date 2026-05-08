@@ -1293,20 +1293,24 @@ Examples:
         help="Emit JSON list of TagUsageEntry shapes.",
     )
 
-    # Theme 11 preview surfaces (apply path deferred).
+    # Theme 11 preview surfaces (apply path lands behind --apply).
     tags_rename_parser = tags_subparsers.add_parser(
-        "rename", help="Preview a tag rename (V1: --dry-run only).",
+        "rename", help="Preview or apply a tag rename.",
     )
     tags_rename_parser.add_argument("old", help="Existing canonical tag slug.")
     tags_rename_parser.add_argument("new", help="Proposed canonical tag slug.")
     tags_rename_parser.add_argument(
         "--dry-run", action="store_true",
-        help="Required in V1 — apply path not yet implemented.",
+        help="Compute the preview without writing (default unless --apply).",
+    )
+    tags_rename_parser.add_argument(
+        "--apply", action="store_true",
+        help="Write changes (rewrites SGFs + config under PipelineLock).",
     )
     tags_rename_parser.add_argument("--json", action="store_true")
 
     tags_merge_parser = tags_subparsers.add_parser(
-        "merge", help="Preview merging two or more tags into a single target.",
+        "merge", help="Preview or apply merging two or more tags into a single target.",
     )
     tags_merge_parser.add_argument(
         "sources", nargs="+", help="Two or more tag slugs to merge.",
@@ -1316,6 +1320,10 @@ Examples:
         help="Target tag slug (existing or new).",
     )
     tags_merge_parser.add_argument("--dry-run", action="store_true")
+    tags_merge_parser.add_argument(
+        "--apply", action="store_true",
+        help="Write changes (rewrites SGFs + config under PipelineLock).",
+    )
     tags_merge_parser.add_argument("--json", action="store_true")
 
     # levels command (Theme 5) — taxonomy inspector
@@ -1343,13 +1351,17 @@ Examples:
         help="Emit JSON list of LevelUsageEntry shapes.",
     )
 
-    # Theme 11 preview surface (apply path deferred).
+    # Theme 11 preview / apply surface.
     levels_rename_parser = levels_subparsers.add_parser(
-        "rename", help="Preview a level rename (V1: --dry-run only).",
+        "rename", help="Preview or apply a level rename.",
     )
     levels_rename_parser.add_argument("old", help="Existing level slug.")
     levels_rename_parser.add_argument("new", help="Proposed level slug.")
     levels_rename_parser.add_argument("--dry-run", action="store_true")
+    levels_rename_parser.add_argument(
+        "--apply", action="store_true",
+        help="Write changes (rewrites SGFs + config under PipelineLock).",
+    )
     levels_rename_parser.add_argument("--json", action="store_true")
 
     # runtime-info command (Theme 3a)
@@ -4683,7 +4695,7 @@ def cmd_levels(args: argparse.Namespace) -> int:
     return 0
 
 
-# ---------- Theme 11: tag/level mutation preview (apply path deferred) ----------
+# ---------- Theme 11: tag/level mutation (preview + apply) ----------
 
 _SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
 
@@ -4698,15 +4710,111 @@ def _emit_taxonomy_preview(args: argparse.Namespace, preview) -> int:
         print(f"  config_changes   : {preview.config_changes}")
         if preview.errors:
             print(f"  errors           : {preview.errors}")
-        print(f"  valid            : {preview.valid}  (apply path deferred)")
+        print(f"  valid            : {preview.valid}")
     return 0 if preview.valid else 2
+
+
+def _emit_taxonomy_apply(args: argparse.Namespace, payload: dict, rc: int) -> int:
+    """Shared emit + return-code for the three Theme 11 apply commands."""
+    if getattr(args, "json", False):
+        print(json.dumps(payload, indent=2, default=str))
+    else:
+        ok = payload.get("ok")
+        print(f"\n{'OK' if ok else 'FAIL'}: {payload.get('op')} -> {payload.get('target')}")
+        print(f"  files_scanned    : {payload.get('files_scanned')}")
+        print(f"  files_rewritten  : {payload.get('files_rewritten')}")
+        print(f"  config_updated   : {payload.get('config_updated')}")
+        if payload.get("errors"):
+            print(f"  errors           : {payload['errors']}")
+        if payload.get("audit_timestamp"):
+            print(f"  audit_timestamp  : {payload['audit_timestamp']}")
+    return rc
+
+
+def _run_taxonomy_apply(
+    op: str,
+    *,
+    preview,
+    writer,
+    audit_target: str,
+    audit_details: dict,
+) -> tuple[dict, int]:
+    """Lock + writer + audit row. Returns (payload, return_code).
+
+    Caller passes a callable `writer()` that does the rewrite and returns a
+    `TaxonomyApplyResult`. Failures from the writer (file-not-found,
+    permission denied, etc.) propagate so the operator sees a stack trace —
+    the apply path is destructive and quiet failure would be worse than a
+    crash.
+    """
+    from datetime import UTC, datetime
+
+    from backend.puzzle_manager.audit import write_audit_entry
+    from backend.puzzle_manager.paths import get_audit_log_path
+    from backend.puzzle_manager.pipeline.lock import PipelineLock, PipelineLockError
+
+    payload: dict = {
+        "ok": False, "op": op, "dry_run": False,
+        "sources": [], "target": "",
+        "files_scanned": 0, "files_rewritten": 0,
+        "config_updated": False, "errors": [],
+        "audit_timestamp": None,
+    }
+
+    if not preview.valid:
+        payload["errors"] = list(preview.errors)
+        payload["sources"] = list(preview.sources)
+        payload["target"] = preview.target
+        payload["message"] = "preview invalid; refusing to apply"
+        return payload, 2
+
+    try:
+        lock = PipelineLock(run_id=op)
+        lock.acquire()
+    except PipelineLockError as exc:
+        payload["errors"].append({"code": "pipeline-locked", "message": str(exc)})
+        payload["message"] = str(exc)
+        return payload, 2
+
+    try:
+        result = writer()
+        timestamp = datetime.now(UTC).isoformat()
+        write_audit_entry(
+            audit_file=get_audit_log_path(),
+            operation=f"taxonomy_{op.replace('-', '_')}",
+            target=audit_target,
+            details={
+                "timestamp": timestamp,
+                "sources": result.sources,
+                "target": result.target,
+                "files_scanned": result.files_scanned,
+                "files_rewritten": result.files_rewritten,
+                "config_updated": result.config_updated,
+                **audit_details,
+            },
+        )
+    finally:
+        lock.release()
+
+    payload.update({
+        "ok": True,
+        "sources": result.sources,
+        "target": result.target,
+        "files_scanned": result.files_scanned,
+        "files_rewritten": result.files_rewritten,
+        "config_updated": result.config_updated,
+        "audit_timestamp": timestamp,
+        "message": f"{op} applied",
+    })
+    return payload, 0
 
 
 def _cmd_tags_rename_preview(args: argparse.Namespace) -> int:
     from backend.puzzle_manager.models.taxonomy import TaxonomyMutationPreview
 
-    if not getattr(args, "dry_run", False):
-        print("--dry-run is required (apply path not yet implemented)", file=sys.stderr)
+    apply_mode = bool(getattr(args, "apply", False))
+    if not apply_mode and not getattr(args, "dry_run", False):
+        print("--dry-run or --apply is required", file=sys.stderr)
         return 2
 
     cfg = _load_tags_config()
@@ -4731,14 +4839,27 @@ def _cmd_tags_rename_preview(args: argparse.Namespace) -> int:
             "rename_key": {old: new},
         } if not errors else {},
     )
-    return _emit_taxonomy_preview(args, preview)
+
+    if not apply_mode:
+        return _emit_taxonomy_preview(args, preview)
+
+    from backend.puzzle_manager.inventory.taxonomy_mutations import apply_tags_rename
+    payload, rc = _run_taxonomy_apply(
+        "tags-rename",
+        preview=preview,
+        writer=lambda: apply_tags_rename(old, new),
+        audit_target="puzzle-collection",
+        audit_details={"affected_puzzle_count": preview.affected_puzzle_count},
+    )
+    return _emit_taxonomy_apply(args, payload, rc)
 
 
 def _cmd_tags_merge_preview(args: argparse.Namespace) -> int:
     from backend.puzzle_manager.models.taxonomy import TaxonomyMutationPreview
 
-    if not getattr(args, "dry_run", False):
-        print("--dry-run is required (apply path not yet implemented)", file=sys.stderr)
+    apply_mode = bool(getattr(args, "apply", False))
+    if not apply_mode and not getattr(args, "dry_run", False):
+        print("--dry-run or --apply is required", file=sys.stderr)
         return 2
 
     cfg = _load_tags_config()
@@ -4768,14 +4889,27 @@ def _cmd_tags_merge_preview(args: argparse.Namespace) -> int:
             "ensure_key": target,
         } if not errors else {},
     )
-    return _emit_taxonomy_preview(args, preview)
+
+    if not apply_mode:
+        return _emit_taxonomy_preview(args, preview)
+
+    from backend.puzzle_manager.inventory.taxonomy_mutations import apply_tags_merge
+    payload, rc = _run_taxonomy_apply(
+        "tags-merge",
+        preview=preview,
+        writer=lambda: apply_tags_merge(sources, target),
+        audit_target="puzzle-collection",
+        audit_details={"affected_puzzle_count": preview.affected_puzzle_count},
+    )
+    return _emit_taxonomy_apply(args, payload, rc)
 
 
 def _cmd_levels_rename_preview(args: argparse.Namespace) -> int:
     from backend.puzzle_manager.models.taxonomy import TaxonomyMutationPreview
 
-    if not getattr(args, "dry_run", False):
-        print("--dry-run is required (apply path not yet implemented)", file=sys.stderr)
+    apply_mode = bool(getattr(args, "apply", False))
+    if not apply_mode and not getattr(args, "dry_run", False):
+        print("--dry-run or --apply is required", file=sys.stderr)
         return 2
 
     cfg = _load_levels_config()
@@ -4800,7 +4934,19 @@ def _cmd_levels_rename_preview(args: argparse.Namespace) -> int:
             "rename_slug": {old: new},
         } if not errors else {},
     )
-    return _emit_taxonomy_preview(args, preview)
+
+    if not apply_mode:
+        return _emit_taxonomy_preview(args, preview)
+
+    from backend.puzzle_manager.inventory.taxonomy_mutations import apply_levels_rename
+    payload, rc = _run_taxonomy_apply(
+        "levels-rename",
+        preview=preview,
+        writer=lambda: apply_levels_rename(old, new),
+        audit_target="puzzle-collection",
+        audit_details={"affected_puzzle_count": preview.affected_puzzle_count},
+    )
+    return _emit_taxonomy_apply(args, payload, rc)
 
 
 def cmd_activity(args: argparse.Namespace) -> int:

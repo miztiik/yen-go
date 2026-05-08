@@ -1,8 +1,10 @@
 """Unit tests for ``tags rename`` / ``tags merge`` / ``levels rename`` (Theme 11).
 
-V1 ships preview only; the apply path lands in a follow-up slice. Every
-preview returns a ``TaxonomyMutationPreview`` and rc=0 (valid) or rc=2
-(invalid). Mutating without ``--dry-run`` is rejected.
+Preview path: every dispatch returns a ``TaxonomyMutationPreview`` and rc=0
+(valid) or rc=2 (invalid). Apply path (Theme 11 sub-slice 4a): writer
+functions rewrite SGFs + config under a temp tree and return a
+``TaxonomyApplyResult``. The CLI's apply branch is wrapped at integration
+level by ``test_taxonomy_mutation_apply_cli`` (server slice).
 """
 
 from __future__ import annotations
@@ -21,6 +23,7 @@ from backend.puzzle_manager.cli import (
 
 def _ns(**kw) -> argparse.Namespace:
     kw.setdefault("dry_run", True)
+    kw.setdefault("apply", False)
     kw.setdefault("json", True)
     return argparse.Namespace(**kw)
 
@@ -44,12 +47,15 @@ class TestTagsRenamePreview:
         out = json.loads(capsys.readouterr().out)
         assert any("invalid target slug" in e for e in out["errors"])
 
-    def test_dry_run_required(
+    def test_dry_run_or_apply_required(
         self, capsys: pytest.CaptureFixture[str],
     ) -> None:
-        rc = _cmd_tags_rename_preview(_ns(old="life-and-death", new="lnd-v2", dry_run=False))
+        rc = _cmd_tags_rename_preview(_ns(
+            old="life-and-death", new="lnd-v2", dry_run=False, apply=False,
+        ))
         assert rc == 2
-        assert "dry-run" in capsys.readouterr().err
+        err = capsys.readouterr().err
+        assert "dry-run" in err and "apply" in err
 
     def test_valid_rename_passes(
         self, capsys: pytest.CaptureFixture[str],
