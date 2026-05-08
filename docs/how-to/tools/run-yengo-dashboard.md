@@ -1,7 +1,8 @@
 # How to Run yengo_dashboard
 
-> Browser cockpit over `backend/puzzle_manager`. Read-only in Phase 1 — see
-> `tools/yengo_dashboard/PLAN.md` for the mutation roadmap.
+> Browser cockpit over `backend/puzzle_manager`. Mutations are live: pipeline
+> runs, taxonomy rename/merge, adapter config edits, source-ingest-state reset,
+> rollback, vacuum-db, and daily-schedule generation are all driven from the UI.
 
 **Tier**: How-to (the *do this*).
 **See also**: [Architecture: yengo_dashboard](../../architecture/tools/yengo_dashboard.md).
@@ -20,28 +21,49 @@ Open <http://127.0.0.1:8201/> in your browser.
 
 ## Flags
 
-| Flag       | Default     | Description                              |
+| Flag | Default | Description |
 | ---------- | ----------- | ---------------------------------------- |
-| `--host`   | `127.0.0.1` | Bind address. Loopback only by default.  |
-| `--port`   | `8201`      | TCP port.                                |
+| `--host` | `127.0.0.1` | Bind address. Loopback only by default. |
+| `--port` | `8201` | TCP port. |
 
 The cockpit auto-detects the repo root from its own location; there is no
-`--repo-root` flag. To point it at a different config directory, use the
-`puzzle_manager` CLI's own `--config` (Phase 2 will surface this in the UI;
-in Phase 1, the cockpit always uses the pipeline's default).
+`--repo-root` flag. The cockpit always uses the pipeline's default config.
 
 ## What you'll see
 
-- **Overview** — published inventory: total puzzles, collections, daily
-  schedule entries, distribution by `level_id` and `content_type`.
-- **Adapters** — one row per source from `sources.json`, with named buckets
-  (`ingested` / `skipped` / `failed` / `total`) read from each source's
-  `.yengo-ingest.sqlite`. Run/Ingest/Clean buttons are present but disabled
-  with the tooltip *"Mutations enabled in Phase 2"*.
-- **History** — the last 50 run-state files from
-  `.pm-runtime/state/runs/`, newest first, with stage status pills.
+- **Library** — published inventory plus taxonomy. Tag and level usage
+  counts come from `yengo-search.db`. With *Edit taxonomy* mode enabled,
+  rename/merge mutations are exposed (auto-disables after 5 minutes).
 
-The header badge in the top right shows the cockpit's own health and uptime.
+- **Pipeline** — adapter list (filterable, sortable), Run/Ingest/Reset DB
+  per row, and live-run progress via SSE. The active adapter is the row
+  with `active: true` in `config/sources.json`.
+
+- **Daily** — daily-challenge schedule and on-demand generation.
+
+- **Activity** — unified timeline of pipeline runs, mutations, and audits.
+
+- **Operations** — clean / rollback / vacuum-db / source-ingest-state reset,
+  each with a dry-run preview before commit.
+
+- **Logs** — pipeline stage logs and publish-log audit search.
+
+The header chip surfaces dashboard health and DB version; the bottom
+status strip is the source of truth for severity.
+
+## Universal search
+
+Press <kbd>⌘K</kbd> (or <kbd>Ctrl+K</kbd>, or `/`) to open the command
+palette. Searches sources, tags, levels, and 16-hex puzzle hashes. Hash
+matches navigate to the puzzle detail page; everything else routes to the
+relevant view.
+
+## Contextual help
+
+Click any `?` chip next to a heading or column to open an inline popover
+with a concept explanation. Strings live in
+`tools/yengo_dashboard/web/help-strings.json`; update them in the same
+commit as any UI label change.
 
 ## Sanity-check the API directly
 

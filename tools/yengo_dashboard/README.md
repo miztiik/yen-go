@@ -30,14 +30,20 @@ OpenAPI / Swagger UI: `http://127.0.0.1:8201/docs` (FastAPI built-in).
 
 | Tab             | Wraps                                                                                  |
 | --------------- | -------------------------------------------------------------------------------------- |
-| **Overview**    | Published-corpus headline (`yengo-search.db` row counts, by level, by content_type)    |
-| **Adapters**    | `source-status` per adapter; one-click Run / Ingest / Enable                           |
-| **Live Run**    | Live SSE stream of a `run` / `clean` / `rollback` / `vacuum-db` subprocess + Cancel    |
-| **Maintenance** | Forms for `clean`, `rollback`, `vacuum-db`, plus `publish-log search`                  |
-| **History**     | Past runs from `.pm-runtime/state/runs/*.json`                                         |
+| **Library**     | Published-corpus headline + taxonomy (tag/level usage from `yengo-search.db`); rename/merge gated behind *Edit taxonomy* mode |
+| **Pipeline**    | Filterable adapter list, per-row Run / Ingest / Reset DB; live SSE run progress + Cancel |
+| **Daily**       | Daily-challenge schedule and on-demand generation                                      |
+| **Activity**    | Unified timeline of pipeline runs, mutations, and audits                               |
+| **Operations**  | `clean`, `rollback`, `vacuum-db`, `source-ingest-state --reset`; each shows a dry-run preview before commit |
+| **Logs**        | Stage logs and `publish-log search`                                                    |
 
-The header lock-status badge wraps `config-lock {status,release}` — click
-to release a stuck lock (with `--force` confirm fallback).
+Universal search via <kbd>⌘K</kbd> / <kbd>Ctrl+K</kbd> / `/`. Inline `?`
+chips open contextual help popovers (strings in
+`web/help-strings.json`).
+
+The header chip surfaces dashboard health and the SQLite DB version; the
+sticky bottom strip is the source of truth for severity escalation and
+opens the full system dialog on click.
 
 ---
 
@@ -75,7 +81,7 @@ See `docs/architecture/tools/yengo_dashboard.md` for the full rationale (Princip
 pytest tools/yengo_dashboard/tests/ -q
 ```
 
-55 tests as of Phase 3. **Real fixtures only** — no mocks, no stubs. The
+228 tests as of Wave 3. **Real fixtures only** — no mocks, no stubs. The
 HTTP/SSE tests drive real subprocesses against tmp `backend/puzzle_manager`
 shims; the SQLite tests build real databases with the publisher's schema;
 one slow smoke test runs the actual `python -m backend.puzzle_manager

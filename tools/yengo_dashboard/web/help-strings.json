@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "description": "Inline help strings keyed by data-help-id. Loaded once on app boot. Update in same commit as any UI label change.",
+    "version": 1
+  },
+  "taxonomy": {
+    "title": "Taxonomy",
+    "body": "Tags and levels assigned to each puzzle. Levels come from config/puzzle-levels.json (9-band system, novice→expert). Tags come from config/tags.json. Both are written into published SGF as YG[level] and YT[tag1,tag2]. Renaming or merging them after publish breaks downstream content_hash invariants — use Edit taxonomy mode only when you understand the impact."
+  },
+  "taxonomy-edit": {
+    "title": "Edit taxonomy mode",
+    "body": "Reveals rename and merge actions. These operations rewrite published SGF files and invalidate cached content hashes — never use casually. Mode auto-disables after 5 minutes of inactivity."
+  },
+  "tag-usage": {
+    "title": "Usage count",
+    "body": "How many published puzzles carry this tag. Computed from yengo-search.db (puzzle_tags table). Updates after each successful publish stage."
+  },
+  "level-rank": {
+    "title": "Rank band",
+    "body": "Kyu/dan range covered by this level. Authoritative source: config/puzzle-levels.json. Levels are derived during the analyze stage by the classifier; classifier output cannot exceed the configured level set."
+  },
+  "adapter": {
+    "title": "Adapter",
+    "body": "One adapter = one row in config/sources.json. Exactly one is active at a time. Run targets the active adapter unless --source-override is passed. Switch with enable-adapter (Operations) or per-row Run."
+  },
+  "adapter-counts": {
+    "title": "Ingested / skipped / failed",
+    "body": "ingested = puzzles successfully parsed and validated this pass. skipped = published puzzles whose content hash matched an existing entry. failed = puzzles that errored during ingest (parse, validation, or fetch). Numbers reflect the per-source .yengo-ingest.sqlite, not the published collection — if files were deleted manually, use Reset DB to clear stale counts."
+  },
+  "adapter-validate": {
+    "title": "Adapter validation",
+    "body": "Runs adapter-config validate-all. Checks each source: schema fields present and well-typed, config.path exists on disk, adapter kind is registered. Does not run the adapter or read SGFs."
+  },
+  "adapter-import-folder": {
+    "title": "Import existing folder",
+    "body": "Scans an existing folder of SGF subdirectories and slugifies each into a sources.json entry. Use when SGFs already live on disk and just need to be wired up. Does not generate Python code."
+  },
+  "adapter-scaffold": {
+    "title": "Create adapter from template",
+    "body": "Generates a new Python adapter package under backend/puzzle_manager/adapters/{id}/ and appends a sources.json entry. Use when the source needs custom parsing logic. For a plain folder of SGFs, prefer Import existing folder."
+  },
+  "fresh-flag": {
+    "title": "--fresh",
+    "body": "Wipes this source's .yengo-ingest.sqlite and .pm-runtime/state. Forces a full re-ingest of every file. Destructive: ingest history and failure samples are lost."
+  },
+  "hints": {
+    "title": "Hints (YH)",
+    "body": "Up to three hints per puzzle, pipe-delimited. Generated during the analyze stage. Use {!xy} coordinate tokens (e.g. {!cg}) so the renderer can substitute board positions."
+  },
+  "puzzle-search": {
+    "title": "Universal search (⌘K)",
+    "body": "Open with ⌘K or /. Searches sources, tags, levels, and puzzle hashes (16-hex prefix or YENGO-{hash}). Hash matches open the puzzle detail page; everything else navigates to the relevant view."
+  }
+}

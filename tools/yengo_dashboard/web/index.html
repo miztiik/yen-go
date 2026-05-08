@@ -99,17 +99,15 @@
             class="flex-shrink-0 h-12 px-6 flex items-center justify-between
                    bg-zinc-950/80 border-b border-zinc-800/60 backdrop-blur">
       <div id="page-breadcrumb" class="text-xs text-zinc-500 uppercase tracking-wider"></div>
-      <form id="puzzle-search-form" class="flex items-center gap-1" data-puzzle-search>
-        <input id="puzzle-search-input"
-               type="search"
-               name="puzzle_id"
-               placeholder="Puzzle ID (16-hex or YENGO-…)"
-               aria-label="Look up puzzle by ID"
-               class="text-xs px-2 py-1 rounded border border-zinc-700 bg-zinc-900 text-zinc-100 w-[280px] font-mono"
-               data-puzzle-search-input />
-        <button type="submit"
-                class="text-xs px-2 py-1 rounded border border-sky-700 text-sky-300 hover:bg-sky-900/30"
-                data-puzzle-search-submit>Open</button>
+      <button id="palette-trigger" type="button"
+              class="flex items-center gap-2 text-xs px-2 py-1 rounded border border-zinc-700 bg-zinc-900 text-zinc-400 hover:text-zinc-100 hover:border-zinc-500"
+              aria-label="Open universal search">
+        <span>Search sources, tags, puzzle id…</span>
+        <kbd class="font-mono text-[10px] px-1 py-0.5 rounded bg-zinc-800 text-zinc-400">⌘K</kbd>
+      </button>
+      <form id="puzzle-search-form" class="hidden" data-puzzle-search aria-hidden="true">
+        <input id="puzzle-search-input" type="search" name="puzzle_id" data-puzzle-search-input />
+        <button type="submit" data-puzzle-search-submit>Open</button>
       </form>
       <button id="system-chip"
               type="button"
@@ -206,7 +204,7 @@
         <div class="text-xs text-slate-500">loading preview…</div>
       </div>
       <div class="actions">
-        <button value="cancel" class="rounded-lg px-3 py-1 text-sm bg-zinc-800 hover:bg-zinc-700">Close</button>
+        <button value="cancel" formnovalidate class="rounded-lg px-3 py-1 text-sm bg-zinc-800 hover:bg-zinc-700">Close</button>
         <button id="pv-go" value="ok" disabled
                 class="rounded-lg px-3 py-1 text-sm bg-sky-500/15 text-sky-300 ring-1 ring-sky-500/40
                        disabled:opacity-40 disabled:pointer-events-none">Run for real</button>

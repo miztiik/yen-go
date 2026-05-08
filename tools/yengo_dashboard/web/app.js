@@ -448,10 +448,11 @@ async function _loadTaxonomySection() {
     ]);
     section.innerHTML = `
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-xs uppercase tracking-wider text-slate-500">Taxonomy</h3>
+        <h3 class="text-xs uppercase tracking-wider text-slate-500 flex items-center gap-1">Taxonomy <span class="help-chip" data-help-id="taxonomy" role="button" tabindex="0" aria-label="What is taxonomy?">?</span></h3>
         <div class="flex items-center gap-2">
           <span id="taxonomy-edit-warning" class="text-[10px] text-amber-400 hidden">edit mode — destructive on published puzzles</span>
           <button type="button" id="taxonomy-edit-toggle" class="text-[10px] uppercase tracking-wider px-2 py-1 rounded ring-1 ring-slate-700 text-slate-400 hover:text-slate-200" aria-pressed="false">Edit taxonomy</button>
+          <span class="help-chip" data-help-id="taxonomy-edit" role="button" tabindex="0" aria-label="What does edit mode do?">?</span>
         </div>
       </div>
       <div id="taxonomy-grid" class="grid md:grid-cols-2 gap-6" data-tax-edit="0">
@@ -509,8 +510,8 @@ function _wireTaxonomyEditToggle(section) {
 function taxonomyTable(title, rows, key, showCategory) {
   const sorted = [...(rows || [])].sort((a, b) => (b.usage_count || 0) - (a.usage_count || 0));
   const headerCells = showCategory
-    ? `<th class="px-2 py-1 text-left">${escapeHtml(key)}</th><th class="px-2 py-1 text-left">category</th><th class="px-2 py-1 text-right">usage</th><th class="px-2 py-1"></th>`
-    : `<th class="px-2 py-1 text-left">${escapeHtml(key)}</th><th class="px-2 py-1 text-left">rank</th><th class="px-2 py-1 text-right">usage</th><th class="px-2 py-1"></th>`;
+    ? `<th class="px-2 py-1 text-left">${escapeHtml(key)}</th><th class="px-2 py-1 text-left">category</th><th class="px-2 py-1 text-right">usage <span class="help-chip" data-help-id="tag-usage" role="button" tabindex="0" aria-label="What does usage mean?">?</span></th><th class="px-2 py-1"></th>`
+    : `<th class="px-2 py-1 text-left">${escapeHtml(key)}</th><th class="px-2 py-1 text-left">rank <span class="help-chip" data-help-id="level-rank" role="button" tabindex="0" aria-label="What does rank mean?">?</span></th><th class="px-2 py-1 text-right">usage <span class="help-chip" data-help-id="tag-usage" role="button" tabindex="0" aria-label="What does usage mean?">?</span></th><th class="px-2 py-1"></th>`;
   const bodyRows = sorted.map((r) => {
     const slug = r[key] || "";
     const left = escapeHtml(slug || "—");
@@ -1237,6 +1238,7 @@ function adapterValidationBlock(raw) {
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
           <h3 class="text-xs uppercase tracking-wider text-slate-500">Adapter validation</h3>
+          <span class="help-chip" data-help-id="adapter-validate" role="button" tabindex="0" aria-label="What does validate check?">?</span>
           <span class="pill ring-1 px-2 py-0.5 rounded text-xs ${pillClass}">${pillLabel}</span>
         </div>
         <span class="text-xs text-slate-500 font-mono">adapter-config validate-all</span>
@@ -1256,7 +1258,7 @@ function _renderAdapterBootstrapSection() {
          data-adapter-bootstrap>
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-xs uppercase tracking-wider text-slate-500">Import existing folder</h3>
+          <h3 class="text-xs uppercase tracking-wider text-slate-500">Import existing folder <span class="help-chip" data-help-id="adapter-import-folder" role="button" tabindex="0" aria-label="What does import-folder do?">?</span></h3>
           <p class="text-[11px] text-slate-500 mt-0.5">Scan a folder of SGF subdirectories and append each as a source entry. Existing files are not modified.</p>
         </div>
         <span class="text-xs text-slate-500 font-mono">adapter-config bootstrap</span>
@@ -1333,7 +1335,7 @@ function _renderAdapterScaffoldSection() {
   if (!section) return;
   section.innerHTML = `
     <div class="flex items-baseline justify-between mb-3">
-      <h3 class="text-xs uppercase tracking-wider text-slate-500">Create new adapter from template</h3>
+      <h3 class="text-xs uppercase tracking-wider text-slate-500">Create new adapter from template <span class="help-chip" data-help-id="adapter-scaffold" role="button" tabindex="0" aria-label="What does scaffold do?">?</span></h3>
       <span class="text-xs text-slate-500 font-mono">adapter-scaffold</span>
     </div>
     <p class="text-[11px] text-slate-500 -mt-2 mb-2">Generates a new Python adapter package under <code class="font-mono">backend/puzzle_manager/adapters/</code> and appends a sources.json entry. Use this when the source needs a custom parser; for a plain folder of SGFs use <em>Import existing folder</em>.</p>
@@ -2613,7 +2615,7 @@ function renderLiveRun() {
           </select>
         </div>
         <div class="space-y-1.5 pt-1">
-          <label class="flex items-center gap-2 text-xs" title="Wipes this source's .yengo-ingest.sqlite + .pm-runtime/state. Forces full re-ingest."><input id="run-fresh" type="checkbox" /> --fresh<span class="text-rose-400 ml-1 font-semibold">(destructive: wipes ingest DB + runtime state)</span></label>
+          <label class="flex items-center gap-2 text-xs" title="Wipes this source's .yengo-ingest.sqlite + .pm-runtime/state. Forces full re-ingest."><input id="run-fresh" type="checkbox" /> --fresh<span class="text-rose-400 ml-1 font-semibold">(destructive: wipes ingest DB + runtime state)</span> <span class="help-chip" data-help-id="fresh-flag" role="button" tabindex="0" aria-label="What does --fresh do?">?</span></label>
           <label class="flex items-center gap-2 text-xs"><input id="run-dry-run" type="checkbox" /> --dry-run</label>
           <label class="flex items-center gap-2 text-xs"><input id="run-source-override" type="checkbox" /> --source-override</label>
           <label class="flex items-center gap-2 text-xs"><input id="run-no-enrichment" type="checkbox" /> --no-enrichment</label>
@@ -4973,6 +4975,182 @@ if (_puzzleSearchForm) {
     showPuzzleDetail(pid);
   });
 }
+
+// W3.1 — inline help chips. Click a [data-help-id="key"] anchor to open a
+// small popover sourced from web/help-strings.json. Strings are loaded once
+// and cached. Missing keys fail loud (console.warn) rather than silently
+// rendering blanks — keeps drift visible.
+let _HELP_STRINGS = null;
+async function _loadHelpStrings() {
+  if (_HELP_STRINGS !== null) return _HELP_STRINGS;
+  try {
+    const r = await fetch("/help-strings.json", { cache: "no-cache" });
+    _HELP_STRINGS = await r.json();
+  } catch (e) {
+    console.warn("help-strings.json failed to load", e);
+    _HELP_STRINGS = {};
+  }
+  return _HELP_STRINGS;
+}
+function _wireHelpChips() {
+  document.addEventListener("click", async (e) => {
+    const trigger = e.target.closest("[data-help-id]");
+    if (!trigger) return;
+    e.preventDefault();
+    const key = trigger.dataset.helpId;
+    const strings = await _loadHelpStrings();
+    const entry = strings[key];
+    if (!entry) {
+      console.warn(`help-strings: missing key '${key}'`);
+      return;
+    }
+    _showHelpPopover(trigger, entry);
+  });
+}
+function _showHelpPopover(anchor, entry) {
+  document.querySelectorAll(".help-popover").forEach(n => n.remove());
+  const pop = document.createElement("div");
+  pop.className = "help-popover";
+  pop.setAttribute("role", "tooltip");
+  pop.innerHTML = `
+    <div class="help-popover-title">${escapeHtml(entry.title || "")}</div>
+    <div class="help-popover-body">${escapeHtml(entry.body || "")}</div>
+  `;
+  document.body.appendChild(pop);
+  const r = anchor.getBoundingClientRect();
+  pop.style.left = `${Math.max(8, Math.min(window.innerWidth - 280, r.left))}px`;
+  pop.style.top = `${r.bottom + 6}px`;
+  const close = (ev) => {
+    if (ev && pop.contains(ev.target)) return;
+    pop.remove();
+    document.removeEventListener("click", close, true);
+    document.removeEventListener("keydown", esc);
+  };
+  const esc = (ev) => { if (ev.key === "Escape") close(); };
+  setTimeout(() => {
+    document.addEventListener("click", close, true);
+    document.addEventListener("keydown", esc);
+  }, 0);
+}
+
+// W3.3 — universal search palette. Opens on Cmd/Ctrl-K or "/" (when not
+// already typing into an input). Queries adapters, tags, levels, and treats
+// 16-hex / YENGO-* tokens as puzzle id lookups. Frontend-only filter — data
+// already loaded by the relevant views or fetched lazily on first open.
+let _PALETTE_INDEX = null;
+async function _ensurePaletteIndex() {
+  if (_PALETTE_INDEX) return _PALETTE_INDEX;
+  const out = [];
+  try {
+    const adapters = await getJSON("/api/adapters");
+    (adapters.sources || []).forEach((a) => out.push({
+      kind: "adapter", id: a.id, label: a.id,
+      hint: a.source_root || "",
+      go: () => location.assign(`/adapters/${encodeURIComponent(a.id)}`),
+    }));
+  } catch {}
+  try {
+    const tags = await getJSON("/api/tags");
+    (tags.raw || []).forEach((t) => out.push({
+      kind: "tag", id: t.tag, label: t.tag,
+      hint: `${t.category || "tag"} · ${t.usage_count || 0} uses`,
+      go: () => location.assign(`/library`),
+    }));
+  } catch {}
+  try {
+    const levels = await getJSON("/api/levels");
+    (levels.raw || []).forEach((l) => out.push({
+      kind: "level", id: l.level, label: l.level,
+      hint: `${l.rank_min}–${l.rank_max} · ${l.usage_count || 0} uses`,
+      go: () => location.assign(`/library`),
+    }));
+  } catch {}
+  _PALETTE_INDEX = out;
+  return out;
+}
+function _wireCommandPalette() {
+  document.addEventListener("keydown", (e) => {
+    const isMod = e.ctrlKey || e.metaKey;
+    const inField = e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA");
+    if (isMod && (e.key === "k" || e.key === "K")) {
+      e.preventDefault(); _openPalette();
+    } else if (e.key === "/" && !inField) {
+      e.preventDefault(); _openPalette();
+    }
+  });
+  const trigger = document.getElementById("palette-trigger");
+  if (trigger) trigger.addEventListener("click", _openPalette);
+}
+async function _openPalette() {
+  let dlg = document.getElementById("command-palette");
+  if (!dlg) {
+    dlg = document.createElement("dialog");
+    dlg.id = "command-palette";
+    dlg.className = "command-palette";
+    dlg.innerHTML = `
+      <input type="search" id="palette-input" placeholder="Search sources, tags, levels, or paste a puzzle id (16-hex / YENGO-…)" autocomplete="off" />
+      <ul id="palette-results" role="listbox"></ul>
+      <div class="palette-foot"><span>↑↓ to move</span><span>↵ to open</span><span>esc to close</span></div>
+    `;
+    document.body.appendChild(dlg);
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+  }
+  const input = dlg.querySelector("#palette-input");
+  const list = dlg.querySelector("#palette-results");
+  const index = await _ensurePaletteIndex();
+  let active = 0;
+  const render = () => {
+    const q = input.value.trim().toLowerCase();
+    const hashLike = /^(yengo-)?[a-f0-9]{6,16}$/i.test(input.value.trim());
+    let results = !q ? index.slice(0, 25) : index.filter(it =>
+      it.label.toLowerCase().includes(q) || (it.hint || "").toLowerCase().includes(q),
+    ).slice(0, 25);
+    if (hashLike) {
+      const pid = _normalizePuzzleId(input.value.trim());
+      if (pid) results = [{ kind: "puzzle", id: pid, label: pid, hint: "open puzzle detail",
+        go: () => showPuzzleDetail(pid) }, ...results];
+    }
+    list.innerHTML = results.map((r, i) => `
+      <li role="option" data-i="${i}" class="${i === active ? "active" : ""}">
+        <span class="palette-kind">${escapeHtml(r.kind)}</span>
+        <span class="palette-label">${escapeHtml(r.label)}</span>
+        <span class="palette-hint">${escapeHtml(r.hint || "")}</span>
+      </li>
+    `).join("");
+    list._results = results;
+  };
+  const move = (delta) => {
+    const n = (list._results || []).length;
+    if (!n) return;
+    active = (active + delta + n) % n;
+    render();
+  };
+  const choose = () => {
+    const r = (list._results || [])[active];
+    if (!r) return;
+    dlg.close();
+    r.go();
+  };
+  input.value = "";
+  active = 0;
+  render();
+  input.addEventListener("input", () => { active = 0; render(); });
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); move(+1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); move(-1); }
+    else if (e.key === "Enter") { e.preventDefault(); choose(); }
+    else if (e.key === "Escape") { dlg.close(); }
+  });
+  list.addEventListener("click", (e) => {
+    const li = e.target.closest("li[data-i]");
+    if (!li) return;
+    active = Number(li.dataset.i);
+    choose();
+  });
+  dlg.showModal();
+  setTimeout(() => input.focus(), 0);
+}
+
 masterTick();
 setInterval(refreshRelTimes, 30_000);   // relative-time labels tick every 30s
 
@@ -4983,6 +5161,8 @@ setInterval(refreshRelTimes, 30_000);   // relative-time labels tick every 30s
 _ensureOpsCatalogGuard();
 _wireHelpCallouts();
 _wireHelpDrawer();
+_wireHelpChips();
+_wireCommandPalette();
 
 // Pause polling while the tab is hidden; immediate tick + resume on focus.
 document.addEventListener("visibilitychange", () => {
