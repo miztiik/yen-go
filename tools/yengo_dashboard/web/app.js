@@ -431,9 +431,14 @@ async function renderOverview() {
         <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-3">Taxonomy</h3>
         <div class="text-xs text-slate-500">loading taxonomy…</div>
       </div>
+      <div id="session-panel" class="mt-8" data-session-panel>
+        <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-3">Recent activity</h3>
+        <div class="text-xs text-slate-500">loading recent runs…</div>
+      </div>
     `;
     _wireInventoryActionButtons(root);
     _loadTaxonomySection().catch(() => {/* graceful — handled below */});
+    _loadSessionPanel().catch(() => {/* graceful */});
   } catch (e) { root.innerHTML = errorBlock("/api/inventory", e); }
 }
 
@@ -507,8 +512,62 @@ function _wireTaxonomyEditToggle(section) {
   btn.addEventListener("click", () => setMode(grid.dataset.taxEdit !== "1"));
 }
 
+// W4.5 — Library "Recent activity" session panel. Pulls the last 3 runs
+// from /api/runs and stamps a localStorage "last visit" so the operator
+// can see at a glance what changed since they last opened the dashboard.
+const _SESSION_VISIT_KEY = "yengo-dashboard:lastVisit";
+async function _loadSessionPanel() {
+  const panel = document.getElementById("session-panel");
+  if (!panel) return;
+  const lastVisit = (() => {
+    try { return localStorage.getItem(_SESSION_VISIT_KEY) || ""; } catch (_) { return ""; }
+  })();
+  try {
+    const data = await getJSON("/api/runs?limit=3");
+    const runs = data.runs || [];
+    if (!runs.length) {
+      panel.innerHTML = `
+        <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-3">Recent activity</h3>
+        <div class="text-xs text-slate-500">No runs yet.</div>`;
+    } else {
+      const sinceVisit = lastVisit
+        ? runs.filter((r) => (r.started_at || "") > lastVisit).length
+        : 0;
+      const sinceNote = lastVisit
+        ? `<span class="text-[11px] text-slate-500">${sinceVisit} new since your last visit (${escapeHtml(lastVisit.slice(0, 16).replace("T", " "))})</span>`
+        : `<span class="text-[11px] text-slate-500">first visit on this device</span>`;
+      const rows = runs.map((r) => {
+        const sev = r.status === "completed" ? "ok" : r.status === "failed" ? "error" : "neutral";
+        return `
+          <a href="/runs/${encodeURIComponent(r.run_id)}" class="block rounded-md ring-1 ring-slate-800 bg-slate-900/60 px-3 py-2 hover:ring-slate-600">
+            <div class="flex items-baseline justify-between gap-3">
+              <span class="font-mono text-xs truncate">${escapeHtml(r.run_id)}</span>
+              ${pill(sev, r.status || "?")}
+            </div>
+            <div class="mt-1 text-[11px] text-slate-500 flex items-center gap-2" data-rel-time="${escapeHtml(r.started_at || "")}">${escapeHtml(r.source || "—")} · ${relTime(r.started_at)}</div>
+          </a>`;
+      }).join("");
+      panel.innerHTML = `
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-xs uppercase tracking-wider text-slate-500">Recent activity</h3>
+          ${sinceNote}
+        </div>
+        <div class="grid md:grid-cols-3 gap-3">${rows}</div>`;
+    }
+  } catch (err) {
+    panel.innerHTML = `
+      <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-3">Recent activity</h3>
+      <div class="text-xs text-rose-300">Failed to load runs: ${escapeHtml(String(err?.message || err))}</div>`;
+  } finally {
+    try { localStorage.setItem(_SESSION_VISIT_KEY, new Date().toISOString()); } catch (_) {/* private mode */}
+  }
+}
+
 function taxonomyTable(title, rows, key, showCategory) {
   const sorted = [...(rows || [])].sort((a, b) => (b.usage_count || 0) - (a.usage_count || 0));
+  // W4.3: max usage drives the inline bar's denominator so even a long-tail
+  // distribution shows visible relative weight. Falls back to 1 to avoid /0.
+  const maxUsage = Math.max(1, ...sorted.map((r) => r.usage_count || 0));
   const headerCells = showCategory
     ? `<th class="px-2 py-1 text-left">${escapeHtml(key)}</th><th class="px-2 py-1 text-left">category</th><th class="px-2 py-1 text-right">usage <span class="help-chip" data-help-id="tag-usage" role="button" tabindex="0" aria-label="What does usage mean?">?</span></th><th class="px-2 py-1"></th>`
     : `<th class="px-2 py-1 text-left">${escapeHtml(key)}</th><th class="px-2 py-1 text-left">rank <span class="help-chip" data-help-id="level-rank" role="button" tabindex="0" aria-label="What does rank mean?">?</span></th><th class="px-2 py-1 text-right">usage <span class="help-chip" data-help-id="tag-usage" role="button" tabindex="0" aria-label="What does usage mean?">?</span></th><th class="px-2 py-1"></th>`;
@@ -518,14 +577,17 @@ function taxonomyTable(title, rows, key, showCategory) {
     const mid = showCategory
       ? escapeHtml(r.category || "—")
       : `${escapeHtml(r.rank_min || "?")}–${escapeHtml(r.rank_max || "?")}`;
-    const usage = (r.usage_count || 0).toLocaleString();
+    const count = r.usage_count || 0;
+    const usage = count.toLocaleString();
+    const pct = Math.round((count / maxUsage) * 100);
+    const bar = `<span class="tax-bar" aria-hidden="true"><span class="tax-bar-fill" style="width:${pct}%"></span></span>`;
     const renameBtn = slug
       ? `<button type="button" class="tax-mutate text-[10px] uppercase tracking-wider text-amber-400 hover:text-amber-200" data-taxonomy-rename="${escapeHtml(key)}" data-slug="${escapeHtml(slug)}">rename</button>`
       : "";
     return `<tr class="border-t border-slate-800/50">
       <td class="px-2 py-1 font-mono text-slate-200">${left}</td>
       <td class="px-2 py-1 text-slate-400">${mid}</td>
-      <td class="px-2 py-1 text-right tabular-nums text-slate-200">${usage}</td>
+      <td class="px-2 py-1 text-right tabular-nums text-slate-200"><span class="tax-usage-cell">${bar}<span class="tax-usage-num">${usage}</span></span></td>
       <td class="px-2 py-1 text-right">${renameBtn}</td>
     </tr>`;
   }).join("");
@@ -4719,6 +4781,19 @@ document.addEventListener("click", async (e) => {
   }
   const payload = { source };
   if (act === "ingest") payload.stage = "ingest";
+  // W4.2: per-row Run / Ingest used to fire instantly. The implicit
+  // --source-override path made it easy to clobber the active adapter by
+  // accident. Require a typed-verb confirm naming the source + stage.
+  const stageLabel = act === "ingest" ? "ingest stage" : "full pipeline";
+  const overrideNote = (_activeAdapter && source !== _activeAdapter)
+    ? ` This will auto-pass --source-override (active is '${_activeAdapter}').`
+    : "";
+  const ok = await confirmDialog({
+    title: `Run ${stageLabel} on ${source}?`,
+    body: `Starts the ${stageLabel} for source '${source}'.${overrideNote} You can monitor and cancel from the Pipeline tab.`,
+    verb: source,
+  });
+  if (!ok) return;
   // Auto-pass --source-override when the chosen source disagrees with the
   // active adapter recorded in sources.json. The pipeline rejects mismatches
   // by design; the cockpit makes the override explicit and surfaces it via

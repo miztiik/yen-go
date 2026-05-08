@@ -54,11 +54,11 @@
 
 ## W4 — Structural (larger)
 
-- W4.1 Adapter row: Edit (pencil) + Clone (prefills scaffold) overflow actions; backend `PATCH /sources/:slug` route.
-- W4.2 Run safety — move per-row "Run" out of inline placement; require explicit dry-run/live segmented control inside an overflow sheet.
-- W4.3 Charts: inline CSS bar sparklines for tag/level usage; grouped-by-category with sortable usage; stacked bar of puzzles by level band.
-- W4.4 Library decomposition — split filters / results / detail; URL-state-driven so refresh + deep links survive.
-- W4.5 Idle-page session panel — recent actions, db version, "what changed since last visit". Replaces empty halves and the Pipeline page's idle black slab.
+- W4.1 ⏸ Adapter row: Edit (pencil) + Clone (prefills scaffold) overflow actions; backend `PATCH /sources/:slug` route. **Deferred** — needs new mutation route + Pydantic schema; queued for W5.
+- W4.2 ✅ Run safety — typed-verb `confirmDialog` now gates per-row Run / Ingest, naming the source + stage. The full Live Run pane already has explicit `--dry-run` / `Start`.
+- W4.3 ✅ Charts: inline CSS bar sparklines for tag/level usage in the taxonomy table (relative to per-column max). Grouped-category stacked bar deferred to W5.
+- W4.4 ⏸ Library decomposition — split filters / results / detail; URL-state-driven so refresh + deep links survive. **Deferred** — multi-day refactor, queued for W5.
+- W4.5 ✅ Idle-page session panel — Library now shows `Recent activity` (last 3 runs from `/api/runs`) plus a "since your last visit" stamp from `localStorage`.
 
 ## Out of scope (for now)
 
