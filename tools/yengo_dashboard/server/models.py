@@ -913,3 +913,15 @@ class RunsDiffResponse(BaseModel):
     """
 
     raw: dict = Field(..., description="Parsed JSON from `runs-diff --json`.")
+
+
+class PuzzleInfoResponse(BaseModel):
+    """``GET /api/puzzle/{puzzle_id}`` payload (Theme 10).
+
+    Cockpit principle #6: full passthrough; the CLI owns the schema
+    ({ok, puzzle_id, found, publish_entries[], latest, first_publish,
+      source_id, level, tags[], collections[], sgf{path,exists,size_bytes,preview},
+      audit[], daily_appearances[]}).
+    """
+
+    raw: dict = Field(..., description="Parsed JSON from `puzzle-info --json`.")

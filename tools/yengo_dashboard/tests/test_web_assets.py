@@ -1057,3 +1057,22 @@ def test_runs_diff_wired(app_js: str) -> None:
     assert "/api/runs/diff" in app_js
     assert "_runsDiffSelection" in app_js
 
+
+def test_puzzle_info_wired(app_js: str) -> None:
+    """Theme 10: puzzle detail SPA route + global search box are wired."""
+    assert "showPuzzleDetail" in app_js
+    assert "renderPuzzleDetail" in app_js
+    assert "/api/puzzle/" in app_js
+    assert "puzzleLineageTable" in app_js
+    assert "puzzleSgfBlock" in app_js
+    assert "puzzleDailyTable" in app_js
+    assert "puzzleAuditTable" in app_js
+    assert "_normalizePuzzleId" in app_js
+
+
+def test_puzzle_search_box_in_index(index_html: str) -> None:
+    """Theme 10: top-header search input + form are present."""
+    assert "puzzle-search-form" in index_html
+    assert "puzzle-search-input" in index_html
+    assert "view-puzzle-detail" in index_html
+

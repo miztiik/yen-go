@@ -118,5 +118,10 @@ def create_app(
             "/adapters/{adapter_id}", _serve_index,
             methods=["GET"], include_in_schema=False,
         )
+        # Theme 10: puzzle detail deep link → SPA shell handles /puzzle/{id}.
+        app.add_api_route(
+            "/puzzle/{puzzle_id}", _serve_index,
+            methods=["GET"], include_in_schema=False,
+        )
         app.mount("/", StaticFiles(directory=str(web), html=True), name="web")
     return app

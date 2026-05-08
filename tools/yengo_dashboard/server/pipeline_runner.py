@@ -563,6 +563,17 @@ class PipelineRunner:
             )
         return result
 
+    def puzzle_info(self, puzzle_id: str) -> dict:
+        """Theme 10: wraps ``puzzle-info PUZZLE_ID --json`` (read-only join)."""
+        args = ["puzzle-info", puzzle_id, "--json"]
+        result = self._run_json_any(args)
+        if not isinstance(result, dict):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON object, got {type(result).__name__}", "",
+            )
+        return result
+
     def runs_diff(
         self, *, run_a: str, run_b: str, max_samples: int = 20,
     ) -> dict:

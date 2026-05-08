@@ -512,6 +512,16 @@ Examples:
     runs_diff_parser.add_argument("--json", action="store_true",
                                    help="Emit JSON.")
 
+    # Theme 10: puzzle-info (read-only multi-source join for one puzzle)
+    puzzle_info_parser = subparsers.add_parser(
+        "puzzle-info",
+        help="Aggregate everything known about one puzzle (publish-log + SGF + daily).",
+    )
+    puzzle_info_parser.add_argument("puzzle_id", type=str,
+                                     help="Puzzle ID (16-char content hash, with or without YENGO- prefix).")
+    puzzle_info_parser.add_argument("--json", action="store_true",
+                                     help="Emit JSON.")
+
     # status command
     status_parser = subparsers.add_parser("status", help="Show pipeline status")
     status_parser.add_argument(
@@ -2294,6 +2304,167 @@ def cmd_runs_diff(args: argparse.Namespace) -> int:
               f"+{len(added)} -{len(removed)} ={len(common)}  "
               f"stats Δ ingested={stats_diff['ingested']} "
               f"failed={stats_diff['failed']} skipped={stats_diff['skipped']}")
+    return 0
+
+
+def _normalize_puzzle_id(raw: str) -> str:
+    """Strip ``YENGO-`` prefix if present; lowercase the 16-char hash."""
+    s = raw.strip()
+    if s.upper().startswith("YENGO-"):
+        s = s[6:]
+    return s.lower()
+
+
+def _scan_audit_for_puzzle(puzzle_id: str) -> list[dict]:
+    """Theme 10: best-effort scan of ``audit.jsonl`` for entries naming ``puzzle_id``.
+
+    Audit rows are heterogeneous; we keep only those whose serialized line
+    contains the needle and return the parsed dict verbatim. The reader is
+    tolerant — any row that fails JSON decode is skipped.
+    """
+    try:
+        path = get_audit_log_path()
+    except Exception:
+        return []
+    if not path.exists():
+        return []
+    needle = puzzle_id
+    rows: list[dict] = []
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                if needle not in line:
+                    continue
+                try:
+                    rows.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+    except OSError:
+        return []
+    return rows
+
+
+def _read_daily_appearances(puzzle_id: str) -> list[dict]:
+    """Theme 10: query ``daily_puzzles`` (joined to ``daily_schedule``) for the puzzle."""
+    import sqlite3
+    db = get_output_dir() / "yengo-search.db"
+    if not db.exists():
+        return []
+    try:
+        uri = f"file:{db.as_posix()}?mode=ro"
+        conn = sqlite3.connect(uri, uri=True)
+    except sqlite3.DatabaseError:
+        return []
+    try:
+        try:
+            cur = conn.execute(
+                "SELECT dp.date, dp.section, dp.position, ds.technique_of_day "
+                "FROM daily_puzzles dp "
+                "LEFT JOIN daily_schedule ds ON ds.date = dp.date "
+                "WHERE dp.content_hash = ? "
+                "ORDER BY dp.date DESC",
+                (puzzle_id,),
+            )
+        except sqlite3.OperationalError:
+            return []
+        return [
+            {"date": r[0], "section": r[1], "position": r[2],
+             "technique": r[3] or ""}
+            for r in cur.fetchall()
+        ]
+    finally:
+        conn.close()
+
+
+def cmd_puzzle_info(args: argparse.Namespace) -> int:
+    """Theme 10: aggregate everything known about one puzzle."""
+    json_out = bool(getattr(args, "json", False))
+    pid = _normalize_puzzle_id(args.puzzle_id)
+
+    # 1) publish-log entries (most-recent first; we collect *all* matches so
+    #    a puzzle that was rolled back and re-ingested shows the full chain).
+    publish_entries: list[dict] = []
+    try:
+        reader = PublishLogReader(log_dir=get_publish_log_dir())
+        needle = f'"{pid}"'
+        for date_str in reader.list_dates():
+            log_path = reader.log_dir / f"{date_str}.jsonl"
+            if not log_path.exists():
+                continue
+            with open(log_path, encoding="utf-8") as f:
+                for line in f:
+                    if needle not in line:
+                        continue
+                    try:
+                        entry = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    if entry.get("puzzle_id") == pid:
+                        entry["_log_date"] = date_str
+                        publish_entries.append(entry)
+    except (OSError, PuzzleManagerError) as exc:
+        msg = f"failed to read publish-log: {exc}"
+        if json_out:
+            print(json.dumps({"ok": False, "error": msg}))
+        else:
+            print(f"Error: {msg}")
+        return 1
+
+    latest = publish_entries[-1] if publish_entries else None
+
+    # 2) SGF on disk (path reconstructed from publish-log entry).
+    sgf_info: dict | None = None
+    if latest:
+        sgf_path = get_output_dir() / latest["path"]
+        if sgf_path.exists():
+            try:
+                content = sgf_path.read_text(encoding="utf-8")
+                sgf_info = {
+                    "path": latest["path"],
+                    "exists": True,
+                    "size_bytes": sgf_path.stat().st_size,
+                    "preview": content[:400],
+                }
+            except OSError:
+                sgf_info = {"path": latest["path"], "exists": False}
+        else:
+            sgf_info = {"path": latest["path"], "exists": False}
+
+    # 3) Audit history (rollback / inventory ops mentioning this puzzle).
+    audit_rows = _scan_audit_for_puzzle(pid)
+
+    # 4) Daily-schedule appearances.
+    daily_rows = _read_daily_appearances(pid)
+
+    # 5) Source / first-ingest run derived from the earliest publish-log entry.
+    first = publish_entries[0] if publish_entries else None
+    payload = {
+        "ok": True,
+        "puzzle_id": pid,
+        "found": latest is not None,
+        "publish_entries": publish_entries,
+        "latest": latest,
+        "first_publish": first,
+        "source_id": (latest or {}).get("source_id") if latest else None,
+        "level": (latest or {}).get("level") if latest else None,
+        "tags": list((latest or {}).get("tags") or []) if latest else [],
+        "collections": list((latest or {}).get("collections") or []) if latest else [],
+        "sgf": sgf_info,
+        "audit": audit_rows,
+        "daily_appearances": daily_rows,
+    }
+
+    if json_out:
+        print(json.dumps(payload, indent=2))
+    else:
+        if not latest:
+            print(f"{pid}: not found in publish-log")
+            return 0
+        print(f"{pid}  source={payload['source_id']}  level={payload['level']}  "
+              f"tags={','.join(payload['tags'])}")
+        print(f"  sgf: {sgf_info['path'] if sgf_info else '(none)'}  "
+              f"daily_appearances={len(daily_rows)}  audit={len(audit_rows)}  "
+              f"publish_entries={len(publish_entries)}")
     return 0
 
 
@@ -4454,6 +4625,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_daily_backfill(args)
     elif args.command == "runs-diff":
         return cmd_runs_diff(args)
+    elif args.command == "puzzle-info":
+        return cmd_puzzle_info(args)
     elif args.command == "status":
         return cmd_status(args)
     elif args.command == "clean":

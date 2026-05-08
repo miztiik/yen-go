@@ -38,7 +38,7 @@ get done; the order is the prioritization, not the filter.
 | 7  | Adapter configuration management   | ✅     |  P1   | Theme 7a-7d landed: read-only validate-all/show + add/clone/update/remove + bootstrap wizard + pipeline-config show/set |
 | 8  | Daily Challenge management         | ☐      |  P2   | Whole feature is invisible today. Includes daily status surface (rolling-window health + gap detection) |
 | 9  | Run diff / compare                 | ☐      |  P2   | "what did run X do differently" |
-| 10 | Puzzle Detail page                 | ☐      |  P2   | Headline feature; depends on 4, 5, 9 |
+| 10 | Puzzle Detail page                 | ✅      |  P2   | Headline feature; depends on 4, 5, 9 |
 | 11 | Tag/Level mutation (rename, merge) | ☐      |  P3   | After read-only inspector lands |
 | 12 | Adapter scaffold (new adapter src) | ☐      |  P3   | Rare; only after #7 sticks |
 
@@ -700,8 +700,8 @@ the file (write-tmp + os.replace).
   (uses Theme 1 preview).
 
 ### Acceptance criteria
-- [ ] CLI test joins seeded fixtures across all five sources.
-- [ ] Dashboard test pins route resolution + global search submit.
+- [x] CLI test joins seeded fixtures across all five sources.
+- [x] Dashboard test pins route resolution + global search submit.
 
 ### Dependencies
 - Theme 4 (logs grep) for "show pipeline log lines mentioning this trace_id".

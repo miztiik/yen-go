@@ -1060,6 +1060,177 @@ function adapterBootstrapBlock(raw) {
   `;
 }
 
+// ---------- Theme 10: Puzzle Detail Page ----------
+//
+// Deep link: /puzzle/{id}. Joined view across publish-log + SGF + daily +
+// audit. Backed by /api/puzzle/{id} (CLI passthrough). Tabs:
+// Lineage / SGF / Audit / Daily.
+
+function _normalizePuzzleId(raw) {
+  if (!raw) return "";
+  let pid = String(raw).trim();
+  if (pid.toUpperCase().startsWith("YENGO-")) pid = pid.slice("YENGO-".length);
+  return pid.toLowerCase();
+}
+
+function showPuzzleDetail(puzzleId, opts = {}) {
+  const pid = _normalizePuzzleId(puzzleId);
+  if (!pid) return;
+  const targetPath = `/puzzle/${encodeURIComponent(pid)}`;
+  if (!opts.skipPush && location.pathname !== targetPath) {
+    history.pushState({ puzzleId: pid }, "", targetPath);
+  }
+  $$(".view").forEach((v) => v.classList.add("hidden"));
+  const detail = $("#view-puzzle-detail");
+  detail.classList.remove("hidden");
+  $$(".nav-item").forEach((b) => b.classList.toggle("active", b.dataset.nav === "library"));
+  const crumb = $("#page-breadcrumb");
+  if (crumb) crumb.textContent = `library / puzzle / ${pid}`;
+  renderPuzzleDetail(pid);
+  if (window.lucide?.createIcons) window.lucide.createIcons();
+}
+
+async function renderPuzzleDetail(puzzleId) {
+  const root = $("#view-puzzle-detail");
+  root.innerHTML = `<div class="text-slate-400 text-sm">loading puzzle ${escapeHtml(puzzleId)}…</div>`;
+  try {
+    const resp = await getJSON(`/api/puzzle/${encodeURIComponent(puzzleId)}`);
+    const d = resp.raw || {};
+    if (!d.found) {
+      root.innerHTML = `
+        ${viewHeader(`Puzzle · ${escapeHtml(puzzleId)}`, {
+          metaHtml: `<span class="view-header-sub">not found</span>`,
+        })}
+        <p class="text-sm text-slate-400">No publish-log entries reference this ID.
+          Check the ID format (16-hex without the YENGO- prefix) or that the puzzle
+          has shipped through publish at least once.</p>
+      `;
+      return;
+    }
+    root.innerHTML = `
+      ${viewHeader(`Puzzle · ${escapeHtml(d.puzzle_id)}`, {
+        metaHtml: `
+          <span class="view-header-sub">${escapeHtml(d.source_id || "")}</span>
+          <span class="view-header-sub">·</span>
+          <span class="view-header-sub">${escapeHtml(d.level || "—")}</span>
+        `,
+      })}
+      <section class="grid md:grid-cols-4 gap-3 mb-4">
+        ${summaryTile("publish entries", (d.publish_entries || []).length, "text-slate-100")}
+        ${summaryTile("daily appearances", (d.daily_appearances || []).length, "text-slate-300")}
+        ${summaryTile("audit rows", (d.audit || []).length, "text-amber-300")}
+        ${summaryTile("tags", (d.tags || []).length, "text-sky-300")}
+      </section>
+      <section class="mb-4">
+        <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-2">Lineage (publish-log chain)</h3>
+        ${puzzleLineageTable(d)}
+      </section>
+      <section class="mb-4">
+        <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-2">SGF</h3>
+        ${puzzleSgfBlock(d.sgf)}
+      </section>
+      <section class="mb-4">
+        <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-2">Daily appearances</h3>
+        ${puzzleDailyTable(d.daily_appearances || [])}
+      </section>
+      <section>
+        <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-2">Audit trail</h3>
+        ${puzzleAuditTable(d.audit || [])}
+      </section>
+    `;
+  } catch (e) {
+    root.innerHTML = errorBlock(`/api/puzzle/${puzzleId}`, e);
+  }
+}
+
+function puzzleLineageTable(d) {
+  const entries = Array.isArray(d.publish_entries) ? d.publish_entries : [];
+  if (!entries.length) return `<p class="text-xs text-slate-500">no publish-log entries.</p>`;
+  const latestRunId = (d.latest && d.latest.run_id) || "";
+  const firstRunId = (d.first_publish && d.first_publish.run_id) || "";
+  const rows = entries.map((e) => {
+    const tag = e.run_id === latestRunId ? `<span class="text-emerald-300">latest</span>`
+              : e.run_id === firstRunId ? `<span class="text-sky-300">first</span>`
+              : `<span class="text-slate-500">—</span>`;
+    return `<tr class="border-t border-slate-800">
+      <td class="py-1 pl-3 font-mono text-xs">${escapeHtml(e.run_id || "")}</td>
+      <td class="py-1 text-xs">${tag}</td>
+      <td class="py-1 font-mono text-xs text-slate-400">${escapeHtml(e.source_id || "")}</td>
+      <td class="py-1 text-xs">${escapeHtml(String(e.quality ?? ""))}</td>
+      <td class="py-1 pr-3 font-mono text-xs text-slate-400">${escapeHtml(e.path || "")}</td>
+    </tr>`;
+  }).join("");
+  return `<table class="w-full text-sm" data-puzzle-lineage>
+    <thead class="text-slate-500 text-xs uppercase tracking-wider">
+      <tr>
+        <th class="text-left font-normal py-1 pl-3">run_id</th>
+        <th class="text-left font-normal py-1">role</th>
+        <th class="text-left font-normal py-1">source</th>
+        <th class="text-left font-normal py-1">q</th>
+        <th class="text-left font-normal py-1 pr-3">path</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function puzzleSgfBlock(sgf) {
+  if (!sgf) return `<p class="text-xs text-slate-500">no SGF on disk.</p>`;
+  const exists = sgf.exists ? `<span class="text-emerald-300">exists</span>`
+                            : `<span class="text-rose-300">missing</span>`;
+  const size = sgf.size_bytes != null ? `${sgf.size_bytes} bytes` : "—";
+  const preview = sgf.preview
+    ? `<pre class="text-xs bg-slate-900 ring-1 ring-slate-800 rounded p-3 overflow-x-auto mt-2">${escapeHtml(sgf.preview)}</pre>`
+    : `<p class="text-xs text-slate-500 mt-2">no preview available.</p>`;
+  return `
+    <div class="text-xs text-slate-400">
+      path: <span class="font-mono text-slate-300">${escapeHtml(sgf.path || "")}</span>
+      · ${exists} · ${escapeHtml(size)}
+    </div>
+    ${preview}
+  `;
+}
+
+function puzzleDailyTable(rows) {
+  if (!rows.length) return `<p class="text-xs text-slate-500">never scheduled in any daily.</p>`;
+  const body = rows.map((r) => `<tr class="border-t border-slate-800">
+    <td class="py-1 pl-3 font-mono text-xs">${escapeHtml(r.date || "")}</td>
+    <td class="py-1 text-xs">${escapeHtml(r.section || "")}</td>
+    <td class="py-1 text-xs">${escapeHtml(String(r.position ?? ""))}</td>
+    <td class="py-1 pr-3 text-xs text-slate-400">${escapeHtml(r.technique || "")}</td>
+  </tr>`).join("");
+  return `<table class="w-full text-sm" data-puzzle-daily>
+    <thead class="text-slate-500 text-xs uppercase tracking-wider">
+      <tr>
+        <th class="text-left font-normal py-1 pl-3">date</th>
+        <th class="text-left font-normal py-1">section</th>
+        <th class="text-left font-normal py-1">pos</th>
+        <th class="text-left font-normal py-1 pr-3">technique</th>
+      </tr>
+    </thead>
+    <tbody>${body}</tbody>
+  </table>`;
+}
+
+function puzzleAuditTable(rows) {
+  if (!rows.length) return `<p class="text-xs text-slate-500">no audit-log rows reference this puzzle.</p>`;
+  const body = rows.map((r) => `<tr class="border-t border-slate-800">
+    <td class="py-1 pl-3 font-mono text-xs">${escapeHtml(r.ts || "")}</td>
+    <td class="py-1 text-xs">${escapeHtml(r.op || "")}</td>
+    <td class="py-1 pr-3 text-xs text-slate-400">${escapeHtml(r.reason || "")}</td>
+  </tr>`).join("");
+  return `<table class="w-full text-sm" data-puzzle-audit>
+    <thead class="text-slate-500 text-xs uppercase tracking-wider">
+      <tr>
+        <th class="text-left font-normal py-1 pl-3">ts</th>
+        <th class="text-left font-normal py-1">op</th>
+        <th class="text-left font-normal py-1 pr-3">reason</th>
+      </tr>
+    </thead>
+    <tbody>${body}</tbody>
+  </table>`;
+}
+
 // ---------- Theme 6a: Adapter Detail Page ----------
 //
 // Deep link: /adapters/{id}. The SPA shell (server returns index.html for the
@@ -4024,6 +4195,8 @@ window.addEventListener("popstate", () => {
   if (parsed.nav === "guide" && parsed.guidePath) {
     showTab("guide");
     loadGuideDoc(parsed.guidePath);
+  } else if (parsed.puzzleId) {
+    showPuzzleDetail(parsed.puzzleId, { skipPush: true });
   } else if (parsed.adapterId) {
     showAdapterDetail(parsed.adapterId, { skipPush: true });
   } else {
@@ -4093,6 +4266,11 @@ function parsePath(pathname) {
   if (head === "adapters" && parts[1]) {
     return { nav: "library", guidePath: null, adapterId: decodeURIComponent(parts[1]) };
   }
+  // Theme 10: /puzzle/{id} resolves to library nav with puzzle detail.
+  if (head === "puzzle" && parts[1]) {
+    return { nav: "library", guidePath: null, adapterId: null,
+             puzzleId: decodeURIComponent(parts[1]) };
+  }
   if (NAV_VIEWS[head]) return { nav: head, guidePath: null, adapterId: null };
   if (LEGACY_NAV_ALIASES[head]) return { nav: LEGACY_NAV_ALIASES[head], guidePath: null, adapterId: null };
   return { nav: "library", guidePath: null, adapterId: null };
@@ -4101,12 +4279,14 @@ function parsePath(pathname) {
 let initialNav = "library";
 let initialGuidePath = null;
 let initialAdapterId = null;
+let initialPuzzleId = null;
 const initialHash = location.hash.slice(1);
 if (location.pathname !== "/" && location.pathname !== "") {
   const parsed = parsePath(location.pathname);
   initialNav = parsed.nav;
   initialGuidePath = parsed.guidePath;
   initialAdapterId = parsed.adapterId;
+  initialPuzzleId = parsed.puzzleId || null;
 } else if (initialHash) {
   // Legacy hash → clean path. Rewrite the URL bar so screenshots and copies
   // immediately use the new format.
@@ -4128,6 +4308,20 @@ if (location.pathname !== "/" && location.pathname !== "") {
 showTab(initialNav);
 if (initialGuidePath) loadGuideDoc(initialGuidePath);
 if (initialAdapterId) showAdapterDetail(initialAdapterId, { skipPush: true });
+if (initialPuzzleId) showPuzzleDetail(initialPuzzleId, { skipPush: true });
+
+// Theme 10: global puzzle search box (top header).
+const _puzzleSearchForm = $("#puzzle-search-form");
+if (_puzzleSearchForm) {
+  _puzzleSearchForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const input = $("#puzzle-search-input");
+    const raw = input ? input.value : "";
+    const pid = _normalizePuzzleId(raw);
+    if (!pid) return;
+    showPuzzleDetail(pid);
+  });
+}
 masterTick();
 setInterval(refreshRelTimes, 30_000);   // relative-time labels tick every 30s
 

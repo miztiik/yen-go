@@ -1332,4 +1332,32 @@ class TestRunsDiffEndpoint:
         assert resp.status_code == 422
 
 
+class TestPuzzleInfoEndpoint:
+    """Theme 10: real subprocess against the real repo (read-only).
+
+    Uses an unmatched synthetic puzzle id to assert *shape* only — CLI semantics
+    are covered by ``backend/.../test_puzzle_info_cli.py``.
+    """
+
+    def test_unknown_puzzle_id_returns_empty_payload(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.get("/api/puzzle/ffffffffffffffff")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["ok"] is True
+        assert raw["found"] is False
+        assert raw["puzzle_id"] == "ffffffffffffffff"
+        assert raw["publish_entries"] == []
+        assert raw["sgf"] is None
+
+    def test_yengo_prefix_is_stripped_at_route(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.get("/api/puzzle/YENGO-FfffFfffFfffFfff")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["puzzle_id"] == "ffffffffffffffff"
+
+
 

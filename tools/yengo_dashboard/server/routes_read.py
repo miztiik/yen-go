@@ -25,6 +25,7 @@ from tools.yengo_dashboard.server.models import (
     LevelsListResponse,
     OpsCatalogResponse,
     RunsResponse,
+    PuzzleInfoResponse,
     RunsDiffResponse,
     RuntimeInfoResponse,
     SourceDetailsResponse,
@@ -115,6 +116,26 @@ def build_read_router(
                 },
             ) from exc
         return RunsDiffResponse(raw=payload)
+
+    @router.get("/puzzle/{puzzle_id}", response_model=PuzzleInfoResponse)
+    def puzzle_info(
+        _request: Request,
+        puzzle_id: str,
+    ) -> PuzzleInfoResponse:
+        """Theme 10: read-only puzzle ID join (publish-log + SGF + daily + audit)."""
+        try:
+            payload = runner.puzzle_info(puzzle_id)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": "puzzle_manager puzzle-info failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return PuzzleInfoResponse(raw=payload)
 
     @router.get("/status/failures-summary", response_model=FailuresSummaryResponse)
     def failures_summary(
