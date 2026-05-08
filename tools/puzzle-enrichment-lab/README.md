@@ -486,5 +486,5 @@ All paths call `prepare_tsumego_query()` which guarantees:
 >
 > - [Concepts: Entropy ROI](../../docs/concepts/entropy-roi.md) — Ownership entropy formula and ROI detection
 > - [Reference: KataGo Enrichment Config](../../docs/reference/katago-enrichment-config.md) — Visit tiers, refutation config, curated pruning
-> - [Research](../../TODO/katago-puzzle-enrichment/001-research-browser-and-local-katago-for-tsumego.md) — Full feasibility study
-> - [Plan](../../TODO/katago-puzzle-enrichment/002-implementation-plan-katago-enrichment.md) — Phase A/B implementation plan
+> - [Architecture: KataGo Enrichment](../../docs/architecture/tools/katago-enrichment.md) — canonical design decisions and system boundaries
+> - [Reference: KataGo Enrichment Status](../../docs/reference/katago-enrichment-status.md) — current shipped vs experimental posture

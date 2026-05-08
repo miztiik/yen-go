@@ -11,7 +11,7 @@ This module exists because ``tools/`` must NOT import from ``backend/``.
 The single source of truth remains the shared JSON config — this is a
 thin, read-only mirror of ``backend.puzzle_manager.core.property_policy``.
 
-See also: ADR-007 (007-adr-policy-aligned-enrichment.md)
+See also: docs/architecture/tools/katago-enrichment.md
 """
 
 from __future__ import annotations

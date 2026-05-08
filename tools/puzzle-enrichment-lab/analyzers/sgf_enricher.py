@@ -19,7 +19,7 @@ Refutation branches are added as SGF variations at root level::
 
 REJECTED status returns the original SGF unchanged.
 
-See also: ADR-007 (007-adr-policy-aligned-enrichment.md)
+See also: docs/architecture/tools/katago-enrichment.md
 """
 
 from __future__ import annotations
