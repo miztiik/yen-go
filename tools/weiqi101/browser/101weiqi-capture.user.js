@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         101weiqi Puzzle Capture for YenGo
+// @name         weiqi Puzzle Capture for YenGo
 // @namespace    https://github.com/yengo
-// @version      5.53.4
-// @description  Auto-captures puzzle data from 101weiqi.com and sends to local YenGo receiver. Start server, browse any puzzle page, it just works.
+// @version      5.53.6
+// @description  Auto-captures puzzle data from weiqi.com and sends to local YenGo receiver. Start server, browse any puzzle page, it just works.
 // @match        *://www.101weiqi.com/q/*
 // @match        *://www.101weiqi.com/chessmanual/*
 // @match        *://www.101weiqi.com/qday/*
@@ -2129,7 +2129,13 @@
             "INFO",
             `Book ${bookPath.book_id} already discovered — waitlist active, jumping to capture`,
           );
-          clearWaitlistPickup();
+          // BUGFIX v5.53.6: do NOT clearWaitlistPickup() here.
+          // startChapterCapture's already-fully-captured branch
+          // consults isWaitlistInProgress(bookId) to route through
+          // finishBookAndAdvanceWaitlist (which clears pickup itself).
+          // Pre-clearing it caused the cascade to fall into the
+          // modal-alert path and stop the chain whenever the next
+          // queued book turned out to be already complete.
           startChapterCapture(bookPath.book_id);
           return;
         }
@@ -2913,14 +2919,35 @@
     if (scopeChapterId != null) {
       workingSeq = chapterSeq.filter((e) => e.chapter_id === scopeChapterId);
       if (workingSeq.length === 0) {
+        // Genuinely empty chapter (site sometimes lists chapters with
+        // zero puzzles, e.g. placeholder/intro pages). Do NOT halt —
+        // log it, then route through the same handoff that the
+        // already-captured branch uses so discovery advances to the
+        // next chapter and the waitlist cascade can eventually fire.
+        // Without this, bookDiscovery.awaiting_capture stays latched
+        // and the whole loop hangs on this chapter.
         plog(
-          "ERR",
-          `startChapterCapture: scope chapter_id=${scopeChapterId} has no puzzles in manifest — cannot start`,
+          "WARN",
+          `startChapterCapture: scope chapter_id=${scopeChapterId} has no puzzles in manifest — skipping chapter and resuming discovery`,
         );
         updateStatus(
-          `Scope chapter ${scopeChapterId} has no puzzles — re-run discovery`,
-          "#f44336",
+          `Chapter ${scopeChapterId} empty — skipping`,
+          "#ff9800",
         );
+        // Best-effort breadcrumb to the receiver so the operator can
+        // audit which chapters were skipped.
+        try {
+          await reportDiscoveryProgress("chapter_puzzles", "chapter_empty_skipped", {
+            chapter_id: scopeChapterId,
+            book_id: bookId,
+          });
+        } catch (_) { /* non-fatal */ }
+        await chapterScopeHandoff({
+          scopeChapterId,
+          bookName: manifest.book_name || `Book ${bookId}`,
+          capturedCount: 0,
+          callerTag: "startChapterCapture-empty-chapter",
+        });
         return;
       }
       plog(
