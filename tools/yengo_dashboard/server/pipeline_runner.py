@@ -422,6 +422,48 @@ class PipelineRunner:
             )
         return result
 
+    def adapter_config_add(
+        self, *, source_id: str, name: str, adapter: str, config: dict,
+    ) -> dict:
+        """Theme 7b: wraps ``adapter-config add --json``."""
+        args = [
+            "adapter-config", "add",
+            "--id", source_id, "--name", name, "--adapter", adapter,
+            "--config-json", json.dumps(config or {}),
+            "--json",
+        ]
+        return self._run_json_any(args)
+
+    def adapter_config_clone(
+        self, *, source_id: str, new_id: str, new_name: str,
+    ) -> dict:
+        """Theme 7b: wraps ``adapter-config clone --json``."""
+        args = [
+            "adapter-config", "clone", source_id,
+            "--new-id", new_id, "--new-name", new_name, "--json",
+        ]
+        return self._run_json_any(args)
+
+    def adapter_config_update(
+        self, *, source_id: str, set_pairs: list[str], name: str | None = None,
+    ) -> dict:
+        """Theme 7b: wraps ``adapter-config update --json``."""
+        args = ["adapter-config", "update", source_id, "--json"]
+        for pair in set_pairs:
+            args.extend(["--set", pair])
+        if name is not None:
+            args.extend(["--name", name])
+        return self._run_json_any(args)
+
+    def adapter_config_remove(
+        self, *, source_id: str, force: bool = False,
+    ) -> dict:
+        """Theme 7b: wraps ``adapter-config remove --json``."""
+        args = ["adapter-config", "remove", source_id, "--json"]
+        if force:
+            args.append("--force")
+        return self._run_json_any(args)
+
     def activity(
         self,
         *,

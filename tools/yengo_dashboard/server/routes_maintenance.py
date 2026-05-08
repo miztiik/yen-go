@@ -32,6 +32,11 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException, Query
 
 from tools.yengo_dashboard.server.models import (
+    AdapterConfigAddRequest,
+    AdapterConfigCloneRequest,
+    AdapterConfigMutationResponse,
+    AdapterConfigRemoveRequest,
+    AdapterConfigUpdateRequest,
     CleanPreviewResponse,
     CleanRequest,
     InventoryMutationApplyResponse,
@@ -295,5 +300,69 @@ def build_maintenance_router(
                 },
             ) from exc
         return SourceIngestStateResetResultResponse(raw=payload)
+
+    def _adapter_config_mutation(call):
+        try:
+            payload = call()
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "puzzle_manager adapter-config mutation failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return AdapterConfigMutationResponse(raw=payload)
+
+    @router.post(
+        "/adapter-config",
+        response_model=AdapterConfigMutationResponse,
+    )
+    def adapter_config_add(
+        body: AdapterConfigAddRequest,
+    ) -> AdapterConfigMutationResponse:
+        """Theme 7b: append a new source via ``adapter-config add``."""
+        return _adapter_config_mutation(lambda: runner.adapter_config_add(
+            source_id=body.id, name=body.name,
+            adapter=body.adapter, config=body.config,
+        ))
+
+    @router.post(
+        "/adapter-config/{source_id}/clone",
+        response_model=AdapterConfigMutationResponse,
+    )
+    def adapter_config_clone(
+        source_id: str, body: AdapterConfigCloneRequest,
+    ) -> AdapterConfigMutationResponse:
+        """Theme 7b: clone a source via ``adapter-config clone``."""
+        return _adapter_config_mutation(lambda: runner.adapter_config_clone(
+            source_id=source_id, new_id=body.new_id, new_name=body.new_name,
+        ))
+
+    @router.post(
+        "/adapter-config/{source_id}/update",
+        response_model=AdapterConfigMutationResponse,
+    )
+    def adapter_config_update(
+        source_id: str, body: AdapterConfigUpdateRequest,
+    ) -> AdapterConfigMutationResponse:
+        """Theme 7b: patch a source via ``adapter-config update``."""
+        return _adapter_config_mutation(lambda: runner.adapter_config_update(
+            source_id=source_id, set_pairs=body.set_pairs, name=body.name,
+        ))
+
+    @router.post(
+        "/adapter-config/{source_id}/remove",
+        response_model=AdapterConfigMutationResponse,
+    )
+    def adapter_config_remove(
+        source_id: str, body: AdapterConfigRemoveRequest,
+    ) -> AdapterConfigMutationResponse:
+        """Theme 7b: delete a source via ``adapter-config remove``."""
+        return _adapter_config_mutation(lambda: runner.adapter_config_remove(
+            source_id=source_id, force=body.force,
+        ))
 
     return router

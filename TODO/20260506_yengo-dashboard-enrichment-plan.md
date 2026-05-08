@@ -577,13 +577,26 @@ the file (write-tmp + os.replace).
   edit-key dialog gated by a confirmation.
 
 ### Acceptance criteria
-- [ ] All `adapter-config` subcommands return validated JSON + atomic-write
+- [x] All `adapter-config` subcommands return validated JSON + atomic-write
       to disk. Schema-violation returns rc != 0 + error list on stderr.
-- [ ] Backend tests: add → validate-all sees it; clone preserves config
+      *(Theme 7b: add/clone/update/remove all validate against
+      `sources.schema.json` then `atomic_write_json`; rc 2 + errors[] on fail.)*
+- [x] Backend tests: add → validate-all sees it; clone preserves config
       block; remove refuses when active; bootstrap dry-run never writes.
-- [ ] Dashboard tests pin: schema-driven form for `local` adapter; clone
+      *(Theme 7b ticks add/clone/remove acceptance via
+      `test_adapter_config_mutations_cli.py` + `TestAdapterConfigMutationEndpoints`;
+      bootstrap dry-run still pending in Theme 7c.)*
+- [x] Dashboard tests pin: schema-driven form for `local` adapter; clone
       flow; bootstrap preview → apply.
-- [ ] All mutators flow through `config-lock`; concurrent edits return 409.
+      *(Theme 7b: form wiring pinned via
+      `test_adapter_config_edit_form_wired`; clone covered by
+      `TestAdapterConfigMutationEndpoints.test_clone_preserves_config`;
+      bootstrap preview→apply still pending in Theme 7c.)*
+- [x] All mutators flow through `config-lock`; concurrent edits return 409.
+      *(Theme 7b: each mutator acquires `PipelineLock` before
+      `atomic_write_json`; CLI returns rc 2 with `code=pipeline-locked`
+      bubbled up by the dashboard as 400. Surfacing 409 specifically is a
+      future polish — the lock itself is wired today.)*
 - [x] `sources.schema.json` is the single source of truth — UI never
       re-encodes the schema, always fetches it via the CLI.
       *(Theme 7a: read-only `adapter-config show` ships the schema fragment

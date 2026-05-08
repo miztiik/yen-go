@@ -965,3 +965,18 @@ def test_adapter_config_schema_section_wired(app_js: str) -> None:
     assert "function adapterConfigSchemaBlock" in app_js
     assert "/api/adapter-config/${encodeURIComponent(adapterId)}" in app_js
     assert "data-adapter-config-schema" in app_js
+
+
+def test_adapter_config_edit_form_wired(app_js: str) -> None:
+    """Theme 7b: Adapter Detail offers an inline Edit/Remove form.
+
+    The form posts to `/api/adapter-config/{id}/update` and `.../remove` and
+    is rendered into the same host as the schema block; pinning these
+    selectors guards against regressions during future UI refactors.
+    """
+    assert "data-adapter-config-edit-form" in app_js
+    assert "data-adapter-config-edit-toggle" in app_js
+    assert "data-adapter-config-remove" in app_js
+    assert "_wireAdapterConfigForm" in app_js
+    assert "/update" in app_js
+    assert "/remove" in app_js

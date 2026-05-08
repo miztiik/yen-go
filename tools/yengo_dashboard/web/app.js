@@ -1041,6 +1041,7 @@ async function _loadAdapterConfigSchemaSection(adapterId) {
     const resp = await getJSON(`/api/adapter-config/${encodeURIComponent(adapterId)}`);
     const raw = resp.raw || {};
     section.innerHTML = adapterConfigSchemaBlock(raw, adapterId);
+    _wireAdapterConfigForm(adapterId);
   } catch (e) {
     section.innerHTML = errorBlock(`/api/adapter-config/${adapterId}`, e);
   }
@@ -1078,7 +1079,7 @@ function adapterConfigSchemaBlock(raw, adapterId) {
       </table>`
     : `<p class="text-xs text-slate-500 mt-2">No per-kind schema fragment — generic key/value editor will be used in Edit form.</p>`;
   return `
-    <div class="rounded-md border border-slate-800 bg-slate-900 p-3 mt-3">
+    <div class="rounded-md border border-slate-800 bg-slate-900 p-3 mt-3" data-adapter-config-form-host>
       <div class="flex items-center justify-between">
         <h3 class="text-xs uppercase tracking-wider text-slate-500">Configuration schema</h3>
         <span class="text-xs text-slate-500 font-mono">adapter-config show ${escapeHtml(adapterId)}</span>
@@ -1088,8 +1089,102 @@ function adapterConfigSchemaBlock(raw, adapterId) {
         · available: <span class="font-mono">${escapeHtml(kinds.join(", "))}</span>
       </div>
       ${propsTable}
+      <div class="mt-3 flex items-center gap-2">
+        <button type="button"
+          class="px-2 py-1 text-xs rounded border border-slate-700 hover:bg-slate-800"
+          data-adapter-config-edit-toggle>Edit config</button>
+        <button type="button"
+          class="px-2 py-1 text-xs rounded border border-rose-800 text-rose-300 hover:bg-rose-900/30"
+          data-adapter-config-remove>Remove source</button>
+      </div>
+      <form class="mt-3 hidden space-y-2" data-adapter-config-edit-form>
+        <label class="block text-xs text-slate-400">
+          Display name
+          <input type="text" name="display_name"
+            class="mt-1 block w-full rounded border border-slate-700 bg-slate-950 px-2 py-1 text-sm font-mono"
+            placeholder="(unchanged)" data-adapter-config-edit-name>
+        </label>
+        ${Object.keys(props).map(name => {
+          const def = props[name] || {};
+          const type = Array.isArray(def.type) ? def.type[0] : (def.type || "string");
+          return `<label class="block text-xs text-slate-400">
+            <span class="font-mono text-slate-300">${escapeHtml(name)}</span>
+            <span class="text-slate-500"> (${escapeHtml(String(type))})</span>
+            <input type="text" name="${escapeHtml(name)}"
+              data-adapter-config-edit-field="${escapeHtml(name)}"
+              data-adapter-config-edit-type="${escapeHtml(String(type))}"
+              class="mt-1 block w-full rounded border border-slate-700 bg-slate-950 px-2 py-1 text-sm font-mono"
+              placeholder="(JSON value or leave blank)">
+          </label>`;
+        }).join("")}
+        <div class="flex gap-2 pt-1">
+          <button type="submit"
+            class="px-3 py-1 text-xs rounded bg-sky-700 hover:bg-sky-600">Save</button>
+          <button type="button"
+            class="px-3 py-1 text-xs rounded border border-slate-700 hover:bg-slate-800"
+            data-adapter-config-edit-cancel>Cancel</button>
+        </div>
+      </form>
     </div>
   `;
+}
+
+async function _wireAdapterConfigForm(adapterId) {
+  const host = document.querySelector("[data-adapter-config-form-host]");
+  if (!host) return;
+  const toggle = host.querySelector("[data-adapter-config-edit-toggle]");
+  const cancel = host.querySelector("[data-adapter-config-edit-cancel]");
+  const form = host.querySelector("[data-adapter-config-edit-form]");
+  const removeBtn = host.querySelector("[data-adapter-config-remove]");
+  if (toggle && form) {
+    toggle.addEventListener("click", () => form.classList.toggle("hidden"));
+  }
+  if (cancel && form) {
+    cancel.addEventListener("click", () => form.classList.add("hidden"));
+  }
+  if (form) {
+    form.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const setPairs = [];
+      form.querySelectorAll("[data-adapter-config-edit-field]").forEach((inp) => {
+        const k = inp.getAttribute("data-adapter-config-edit-field");
+        const v = inp.value.trim();
+        if (v !== "") setPairs.push(`${k}=${v}`);
+      });
+      const nameInp = form.querySelector("[data-adapter-config-edit-name]");
+      const payload = { set_pairs: setPairs };
+      if (nameInp && nameInp.value.trim() !== "") payload.name = nameInp.value.trim();
+      try {
+        await postJSON(
+          `/api/adapter-config/${encodeURIComponent(adapterId)}/update`, payload,
+        );
+        toast(`saved ${adapterId}`, "ok");
+        _loadAdapterConfigSchemaSection(adapterId);
+      } catch (e) {
+        toast(`update failed: ${e.message || e}`, "error");
+      }
+    });
+  }
+  if (removeBtn) {
+    removeBtn.addEventListener("click", async () => {
+      const ok = await confirmDialog({
+        title: `Remove source ${adapterId}`,
+        message: `This deletes ${adapterId} from sources.json. Type the source ID to confirm.`,
+        verb: adapterId,
+      });
+      if (!ok) return;
+      try {
+        await postJSON(
+          `/api/adapter-config/${encodeURIComponent(adapterId)}/remove`,
+          { force: false },
+        );
+        toast(`removed ${adapterId}`, "ok");
+        location.hash = "#/adapters";
+      } catch (e) {
+        toast(`remove failed: ${e.message || e}`, "error");
+      }
+    });
+  }
 }
 
 function ingestStateBlock(s, adapterId) {

@@ -713,6 +713,58 @@ File Locations:
         help="Emit machine-readable JSON.",
     )
 
+    # Theme 7b: mutating subcommands. All take check_pipeline_lock + atomic
+    # write + schema validation before they touch sources.json.
+    adapter_config_add = adapter_config_subparsers.add_parser(
+        "add",
+        help="Append a new source to sources.json (Theme 7b).",
+    )
+    adapter_config_add.add_argument("--id", required=True, dest="new_id")
+    adapter_config_add.add_argument("--name", required=True, dest="new_name")
+    adapter_config_add.add_argument("--adapter", required=True, dest="new_adapter")
+    adapter_config_add.add_argument(
+        "--config-json",
+        default="{}",
+        dest="config_json",
+        help="JSON-encoded adapter-specific config block.",
+    )
+    adapter_config_add.add_argument("--json", action="store_true")
+    adapter_config_add.add_argument("--force", action="store_true",
+                                     help="Bypass pipeline-lock guard.")
+
+    adapter_config_clone = adapter_config_subparsers.add_parser(
+        "clone",
+        help="Clone an existing source as a new entry (Theme 7b).",
+    )
+    adapter_config_clone.add_argument("source_id")
+    adapter_config_clone.add_argument("--new-id", required=True, dest="new_id")
+    adapter_config_clone.add_argument("--new-name", required=True, dest="new_name")
+    adapter_config_clone.add_argument("--json", action="store_true")
+    adapter_config_clone.add_argument("--force", action="store_true")
+
+    adapter_config_update = adapter_config_subparsers.add_parser(
+        "update",
+        help="Patch a source's config block (Theme 7b).",
+    )
+    adapter_config_update.add_argument("source_id")
+    adapter_config_update.add_argument(
+        "--set", action="append", default=[], dest="set_pairs",
+        metavar="KEY=VALUE",
+        help="Repeatable; values are JSON-decoded with string fallback.",
+    )
+    adapter_config_update.add_argument("--name", default=None, dest="new_name")
+    adapter_config_update.add_argument("--json", action="store_true")
+    adapter_config_update.add_argument("--force", action="store_true")
+
+    adapter_config_remove = adapter_config_subparsers.add_parser(
+        "remove",
+        help="Delete a source (Theme 7b). Refuses if active unless --force.",
+    )
+    adapter_config_remove.add_argument("source_id")
+    adapter_config_remove.add_argument("--json", action="store_true")
+    adapter_config_remove.add_argument("--force", action="store_true",
+                                        help="Allow removing the active adapter.")
+
     # enable-adapter command
     enable_adapter_parser = subparsers.add_parser(
         "enable-adapter",
@@ -2629,11 +2681,181 @@ def cmd_adapter_config(args: argparse.Namespace) -> int:
                         print(f"      - {issue['code']}: {issue['message']}")
             return 0
 
+        if action in ("add", "clone", "update", "remove"):
+            return _adapter_config_mutate(args, action, loader)
+
         print(f"Error: unknown adapter-config action '{action}'", file=sys.stderr)
         return 2
     except PuzzleManagerError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
+
+
+def _validate_sources_doc(doc: dict[str, Any]) -> list[dict[str, str]]:
+    """Validate ``doc`` against sources.schema.json. Returns issue dicts."""
+    schema_path = Path(__file__).parent / "config" / "sources.schema.json"
+    schema_doc = json.loads(schema_path.read_text(encoding="utf-8"))
+    issues: list[dict[str, str]] = []
+    try:
+        import jsonschema
+        validator = jsonschema.Draft202012Validator(schema_doc)
+        for err in validator.iter_errors(doc):
+            issues.append({
+                "code": "schema",
+                "message": err.message,
+                "field": "/".join(str(p) for p in err.absolute_path) or None,
+            })
+    except ImportError:
+        pass
+    return issues
+
+
+def _parse_set_pair(pair: str) -> tuple[str, Any]:
+    """Parse ``KEY=VALUE`` into ``(key, decoded_value)``. Falls back to string."""
+    if "=" not in pair:
+        raise ValueError(f"--set expects KEY=VALUE, got: {pair!r}")
+    key, _, raw = pair.partition("=")
+    key = key.strip()
+    if not key:
+        raise ValueError(f"--set requires non-empty key: {pair!r}")
+    try:
+        return key, json.loads(raw)
+    except json.JSONDecodeError:
+        return key, raw
+
+
+def _adapter_config_mutate(
+    args: argparse.Namespace, action: str, loader: ConfigLoader,
+) -> int:
+    """Apply add/clone/update/remove to sources.json under pipeline lock."""
+    from backend.puzzle_manager.core.atomic_write import atomic_write_json
+    from backend.puzzle_manager.pipeline.lock import PipelineLock, PipelineLockError
+
+    sources_path = loader.config_dir / "sources.json"
+    if not sources_path.exists():
+        print(f"Error: sources.json not found at {sources_path}", file=sys.stderr)
+        return 2
+    doc = json.loads(sources_path.read_text(encoding="utf-8"))
+    sources_list: list[dict[str, Any]] = list(doc.get("sources", []))
+    by_id = {s.get("id"): i for i, s in enumerate(sources_list)}
+
+    json_out = bool(getattr(args, "json", False))
+    force = bool(getattr(args, "force", False))
+
+    def _emit(payload: dict[str, Any], rc: int) -> int:
+        if json_out:
+            print(json.dumps(payload, indent=2, default=str))
+        else:
+            if rc == 0:
+                print(f"[OK] {payload.get('message', action + ' applied')}")
+            else:
+                print(f"[ERROR] {payload.get('message', 'mutation failed')}",
+                      file=sys.stderr)
+                for err in payload.get("errors", []):
+                    print(f"  - {err.get('code')}: {err.get('message')}",
+                          file=sys.stderr)
+        return rc
+
+    new_doc = {**doc, "sources": [dict(s) for s in sources_list]}
+
+    if action == "add":
+        if args.new_id in by_id:
+            return _emit({"ok": False, "message": f"id already exists: {args.new_id}",
+                          "errors": [{"code": "duplicate-id",
+                                      "message": args.new_id}]}, 2)
+        try:
+            cfg_block = json.loads(args.config_json) if args.config_json else {}
+        except json.JSONDecodeError as exc:
+            return _emit({"ok": False, "message": "--config-json is not valid JSON",
+                          "errors": [{"code": "bad-json",
+                                      "message": str(exc)}]}, 2)
+        if not isinstance(cfg_block, dict):
+            return _emit({"ok": False, "message": "--config-json must be an object",
+                          "errors": [{"code": "bad-json",
+                                      "message": "expected object"}]}, 2)
+        new_doc["sources"].append({
+            "id": args.new_id, "name": args.new_name,
+            "adapter": args.new_adapter, "config": cfg_block,
+        })
+
+    elif action == "clone":
+        if args.source_id not in by_id:
+            return _emit({"ok": False,
+                          "message": f"unknown source: {args.source_id}",
+                          "errors": [{"code": "unknown-source",
+                                      "message": args.source_id}]}, 2)
+        if args.new_id in by_id:
+            return _emit({"ok": False, "message": f"id already exists: {args.new_id}",
+                          "errors": [{"code": "duplicate-id",
+                                      "message": args.new_id}]}, 2)
+        original = sources_list[by_id[args.source_id]]
+        clone = {
+            "id": args.new_id, "name": args.new_name,
+            "adapter": original.get("adapter"),
+            "config": dict(original.get("config", {})),
+        }
+        new_doc["sources"].append(clone)
+
+    elif action == "update":
+        if args.source_id not in by_id:
+            return _emit({"ok": False,
+                          "message": f"unknown source: {args.source_id}",
+                          "errors": [{"code": "unknown-source",
+                                      "message": args.source_id}]}, 2)
+        idx = by_id[args.source_id]
+        target = dict(new_doc["sources"][idx])
+        if args.new_name is not None:
+            target["name"] = args.new_name
+        cfg_block = dict(target.get("config", {}))
+        try:
+            for pair in args.set_pairs:
+                k, v = _parse_set_pair(pair)
+                cfg_block[k] = v
+        except ValueError as exc:
+            return _emit({"ok": False, "message": "invalid --set pair",
+                          "errors": [{"code": "bad-set",
+                                      "message": str(exc)}]}, 2)
+        target["config"] = cfg_block
+        new_doc["sources"][idx] = target
+
+    elif action == "remove":
+        if args.source_id not in by_id:
+            return _emit({"ok": False,
+                          "message": f"unknown source: {args.source_id}",
+                          "errors": [{"code": "unknown-source",
+                                      "message": args.source_id}]}, 2)
+        if args.source_id == new_doc.get("active_adapter") and not force:
+            return _emit({"ok": False,
+                          "message": ("refusing to remove active adapter "
+                                      f"{args.source_id}; pass --force"),
+                          "errors": [{"code": "active-source",
+                                      "message": args.source_id}]}, 2)
+        new_doc["sources"] = [s for s in new_doc["sources"]
+                              if s.get("id") != args.source_id]
+
+    issues = _validate_sources_doc(new_doc)
+    if issues:
+        return _emit({"ok": False, "message": "schema validation failed",
+                      "errors": issues}, 2)
+
+    lock = PipelineLock(run_id=f"adapter-config-{action}")
+    try:
+        if not force:
+            lock.acquire()
+    except PipelineLockError as exc:
+        return _emit({"ok": False, "message": str(exc),
+                      "errors": [{"code": "pipeline-locked",
+                                  "message": str(exc)}]}, 2)
+    try:
+        atomic_write_json(sources_path, new_doc)
+    finally:
+        if not force:
+            lock.release()
+
+    return _emit({"ok": True, "action": action,
+                  "message": f"{action} applied to sources.json",
+                  "source_id": getattr(args, "source_id",
+                                       getattr(args, "new_id", None))}, 0)
 
 
 def cmd_enable_adapter(args: argparse.Namespace) -> int:

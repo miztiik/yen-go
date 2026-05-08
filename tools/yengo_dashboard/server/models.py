@@ -711,3 +711,50 @@ class AdapterConfigValidateResponse(BaseModel):
             "`backend.puzzle_manager.models.adapter_config.AdapterValidationReport`."
         ),
     )
+
+
+class AdapterConfigAddRequest(BaseModel):
+    """``POST /api/adapter-config`` body (Theme 7b)."""
+
+    id: str = Field(..., description="New source ID; ^[a-z][a-z0-9-]*$.")
+    name: str = Field(..., description="Human-readable source name.")
+    adapter: str = Field(..., description="Adapter kind (must be registered).")
+    config: dict = Field(default_factory=dict,
+                          description="Adapter-specific config block.")
+
+
+class AdapterConfigCloneRequest(BaseModel):
+    """``POST /api/adapter-config/{id}/clone`` body (Theme 7b)."""
+
+    new_id: str = Field(..., description="ID for the cloned source.")
+    new_name: str = Field(..., description="Display name for the clone.")
+
+
+class AdapterConfigUpdateRequest(BaseModel):
+    """``POST /api/adapter-config/{id}/update`` body (Theme 7b)."""
+
+    set_pairs: list[str] = Field(
+        default_factory=list,
+        description="Repeatable KEY=VALUE pairs (values JSON-decoded).",
+    )
+    name: str | None = Field(default=None,
+                              description="Optional new display name.")
+
+
+class AdapterConfigRemoveRequest(BaseModel):
+    """``POST /api/adapter-config/{id}/remove`` body (Theme 7b)."""
+
+    force: bool = Field(default=False,
+                         description="Allow removing the active adapter.")
+
+
+class AdapterConfigMutationResponse(BaseModel):
+    """Shared response shape for the four 7b mutators."""
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON from `adapter-config {add|clone|update|remove}` "
+            "({ok, action, message, source_id?, errors?[]})."
+        ),
+    )

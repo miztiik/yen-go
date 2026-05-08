@@ -993,3 +993,81 @@ class TestAdapterConfigEndpoints:
         codes = [e["code"] for e in rows_by_id["bad"]["errors"]]
         assert "path-missing" in codes
 
+
+class TestAdapterConfigMutationEndpoints:
+    """Theme 7b: add/clone/update/remove via POST endpoints."""
+
+    def _seed(self, tmp_path: Path, *, active: str = "src-a") -> Path:
+        config_dir = tmp_path / "config"
+        config_dir.mkdir(parents=True)
+        good = tmp_path / "data" / "good"
+        good.mkdir(parents=True)
+        (config_dir / "sources.json").write_text(
+            json.dumps({
+                "active_adapter": active,
+                "sources": [
+                    {"id": "src-a", "name": "Src A", "adapter": "local",
+                     "config": {"path": good.as_posix()}},
+                    {"id": "src-b", "name": "Src B", "adapter": "local",
+                     "config": {"path": good.as_posix()}},
+                ],
+            }),
+            encoding="utf-8",
+        )
+        return config_dir
+
+    def test_add_then_validate_all_sees_it(self, tmp_path: Path) -> None:
+        config_dir = self._seed(tmp_path)
+        good = (tmp_path / "data" / "good").as_posix()
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.post("/api/adapter-config", json={
+                "id": "src-c", "name": "C", "adapter": "local",
+                "config": {"path": good},
+            })
+            assert resp.status_code == 200, resp.text
+            assert resp.json()["raw"]["ok"] is True
+            v = client.get("/api/adapter-config/validate").json()["raw"]
+            ids = [r["id"] for r in v["rows"]]
+            assert "src-c" in ids
+
+    def test_clone_preserves_config(self, tmp_path: Path) -> None:
+        config_dir = self._seed(tmp_path)
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.post("/api/adapter-config/src-a/clone", json={
+                "new_id": "src-a-copy", "new_name": "Copy of A",
+            })
+            assert resp.status_code == 200, resp.text
+            shown = client.get("/api/adapter-config/src-a-copy").json()["raw"]
+            assert shown["source"]["adapter"] == "local"
+
+    def test_remove_refuses_active_without_force(self, tmp_path: Path) -> None:
+        config_dir = self._seed(tmp_path, active="src-a")
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.post("/api/adapter-config/src-a/remove",
+                               json={"force": False})
+        assert resp.status_code == 400
+
+    def test_update_set_pairs_merge(self, tmp_path: Path) -> None:
+        config_dir = self._seed(tmp_path)
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.post("/api/adapter-config/src-a/update", json={
+                "set_pairs": ["validate=true"], "name": "Renamed",
+            })
+            assert resp.status_code == 200, resp.text
+            shown = client.get("/api/adapter-config/src-a").json()["raw"]
+            assert shown["source"]["name"] == "Renamed"
+            assert shown["source"]["config"]["validate"] is True
+
+    def test_schema_violation_returns_400(self, tmp_path: Path) -> None:
+        config_dir = self._seed(tmp_path)
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.post("/api/adapter-config", json={
+                "id": "BAD_ID", "name": "X", "adapter": "local", "config": {},
+            })
+        assert resp.status_code == 400
+
