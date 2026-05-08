@@ -41,6 +41,7 @@ EXPECTED_MUTATING_OPS = {
     "disable-adapter",
     "config-lock release",
     "source-ingest-state --reset",
+    "adapter-scaffold",
 }
 
 

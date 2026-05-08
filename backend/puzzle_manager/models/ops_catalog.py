@@ -163,6 +163,14 @@ OPS_CATALOG: list[OpsCatalogEntry] = [
         summary="Release a stuck pipeline config-lock (use --force if foreign).",
     ),
     OpsCatalogEntry(
+        op="adapter-scaffold",
+        scope=["ingest_state", "files"],
+        reversible=False,
+        preview_supported=True,
+        section="destructive",
+        summary="Generate a new adapter package + sources.json stub from a template.",
+    ),
+    OpsCatalogEntry(
         op="source-ingest-state --reset",
         scope=["ingest_state"],
         reversible=False,
