@@ -1,0 +1,1619 @@
+{
+  "schema_version": "1.0",
+  "description": "Instinct calibration golden set — multi-dimensional labels for validating the instinct classifier, technique tags, and enrichment pipeline.",
+  "last_updated": "2026-03-25",
+  "puzzles": {
+    "cut_advanced_001.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "capture-race",
+      "objective": "capture-race",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/LEE CHANGHO TESUJI/6.1 CAPTURING RACE",
+      "original_filename": "6-1-1.SGF",
+      "labeled_by": "expert",
+      "notes": "Lee Changho Capturing Race chapter"
+    },
+    "cut_advanced_002.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "capture-race",
+      "objective": "capture-race",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/LEE CHANGHO TESUJI/6.1 CAPTURING RACE",
+      "original_filename": "6-1-2.SGF",
+      "labeled_by": "expert",
+      "notes": "Lee Changho Capturing Race chapter"
+    },
+    "cut_advanced_003.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "capture-race",
+      "objective": "capture-race",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/LEE CHANGHO TESUJI/6.1 CAPTURING RACE",
+      "original_filename": "6-1-3.SGF",
+      "labeled_by": "expert",
+      "notes": "Lee Changho Capturing Race chapter"
+    },
+    "cut_intermediate_001.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "cutting",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "kiri-s-01.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "cut_intermediate_002.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "cutting",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "kiri-s-02.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "cut_intermediate_003.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "cutting",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "kiri-s-03.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "cut_intermediate_004.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "cutting",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "kiri-s-04.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "cut_intermediate_005.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "cutting",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "kiri-s-05.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "cut_intermediate_006.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "cutting",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "kiri-s-06.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "cut_intermediate_007.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "cutting",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "kiri-s-07.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "cut_intermediate_008.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "cutting",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "kiri-s-08.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "cut_intermediate_009.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "cutting",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "kiri-s-09.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "cut_intermediate_010.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "cutting",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "kiri-s-10.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "cut_intermediate_011.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "cutting",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "kiri-s-11.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "cut_intermediate_012.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "cutting",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "kiri-s-12.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "cut_intermediate_013.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "wedge",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Warikomi-s-01.sgf",
+      "labeled_by": "expert",
+      "notes": "T11: Warikomi promoted to cut — move ep splits opponent"
+    },
+    "cut_intermediate_014.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "wedge",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Warikomi-s-02.sgf",
+      "labeled_by": "expert",
+      "notes": "T11: Warikomi promoted to cut — move fq splits opponent"
+    },
+    "cut_intermediate_015.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "wedge",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Warikomi-s-03.sgf",
+      "labeled_by": "expert",
+      "notes": "T11: Warikomi promoted to cut — move fp splits opponent"
+    },
+    "cut_intermediate_016.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "wedge",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Warikomi-s-04.sgf",
+      "labeled_by": "expert",
+      "notes": "T11: Warikomi promoted to cut — move gp splits opponent"
+    },
+    "cut_intermediate_017.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "wedge",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Warikomi-s-05.sgf",
+      "labeled_by": "expert",
+      "notes": "T11: Warikomi promoted to cut — move fo splits opponent"
+    },
+    "cut_intermediate_018.sgf": {
+      "instinct_primary": "cut",
+      "instinct_labels": [
+        "cut"
+      ],
+      "technique_tag": "wedge",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Warikomi-s-07.sgf",
+      "labeled_by": "expert",
+      "notes": "T11: Warikomi promoted to cut — move fp splits opponent"
+    },
+    "descent_advanced_001.sgf": {
+      "instinct_primary": "descent",
+      "instinct_labels": [
+        "descent"
+      ],
+      "technique_tag": "snapback",
+      "objective": "capturing",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/LEE CHANGHO TESUJI/2. SNAPBACK AND SHORTAGE OF LIBERTIES",
+      "original_filename": "2-1.sgf",
+      "labeled_by": "expert",
+      "notes": "Lee Changho Snapback chapter"
+    },
+    "descent_advanced_002.sgf": {
+      "instinct_primary": "descent",
+      "instinct_labels": [
+        "descent"
+      ],
+      "technique_tag": "snapback",
+      "objective": "capturing",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/LEE CHANGHO TESUJI/2. SNAPBACK AND SHORTAGE OF LIBERTIES",
+      "original_filename": "2-2.sgf",
+      "labeled_by": "expert",
+      "notes": "Lee Changho Snapback chapter"
+    },
+    "descent_advanced_003.sgf": {
+      "instinct_primary": "descent",
+      "instinct_labels": [
+        "descent"
+      ],
+      "technique_tag": "snapback",
+      "objective": "capturing",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/LEE CHANGHO TESUJI/2. SNAPBACK AND SHORTAGE OF LIBERTIES",
+      "original_filename": "2-3.sgf",
+      "labeled_by": "expert",
+      "notes": "Lee Changho Snapback chapter"
+    },
+    "descent_intermediate_001.sgf": {
+      "instinct_primary": "descent",
+      "instinct_labels": [
+        "descent"
+      ],
+      "technique_tag": "descent",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Sagari-s-01.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "descent_intermediate_002.sgf": {
+      "instinct_primary": "descent",
+      "instinct_labels": [
+        "descent"
+      ],
+      "technique_tag": "descent",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Sagari-s-02.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "descent_intermediate_003.sgf": {
+      "instinct_primary": "descent",
+      "instinct_labels": [
+        "descent"
+      ],
+      "technique_tag": "descent",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Sagari-s-03.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "descent_intermediate_004.sgf": {
+      "instinct_primary": "descent",
+      "instinct_labels": [
+        "descent"
+      ],
+      "technique_tag": "descent",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Sagari-s-04.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "descent_intermediate_005.sgf": {
+      "instinct_primary": "descent",
+      "instinct_labels": [
+        "descent"
+      ],
+      "technique_tag": "descent",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Sagari-s-05.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "descent_intermediate_006.sgf": {
+      "instinct_primary": "descent",
+      "instinct_labels": [
+        "descent"
+      ],
+      "technique_tag": "descent",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Sagari-s-06.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "descent_intermediate_007.sgf": {
+      "instinct_primary": "descent",
+      "instinct_labels": [
+        "descent"
+      ],
+      "technique_tag": "descent",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Sagari-s-07.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "descent_intermediate_008.sgf": {
+      "instinct_primary": "descent",
+      "instinct_labels": [
+        "descent"
+      ],
+      "technique_tag": "descent",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Sagari-s-08.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "descent_intermediate_009.sgf": {
+      "instinct_primary": "descent",
+      "instinct_labels": [
+        "descent"
+      ],
+      "technique_tag": "descent",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Sagari-s-09.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "descent_intermediate_010.sgf": {
+      "instinct_primary": "descent",
+      "instinct_labels": [
+        "descent"
+      ],
+      "technique_tag": "descent",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Sagari-s-10.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "descent_intermediate_011.sgf": {
+      "instinct_primary": "descent",
+      "instinct_labels": [
+        "descent"
+      ],
+      "technique_tag": "descent",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Sagari-s-11.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "descent_intermediate_012.sgf": {
+      "instinct_primary": "descent",
+      "instinct_labels": [
+        "descent"
+      ],
+      "technique_tag": "descent",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Sagari-s-12.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "extend_intermediate_001.sgf": {
+      "instinct_primary": "extend",
+      "instinct_labels": [
+        "extend"
+      ],
+      "technique_tag": "extension",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tobi-s-01.sgf",
+      "labeled_by": "expert",
+      "notes": "Needs extend verification (T10)"
+    },
+    "extend_intermediate_002.sgf": {
+      "instinct_primary": "extend",
+      "instinct_labels": [
+        "extend"
+      ],
+      "technique_tag": "extension",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tobi-s-02.sgf",
+      "labeled_by": "expert",
+      "notes": "Needs extend verification (T10)"
+    },
+    "extend_intermediate_003.sgf": {
+      "instinct_primary": "extend",
+      "instinct_labels": [
+        "extend"
+      ],
+      "technique_tag": "extension",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tobi-s-03.sgf",
+      "labeled_by": "expert",
+      "notes": "Needs extend verification (T10)"
+    },
+    "extend_intermediate_004.sgf": {
+      "instinct_primary": "extend",
+      "instinct_labels": [
+        "extend"
+      ],
+      "technique_tag": "extension",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tobi-s-04.sgf",
+      "labeled_by": "expert",
+      "notes": "Needs extend verification (T10)"
+    },
+    "extend_intermediate_005.sgf": {
+      "instinct_primary": "extend",
+      "instinct_labels": [
+        "extend"
+      ],
+      "technique_tag": "extension",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tobi-s-05.sgf",
+      "labeled_by": "expert",
+      "notes": "Needs extend verification (T10)"
+    },
+    "extend_intermediate_006.sgf": {
+      "instinct_primary": "extend",
+      "instinct_labels": [
+        "extend"
+      ],
+      "technique_tag": "extension",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tobi-s-06.sgf",
+      "labeled_by": "expert",
+      "notes": "Needs extend verification (T10)"
+    },
+    "extend_intermediate_007.sgf": {
+      "instinct_primary": "extend",
+      "instinct_labels": [
+        "extend"
+      ],
+      "technique_tag": "extension",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tobi-s-07.sgf",
+      "labeled_by": "expert",
+      "notes": "Needs extend verification (T10)"
+    },
+    "extend_intermediate_008.sgf": {
+      "instinct_primary": "extend",
+      "instinct_labels": [
+        "extend"
+      ],
+      "technique_tag": "extension",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tobi-s-08.sgf",
+      "labeled_by": "expert",
+      "notes": "Needs extend verification (T10)"
+    },
+    "extend_intermediate_009.sgf": {
+      "instinct_primary": "extend",
+      "instinct_labels": [
+        "extend"
+      ],
+      "technique_tag": "extension",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tobi-s-09.sgf",
+      "labeled_by": "expert",
+      "notes": "Needs extend verification (T10)"
+    },
+    "extend_intermediate_010.sgf": {
+      "instinct_primary": "extend",
+      "instinct_labels": [
+        "extend"
+      ],
+      "technique_tag": "extension",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tobi-s-10.sgf",
+      "labeled_by": "expert",
+      "notes": "Needs extend verification (T10)"
+    },
+    "hane_intermediate_001.sgf": {
+      "instinct_primary": "hane",
+      "instinct_labels": [
+        "hane"
+      ],
+      "technique_tag": "hane",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Hane-s-01.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "hane_intermediate_002.sgf": {
+      "instinct_primary": "hane",
+      "instinct_labels": [
+        "hane"
+      ],
+      "technique_tag": "hane",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Hane-s-01A.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "hane_intermediate_003.sgf": {
+      "instinct_primary": "hane",
+      "instinct_labels": [
+        "hane"
+      ],
+      "technique_tag": "hane",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Hane-s-02.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "hane_intermediate_004.sgf": {
+      "instinct_primary": "hane",
+      "instinct_labels": [
+        "hane"
+      ],
+      "technique_tag": "hane",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Hane-s-03.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "hane_intermediate_005.sgf": {
+      "instinct_primary": "hane",
+      "instinct_labels": [
+        "hane"
+      ],
+      "technique_tag": "hane",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Hane-s-04.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "hane_intermediate_006.sgf": {
+      "instinct_primary": "hane",
+      "instinct_labels": [
+        "hane"
+      ],
+      "technique_tag": "hane",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Hane-s-04A.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "hane_intermediate_007.sgf": {
+      "instinct_primary": "hane",
+      "instinct_labels": [
+        "hane"
+      ],
+      "technique_tag": "hane",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Hane-s-05.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "hane_intermediate_008.sgf": {
+      "instinct_primary": "hane",
+      "instinct_labels": [
+        "hane"
+      ],
+      "technique_tag": "hane",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Hane-s-06.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "hane_intermediate_009.sgf": {
+      "instinct_primary": "hane",
+      "instinct_labels": [
+        "hane"
+      ],
+      "technique_tag": "hane",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Hane-s-06A.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "hane_intermediate_010.sgf": {
+      "instinct_primary": "hane",
+      "instinct_labels": [
+        "hane"
+      ],
+      "technique_tag": "hane",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Hane-s-07.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "hane_intermediate_011.sgf": {
+      "instinct_primary": "hane",
+      "instinct_labels": [
+        "hane"
+      ],
+      "technique_tag": "hane",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Hane-s-08.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "hane_intermediate_012.sgf": {
+      "instinct_primary": "hane",
+      "instinct_labels": [
+        "hane"
+      ],
+      "technique_tag": "hane",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Hane-s-09.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "hane_intermediate_013.sgf": {
+      "instinct_primary": "hane",
+      "instinct_labels": [
+        "hane"
+      ],
+      "technique_tag": "hane",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Hane-s-10.sgf",
+      "labeled_by": "expert",
+      "notes": ""
+    },
+    "null_advanced_001.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "life-and-death",
+      "objective": "life-and-death",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/CHO CHIKUN Encyclopedia Life And Death - Advanced",
+      "original_filename": "prob0001.sgf",
+      "labeled_by": "expert",
+      "notes": "Cho Chikun Advanced — needs expert instinct labeling (T13)"
+    },
+    "null_advanced_002.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "life-and-death",
+      "objective": "life-and-death",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/CHO CHIKUN Encyclopedia Life And Death - Advanced",
+      "original_filename": "prob0002.sgf",
+      "labeled_by": "expert",
+      "notes": "Cho Chikun Advanced — needs expert instinct labeling (T13)"
+    },
+    "null_elementary_001.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "life-and-death",
+      "objective": "life-and-death",
+      "human_difficulty": "elementary",
+      "source": "kisvadim-goproblems/CHO CHIKUN Encyclopedia Life And Death - Elementary",
+      "original_filename": "prob0001.sgf",
+      "labeled_by": "expert",
+      "notes": "Cho Chikun Elementary — needs expert instinct labeling (T13)"
+    },
+    "null_elementary_002.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "life-and-death",
+      "objective": "life-and-death",
+      "human_difficulty": "elementary",
+      "source": "kisvadim-goproblems/CHO CHIKUN Encyclopedia Life And Death - Elementary",
+      "original_filename": "prob0002.sgf",
+      "labeled_by": "expert",
+      "notes": "Cho Chikun Elementary — needs expert instinct labeling (T13)"
+    },
+    "null_elementary_003.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "life-and-death",
+      "objective": "life-and-death",
+      "human_difficulty": "elementary",
+      "source": "kisvadim-goproblems/CHO CHIKUN Encyclopedia Life And Death - Elementary",
+      "original_filename": "prob0003.sgf",
+      "labeled_by": "expert",
+      "notes": "Cho Chikun Elementary — needs expert instinct labeling (T13)"
+    },
+    "null_intermediate_001.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-01.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_002.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-01a.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_003.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-02.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_004.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-03.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_005.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-04.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_006.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-05.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_007.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-06.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_008.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-07.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_009.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-08.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_010.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-09.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_011.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-10.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_012.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-11.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_013.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-12.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_014.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-13.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_015.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-14.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_016.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-15.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_017.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-16.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_018.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-17.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_019.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "kosumi",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kosumi-s-18.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kosumi series"
+    },
+    "null_intermediate_020.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-01.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_021.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-02.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_022.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-03.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_023.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-04.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_024.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-05.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_025.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-06.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_026.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-07.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_027.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-08.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_028.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-09.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_029.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-10.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_030.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-11.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_031.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-12.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_032.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-13.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_033.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-14.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_034.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-15.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_035.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-16.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_036.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "attachment",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Tsuke-s-17.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Tsuke series"
+    },
+    "null_intermediate_037.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "placement",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "oki-s-01.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata oki series"
+    },
+    "null_intermediate_038.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "placement",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "oki-s-02.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata oki series"
+    },
+    "null_intermediate_039.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "placement",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "oki-s-03.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata oki series"
+    },
+    "null_intermediate_040.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "placement",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "oki-s-04.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata oki series"
+    },
+    "null_intermediate_041.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "placement",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "oki-s-05.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata oki series"
+    },
+    "null_intermediate_042.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "placement",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "oki-s-06.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata oki series"
+    },
+    "null_intermediate_043.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "placement",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "oki-s-07.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata oki series"
+    },
+    "null_intermediate_044.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "placement",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "oki-s-08.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata oki series"
+    },
+    "null_intermediate_045.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "placement",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "oki-s-09.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata oki series"
+    },
+    "null_intermediate_046.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "placement",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "oki-s-10.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata oki series"
+    },
+    "null_intermediate_047.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "placement",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "oki-s-11.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata oki series"
+    },
+    "null_intermediate_048.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "placement",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "oki-s-12.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata oki series"
+    },
+    "null_intermediate_049.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "capping",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kake-s-01.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kake series"
+    },
+    "null_intermediate_050.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "capping",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kake-s-02.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kake series"
+    },
+    "null_intermediate_051.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "capping",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kake-s-03.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kake series"
+    },
+    "null_intermediate_052.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "capping",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kake-s-04.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kake series"
+    },
+    "null_intermediate_053.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "capping",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kake-s-05.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kake series"
+    },
+    "null_intermediate_054.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "capping",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kake-s-06.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kake series"
+    },
+    "null_intermediate_055.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "capping",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kake-s-07.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kake series"
+    },
+    "null_intermediate_056.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "capping",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Kake-s-08.sgf",
+      "labeled_by": "expert",
+      "notes": "Sakata Kake series"
+    },
+    "null_intermediate_062.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "wedge",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/SAKATA EIO TESUJI",
+      "original_filename": "Warikomi-s-06.sgf",
+      "labeled_by": "expert",
+      "notes": "T11: verified as null (true wedge, not splitting cut)"
+    },
+    "null_intermediate_064.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "life-and-death",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/CHO CHIKUN Encyclopedia Life And Death - Intermediate",
+      "original_filename": "prob0001.sgf",
+      "labeled_by": "expert",
+      "notes": "Cho Chikun Intermediate — needs expert instinct labeling (T13)"
+    },
+    "null_intermediate_065.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "life-and-death",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/CHO CHIKUN Encyclopedia Life And Death - Intermediate",
+      "original_filename": "prob0002.sgf",
+      "labeled_by": "expert",
+      "notes": "Cho Chikun Intermediate — needs expert instinct labeling (T13)"
+    },
+    "null_intermediate_066.sgf": {
+      "instinct_primary": "null",
+      "instinct_labels": [],
+      "technique_tag": "life-and-death",
+      "objective": "life-and-death",
+      "human_difficulty": "intermediate",
+      "source": "kisvadim-goproblems/CHO CHIKUN Encyclopedia Life And Death - Intermediate",
+      "original_filename": "prob0003.sgf",
+      "labeled_by": "expert",
+      "notes": "Cho Chikun Intermediate — needs expert instinct labeling (T13)"
+    },
+    "push_advanced_001.sgf": {
+      "instinct_primary": "push",
+      "instinct_labels": [
+        "push"
+      ],
+      "technique_tag": "capturing",
+      "objective": "capturing",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/LEE CHANGHO TESUJI/1. FIGHTING AND CAPTURING",
+      "original_filename": "1-1.sgf",
+      "labeled_by": "expert",
+      "notes": "Lee Changho Fighting chapter — push instinct"
+    },
+    "push_advanced_002.sgf": {
+      "instinct_primary": "push",
+      "instinct_labels": [
+        "push"
+      ],
+      "technique_tag": "capturing",
+      "objective": "capturing",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/LEE CHANGHO TESUJI/1. FIGHTING AND CAPTURING",
+      "original_filename": "1-2.sgf",
+      "labeled_by": "expert",
+      "notes": "Lee Changho Fighting chapter — push instinct"
+    },
+    "push_advanced_003.sgf": {
+      "instinct_primary": "push",
+      "instinct_labels": [
+        "push"
+      ],
+      "technique_tag": "capturing",
+      "objective": "capturing",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/LEE CHANGHO TESUJI/1. FIGHTING AND CAPTURING",
+      "original_filename": "1-3.sgf",
+      "labeled_by": "expert",
+      "notes": "Lee Changho Fighting chapter — push instinct"
+    },
+    "push_advanced_004.sgf": {
+      "instinct_primary": "push",
+      "instinct_labels": [
+        "push"
+      ],
+      "technique_tag": "capturing",
+      "objective": "capturing",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/LEE CHANGHO TESUJI/1. FIGHTING AND CAPTURING",
+      "original_filename": "1-4.sgf",
+      "labeled_by": "expert",
+      "notes": "Lee Changho Fighting chapter — push instinct"
+    },
+    "push_advanced_005.sgf": {
+      "instinct_primary": "push",
+      "instinct_labels": [
+        "push"
+      ],
+      "technique_tag": "capturing",
+      "objective": "capturing",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/LEE CHANGHO TESUJI/1. FIGHTING AND CAPTURING",
+      "original_filename": "1-5.sgf",
+      "labeled_by": "expert",
+      "notes": "Lee Changho Fighting chapter — push instinct"
+    },
+    "push_advanced_006.sgf": {
+      "instinct_primary": "push",
+      "instinct_labels": [
+        "push"
+      ],
+      "technique_tag": "capturing",
+      "objective": "capturing",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/LEE CHANGHO TESUJI/1. FIGHTING AND CAPTURING",
+      "original_filename": "1-6.sgf",
+      "labeled_by": "expert",
+      "notes": "Lee Changho Fighting chapter — push instinct"
+    },
+    "push_advanced_007.sgf": {
+      "instinct_primary": "push",
+      "instinct_labels": [
+        "push"
+      ],
+      "technique_tag": "capturing",
+      "objective": "capturing",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/LEE CHANGHO TESUJI/1. FIGHTING AND CAPTURING",
+      "original_filename": "1-7.sgf",
+      "labeled_by": "expert",
+      "notes": "Lee Changho Fighting chapter — push instinct"
+    },
+    "push_advanced_008.sgf": {
+      "instinct_primary": "push",
+      "instinct_labels": [
+        "push"
+      ],
+      "technique_tag": "capturing",
+      "objective": "capturing",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/LEE CHANGHO TESUJI/1. FIGHTING AND CAPTURING",
+      "original_filename": "1-8.sgf",
+      "labeled_by": "expert",
+      "notes": "Lee Changho Fighting chapter — push instinct"
+    },
+    "push_advanced_009.sgf": {
+      "instinct_primary": "push",
+      "instinct_labels": [
+        "push"
+      ],
+      "technique_tag": "capturing",
+      "objective": "capturing",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/LEE CHANGHO TESUJI/1. FIGHTING AND CAPTURING",
+      "original_filename": "1-9.sgf",
+      "labeled_by": "expert",
+      "notes": "Gap-fill for C-4"
+    },
+    "push_advanced_010.sgf": {
+      "instinct_primary": "push",
+      "instinct_labels": [
+        "push"
+      ],
+      "technique_tag": "capturing",
+      "objective": "capturing",
+      "human_difficulty": "advanced",
+      "source": "kisvadim-goproblems/LEE CHANGHO TESUJI/1. FIGHTING AND CAPTURING",
+      "original_filename": "1-10.sgf",
+      "labeled_by": "expert",
+      "notes": "Gap-fill for C-4"
+    }
+  }
+}
