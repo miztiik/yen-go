@@ -170,12 +170,23 @@ export function confirmDialog({ title, body, verb }) {
     $("#cd-verb").textContent = verb;
     const input = $("#cd-input");
     const go = $("#cd-go");
+    const copyBtn = $("#cd-verb-copy");
     input.value = "";
+    input.placeholder = verb;
     go.disabled = true;
     const onInput = () => { go.disabled = input.value.trim() !== verb; };
     input.addEventListener("input", onInput);
+    const onCopy = () => {
+      try {
+        navigator.clipboard?.writeText(verb);
+        copyBtn?.setAttribute("data-copied", "true");
+        setTimeout(() => copyBtn?.removeAttribute("data-copied"), 1200);
+      } catch { /* clipboard blocked — user can still type */ }
+    };
+    if (copyBtn) copyBtn.addEventListener("click", onCopy);
     const onClose = () => {
       input.removeEventListener("input", onInput);
+      if (copyBtn) copyBtn.removeEventListener("click", onCopy);
       d.removeEventListener("close", onClose);
       resolve(d.returnValue === "ok");
     };

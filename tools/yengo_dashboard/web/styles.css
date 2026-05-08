@@ -94,7 +94,7 @@ code, kbd, pre, .font-mono { font-family: var(--font-mono); }
 }
 .log-row {
   display: grid;
-  grid-template-columns: 4.5rem 3.25rem 1fr;
+  grid-template-columns: 4.5rem 1fr;
   gap: 0.5rem;
   padding: 0.05rem 0.75rem;
   border-left: 2px solid transparent;
@@ -103,15 +103,21 @@ code, kbd, pre, .font-mono { font-family: var(--font-mono); }
 }
 .log-row:hover { background: rgb(15 23 42 / 0.6); }
 .log-row .lr-seq    { color: rgb(71 85 105); user-select: none; text-align: right; font-variant-numeric: tabular-nums; }
-.log-row .lr-stream { color: rgb(100 116 139); text-transform: lowercase; }
 .log-row .lr-text   { color: rgb(203 213 225); }   /* slate-300 — body bumped from slate-200 / 400 for AA */
 
-/* Python's logging module routes ALL records (INFO/WARN/ERROR) through
-   stderr by default — so the stream tag alone is NOT a severity signal.
-   Severity is derived from the parsed log level (data-level) and applied
-   via the left border below. The stream label stays a faint slate so power
-   users can still filter by it without it screaming "error". */
-.log-row[data-stream="stderr"] .lr-stream { color: rgb(148 163 184); }
+/* Plain log rows (stage-tail viewer): single-column flow so JSON / log
+   lines wrap across the full width instead of squeezing into the 4.5rem
+   sequence column inherited from the structured live-run grid. */
+.log-row.log-row-plain {
+  display: block;
+  grid-template-columns: none;
+  padding: 0.05rem 0.75rem;
+}
+.log-row.log-row-plain .lr-text { display: block; width: 100%; }
+
+/* Stream column was removed (Python logging routes everything to stderr by
+   default, so the stdout/stderr split carries no operator signal). The
+   data-stream attribute is still set for potential future filtering. */
 
 /* warn = orange (was amber); see colors.md 2026-05 refresh */
 .log-row[data-level="warn"]  { border-left-color: rgb(251 146 60); }
@@ -234,6 +240,23 @@ dialog.pmc-dialog input[type="text"] {
 }
 dialog.pmc-dialog .actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
 
+/* Confirm dialog verb chip — clickable to copy. Underline + cursor hint
+   makes it discoverable; data-copied flips a brief "copied!" affordance. */
+.cd-verb-copy {
+  background: none; border: none; padding: 0;
+  cursor: copy; vertical-align: baseline;
+}
+.cd-verb-copy code {
+  background: rgb(244 63 94 / 0.12);
+  border: 1px solid rgb(244 63 94 / 0.35);
+  padding: 0.05rem 0.4rem; border-radius: 0.25rem;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+}
+.cd-verb-copy:hover code { background: rgb(244 63 94 / 0.2); }
+.cd-verb-copy[data-copied] code::after {
+  content: " ✓ copied"; color: rgb(134 239 172); font-size: 0.7rem;
+}
+
 /* Theme 1e: preview modal is wider than confirm because it shows lists. */
 dialog.preview-dialog { max-width: 42rem; }
 dialog.preview-dialog .preview-body {
@@ -342,22 +365,25 @@ dialog.preview-dialog .preview-warn {
 .stepper .step[data-state="done"]::after { color: rgb(16 185 129 / 0.65); }
 
 /* active = teal (was sky) — see colors.md 2026-05 refresh.
-   The flowing dot animation telegraphs forward motion to the eye. */
+   The active stage gets a left-right shifting dot whose color cycles through
+   a teal → cyan → amber → emerald sequence (Google-logo-ish) to telegraph
+   forward motion WITHOUT the previous zoom-bounce that drew the eye away
+   from the log. No transform/scale on the chip itself. */
 .stepper .step[data-state="active"] {
   background: rgb(20 184 166 / 0.18);
   color: rgb(94 234 212);
   box-shadow: 0 0 0 1px rgb(45 212 191 / 0.45),
               0 0 12px rgb(20 184 166 / 0.25);
-  animation: pmc-pulse 2s ease-in-out infinite;
 }
 .stepper .step[data-state="active"]::before {
   content: "";
   position: absolute; left: 0.4rem; top: 50%;
-  width: 4px; height: 4px; border-radius: 50%;
-  background: rgb(94 234 212);
+  width: 5px; height: 5px; border-radius: 50%;
+  background: currentColor;
   transform: translateY(-50%);
-  box-shadow: 0 0 6px rgb(94 234 212 / 0.8);
-  animation: pmc-flow-dot 1.4s ease-in-out infinite;
+  box-shadow: 0 0 8px currentColor;
+  animation: pmc-flow-dot 1.6s ease-in-out infinite,
+             pmc-color-cycle 3.2s linear infinite;
 }
 .stepper .step[data-state="active"] { padding-left: 1.1rem; }
 .stepper .step[data-state="active"]::after {
@@ -373,12 +399,40 @@ dialog.preview-dialog .preview-warn {
 .stepper .step[data-state="failed"]::after { color: rgb(244 63 94 / 0.65); }
 
 @keyframes pmc-flow-dot {
-  0%, 100% { opacity: 0.4; transform: translate(0, -50%); }
-  50%      { opacity: 1;   transform: translate(2px, -50%); }
+  /* Wider left-right traversal so the motion reads at a glance instead of
+     the previous 2px wobble. Travels ~70% of the chip width. */
+  0%   { opacity: 0.4; left: 0.4rem; }
+  50%  { opacity: 1;   left: calc(100% - 0.9rem); }
+  100% { opacity: 0.4; left: 0.4rem; }
+}
+@keyframes pmc-color-cycle {
+  /* Google-logo-ish 4-stop cycle: teal → cyan → amber → emerald → teal. */
+  0%   { color: rgb(94 234 212); }   /* teal-300 */
+  25%  { color: rgb(103 232 249); }  /* cyan-300 */
+  50%  { color: rgb(252 211 77); }   /* amber-300 */
+  75%  { color: rgb(110 231 183); }  /* emerald-300 */
+  100% { color: rgb(94 234 212); }
 }
 @keyframes pmc-chevron-slide {
   0%, 100% { transform: translate(0, -1px); opacity: 0.6; }
   50%      { transform: translate(2px, -1px); opacity: 1; }
+}
+
+/* Terminal-status theming: once the pipeline ends, recolor any remaining
+   non-done chevrons + the stepper border so the whole strip reads the
+   final outcome at a glance. Active state is naturally cleared because
+   the stage transitions to done/failed before the run ends. */
+.stepper[data-status="completed"] {
+  border-color: rgb(16 185 129 / 0.55);
+  box-shadow: 0 0 0 1px rgb(16 185 129 / 0.25);
+}
+.stepper[data-status="failed"] {
+  border-color: rgb(244 63 94 / 0.55);
+  box-shadow: 0 0 0 1px rgb(244 63 94 / 0.25);
+}
+.stepper[data-status="cancelled"] {
+  border-color: rgb(251 146 60 / 0.55);
+  box-shadow: 0 0 0 1px rgb(251 146 60 / 0.2);
 }
 
 /* ---------- Tab fade when run is active (focus on Live Run) ---------- */

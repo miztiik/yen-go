@@ -1133,6 +1133,14 @@ function adapterRow(a) {
       <td class="py-2 pr-4 text-right font-mono tabular-nums text-sm text-slate-300">${a.total.toLocaleString()}</td>
       <td class="py-2 pr-4 text-xs text-slate-500 font-mono" title="${fullPath}">${escapeHtml(a.source_root || "—")}</td>
       <td class="py-2 pr-3 whitespace-nowrap">
+        <a class="${baseBtn} inline-flex items-center justify-center"
+           href="/adapters/${encodeURIComponent(a.id)}#edit"
+           data-adapter-link="${escapeHtml(a.id)}"
+           data-adapter-edit="${escapeHtml(a.id)}"
+           title="Open adapter detail in edit-config mode"
+           aria-label="Edit ${escapeHtml(a.id)} configuration">
+          <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+        </a>
         <button class="${baseBtn}" data-act="run"    data-source="${escapeHtml(a.id)}"${overrideHint}>Run</button>
         <button class="${baseBtn}" data-act="ingest" data-source="${escapeHtml(a.id)}"${overrideHint}>Ingest</button>
         ${enableBtn}
@@ -1172,31 +1180,6 @@ async function renderAdapters() {
         <span class="view-header-sub">·</span>
         <span class="text-xs text-slate-400">${activeNote}</span>
       ` })}
-      ${helpCallout("help-adapters", {
-        title: "What active adapter and counts mean",
-        bodyHtml: `
-          <p>An <strong>adapter</strong> is one source's ingest pipeline
-          (one row in <code>config/sources.json</code>). Exactly one
-          adapter is <em>active</em> at a time — the active one is what
-          <code>run</code> targets unless you pass
-          <code>--source-override</code>. Switch active via
-          <code>enable-adapter</code> (Operations) or the per-row Run
-          button (which auto-passes <code>--source-override</code>).</p>
-          <ul class="help-callout-list">
-            <li><strong>ingested</strong>: puzzles successfully parsed +
-              validated this source's last ingest pass.</li>
-            <li><strong>skipped</strong>: already-published puzzles whose
-              content hash matched an existing entry.</li>
-            <li><strong>failed</strong>: puzzles that errored during
-              ingest (parse / validation / fetch). Drill in via
-              <em>source-status</em> on the adapter detail page to see
-              error messages.</li>
-            <li><strong>last activity</strong>: mtime of this source's
-              <code>.yengo-ingest.sqlite</code> — proxies last successful
-              ingest write.</li>
-          </ul>
-        `,
-      })}
       <div class="flex items-center justify-between gap-3 mt-4 mb-2 px-1">
         <input type="search" id="adapter-filter" placeholder="Filter adapters by id or path…"
                class="w-64 max-w-full rounded border border-slate-700 bg-slate-950 px-2 py-1 text-xs font-mono text-slate-200 placeholder:text-slate-600"
@@ -1207,10 +1190,10 @@ async function renderAdapters() {
         <table class="w-full text-sm" id="adapter-table">
           <thead class="text-slate-500 text-xs uppercase tracking-wider sticky top-0 bg-slate-900">
             <tr>
-              <th class="text-left  font-normal py-2 pl-3">id</th>
+              <th class="text-left  font-normal py-2 pl-3">id <span class="help-chip" data-help-id="adapter" role="button" tabindex="0" aria-label="What is an adapter?">?</span></th>
               <th class="text-left  font-normal py-2">status</th>
               <th class="text-left  font-normal py-2">last activity</th>
-              <th class="text-right font-normal py-2 pr-4">ingested</th>
+              <th class="text-right font-normal py-2 pr-4">ingested <span class="help-chip" data-help-id="adapter-counts" role="button" tabindex="0" aria-label="What do these counts mean?">?</span></th>
               <th class="text-right font-normal py-2 pr-4">skipped</th>
               <th class="text-right font-normal py-2 pr-4">failed</th>
               <th class="text-right font-normal py-2 pr-4">total</th>
@@ -1229,6 +1212,7 @@ async function renderAdapters() {
     _renderAdapterBootstrapSection();
     _renderAdapterScaffoldSection();
     _wireAdapterFilter();
+    if (window.lucide?.createIcons) window.lucide.createIcons();
   } catch (e) { root.innerHTML = errorBlock("/api/adapters", e); }
 }
 
@@ -1896,6 +1880,13 @@ async function _wireAdapterConfigForm(adapterId) {
   const removeBtn = host.querySelector("[data-adapter-config-remove]");
   if (toggle && form) {
     toggle.addEventListener("click", () => form.classList.toggle("hidden"));
+    // Auto-open the edit form when the deep-link arrived with #edit (the
+    // pencil affordance on the Library adapter row sets this hash).
+    if (window.location.hash === "#edit") {
+      form.classList.remove("hidden");
+      const firstField = form.querySelector("input[type=text]");
+      if (firstField) setTimeout(() => firstField.focus(), 80);
+    }
   }
   if (cancel && form) {
     cancel.addEventListener("click", () => form.classList.add("hidden"));
@@ -2083,7 +2074,7 @@ async function openIngestStateResetModal(adapterId) {
     const ok = await confirmDialog({
       title: "Reset ingest state",
       body: `This wipes the per-source ingest DB for "${adapterId}". The next run will reprocess every file from scratch.`,
-      verb: `reset ${adapterId}`,
+      verb: "RESET",
     });
     if (!ok) return;
     try {
@@ -2355,8 +2346,10 @@ let _stages = { ingest: "pending", analyze: "pending", publish: "pending" };
 function detectLogLevel(text) {
   // Lightweight heuristic — the cockpit doesn't classify, but visual
   // grouping needs *something*. Order matters (error > warn > info).
-  if (/\b(ERROR|FATAL|Traceback|exception|failed|✕)\b/i.test(text)) return "error";
-  if (/\b(WARN|WARNING|skipped|retry|⚠)\b/i.test(text)) return "warn";
+  // Anchor on real logger level tokens so progress lines like
+  // "100 ok, 0 failed, 0 skipped" don't get painted red.
+  if (/\b(ERROR|FATAL|CRITICAL|Traceback|exception|✕)\b/.test(text)) return "error";
+  if (/\b(WARN|WARNING|⚠)\b/.test(text)) return "warn";
   if (/\b(INFO|DEBUG)\b/.test(text)) return "info";
   return "info";
 }
@@ -2387,9 +2380,10 @@ function logPanelAppend(panel, ev) {
   node.dataset.stream = ev.stream || "stdout";
   node.dataset.level = level;
   const seq = String(ev.seq ?? "").padStart(5, " ");
+  // Stream column intentionally omitted from the row; see toolbar comment
+  // above. The stream value is still kept on the dataset for future filtering.
   node.innerHTML = `
     <span class="lr-seq">${escapeHtml(seq)}</span>
-    <span class="lr-stream">${escapeHtml(ev.stream || "stdout")}</span>
     <span class="lr-text">${escapeHtml(ev.text || "")}</span>
   `;
   applyRowFilter(node, ev);
@@ -2452,6 +2446,10 @@ function setRunStatusBadge(status, exitCode) {
   };
   const [variant, label] = variantMap[status] || ["muted", status || "idle"];
   badge.outerHTML = `<span id="run-status">${pill(variant, label)}</span>`;
+  // Mirror the run status onto the stage stepper so its colors shift to the
+  // terminal palette (emerald=ok, rose=error, orange=warn) once the run ends.
+  const stepper = $("#run-stepper");
+  if (stepper) stepper.dataset.status = status || "idle";
 }
 
 function attachStream(handle) {
@@ -2460,7 +2458,14 @@ function attachStream(handle) {
   const panel = $("#run-log");
   if (!panel) return;
   const cancelBtn = $("#run-cancel");
+  const startBtn = $("#run-start");
   if (cancelBtn) cancelBtn.disabled = false;
+  if (startBtn) {
+    startBtn.disabled = true;
+    startBtn.dataset.running = "true";
+    startBtn.textContent = "Running…";
+    startBtn.title = "A pipeline run is in progress. Cancel it before starting a new one.";
+  }
   const es = new EventSource(`/api/run/${encodeURIComponent(handle)}/events`);
   _es = es;
   es.addEventListener("line", (e) => {
@@ -2475,6 +2480,7 @@ function attachStream(handle) {
   });
   es.addEventListener("end", () => {
     if (cancelBtn) cancelBtn.disabled = true;
+    _restoreStartButton();
     es.close();
     if (_es === es) _es = null;
     refreshActiveSnapshot();
@@ -2500,6 +2506,7 @@ async function refreshActiveSnapshot() {
       setRunStatusBadge("idle");
       if (meta) { meta.innerHTML = ""; meta.classList.add("hidden"); }
       if (cancelBtn) cancelBtn.disabled = true;
+      _restoreStartButton();
       return;
     }
     setRunStatusBadge(a.status, a.exit_code);
@@ -2522,10 +2529,42 @@ async function refreshActiveSnapshot() {
         </div>`;
     }
     if (cancelBtn) cancelBtn.disabled = isTerminal(a.status) || a.cancel_requested;
+    const startBtn = $("#run-start");
+    if (startBtn) {
+      if (isTerminal(a.status)) {
+        _restoreStartButton();
+      } else {
+        startBtn.disabled = true;
+        startBtn.dataset.running = "true";
+        startBtn.textContent = "Running…";
+        startBtn.title = "A pipeline run is in progress. Cancel it before starting a new one.";
+      }
+    }
   } catch { /* swallow */ }
 }
 
+// Restore the Start button to its idle label/disabled-state. Called when
+// a run reaches a terminal state, when no active run is found, or when
+// the Live Run pane is re-rendered after navigating back.
+function _restoreStartButton() {
+  const startBtn = $("#run-start");
+  if (!startBtn) return;
+  delete startBtn.dataset.running;
+  startBtn.textContent = "Start";
+  const hasActive = !!_activeAdapter;
+  startBtn.disabled = !hasActive;
+  if (!hasActive) startBtn.title = "No active adapter — enable one from the Adapters tab.";
+  else startBtn.removeAttribute("title");
+}
+
 async function startRun(payload) {
+  const startBtn = $("#run-start");
+  if (startBtn && startBtn.dataset.running === "true") return; // guard double-click
+  if (startBtn) {
+    startBtn.disabled = true;
+    startBtn.dataset.running = "true";
+    startBtn.textContent = "Starting…";
+  }
   resetLogState();
   $("#run-error") && ($("#run-error").innerHTML = "");
   try {
@@ -2535,6 +2574,7 @@ async function startRun(payload) {
     masterTick();
     toast("ok", `run started · ${snap.handle}`);
   } catch (err) {
+    _restoreStartButton();
     if (err.status === 409) {
       toast("warn", "another run is already active");
     } else {
@@ -2629,29 +2669,6 @@ function renderLiveRun() {
       <div id="run-stepper" class="stepper ml-2"></div>
     ` })}
 
-    ${helpCallout("help-run", {
-      title: "What this page does",
-      bodyHtml: `
-        <p>Launch a pipeline run against the active adapter, watch the live
-        subprocess output, and cancel mid-flight. The literal command is
-        always visible in the <strong>Equivalent CLI</strong> block — copy it
-        to reproduce the run from a terminal.</p>
-        <ul class="help-callout-list">
-          <li><code>--fresh</code>: wipe the source's ingest DB + runtime
-            state before running. Forces a full re-ingest. <em>Destructive.</em></li>
-          <li><code>--dry-run</code>: rehearse without writing published
-            outputs. Safe.</li>
-          <li><code>--source-override</code>: route the active adapter
-            through a different source ID for this run only.</li>
-          <li><code>--no-enrichment</code>: skip the analyze stage's KataGo
-            enrichment pass. Faster; produces less complete metadata.</li>
-          <li><code>--stage</code>: run only one of <code>ingest</code> /
-            <code>analyze</code> / <code>publish</code> instead of the full
-            pipeline.</li>
-        </ul>
-      `,
-    })}
-
     <div class="grid lg:grid-cols-[18rem,1fr] gap-6">
       <aside class="rounded-md border border-slate-800 bg-slate-900 p-4 space-y-3 self-start">
         <div>
@@ -2709,11 +2726,10 @@ function renderLiveRun() {
             <button data-level="warn"  class="px-2 py-1 hover:bg-slate-800 text-orange-300">warn</button>
             <button data-level="error" class="px-2 py-1 hover:bg-slate-800 text-rose-300">error</button>
           </div>
-          <div class="inline-flex rounded-md ring-1 ring-slate-700 overflow-hidden" id="log-stream">
-            <button data-stream="all"    class="px-2 py-1 bg-slate-800 text-slate-200">both</button>
-            <button data-stream="stdout" class="px-2 py-1 hover:bg-slate-800">stdout</button>
-            <button data-stream="stderr" class="px-2 py-1 hover:bg-slate-800">stderr</button>
-          </div>
+          <!-- Stream (stdout/stderr) filter intentionally hidden:
+               Python's logging module routes ALL records (INFO/WARN/ERROR) to
+               stderr by default, so the stdout/stderr split carries no signal
+               for operators. Severity comes from the level filter above. -->
           <input id="log-search" type="search" placeholder="search…" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs w-48" />
           <label class="ml-auto inline-flex items-center gap-1.5 text-slate-400">
             <input id="log-pin" type="checkbox" checked /> pin to bottom
@@ -2768,13 +2784,8 @@ function renderLiveRun() {
     $$("#log-level button").forEach((x) => x.classList.toggle("text-slate-200", x === b));
     rerunFilter();
   });
-  $("#log-stream").addEventListener("click", (e) => {
-    const b = e.target.closest("button[data-stream]"); if (!b) return;
-    LOG_FILTER.stream = b.dataset.stream;
-    $$("#log-stream button").forEach((x) => x.classList.toggle("bg-slate-800", x === b));
-    $$("#log-stream button").forEach((x) => x.classList.toggle("text-slate-200", x === b));
-    rerunFilter();
-  });
+  // #log-stream toolbar removed; LOG_FILTER.stream stays "all" so applyRowFilter
+  // is a no-op for the stream dimension.
   let searchT;
   $("#log-search").addEventListener("input", (e) => {
     clearTimeout(searchT);
@@ -3909,7 +3920,7 @@ async function _loadStageTail(filename) {
   try {
     const data = await getJSON(`/api/logs/stage-files/${encodeURIComponent(filename)}?lines=${lines}`);
     out.innerHTML = data.lines.map((ln) =>
-      `<div class="log-row"><span class="lr-text">${escapeHtml(ln)}</span></div>`,
+      `<div class="log-row log-row-plain"><span class="lr-text">${escapeHtml(ln)}</span></div>`,
     ).join("") || `<div class="text-xs text-slate-500 px-2 py-1">file is empty</div>`;
     out.scrollTop = out.scrollHeight;
     if (meta) {

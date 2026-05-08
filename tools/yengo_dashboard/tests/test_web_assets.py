@@ -934,9 +934,11 @@ def test_ingest_state_reset_flow_wired(app_js: str) -> None:
     assert '/api/adapters/${encodeURIComponent(adapterId)}/ingest-state' in app_js
     assert '/api/adapters/${encodeURIComponent(adapterId)}/ingest-state/preview' in app_js
     assert '/api/adapters/${encodeURIComponent(adapterId)}/ingest-state/reset' in app_js
-    # Typed-confirm gate must wrap the apply POST.
+    # Typed-confirm gate must wrap the apply POST. Verb is the literal
+    # "RESET" (was previously "reset {adapterId}") so it's short, copyable,
+    # and unambiguous in the dialog.
     assert "confirmDialog({" in app_js
-    assert "verb: `reset ${adapterId}`" in app_js
+    assert 'verb: "RESET"' in app_js
 
 
 def test_adapter_validation_section_wired(app_js: str) -> None:
@@ -1127,24 +1129,33 @@ def test_run_page_has_equivalent_cli_block(app_js: str) -> None:
 
 
 def test_inline_help_callouts_wired(app_js: str, styles_css: str) -> None:
-    """UX-handoff slice 'Inline contextual help': Run, Adapters, Operations
-    pages must each emit a <details> help-callout with the canonical id so
-    operators can read page-level guidance without opening a separate doc.
+    """UX-handoff slice 'Inline contextual help': Operations page emits a
+    <details> help-callout with the canonical id so operators can read
+    page-level guidance without opening a separate doc.
+
+    Note: the Run and Adapters pages previously carried their own callouts.
+    Per UX feedback (2026-05-08) those big paragraph blocks were redundant
+    with the per-control `?` chips + top-header help drawer, so they were
+    decomposed into inline `data-help-id` chips on column headers / labels.
     """
     assert "function helpCallout(" in app_js
     assert "_wireHelpCallouts" in app_js
     assert "data-help-callout" in app_js
-    # One callout per primary page.
-    for callout_id in ("help-run", "help-adapters", "help-operations"):
-        assert f'helpCallout("{callout_id}"' in app_js, (
-            f"missing helpCallout({callout_id!r}, ...) call"
-        )
-    # Must surface the operator-facing flag vocabulary.
+    # Operations remains the canonical inline-callout consumer.
+    assert 'helpCallout("help-operations"' in app_js, (
+        "missing helpCallout('help-operations', ...) call"
+    )
+    # Run-page flag vocabulary must still surface somewhere on the page
+    # (now inside per-flag titles / labels rather than a paragraph block).
     for token in ("--fresh", "--dry-run", "--source-override", "--no-enrichment"):
-        assert token in app_js, f"Run-page help missing {token!r}"
+        assert token in app_js, f"Run page missing {token!r}"
     # Operations help must call out the destructive ops by name.
     for token in ("rollback", "vacuum-db", "inventory fix"):
         assert token in app_js, f"Operations help missing {token!r}"
+    # Adapters page must surface the count vocabulary via inline chips
+    # (replacement for the removed paragraph callout).
+    assert 'data-help-id="adapter-counts"' in app_js
+    assert 'data-help-id="adapter"' in app_js
     # Styles pin: callout class + light-theme override both present.
     assert ".help-callout" in styles_css
     assert 'body[data-theme="light"] .help-callout' in styles_css
