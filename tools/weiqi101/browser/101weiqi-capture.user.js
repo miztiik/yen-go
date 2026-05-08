@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         weiqi Puzzle Capture for YenGo
 // @namespace    https://github.com/yengo
-// @version      5.53.7
+// @version      5.53.8
 // @description  Auto-captures puzzle data from weiqi.com and sends to local YenGo receiver. Start server, browse any puzzle page, it just works.
 // @match        *://www.101weiqi.com/q/*
 // @match        *://www.101weiqi.com/chessmanual/*
@@ -5567,6 +5567,23 @@
         // having to click [Book] Start / Resume.
         const pendingId = Number(GM_getValue(KEY_PENDING_AUTOSTART_BOOK, 0));
         if (pendingId && pendingId === bookPath.book_id) {
+          // BUGFIX v5.53.8: respect tab ownership before claiming.
+          // The cascading tab is normally the current owner (it just
+          // issued location.href), so ownerIsOther is false and we
+          // proceed. But if a *different* tab happens to be open on
+          // (or navigates to) the pending book URL while another tab
+          // owns the active session, we must not steal ownership —
+          // that races the legitimate cascade and can consume the
+          // waitlist transition state in the wrong tab. Leave the
+          // pending flag in place so the legitimate owner's next
+          // page-load picks it up.
+          if (ownerIsOther) {
+            updateStatus(
+              `Observing — waitlist cascade in another tab (book ${pendingId})`,
+              "#888",
+            );
+            return;
+          }
           try { GM_setValue(KEY_PENDING_AUTOSTART_BOOK, 0); } catch (_) {}
           plog("START", `Waitlist auto-start: book ${pendingId}`);
           clearBookDiscovery();
