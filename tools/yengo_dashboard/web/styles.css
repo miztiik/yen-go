@@ -1360,3 +1360,34 @@ body[data-theme="light"] .ops-link-card:hover {
 body[data-theme="light"] .ops-link-title { color: rgb(15 23 42); }
 body[data-theme="light"] .ops-link-body { color: rgb(71 85 105); }
 
+/* W1.4 — taxonomy mutation gating. Hidden until explicit edit-mode toggle. */
+[data-tax-edit="0"] .tax-mutate { display: none; }
+[data-tax-edit="1"] {
+  outline: 1px solid rgb(245 158 11 / 0.55);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+/* W1.6 — semantic severity tokens, themed for both modes. Used by status
+   strip dot, system chip dot, and any badge/pill that conveys severity. */
+:root {
+  --sev-ok: rgb(52 211 153);     /* emerald-400 */
+  --sev-info: rgb(96 165 250);   /* blue-400 */
+  --sev-warn: rgb(251 191 36);   /* amber-400 */
+  --sev-error: rgb(248 113 113); /* red-400 */
+  --sev-running: rgb(45 212 191);/* teal-400 */
+}
+body[data-theme="light"] {
+  --sev-ok: rgb(5 150 105);      /* emerald-600 */
+  --sev-info: rgb(37 99 235);    /* blue-600 */
+  --sev-warn: rgb(180 83 9);     /* amber-700 */
+  --sev-error: rgb(185 28 28);   /* red-700 */
+  --sev-running: rgb(13 148 136);/* teal-600 */
+}
+.sev-dot[data-sev="ok"]      { background: var(--sev-ok); }
+.sev-dot[data-sev="info"]    { background: var(--sev-info); }
+.sev-dot[data-sev="warn"]    { background: var(--sev-warn); }
+.sev-dot[data-sev="error"]   { background: var(--sev-error); }
+.sev-dot[data-sev="running"] { background: var(--sev-running); }
+
+

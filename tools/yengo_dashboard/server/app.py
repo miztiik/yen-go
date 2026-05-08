@@ -107,7 +107,7 @@ def create_app(
         def _serve_index() -> FileResponse:
             return FileResponse(index_path)
 
-        for nav in ("library", "pipeline", "activity", "operations", "logs", "guide"):
+        for nav in ("library", "pipeline", "daily", "activity", "operations", "logs", "guide"):
             app.add_api_route(f"/{nav}", _serve_index, methods=["GET"], include_in_schema=False)
         # Guide deep links: /guide/concepts/foo etc.
         app.add_api_route(

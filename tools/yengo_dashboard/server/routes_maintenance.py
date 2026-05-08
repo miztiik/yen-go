@@ -29,6 +29,8 @@ whether to commit. The mutating POSTs above remain async-via-SSE.
 
 from __future__ import annotations
 
+import re
+
 from fastapi import APIRouter, HTTPException, Query
 
 from tools.yengo_dashboard.server.models import (
@@ -67,6 +69,9 @@ from tools.yengo_dashboard.server.pipeline_runner import (
     PipelineRunner,
 )
 from tools.yengo_dashboard.server.run_controller import RunBusyError, RunController
+
+
+_ADAPTER_ID_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 
 
 def _build_clean_args(req: CleanRequest) -> list[str]:
@@ -336,6 +341,16 @@ def build_maintenance_router(
         body: AdapterConfigAddRequest,
     ) -> AdapterConfigMutationResponse:
         """Theme 7b: append a new source via ``adapter-config add``."""
+        if not _ADAPTER_ID_RE.match(body.id):
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "invalid source id",
+                    "field": "id",
+                    "pattern": _ADAPTER_ID_RE.pattern,
+                    "value": body.id,
+                },
+            )
         return _adapter_config_mutation(lambda: runner.adapter_config_add(
             source_id=body.id, name=body.name,
             adapter=body.adapter, config=body.config,

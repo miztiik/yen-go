@@ -190,19 +190,19 @@ function paintSystemChip() {
   if (!chip) return;
   const label = $("#system-chip-label");
   const meta  = $("#system-chip-meta");
+  // W1.5 — the bottom status strip is the single source of truth for
+  // status messaging. The top-right chip is demoted to a colored dot +
+  // version so the two surfaces don't duplicate prose. Severity color
+  // still flows through `data-sev` (theme tokens in styles.css).
   let sev = "ok";
-  let text = "healthy";
-  if (SYSTEM.unreachable) {
-    sev = "error"; text = "unreachable";
-  } else if (SYSTEM.active && !isTerminal(SYSTEM.active.status)) {
-    sev = "running";
-    const sub = SYSTEM.active.command?.[3] || "run";
-    text = `${sub} running`;
-  } else if (SYSTEM.lock.locked) {
-    sev = "warn"; text = "lock held";
-  }
+  if (SYSTEM.unreachable) sev = "error";
+  else if (SYSTEM.active && !isTerminal(SYSTEM.active.status)) sev = "running";
+  else if (SYSTEM.lock.locked) sev = "warn";
   chip.dataset.sev = sev;
-  if (label) label.textContent = text;
+  if (label) {
+    label.textContent = "";
+    label.classList.add("hidden");
+  }
   if (meta) {
     const v = SYSTEM.health.version || "?";
     meta.textContent = `v${v}`;
@@ -447,12 +447,19 @@ async function _loadTaxonomySection() {
       getJSON("/api/levels"),
     ]);
     section.innerHTML = `
-      <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-3">Taxonomy</h3>
-      <div class="grid md:grid-cols-2 gap-6">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xs uppercase tracking-wider text-slate-500">Taxonomy</h3>
+        <div class="flex items-center gap-2">
+          <span id="taxonomy-edit-warning" class="text-[10px] text-amber-400 hidden">edit mode — destructive on published puzzles</span>
+          <button type="button" id="taxonomy-edit-toggle" class="text-[10px] uppercase tracking-wider px-2 py-1 rounded ring-1 ring-slate-700 text-slate-400 hover:text-slate-200" aria-pressed="false">Edit taxonomy</button>
+        </div>
+      </div>
+      <div id="taxonomy-grid" class="grid md:grid-cols-2 gap-6" data-tax-edit="0">
         ${taxonomyTable("Tags", tagsResp.raw, "tag", true)}
         ${taxonomyTable("Levels", levelsResp.raw, "level", false)}
       </div>
     `;
+    _wireTaxonomyEditToggle(section);
     // Theme 11: wire inline rename + tag-merge buttons (delegated).
     section.querySelectorAll("[data-taxonomy-rename]").forEach((btn) => {
       btn.addEventListener("click", (e) => {
@@ -477,6 +484,28 @@ async function _loadTaxonomySection() {
   }
 }
 
+// W1.4: gate taxonomy mutations behind an explicit "Edit taxonomy" toggle.
+// Rename / merge are destructive on published puzzles (downstream SGFs carry
+// the slug); they should not be one click away during normal browsing.
+let _taxonomyEditTimer = null;
+function _wireTaxonomyEditToggle(section) {
+  const btn = section.querySelector("#taxonomy-edit-toggle");
+  const grid = section.querySelector("#taxonomy-grid");
+  const warn = section.querySelector("#taxonomy-edit-warning");
+  if (!btn || !grid) return;
+  const setMode = (on) => {
+    grid.dataset.taxEdit = on ? "1" : "0";
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    btn.textContent = on ? "Exit edit mode" : "Edit taxonomy";
+    btn.classList.toggle("ring-amber-500", on);
+    btn.classList.toggle("text-amber-400", on);
+    if (warn) warn.classList.toggle("hidden", !on);
+    if (_taxonomyEditTimer) { clearTimeout(_taxonomyEditTimer); _taxonomyEditTimer = null; }
+    if (on) _taxonomyEditTimer = setTimeout(() => setMode(false), 5 * 60 * 1000);
+  };
+  btn.addEventListener("click", () => setMode(grid.dataset.taxEdit !== "1"));
+}
+
 function taxonomyTable(title, rows, key, showCategory) {
   const sorted = [...(rows || [])].sort((a, b) => (b.usage_count || 0) - (a.usage_count || 0));
   const headerCells = showCategory
@@ -490,7 +519,7 @@ function taxonomyTable(title, rows, key, showCategory) {
       : `${escapeHtml(r.rank_min || "?")}–${escapeHtml(r.rank_max || "?")}`;
     const usage = (r.usage_count || 0).toLocaleString();
     const renameBtn = slug
-      ? `<button type="button" class="text-[10px] uppercase tracking-wider text-slate-400 hover:text-slate-200" data-taxonomy-rename="${escapeHtml(key)}" data-slug="${escapeHtml(slug)}">rename</button>`
+      ? `<button type="button" class="tax-mutate text-[10px] uppercase tracking-wider text-amber-400 hover:text-amber-200" data-taxonomy-rename="${escapeHtml(key)}" data-slug="${escapeHtml(slug)}">rename</button>`
       : "";
     return `<tr class="border-t border-slate-800/50">
       <td class="px-2 py-1 font-mono text-slate-200">${left}</td>
@@ -500,7 +529,7 @@ function taxonomyTable(title, rows, key, showCategory) {
     </tr>`;
   }).join("");
   const headerExtra = key === "tag"
-    ? `<button type="button" class="text-[10px] uppercase tracking-wider text-slate-400 hover:text-slate-200" data-taxonomy-merge="tag">merge…</button>`
+    ? `<button type="button" class="tax-mutate text-[10px] uppercase tracking-wider text-amber-400 hover:text-amber-200" data-taxonomy-merge="tag">merge…</button>`
     : "";
   return `
     <div class="rounded-md ring-1 ring-slate-800 bg-slate-900/60 overflow-hidden" data-taxonomy="${escapeHtml(key)}">
@@ -2551,7 +2580,7 @@ function renderLiveRun() {
           </select>
         </div>
         <div class="space-y-1.5 pt-1">
-          <label class="flex items-center gap-2 text-xs"><input id="run-fresh" type="checkbox" /> --fresh<span class="text-slate-600 ml-1">(clean staging first)</span></label>
+          <label class="flex items-center gap-2 text-xs" title="Wipes this source's .yengo-ingest.sqlite + .pm-runtime/state. Forces full re-ingest."><input id="run-fresh" type="checkbox" /> --fresh<span class="text-rose-400 ml-1 font-semibold">(destructive: wipes ingest DB + runtime state)</span></label>
           <label class="flex items-center gap-2 text-xs"><input id="run-dry-run" type="checkbox" /> --dry-run</label>
           <label class="flex items-center gap-2 text-xs"><input id="run-source-override" type="checkbox" /> --source-override</label>
           <label class="flex items-center gap-2 text-xs"><input id="run-no-enrichment" type="checkbox" /> --no-enrichment</label>
