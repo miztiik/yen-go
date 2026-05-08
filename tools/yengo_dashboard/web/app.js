@@ -3405,6 +3405,98 @@ async function _loadActivityRows() {
   if (window.lucide) window.lucide.createIcons({ container: list });
 }
 
+// Theme 8a: Daily Challenge view (read-only). Renders rolling-window
+// status badge + recent schedule rows table. Calendar + mutation actions
+// arrive in later 8 slices.
+async function renderDaily() {
+  const root = $("#view-daily");
+  root.innerHTML = `
+    ${viewHeader("Daily", { subtext: "rolling-window status + generated schedule rows" })}
+    <section id="daily-status-section" class="mb-4"
+             data-daily-status>(loading status…)</section>
+    <section id="daily-list-section"
+             data-daily-list>(loading schedule…)</section>
+  `;
+  try {
+    const [s, l] = await Promise.all([
+      fetch("/api/daily/status?window_days=30").then((r) => r.json()),
+      fetch("/api/daily/list").then((r) => r.json()),
+    ]);
+    _renderDailyStatusBlock(s.raw || {});
+    _renderDailyListBlock(l.raw || {});
+  } catch (e) {
+    root.querySelector("[data-daily-status]").innerHTML = errorBlock("/api/daily", e);
+  }
+}
+
+function _renderDailyStatusBlock(raw) {
+  const host = document.querySelector("[data-daily-status]");
+  if (!host) return;
+  const expected = raw.expected_dates ?? 0;
+  const generated = raw.generated_dates ?? 0;
+  const missing = (raw.missing_dates || []).length;
+  const stale = (raw.stale_dates || []).length;
+  const healthy = missing === 0 && stale === 0;
+  const badge = healthy
+    ? `<span class="px-2 py-1 text-xs rounded bg-emerald-500/20 text-emerald-300">healthy</span>`
+    : (missing > 0
+        ? `<span class="px-2 py-1 text-xs rounded bg-rose-500/20 text-rose-300">${missing} missing</span>`
+        : `<span class="px-2 py-1 text-xs rounded bg-amber-500/20 text-amber-300">${stale} stale</span>`);
+  host.innerHTML = `
+    <div class="rounded border border-slate-200 dark:border-slate-700 p-4"
+         data-daily-status-card>
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-semibold">Daily status</h3>
+        ${badge}
+      </div>
+      <div class="mt-2 text-sm grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div><span class="text-slate-500">window:</span>
+             ${escapeHtml(raw.window?.from || "?")} → ${escapeHtml(raw.window?.to || "?")}</div>
+        <div><span class="text-slate-500">expected:</span> ${expected}</div>
+        <div><span class="text-slate-500">generated:</span> ${generated}</div>
+        <div><span class="text-slate-500">last regen:</span>
+             ${escapeHtml(raw.last_regenerated_at || "—")}</div>
+      </div>
+      ${missing > 0 ? `<details class="mt-2 text-xs">
+        <summary>Missing dates (${missing})</summary>
+        <pre class="overflow-auto">${escapeHtml((raw.missing_dates || []).join("\n"))}</pre>
+      </details>` : ""}
+      ${stale > 0 ? `<details class="mt-2 text-xs">
+        <summary>Stale dates (${stale})</summary>
+        <pre class="overflow-auto">${escapeHtml(JSON.stringify(raw.stale_dates, null, 2))}</pre>
+      </details>` : ""}
+    </div>
+  `;
+}
+
+function _renderDailyListBlock(raw) {
+  const host = document.querySelector("[data-daily-list]");
+  if (!host) return;
+  const rows = raw.rows || [];
+  if (!rows.length) {
+    host.innerHTML = `<div class="text-sm text-slate-500">No daily schedules found.</div>`;
+    return;
+  }
+  host.innerHTML = `
+    <table class="w-full text-sm" data-daily-table>
+      <thead><tr class="text-left text-slate-500">
+        <th class="py-1">Date</th><th>Technique</th>
+        <th class="text-right">Puzzles</th><th>Generated at</th>
+      </tr></thead>
+      <tbody>
+        ${rows.map((r) => `
+          <tr class="border-t border-slate-200 dark:border-slate-700">
+            <td class="py-1 font-mono text-xs">${escapeHtml(r.date)}</td>
+            <td>${escapeHtml(r.technique || "—")}</td>
+            <td class="text-right">${r.puzzle_count}</td>
+            <td class="text-xs text-slate-500">${escapeHtml(r.generated_at || "")}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
 async function renderActivity() {
   const root = $("#view-activity");
   const chips = ["run", "maintenance", "publish"].map((k) => {
@@ -3600,6 +3692,7 @@ const NAV_VIEWS = {
   library:    ["overview", "adapters"],
   pipeline:   ["run", "history"],
   activity:   ["activity"],
+  daily:      ["daily"],
   operations: ["maintenance"],
   logs:       ["logs"],
   guide:      ["guide"],
@@ -3610,6 +3703,7 @@ const RENDERERS = {
   adapters:    renderAdapters,
   run:         renderLiveRun,
   activity:    renderActivity,
+  daily:       renderDaily,
   maintenance: renderMaintenance,
   history:     renderHistory,
   logs:        renderLogs,

@@ -475,6 +475,40 @@ class PipelineRunner:
             )
         return result
 
+    def daily_list(
+        self, *, from_date: str | None = None, to_date: str | None = None,
+    ) -> dict:
+        """Theme 8a: wraps ``daily-list --json``."""
+        args = ["daily-list", "--json"]
+        if from_date:
+            args += ["--from", from_date]
+        if to_date:
+            args += ["--to", to_date]
+        result = self._run_json_any(args)
+        if not isinstance(result, dict):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON object, got {type(result).__name__}", "",
+            )
+        return result
+
+    def daily_status(
+        self, *, window_days: int = 30, stale_days: int = 14,
+    ) -> dict:
+        """Theme 8a: wraps ``daily-status --json``."""
+        args = [
+            "daily-status", "--json",
+            "--window-days", str(window_days),
+            "--stale-days", str(stale_days),
+        ]
+        result = self._run_json_any(args)
+        if not isinstance(result, dict):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON object, got {type(result).__name__}", "",
+            )
+        return result
+
     def pipeline_config_set(
         self, *, set_pairs: list[str], force: bool = False,
     ) -> dict:

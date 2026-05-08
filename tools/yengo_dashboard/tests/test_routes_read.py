@@ -1192,3 +1192,46 @@ class TestPipelineConfigEndpoints:
         # Pydantic min_length=1 → 422.
         assert resp.status_code == 422
 
+
+class TestDailyEndpoints:
+    """Theme 8a: GET /api/daily/list + /api/daily/status."""
+
+    def _seed(self, tmp_path: Path) -> Path:
+        config_dir = tmp_path / "config"
+        config_dir.mkdir(parents=True)
+        (config_dir / "sources.json").write_text(
+            json.dumps({
+                "active_adapter": "src-a",
+                "sources": [{
+                    "id": "src-a", "name": "A", "adapter": "local",
+                    "config": {"path": (tmp_path / "data").as_posix()},
+                }],
+            }),
+            encoding="utf-8",
+        )
+        return config_dir
+
+    def test_list_empty_when_db_missing(self, tmp_path: Path) -> None:
+        # No yengo-search.db on disk — list returns ok with rows=[].
+        config_dir = self._seed(tmp_path)
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.get("/api/daily/list")
+        # The CLI looks at the *real* output dir for yengo-search.db,
+        # so we just assert the contract: 200 + ok + rows is a list.
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["ok"] is True
+        assert isinstance(raw["rows"], list)
+
+    def test_status_returns_window(self, tmp_path: Path) -> None:
+        config_dir = self._seed(tmp_path)
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.get("/api/daily/status?window_days=7")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["window"]["days"] == 7
+        assert raw["expected_dates"] == 7
+        assert isinstance(raw["missing_dates"], list)
+

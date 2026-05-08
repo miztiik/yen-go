@@ -427,6 +427,31 @@ Examples:
         help="Rolling window size in days (default: 90, from config)",
     )
 
+    # Theme 8a: daily-list / daily-status (read-only)
+    daily_list_parser = subparsers.add_parser(
+        "daily-list",
+        help="List generated daily schedules in a date range (read-only).",
+    )
+    daily_list_parser.add_argument("--from", dest="from_date",
+                                    type=str, metavar="YYYY-MM-DD")
+    daily_list_parser.add_argument("--to", dest="to_date",
+                                    type=str, metavar="YYYY-MM-DD")
+    daily_list_parser.add_argument("--json", action="store_true",
+                                    help="Emit JSON.")
+
+    daily_status_parser = subparsers.add_parser(
+        "daily-status",
+        help="Rolling-window health summary for daily challenges.",
+    )
+    daily_status_parser.add_argument("--window-days", dest="window_days",
+                                      type=int, default=30,
+                                      help="Rolling window size (default 30).")
+    daily_status_parser.add_argument("--stale-days", dest="stale_days",
+                                      type=int, default=14,
+                                      help="Mark dates regenerated >N days ago as stale.")
+    daily_status_parser.add_argument("--json", action="store_true",
+                                      help="Emit JSON.")
+
     # status command
     status_parser = subparsers.add_parser("status", help="Show pipeline status")
     status_parser.add_argument(
@@ -1724,6 +1749,140 @@ def _parse_dry_run_flag(dry_run_arg: str | None, target: str | None) -> bool:
         return target == "puzzles-collection"
     # Explicit value provided: parse as boolean
     return dry_run_arg.lower() not in ("false", "no", "0")
+
+
+def _daily_db_path() -> Path:
+    """Theme 8a: locate yengo-search.db; missing/empty is a valid outcome."""
+    return get_output_dir() / "yengo-search.db"
+
+
+def cmd_daily_list(args: argparse.Namespace) -> int:
+    """Theme 8a: read-only list of daily_schedule rows in [from, to]."""
+    import sqlite3
+
+    db_path = _daily_db_path()
+    json_out = bool(getattr(args, "json", False))
+    rows: list[dict] = []
+    if db_path.exists():
+        conn = sqlite3.connect(f"file:{db_path.as_posix()}?mode=ro", uri=True)
+        try:
+            conn.row_factory = sqlite3.Row
+            sql = (
+                "SELECT s.date, s.version, s.generated_at, s.technique_of_day, "
+                "  s.attrs, COUNT(p.content_hash) AS puzzle_count "
+                "FROM daily_schedule s "
+                "LEFT JOIN daily_puzzles p ON p.date = s.date "
+            )
+            params: list[str] = []
+            where: list[str] = []
+            if getattr(args, "from_date", None):
+                where.append("s.date >= ?")
+                params.append(args.from_date)
+            if getattr(args, "to_date", None):
+                where.append("s.date <= ?")
+                params.append(args.to_date)
+            if where:
+                sql += " WHERE " + " AND ".join(where)
+            sql += " GROUP BY s.date ORDER BY s.date"
+            for row in conn.execute(sql, params):
+                try:
+                    attrs = json.loads(row["attrs"] or "{}")
+                except (json.JSONDecodeError, TypeError):
+                    attrs = {}
+                rows.append({
+                    "date": row["date"],
+                    "version": row["version"],
+                    "generated_at": row["generated_at"],
+                    "technique": row["technique_of_day"] or "",
+                    "attrs": attrs,
+                    "puzzle_count": int(row["puzzle_count"]),
+                })
+        finally:
+            conn.close()
+    payload = {"ok": True, "db_exists": db_path.exists(),
+               "from": getattr(args, "from_date", None),
+               "to": getattr(args, "to_date", None), "rows": rows}
+    if json_out:
+        print(json.dumps(payload, indent=2))
+    else:
+        for r in rows:
+            print(f"{r['date']}  technique={r['technique']!r}  puzzles={r['puzzle_count']}")
+    return 0
+
+
+def cmd_daily_status(args: argparse.Namespace) -> int:
+    """Theme 8a: rolling-window health summary for daily challenges."""
+    import sqlite3
+    from datetime import date, timedelta
+
+    db_path = _daily_db_path()
+    json_out = bool(getattr(args, "json", False))
+    window_days = int(getattr(args, "window_days", 30) or 30)
+    stale_days = int(getattr(args, "stale_days", 14) or 14)
+    today = date.today()
+    window_from = (today - timedelta(days=window_days - 1)).isoformat()
+    window_to = today.isoformat()
+
+    rows: list[dict] = []
+    if db_path.exists():
+        conn = sqlite3.connect(f"file:{db_path.as_posix()}?mode=ro", uri=True)
+        try:
+            conn.row_factory = sqlite3.Row
+            for row in conn.execute(
+                "SELECT date, generated_at FROM daily_schedule "
+                "WHERE date >= ? AND date <= ? ORDER BY date",
+                (window_from, window_to),
+            ):
+                rows.append({"date": row["date"],
+                              "generated_at": row["generated_at"]})
+        finally:
+            conn.close()
+
+    generated_dates = {r["date"] for r in rows}
+    expected_dates = window_days
+    missing: list[str] = []
+    cur = today - timedelta(days=window_days - 1)
+    for _ in range(window_days):
+        s = cur.isoformat()
+        if s not in generated_dates:
+            missing.append(s)
+        cur = cur + timedelta(days=1)
+
+    stale: list[dict] = []
+    last_regenerated_at: str | None = None
+    for r in rows:
+        if not r["generated_at"]:
+            continue
+        if last_regenerated_at is None or r["generated_at"] > last_regenerated_at:
+            last_regenerated_at = r["generated_at"]
+        try:
+            gen_d = date.fromisoformat(r["generated_at"][:10])
+        except ValueError:
+            continue
+        age = (today - gen_d).days
+        if age > stale_days:
+            stale.append({"date": r["date"],
+                           "regenerated_at": r["generated_at"],
+                           "age_days": age})
+
+    payload = {
+        "ok": True,
+        "db_exists": db_path.exists(),
+        "window": {"from": window_from, "to": window_to,
+                    "days": window_days},
+        "expected_dates": expected_dates,
+        "generated_dates": len(generated_dates),
+        "missing_dates": missing,
+        "stale_dates": stale,
+        "last_regenerated_at": last_regenerated_at,
+    }
+    if json_out:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(f"window {window_from}..{window_to} "
+              f"generated={len(generated_dates)}/{expected_dates} "
+              f"missing={len(missing)} stale={len(stale)}")
+    return 0
 
 
 def cmd_clean(args: argparse.Namespace) -> int:
@@ -3871,6 +4030,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_ingest(args)
     elif args.command == "daily":
         return cmd_daily(args)
+    elif args.command == "daily-list":
+        return cmd_daily_list(args)
+    elif args.command == "daily-status":
+        return cmd_daily_status(args)
     elif args.command == "status":
         return cmd_status(args)
     elif args.command == "clean":

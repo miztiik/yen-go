@@ -817,3 +817,28 @@ class PipelineConfigSetResponse(BaseModel):
             "({ok, applied, pipeline, message})."
         ),
     )
+
+
+class DailyListResponse(BaseModel):
+    """``GET /api/daily/list`` payload (Theme 8a)."""
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON from `daily-list --json` "
+            "({ok, db_exists, from?, to?, rows[]})."
+        ),
+    )
+
+
+class DailyStatusResponse(BaseModel):
+    """``GET /api/daily/status`` payload (Theme 8a)."""
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON from `daily-status --json` "
+            "({ok, db_exists, window, expected_dates, generated_dates, "
+            "missing_dates[], stale_dates[], last_regenerated_at})."
+        ),
+    )

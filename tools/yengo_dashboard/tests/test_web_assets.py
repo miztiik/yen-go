@@ -1004,3 +1004,20 @@ def test_pipeline_config_section_wired(app_js: str) -> None:
     assert "data-pipeline-config-set-apply" in app_js
     assert "/api/pipeline-config" in app_js
     assert "_renderPipelineConfigSection" in app_js
+
+
+def test_daily_view_wired(app_js: str) -> None:
+    """Theme 8a: Daily nav + status badge + schedule table."""
+    assert "renderDaily" in app_js
+    assert 'daily:      ["daily"],' in app_js or 'daily:["daily"]' in app_js
+    assert "data-daily-status" in app_js
+    assert "data-daily-list" in app_js
+    assert "data-daily-table" in app_js
+    assert "/api/daily/status" in app_js
+    assert "/api/daily/list" in app_js
+
+
+def test_daily_nav_in_index(index_html: str) -> None:
+    """Theme 8a: sidebar carries the Daily nav button."""
+    assert 'data-nav="daily"' in index_html
+    assert 'id="view-daily"' in index_html

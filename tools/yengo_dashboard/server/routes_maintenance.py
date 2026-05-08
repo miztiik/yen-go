@@ -42,6 +42,8 @@ from tools.yengo_dashboard.server.models import (
     PipelineConfigSetRequest,
     PipelineConfigSetResponse,
     PipelineConfigShowResponse,
+    DailyListResponse,
+    DailyStatusResponse,
     CleanPreviewResponse,
     CleanRequest,
     InventoryMutationApplyResponse,
@@ -438,5 +440,53 @@ def build_maintenance_router(
                 },
             ) from exc
         return PipelineConfigSetResponse(raw=payload)
+
+    @router.get(
+        "/daily/list",
+        response_model=DailyListResponse,
+    )
+    def daily_list(
+        from_date: str | None = Query(default=None, alias="from"),
+        to_date: str | None = Query(default=None, alias="to"),
+    ) -> DailyListResponse:
+        """Theme 8a: read daily_schedule rows in [from, to]."""
+        try:
+            payload = runner.daily_list(from_date=from_date, to_date=to_date)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": "puzzle_manager daily-list failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return DailyListResponse(raw=payload)
+
+    @router.get(
+        "/daily/status",
+        response_model=DailyStatusResponse,
+    )
+    def daily_status(
+        window_days: int = Query(default=30, ge=1, le=365),
+        stale_days: int = Query(default=14, ge=0, le=365),
+    ) -> DailyStatusResponse:
+        """Theme 8a: rolling-window health summary."""
+        try:
+            payload = runner.daily_status(
+                window_days=window_days, stale_days=stale_days,
+            )
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": "puzzle_manager daily-status failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return DailyStatusResponse(raw=payload)
 
     return router
