@@ -1414,4 +1414,64 @@ class TestTaxonomyMutationPreviewEndpoints:
         assert resp.status_code == 422
 
 
+class TestAdapterScaffoldEndpoints:
+    """Theme 12: preview path uses real subprocess against real config.
+
+    Tests use ``--dry-run`` only so they don't write a new package into the
+    real ``backend/puzzle_manager/adapters/`` tree. Apply path is exercised
+    by the CLI unit tests with ``--adapters-dir`` pointed at tmp.
+    """
+
+    def test_preview_invalid_id_returns_invalid(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.post(
+                "/api/adapter-scaffold/preview",
+                json={"id": "Has Spaces", "kind": "local"},
+            )
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["ok"] is False
+        assert any(e["code"] == "invalid-id" for e in raw["errors"])
+
+    def test_preview_collision_with_built_in_local(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.post(
+                "/api/adapter-scaffold/preview",
+                json={"id": "local", "kind": "local"},
+            )
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["ok"] is False
+        assert any(e["code"] == "id-collision" for e in raw["errors"])
+
+    def test_preview_fresh_id_returns_proposal(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.post(
+                "/api/adapter-scaffold/preview",
+                json={
+                    "id": "yengo-cockpit-scratch-zzz",
+                    "kind": "local",
+                    "name": "Scratch",
+                    "path": "data/scratch",
+                },
+            )
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["ok"] is True
+        assert raw["dry_run"] is True
+        assert raw["sources_entry"]["id"] == "yengo-cockpit-scratch-zzz"
+        assert raw["sources_entry"]["adapter"] == "yengo-cockpit-scratch-zzz"
+        assert raw["sources_entry"]["config"]["path"] == "data/scratch"
+        assert len(raw["files_created"]) == 2
+
+    def test_missing_id_returns_422(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.post("/api/adapter-scaffold/preview", json={"kind": "local"})
+        assert resp.status_code == 422
+
+
 

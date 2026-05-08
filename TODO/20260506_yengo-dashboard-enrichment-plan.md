@@ -40,7 +40,7 @@ get done; the order is the prioritization, not the filter.
 | 9  | Run diff / compare                 | ☐      |  P2   | "what did run X do differently" |
 | 10 | Puzzle Detail page                 | ✅      |  P2   | Headline feature; depends on 4, 5, 9 |
 | 11 | Tag/Level mutation (rename, merge) | ◐      |  P3   | V1 preview-only landed (`--dry-run --json` for tags rename/merge + levels rename + cockpit modals); apply path deferred |
-| 12 | Adapter scaffold (new adapter src) | ☐      |  P3   | Rare; only after #7 sticks |
+| 12 | Adapter scaffold (new adapter src) | ✅      |  P3   | `adapter-scaffold --kind local --id NEW_ID --dry-run --json` + cockpit preview/apply endpoints + Library/Adapters scaffold form behind typed-verb confirm |
 
 **Phases**:
 - **P0** = quick wins, foundational, ship in the next sprint
@@ -732,13 +732,10 @@ Build only after Theme 5's read-only inspector ships and is in use.
 After Theme 7 lands and we know what shape new adapters take.
 
 ### Backend additions
-- `adapter scaffold --kind local --id NEW_ID` → generates
-  `backend/puzzle_manager/adapters/NEW_ID/{__init__.py, adapter.py}`
-  from a template + adds a stub entry to `sources.json`.
+- ✅ `adapter-scaffold --id NEW_ID --kind local [--name NAME] [--path PATH] [--dry-run] [--force] --json` → generates `backend/puzzle_manager/adapters/NEW_ID/{__init__.py, adapter.py}` from a thin LocalAdapter subclass template + appends a stub entry to `sources.json` (apply path takes `PipelineLock(run_id="adapter-scaffold")`). Hidden `--adapters-dir PATH` flag for unit tests.
 
 ### UI surfaces
-- Bootstrap wizard (Theme 7) gains a "Generate adapter code" checkbox
-  for kinds that don't already exist.
+- ✅ Library/Adapters page mounts a scaffold form (id + name + path inputs); Preview hits `/api/adapter-scaffold/preview` and renders the proposal (sources_entry JSON + files_created list + errors); Apply requires a typed-verb confirm and POSTs `/api/adapter-scaffold/apply`.
 
 ---
 

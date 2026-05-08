@@ -25,6 +25,8 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException, Query
 
 from tools.yengo_dashboard.server.models import (
+    AdapterScaffoldRequest,
+    AdapterScaffoldResponse,
     CliInvocationResponse,
     DisableAdapterRequest,
     EnableAdapterRequest,
@@ -143,5 +145,47 @@ def build_admin_router(*, runner: PipelineRunner) -> APIRouter:
                 },
             ) from exc
         return TaxonomyMutationPreviewResponse(raw=payload)
+
+    @router.post("/adapter-scaffold/preview", response_model=AdapterScaffoldResponse)
+    def adapter_scaffold_preview(body: AdapterScaffoldRequest) -> AdapterScaffoldResponse:
+        """Theme 12: dry-run preview of `adapter-scaffold`."""
+        try:
+            payload = runner.adapter_scaffold(
+                new_id=body.new_id, kind=body.kind,
+                name=body.name, path=body.path,
+                dry_run=True, force=body.force,
+            )
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": "puzzle_manager adapter-scaffold preview failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return AdapterScaffoldResponse(raw=payload)
+
+    @router.post("/adapter-scaffold/apply", response_model=AdapterScaffoldResponse)
+    def adapter_scaffold_apply(body: AdapterScaffoldRequest) -> AdapterScaffoldResponse:
+        """Theme 12: apply `adapter-scaffold` (writes adapter package + sources.json)."""
+        try:
+            payload = runner.adapter_scaffold(
+                new_id=body.new_id, kind=body.kind,
+                name=body.name, path=body.path,
+                dry_run=False, force=body.force,
+            )
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": "puzzle_manager adapter-scaffold apply failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return AdapterScaffoldResponse(raw=payload)
 
     return router

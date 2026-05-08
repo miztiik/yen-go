@@ -589,6 +589,27 @@ class PipelineRunner:
         args = ["levels", "rename", old, new, "--dry-run", "--json"]
         return self._run_taxonomy_preview(args)
 
+    def adapter_scaffold(
+        self, *, new_id: str, kind: str = "local",
+        name: str | None = None, path: str | None = None,
+        dry_run: bool = True, force: bool = False,
+    ) -> dict:
+        """Theme 12: wraps ``adapter-scaffold ... --json``.
+
+        Tolerates rc=2 (validation failures return ``ok:false`` + ``errors[]``
+        and are an expected business outcome — not a 502).
+        """
+        args = ["adapter-scaffold", "--id", new_id, "--kind", kind, "--json"]
+        if name is not None:
+            args += ["--name", name]
+        if path is not None:
+            args += ["--path", path]
+        if dry_run:
+            args += ["--dry-run"]
+        if force:
+            args += ["--force"]
+        return self._run_taxonomy_preview(args)
+
     def _run_taxonomy_preview(self, args: list[str]) -> dict:
         """Tolerates rc=2 (preview returns invalid=true with errors[])."""
         cmd = self._base_cmd()

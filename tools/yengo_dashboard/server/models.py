@@ -951,3 +951,20 @@ class TagsMergePreviewRequest(BaseModel):
 class LevelsRenamePreviewRequest(BaseModel):
     old: str = Field(..., min_length=1)
     new: str = Field(..., min_length=1)
+
+
+class AdapterScaffoldRequest(BaseModel):
+    """Theme 12: scaffold a new adapter package + sources.json stub."""
+
+    new_id: str = Field(..., min_length=1, max_length=64, alias="id")
+    kind: str = Field(default="local")
+    name: str | None = Field(default=None)
+    path: str | None = Field(default=None)
+    dry_run: bool = Field(default=True)
+    force: bool = Field(default=False)
+
+    model_config = {"populate_by_name": True}
+
+
+class AdapterScaffoldResponse(BaseModel):
+    raw: dict = Field(..., description="Parsed JSON from `adapter-scaffold --json`.")

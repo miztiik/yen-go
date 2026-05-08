@@ -1088,3 +1088,13 @@ def test_taxonomy_mutation_wired(app_js: str) -> None:
     assert "/api/levels/rename/preview" in app_js
     assert "Apply (deferred)" in app_js
 
+
+def test_adapter_scaffold_wired(app_js: str) -> None:
+    """Theme 12: scaffold form + preview/apply flow is wired into the Adapters page."""
+    assert "_renderAdapterScaffoldSection" in app_js
+    assert "adapter-scaffold-section" in app_js
+    assert "data-adapter-scaffold-form" in app_js
+    assert "data-adapter-scaffold-apply" in app_js
+    assert "/api/adapter-scaffold/preview" in app_js
+    assert "/api/adapter-scaffold/apply" in app_js
+

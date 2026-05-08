@@ -1035,9 +1035,11 @@ async function renderAdapters() {
       </div>
       <section id="adapter-validation-section" class="mt-6"></section>
       <section id="adapter-bootstrap-section" class="mt-6"></section>
+      <section id="adapter-scaffold-section" class="mt-6"></section>
     `;
     _loadAdapterValidationSection();
     _renderAdapterBootstrapSection();
+    _renderAdapterScaffoldSection();
   } catch (e) { root.innerHTML = errorBlock("/api/adapters", e); }
 }
 
@@ -1174,6 +1176,113 @@ function _renderAdapterBootstrapSection() {
       result.innerHTML = errorBlock("/api/adapter-config/bootstrap", e);
     }
   });
+}
+
+// Theme 12: Adapter Scaffold — generate a new local adapter package +
+// sources.json stub from a small inline form. Preview is read-only; Apply
+// writes to disk + sources.json behind a typed-verb confirmation.
+function _renderAdapterScaffoldSection() {
+  const section = document.getElementById("adapter-scaffold-section");
+  if (!section) return;
+  section.innerHTML = `
+    <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-3">Scaffold new adapter (Theme 12)</h3>
+    <form data-adapter-scaffold-form class="rounded-md ring-1 ring-slate-800 bg-slate-900/60 p-3 grid md:grid-cols-2 gap-3">
+      <label class="block text-xs text-slate-400">Adapter id (lowercase, dashes/underscores)
+        <input type="text" name="id" required minlength="1" maxlength="64"
+               class="mt-1 w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 font-mono text-sm text-slate-100"
+               pattern="[a-z][a-z0-9_-]{0,63}"
+               placeholder="my-new-source" />
+      </label>
+      <label class="block text-xs text-slate-400">Display name (optional)
+        <input type="text" name="name"
+               class="mt-1 w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-slate-100"
+               placeholder="defaults to id" />
+      </label>
+      <label class="block text-xs text-slate-400 md:col-span-2">SGF folder path (optional, used by the local kind)
+        <input type="text" name="path"
+               class="mt-1 w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 font-mono text-sm text-slate-100"
+               placeholder="data/sources/my-new-source" />
+      </label>
+      <div class="md:col-span-2 flex items-center gap-2">
+        <button type="submit" class="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-slate-200">Preview</button>
+        <span data-adapter-scaffold-status class="text-[11px] text-slate-500"></span>
+      </div>
+    </form>
+    <div data-adapter-scaffold-result class="mt-3"></div>
+  `;
+  const form = section.querySelector("[data-adapter-scaffold-form]");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const status = section.querySelector("[data-adapter-scaffold-status]");
+    const result = section.querySelector("[data-adapter-scaffold-result]");
+    const fd = new FormData(form);
+    const body = {
+      id: (fd.get("id") || "").toString().trim(),
+      kind: "local",
+      name: ((fd.get("name") || "").toString().trim()) || null,
+      path: ((fd.get("path") || "").toString().trim()) || null,
+    };
+    if (!body.id) {
+      result.innerHTML = `<div class="text-xs text-rose-300">id required</div>`;
+      return;
+    }
+    status.textContent = "running preview…";
+    try {
+      const resp = await postJSON("/api/adapter-scaffold/preview", body);
+      result.innerHTML = _renderAdapterScaffoldPreview(resp.raw || {}, body);
+      const apply = result.querySelector("[data-adapter-scaffold-apply]");
+      if (apply) {
+        apply.addEventListener("click", async () => {
+          if (!await confirmDialog({verb: body.id})) return;
+          status.textContent = "applying…";
+          try {
+            const r2 = await postJSON("/api/adapter-scaffold/apply", body);
+            result.innerHTML = _renderAdapterScaffoldPreview(r2.raw || {}, body);
+            toast("ok", `scaffolded adapter ${body.id}`);
+          } catch (err) {
+            result.innerHTML = errorBlock("POST /api/adapter-scaffold/apply", err);
+          } finally {
+            status.textContent = "";
+          }
+        });
+      }
+    } catch (err) {
+      result.innerHTML = errorBlock("POST /api/adapter-scaffold/preview", err);
+    } finally {
+      status.textContent = "";
+    }
+  });
+}
+
+function _renderAdapterScaffoldPreview(raw, body) {
+  const ok = !!raw.ok;
+  const okBadge = ok
+    ? `<span class="pill ${PILL_VARIANTS.ok}"><span class="glyph"></span>${raw.dry_run ? "preview ok" : "applied"}</span>`
+    : `<span class="pill ${PILL_VARIANTS.error}"><span class="glyph"></span>invalid</span>`;
+  const errs = Array.isArray(raw.errors) && raw.errors.length
+    ? `<ul class="mt-2 list-disc list-inside text-rose-300 text-xs">${raw.errors.map((e) => `<li>${escapeHtml(e.code || "?")}: ${escapeHtml(e.message || "")}</li>`).join("")}</ul>`
+    : "";
+  const files = Array.isArray(raw.files_created) && raw.files_created.length
+    ? `<div class="mt-2 text-xs text-slate-400">Files: <span class="font-mono text-slate-200">${raw.files_created.map(escapeHtml).join("</span>, <span class='font-mono text-slate-200'>")}</span></div>`
+    : "";
+  const entry = raw.sources_entry
+    ? `<pre class="mt-2 bg-slate-950/60 p-2 rounded text-xs font-mono text-slate-300 overflow-auto">${escapeHtml(JSON.stringify(raw.sources_entry, null, 2))}</pre>`
+    : "";
+  const applyBtn = ok && raw.dry_run
+    ? `<button type="button" data-adapter-scaffold-apply class="mt-3 px-3 py-1 rounded bg-rose-700 hover:bg-rose-600 text-xs text-white">Apply (writes ${escapeHtml(body.id)})</button>`
+    : "";
+  return `
+    <div class="rounded-md ring-1 ring-slate-800 bg-slate-900/60 p-3">
+      <div class="flex items-center justify-between">
+        <div>${okBadge}</div>
+        <div class="text-[11px] text-slate-500">${escapeHtml(raw.message || "")}</div>
+      </div>
+      ${entry}
+      ${files}
+      ${errs}
+      ${applyBtn}
+    </div>
+  `;
 }
 
 function adapterBootstrapBlock(raw) {
