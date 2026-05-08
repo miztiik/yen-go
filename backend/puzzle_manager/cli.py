@@ -625,6 +625,14 @@ File Locations:
         action="store_true",
         help="Emit machine-readable JSON.",
     )
+    source_status_parser.add_argument(
+        "--details",
+        action="store_true",
+        help=(
+            "Theme 6a: emit a per-source detail payload (summary + recent_runs + "
+            "recent_failures + config). Requires --source and --json."
+        ),
+    )
 
     # enable-adapter command
     enable_adapter_parser = subparsers.add_parser(
@@ -1993,6 +2001,32 @@ def cmd_source_status(args: argparse.Namespace) -> int:
 
             rows.append(row)
 
+        # Theme 6a: details payload — requires --source and --json. Build a
+        # focused per-source detail object from the (single) row plus recent
+        # runs/failures scoped to this source via config_snapshot.source_id.
+        if getattr(args, "details", False):
+            if not source_filter:
+                print("Error: --details requires --source SOURCE_ID")
+                return 2
+            if not args.json:
+                print("Error: --details requires --json (no human formatter)")
+                return 2
+            if not rows:
+                print(json.dumps({"error": f"unknown source: {source_filter}"}))
+                return 1
+            row = rows[0]
+            source_cfg = next(
+                (s.config.model_dump(mode="json") for s in sources if s.id == source_filter),
+                {},
+            )
+            details = _build_source_details(
+                row=row,
+                source_id=source_filter,
+                source_cfg=source_cfg,
+            )
+            print(json.dumps(details, indent=2))
+            return 0
+
         if args.json:
             print(json.dumps(
                 {"sources": rows, "active_adapter": active_adapter},
@@ -2020,6 +2054,91 @@ def cmd_source_status(args: argparse.Namespace) -> int:
     except PuzzleManagerError as e:
         print(f"Error: {e}")
         return 1
+
+
+def _build_source_details(
+    *,
+    row: dict,
+    source_id: str,
+    source_cfg: dict,
+    runs_dir: Path | None = None,
+    max_runs: int = 10,
+    max_failures: int = 10,
+) -> dict:
+    """Theme 6a: assemble the per-source details payload.
+
+    Walks the run-state directory newest-first and selects up to
+    ``max_runs`` runs whose ``config_snapshot.source_id`` matches
+    ``source_id``. Truncated/partially-written state files are skipped
+    rather than aborting the whole call (matches StateReader.read_runs).
+
+    The shape mirrors ``backend.puzzle_manager.models.source_details.SourceDetails``.
+    """
+    from backend.puzzle_manager.paths import get_pm_state_dir
+
+    if runs_dir is None:
+        runs_dir = get_pm_state_dir() / "runs"
+
+    recent_runs: list[dict] = []
+    recent_failures: list[dict] = []
+
+    if runs_dir.exists():
+        files = sorted(runs_dir.glob("*.json"), reverse=True)
+        for f in files:
+            if len(recent_runs) >= max_runs and len(recent_failures) >= max_failures:
+                break
+            try:
+                state = json.loads(f.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            snapshot = state.get("config_snapshot") or {}
+            if snapshot.get("source_id") != source_id:
+                continue
+
+            stages = state.get("stages") or []
+            ingested = sum(int(s.get("processed_count") or 0) for s in stages
+                           if s.get("name") == "ingest")
+            failed = sum(int(s.get("failed_count") or 0) for s in stages)
+            skipped = sum(int(s.get("skipped_count") or 0) for s in stages)
+
+            if len(recent_runs) < max_runs:
+                recent_runs.append({
+                    "run_id": state.get("run_id", ""),
+                    "started_at": state.get("started_at"),
+                    "completed_at": state.get("completed_at"),
+                    "status": state.get("status", ""),
+                    "ingested": ingested,
+                    "failed": failed,
+                    "skipped": skipped,
+                })
+
+            if len(recent_failures) < max_failures:
+                run_id = state.get("run_id", "")
+                for fail in state.get("failures") or []:
+                    if len(recent_failures) >= max_failures:
+                        break
+                    recent_failures.append({
+                        "run_id": run_id,
+                        "item_id": fail.get("item_id", ""),
+                        "stage": fail.get("stage", ""),
+                        "error_type": fail.get("error_type", ""),
+                        "error_message": fail.get("error_message", ""),
+                        "timestamp": fail.get("timestamp"),
+                    })
+
+    return {
+        "id": source_id,
+        "adapter": row.get("adapter", ""),
+        "summary": {
+            "ingested": int(row.get("ingested") or 0),
+            "skipped": int(row.get("skipped") or 0),
+            "failed": int(row.get("failed") or 0),
+            "total": int(row.get("total") or 0),
+        },
+        "recent_runs": recent_runs,
+        "recent_failures": recent_failures,
+        "config": source_cfg,
+    }
 
 
 def cmd_enable_adapter(args: argparse.Namespace) -> int:

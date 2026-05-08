@@ -23,6 +23,7 @@ from tools.yengo_dashboard.server.models import (
     OpsCatalogResponse,
     RunsResponse,
     RuntimeInfoResponse,
+    SourceDetailsResponse,
     TagsListResponse,
 )
 from tools.yengo_dashboard.server.pipeline_runner import PipelineCommandError, PipelineRunner
@@ -245,5 +246,27 @@ def build_read_router(
                 },
             ) from exc
         return LevelsListResponse(raw=payload)
+
+    @router.get("/adapters/{source_id}/details", response_model=SourceDetailsResponse)
+    def source_details(_request: Request, source_id: str) -> SourceDetailsResponse:
+        """Theme 6a: passthrough of ``source-status --source ID --details --json``.
+
+        Adapter detail SPA route consumes this for summary tile + recent-runs +
+        recent-failures + config echo. Errors propagate as 400 so the UI can
+        surface the CLI stderr (e.g., unknown source ID).
+        """
+        try:
+            payload = runner.source_details(source_id)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "puzzle_manager source-status --details failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return SourceDetailsResponse(raw=payload)
 
     return router

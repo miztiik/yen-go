@@ -487,8 +487,8 @@ feature request.
   a "Run this adapter only" button (passes `--source ID`).
 
 ### Acceptance criteria
-- [ ] Backend route test against seeded fixture.
-- [ ] Dashboard route test asserts `/adapters/{id}` resolves.
+- [x] Backend route test against seeded fixture.
+- [x] Dashboard route test asserts `/adapters/{id}` resolves.
 
 ### Theme 6b — Per-source ingest-DB management (folded into Theme 6)
 

@@ -820,3 +820,34 @@ class TestTaxonomyEndpoints:
         for row in raw:
             assert "id" in row and "usage_count" in row
             assert row["usage_count"] >= 0
+
+
+class TestSourceDetailsEndpoint:
+    """Theme 6a: source-status --details passthrough."""
+
+    def test_returns_summary_runs_failures_config(self, tmp_path: Path) -> None:
+        config_dir = _seed_real_source(
+            tmp_path, source_id="detail-fixture", ingested=3, skipped=0, failed=0
+        )
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.get("/api/adapters/detail-fixture/details")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["id"] == "detail-fixture"
+        assert raw["adapter"] == "local"
+        assert raw["summary"]["ingested"] == 3
+        assert raw["summary"]["total"] == 3
+        assert isinstance(raw["recent_runs"], list)
+        assert isinstance(raw["recent_failures"], list)
+        assert isinstance(raw["config"], dict)
+        assert raw["config"].get("path")  # echo of sources.json entry
+
+    def test_unknown_source_returns_400(self, tmp_path: Path) -> None:
+        config_dir = _seed_real_source(
+            tmp_path, source_id="known", ingested=0, skipped=0, failed=0
+        )
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.get("/api/adapters/does-not-exist/details")
+        assert resp.status_code == 400

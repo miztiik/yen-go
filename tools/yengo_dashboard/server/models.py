@@ -607,3 +607,21 @@ class LevelsListResponse(BaseModel):
         ...,
         description="Parsed JSON list of `levels list --json` (LevelUsageEntry rows).",
     )
+
+
+class SourceDetailsResponse(BaseModel):
+    """``GET /api/adapters/{id}/details`` payload — verbatim
+    ``source-status --details --json`` output (Theme 6a).
+
+    Shape owned by ``backend.puzzle_manager.models.source_details.SourceDetails``.
+    Per principle #6 the cockpit forwards the dict unchanged so the schema
+    can evolve in the pipeline without a coordinated dashboard release.
+    """
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON object of `source-status --source ID --details --json`. "
+            "Shape owned by `backend.puzzle_manager.models.source_details.SourceDetails`."
+        ),
+    )

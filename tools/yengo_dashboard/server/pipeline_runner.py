@@ -336,6 +336,22 @@ class PipelineRunner:
             )
         return result
 
+    def source_details(self, source_id: str) -> dict:
+        """Wraps ``puzzle_manager source-status --source ID --details --json`` (Theme 6a).
+
+        Returns the parsed JSON dict verbatim. Schema is owned by the CLI
+        (``backend.puzzle_manager.models.source_details.SourceDetails``);
+        the cockpit forwards it unchanged per principle #6.
+        """
+        args = ["source-status", "--source", source_id, "--details", "--json"]
+        result = self._run_json_any(args)
+        if not isinstance(result, dict):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON object, got {type(result).__name__}", "",
+            )
+        return result
+
     def activity(
         self,
         *,

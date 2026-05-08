@@ -817,7 +817,7 @@ function adapterRow(a) {
   const fullPath = escapeHtml(a.source_root || "—");
   return `
     <tr class="border-t border-slate-800 align-top hover:bg-slate-800/30">
-      <td class="py-2 pl-3 pr-4 font-mono text-sm">${escapeHtml(a.id)}${activeMarker}</td>
+      <td class="py-2 pl-3 pr-4 font-mono text-sm"><a href="/adapters/${encodeURIComponent(a.id)}" data-adapter-link="${escapeHtml(a.id)}" class="text-sky-300 hover:underline">${escapeHtml(a.id)}</a>${activeMarker}</td>
       <td class="py-2 pr-4">${adapterHealthDot(a)}</td>
       <td class="py-2 pr-4">${lastRun}</td>
       <td class="py-2 pr-4 text-right font-mono tabular-nums text-sm">${a.ingested.toLocaleString()}</td>
@@ -885,6 +885,152 @@ async function renderAdapters() {
     `;
   } catch (e) { root.innerHTML = errorBlock("/api/adapters", e); }
 }
+
+// ---------- Theme 6a: Adapter Detail Page ----------
+//
+// Deep link: /adapters/{id}. The SPA shell (server returns index.html for the
+// route) reads location.pathname on boot; we reach this via showAdapterDetail()
+// either at boot or when the user clicks an adapter id link in the table.
+// Hides every other view section so #view-adapter-detail owns the page.
+
+function showAdapterDetail(adapterId, opts = {}) {
+  const targetPath = `/adapters/${encodeURIComponent(adapterId)}`;
+  if (!opts.skipPush && location.pathname !== targetPath) {
+    history.pushState({ adapterId }, "", targetPath);
+  }
+  $$(".view").forEach((v) => v.classList.add("hidden"));
+  const detail = $("#view-adapter-detail");
+  detail.classList.remove("hidden");
+  $$(".nav-item").forEach((b) => b.classList.toggle("active", b.dataset.nav === "library"));
+  const crumb = $("#page-breadcrumb");
+  if (crumb) crumb.textContent = `library / adapters / ${adapterId}`;
+  renderAdapterDetail(adapterId);
+  if (window.lucide?.createIcons) window.lucide.createIcons();
+}
+
+async function renderAdapterDetail(adapterId) {
+  const root = $("#view-adapter-detail");
+  root.innerHTML = `<div class="text-slate-400 text-sm">loading ${escapeHtml(adapterId)}…</div>`;
+  try {
+    const resp = await getJSON(`/api/adapters/${encodeURIComponent(adapterId)}/details`);
+    const d = resp.raw || {};
+    const summary = d.summary || {};
+    const recentRuns = d.recent_runs || [];
+    const recentFailures = d.recent_failures || [];
+    root.innerHTML = `
+      ${viewHeader(`Adapter · ${escapeHtml(d.id || adapterId)}`, {
+        metaHtml: `
+          <span class="view-header-sub">${escapeHtml(d.adapter || "")}</span>
+          <span class="view-header-sub">·</span>
+          <a href="/library" class="text-xs text-sky-300 hover:underline" data-back-to-library>← all adapters</a>
+        `,
+      })}
+      <section class="grid md:grid-cols-4 gap-3 mb-4">
+        ${summaryTile("ingested", summary.ingested, "text-slate-100")}
+        ${summaryTile("skipped", summary.skipped, "text-orange-300")}
+        ${summaryTile("failed", summary.failed, "text-rose-300")}
+        ${summaryTile("total", summary.total, "text-slate-300")}
+      </section>
+      <section class="mb-4">
+        <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-2">recent runs</h3>
+        ${adapterDetailRunsTable(recentRuns)}
+      </section>
+      <section class="mb-4">
+        <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-2">recent failures</h3>
+        ${adapterDetailFailuresTable(recentFailures)}
+      </section>
+      <section>
+        <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-2">config (sources.json)</h3>
+        <pre class="text-xs bg-slate-900 ring-1 ring-slate-800 rounded p-3 overflow-x-auto">${escapeHtml(JSON.stringify(d.config || {}, null, 2))}</pre>
+      </section>
+    `;
+  } catch (e) {
+    root.innerHTML = errorBlock(`/api/adapters/${adapterId}/details`, e);
+  }
+}
+
+function summaryTile(label, value, valueClass) {
+  const v = (value === undefined || value === null) ? "—" : Number(value).toLocaleString();
+  return `
+    <div class="rounded-md bg-slate-900 ring-1 ring-slate-800 px-3 py-2">
+      <div class="text-[10px] uppercase tracking-wider text-slate-500">${escapeHtml(label)}</div>
+      <div class="text-2xl font-mono tabular-nums ${valueClass}">${v}</div>
+    </div>
+  `;
+}
+
+function adapterDetailRunsTable(rows) {
+  if (!rows.length) return `<div class="text-xs text-slate-500 italic">no runs recorded for this source</div>`;
+  return `
+    <div class="overflow-x-auto rounded-md border border-slate-800 bg-slate-900">
+      <table class="w-full text-sm">
+        <thead class="text-slate-500 text-xs uppercase tracking-wider">
+          <tr>
+            <th class="text-left  font-normal py-2 pl-3">run_id</th>
+            <th class="text-left  font-normal py-2">started</th>
+            <th class="text-left  font-normal py-2">status</th>
+            <th class="text-right font-normal py-2 pr-4">ingested</th>
+            <th class="text-right font-normal py-2 pr-4">failed</th>
+            <th class="text-right font-normal py-2 pr-3">skipped</th>
+          </tr>
+        </thead>
+        <tbody>${rows.map((r) => `
+          <tr class="border-t border-slate-800">
+            <td class="py-2 pl-3 pr-4 font-mono text-xs">${escapeHtml(r.run_id || "")}</td>
+            <td class="py-2 pr-4 text-xs text-slate-400">${escapeHtml(r.started_at || "—")}</td>
+            <td class="py-2 pr-4 text-xs">${escapeHtml(r.status || "")}</td>
+            <td class="py-2 pr-4 text-right font-mono tabular-nums text-xs">${Number(r.ingested || 0).toLocaleString()}</td>
+            <td class="py-2 pr-4 text-right font-mono tabular-nums text-xs text-rose-300">${Number(r.failed || 0).toLocaleString()}</td>
+            <td class="py-2 pr-3 text-right font-mono tabular-nums text-xs text-orange-300">${Number(r.skipped || 0).toLocaleString()}</td>
+          </tr>
+        `).join("")}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function adapterDetailFailuresTable(rows) {
+  if (!rows.length) return `<div class="text-xs text-slate-500 italic">no failures in recent runs</div>`;
+  return `
+    <div class="overflow-x-auto rounded-md border border-slate-800 bg-slate-900">
+      <table class="w-full text-sm">
+        <thead class="text-slate-500 text-xs uppercase tracking-wider">
+          <tr>
+            <th class="text-left font-normal py-2 pl-3">item_id</th>
+            <th class="text-left font-normal py-2">stage</th>
+            <th class="text-left font-normal py-2">error_type</th>
+            <th class="text-left font-normal py-2 pr-3">message</th>
+          </tr>
+        </thead>
+        <tbody>${rows.map((r) => `
+          <tr class="border-t border-slate-800">
+            <td class="py-2 pl-3 pr-4 font-mono text-xs">${escapeHtml(r.item_id || "")}</td>
+            <td class="py-2 pr-4 text-xs">${escapeHtml(r.stage || "")}</td>
+            <td class="py-2 pr-4 text-xs text-rose-300">${escapeHtml(r.error_type || "")}</td>
+            <td class="py-2 pr-3 text-xs text-slate-300">${escapeHtml(r.error_message || "")}</td>
+          </tr>
+        `).join("")}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+// Intercept clicks on adapter id links in the table — keep them as <a> for
+// middle-click / right-click ergonomics, but hijack normal clicks so we don't
+// reload the SPA shell.
+document.addEventListener("click", (e) => {
+  const link = e.target.closest("a[data-adapter-link]");
+  if (link && !e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) {
+    e.preventDefault();
+    showAdapterDetail(link.dataset.adapterLink);
+    return;
+  }
+  const back = e.target.closest("a[data-back-to-library]");
+  if (back && !e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) {
+    e.preventDefault();
+    showTab("library");
+  }
+});
 
 function emptyState(headline, hintHtml = "") {
   return `<div class="rounded-lg border border-dashed border-slate-700 p-8 text-center">
@@ -2950,6 +3096,8 @@ window.addEventListener("popstate", () => {
   if (parsed.nav === "guide" && parsed.guidePath) {
     showTab("guide");
     loadGuideDoc(parsed.guidePath);
+  } else if (parsed.adapterId) {
+    showAdapterDetail(parsed.adapterId, { skipPush: true });
   } else {
     showTab(parsed.nav);
   }
@@ -3011,20 +3159,26 @@ function parsePath(pathname) {
   const head = parts[0] || "";
   if (head === "guide") {
     const sub = parts.slice(1).map(decodeURIComponent).join("/");
-    return { nav: "guide", guidePath: sub || null };
+    return { nav: "guide", guidePath: sub || null, adapterId: null };
   }
-  if (NAV_VIEWS[head]) return { nav: head, guidePath: null };
-  if (LEGACY_NAV_ALIASES[head]) return { nav: LEGACY_NAV_ALIASES[head], guidePath: null };
-  return { nav: "library", guidePath: null };
+  // Theme 6a: /adapters/{id} resolves to library nav, adapterId triggers detail render.
+  if (head === "adapters" && parts[1]) {
+    return { nav: "library", guidePath: null, adapterId: decodeURIComponent(parts[1]) };
+  }
+  if (NAV_VIEWS[head]) return { nav: head, guidePath: null, adapterId: null };
+  if (LEGACY_NAV_ALIASES[head]) return { nav: LEGACY_NAV_ALIASES[head], guidePath: null, adapterId: null };
+  return { nav: "library", guidePath: null, adapterId: null };
 }
 
 let initialNav = "library";
 let initialGuidePath = null;
+let initialAdapterId = null;
 const initialHash = location.hash.slice(1);
 if (location.pathname !== "/" && location.pathname !== "") {
   const parsed = parsePath(location.pathname);
   initialNav = parsed.nav;
   initialGuidePath = parsed.guidePath;
+  initialAdapterId = parsed.adapterId;
 } else if (initialHash) {
   // Legacy hash → clean path. Rewrite the URL bar so screenshots and copies
   // immediately use the new format.
@@ -3045,6 +3199,7 @@ if (location.pathname !== "/" && location.pathname !== "") {
 }
 showTab(initialNav);
 if (initialGuidePath) loadGuideDoc(initialGuidePath);
+if (initialAdapterId) showAdapterDetail(initialAdapterId, { skipPush: true });
 masterTick();
 setInterval(refreshRelTimes, 30_000);   // relative-time labels tick every 30s
 

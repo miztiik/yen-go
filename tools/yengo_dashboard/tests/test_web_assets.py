@@ -885,3 +885,31 @@ def test_taxonomy_section_present_in_overview(app_js: str) -> None:
     assert "function taxonomyTable" in app_js, (
         "Theme 5: a table renderer must exist for tag/level rows."
     )
+
+
+def test_adapter_detail_route_wired(app_js: str) -> None:
+    """Theme 6a: /adapters/{id} resolves via parsePath + showAdapterDetail.
+
+    Pins the SPA route (parsePath returns adapterId), the shower function,
+    the renderer, and the data-adapter-link click interceptor that turns
+    table id-cell anchors into in-app navigation.
+    """
+    assert 'head === "adapters"' in app_js, (
+        "Theme 6a: parsePath must recognise the /adapters/{id} prefix."
+    )
+    assert "function showAdapterDetail" in app_js
+    assert "async function renderAdapterDetail" in app_js
+    assert "data-adapter-link" in app_js, (
+        "Theme 6a: adapterRow id cell must carry data-adapter-link for the click interceptor."
+    )
+    assert '/api/adapters/${encodeURIComponent(adapterId)}/details' in app_js, (
+        "Theme 6a: renderer must call the new details endpoint."
+    )
+
+
+def test_adapter_detail_view_section_in_index_html() -> None:
+    """Theme 6a: a #view-adapter-detail section must exist in the SPA shell."""
+    html = (
+        Path(__file__).resolve().parents[1] / "web" / "index.html"
+    ).read_text(encoding="utf-8")
+    assert 'id="view-adapter-detail"' in html

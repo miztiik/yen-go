@@ -113,5 +113,10 @@ def create_app(
         app.add_api_route(
             "/guide/{rest:path}", _serve_index, methods=["GET"], include_in_schema=False,
         )
+        # Theme 6a: adapter detail deep link → SPA shell handles /adapters/{id}.
+        app.add_api_route(
+            "/adapters/{adapter_id}", _serve_index,
+            methods=["GET"], include_in_schema=False,
+        )
         app.mount("/", StaticFiles(directory=str(web), html=True), name="web")
     return app
