@@ -464,6 +464,22 @@ class PipelineRunner:
             args.append("--force")
         return self._run_json_any(args)
 
+    def adapter_config_bootstrap(
+        self, *, from_folder: str, adapter: str = "local",
+        id_prefix: str = "", dry_run: bool = True,
+    ) -> dict:
+        """Theme 7c: wraps ``adapter-config bootstrap --json``."""
+        args = [
+            "adapter-config", "bootstrap",
+            "--from-folder", from_folder,
+            "--adapter", adapter,
+            "--id-prefix", id_prefix,
+            "--json",
+        ]
+        if dry_run:
+            args.append("--dry-run")
+        return self._run_json_any(args)
+
     def activity(
         self,
         *,

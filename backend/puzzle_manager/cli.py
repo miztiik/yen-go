@@ -765,6 +765,22 @@ File Locations:
     adapter_config_remove.add_argument("--force", action="store_true",
                                         help="Allow removing the active adapter.")
 
+    # Theme 7c: bootstrap wizard.
+    adapter_config_bootstrap = adapter_config_subparsers.add_parser(
+        "bootstrap",
+        help="Propose source entries from immediate subdirectories of a folder.",
+    )
+    adapter_config_bootstrap.add_argument("--from-folder", required=True,
+                                           dest="from_folder")
+    adapter_config_bootstrap.add_argument("--adapter", default="local",
+                                           dest="bootstrap_adapter")
+    adapter_config_bootstrap.add_argument("--id-prefix", default="",
+                                           dest="id_prefix")
+    adapter_config_bootstrap.add_argument("--dry-run", action="store_true",
+                                           dest="dry_run")
+    adapter_config_bootstrap.add_argument("--json", action="store_true")
+    adapter_config_bootstrap.add_argument("--force", action="store_true")
+
     # enable-adapter command
     enable_adapter_parser = subparsers.add_parser(
         "enable-adapter",
@@ -2684,6 +2700,9 @@ def cmd_adapter_config(args: argparse.Namespace) -> int:
         if action in ("add", "clone", "update", "remove"):
             return _adapter_config_mutate(args, action, loader)
 
+        if action == "bootstrap":
+            return _adapter_config_bootstrap(args, loader)
+
         print(f"Error: unknown adapter-config action '{action}'", file=sys.stderr)
         return 2
     except PuzzleManagerError as exc:
@@ -2856,6 +2875,126 @@ def _adapter_config_mutate(
                   "message": f"{action} applied to sources.json",
                   "source_id": getattr(args, "source_id",
                                        getattr(args, "new_id", None))}, 0)
+
+
+def _slugify(text: str) -> str:
+    """Lowercase, hyphenate, strip to ``^[a-z][a-z0-9-]*$``."""
+    out = []
+    for ch in text.strip().lower():
+        if ch.isalnum():
+            out.append(ch)
+        elif ch in ("-", "_", " ", "."):
+            out.append("-")
+    slug = "".join(out).strip("-")
+    while "--" in slug:
+        slug = slug.replace("--", "-")
+    if not slug or not slug[0].isalpha():
+        slug = "src-" + slug if slug else "src"
+    return slug
+
+
+def _adapter_config_bootstrap(
+    args: argparse.Namespace, loader: ConfigLoader,
+) -> int:
+    """Propose / apply source entries scanned from a folder (Theme 7c)."""
+    from backend.puzzle_manager.core.atomic_write import atomic_write_json
+    from backend.puzzle_manager.pipeline.lock import PipelineLock, PipelineLockError
+
+    folder = Path(args.from_folder)
+    json_out = bool(getattr(args, "json", False))
+    dry_run = bool(getattr(args, "dry_run", False))
+    force = bool(getattr(args, "force", False))
+
+    def _emit(payload: dict[str, Any], rc: int) -> int:
+        if json_out:
+            print(json.dumps(payload, indent=2, default=str))
+        else:
+            head = "[DRY-RUN] " if dry_run else ""
+            if rc == 0:
+                print(f"{head}{payload.get('message', 'bootstrap proposal')}")
+                for e in payload.get("entries", []):
+                    print(f"  - {e['id']} -> {e['config'].get('path')}")
+            else:
+                print(f"[ERROR] {payload.get('message', 'bootstrap failed')}",
+                      file=sys.stderr)
+                for err in payload.get("errors", []):
+                    print(f"  - {err.get('code')}: {err.get('message')}",
+                          file=sys.stderr)
+        return rc
+
+    if not folder.exists() or not folder.is_dir():
+        return _emit({"ok": False, "applied": False, "dry_run": dry_run,
+                      "message": f"--from-folder is not a directory: {folder}",
+                      "errors": [{"code": "bad-folder",
+                                  "message": str(folder)}]}, 2)
+
+    sources_path = loader.config_dir / "sources.json"
+    doc = json.loads(sources_path.read_text(encoding="utf-8"))
+    existing_ids = {s.get("id") for s in doc.get("sources", [])}
+
+    project_root = get_project_root()
+    entries: list[dict[str, Any]] = []
+    for child in sorted(folder.iterdir()):
+        if not child.is_dir():
+            continue
+        slug = _slugify(child.name)
+        candidate = f"{args.id_prefix}{slug}" if args.id_prefix else slug
+        rel = child.resolve().relative_to(project_root.resolve()).as_posix() \
+            if str(child.resolve()).startswith(str(project_root.resolve())) \
+            else child.as_posix()
+        entries.append({
+            "id": candidate,
+            "name": child.name,
+            "adapter": args.bootstrap_adapter,
+            "config": {"path": rel},
+            "conflicts_with_existing": candidate in existing_ids,
+        })
+
+    payload: dict[str, Any] = {
+        "ok": True, "dry_run": dry_run, "applied": False,
+        "from_folder": folder.as_posix(),
+        "entries": entries,
+        "message": f"proposed {len(entries)} entr{'y' if len(entries) == 1 else 'ies'}",
+    }
+
+    if dry_run:
+        return _emit(payload, 0)
+
+    fresh = [e for e in entries if not e["conflicts_with_existing"]]
+    if not fresh:
+        payload["message"] = "no fresh entries to apply (all IDs already in use)"
+        return _emit(payload, 0)
+
+    new_doc = {**doc, "sources": list(doc.get("sources", []))}
+    for e in fresh:
+        new_doc["sources"].append({
+            "id": e["id"], "name": e["name"],
+            "adapter": e["adapter"], "config": e["config"],
+        })
+    issues = _validate_sources_doc(new_doc)
+    if issues:
+        return _emit({**payload, "ok": False,
+                      "message": "schema validation failed",
+                      "errors": issues}, 2)
+
+    lock = PipelineLock(run_id="adapter-config-bootstrap")
+    try:
+        if not force:
+            lock.acquire()
+    except PipelineLockError as exc:
+        return _emit({**payload, "ok": False, "message": str(exc),
+                      "errors": [{"code": "pipeline-locked",
+                                  "message": str(exc)}]}, 2)
+    try:
+        atomic_write_json(sources_path, new_doc)
+    finally:
+        if not force:
+            lock.release()
+
+    payload["applied"] = True
+    payload["applied_ids"] = [e["id"] for e in fresh]
+    payload["message"] = f"applied {len(fresh)} entr{'y' if len(fresh) == 1 else 'ies'}"
+    return _emit(payload, 0)
 
 
 def cmd_enable_adapter(args: argparse.Namespace) -> int:

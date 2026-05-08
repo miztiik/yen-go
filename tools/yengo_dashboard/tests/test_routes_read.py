@@ -1071,3 +1071,62 @@ class TestAdapterConfigMutationEndpoints:
             })
         assert resp.status_code == 400
 
+
+class TestAdapterConfigBootstrapEndpoint:
+    """Theme 7c: POST /api/adapter-config/bootstrap preview + apply."""
+
+    def _seed(self, tmp_path: Path) -> Path:
+        config_dir = tmp_path / "config"
+        config_dir.mkdir(parents=True)
+        good = tmp_path / "data" / "good"
+        good.mkdir(parents=True)
+        (config_dir / "sources.json").write_text(
+            json.dumps({
+                "active_adapter": "src-a",
+                "sources": [{
+                    "id": "src-a", "name": "A", "adapter": "local",
+                    "config": {"path": good.as_posix()},
+                }],
+            }),
+            encoding="utf-8",
+        )
+        return config_dir
+
+    def test_dry_run_proposes(self, tmp_path: Path) -> None:
+        config_dir = self._seed(tmp_path)
+        scan = tmp_path / "scan"
+        (scan / "alpha").mkdir(parents=True)
+        (scan / "beta").mkdir(parents=True)
+        before = (config_dir / "sources.json").read_text(encoding="utf-8")
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.post("/api/adapter-config/bootstrap", json={
+                "from_folder": scan.as_posix(),
+                "adapter": "local", "id_prefix": "", "dry_run": True,
+            })
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["dry_run"] is True
+        assert raw["applied"] is False
+        ids = sorted(e["id"] for e in raw["entries"])
+        assert ids == ["alpha", "beta"]
+        after = (config_dir / "sources.json").read_text(encoding="utf-8")
+        assert before == after, "dry-run must not write"
+
+    def test_apply_writes_fresh_only(self, tmp_path: Path) -> None:
+        config_dir = self._seed(tmp_path)
+        scan = tmp_path / "scan"
+        (scan / "src-a").mkdir(parents=True)  # collision
+        (scan / "newone").mkdir(parents=True)
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.post("/api/adapter-config/bootstrap", json={
+                "from_folder": scan.as_posix(),
+                "adapter": "local", "id_prefix": "", "dry_run": False,
+            })
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["applied"] is True
+        assert "newone" in raw["applied_ids"]
+        assert "src-a" not in raw["applied_ids"]
+

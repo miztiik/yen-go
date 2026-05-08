@@ -883,8 +883,10 @@ async function renderAdapters() {
         </table>
       </div>
       <section id="adapter-validation-section" class="mt-6"></section>
+      <section id="adapter-bootstrap-section" class="mt-6"></section>
     `;
     _loadAdapterValidationSection();
+    _renderAdapterBootstrapSection();
   } catch (e) { root.innerHTML = errorBlock("/api/adapters", e); }
 }
 
@@ -945,6 +947,116 @@ function adapterValidationBlock(raw) {
       </div>
       ${issuesTable}
     </div>
+  `;
+}
+
+// Theme 7c: Bootstrap wizard — folder scan → preview table → apply selected.
+function _renderAdapterBootstrapSection() {
+  const section = document.getElementById("adapter-bootstrap-section");
+  if (!section) return;
+  section.innerHTML = `
+    <div class="rounded-md border border-slate-800 bg-slate-900 p-3"
+         data-adapter-bootstrap>
+      <div class="flex items-center justify-between">
+        <h3 class="text-xs uppercase tracking-wider text-slate-500">Bootstrap from folder</h3>
+        <span class="text-xs text-slate-500 font-mono">adapter-config bootstrap</span>
+      </div>
+      <form class="mt-2 grid grid-cols-1 sm:grid-cols-4 gap-2"
+            data-adapter-bootstrap-form>
+        <input type="text" name="from_folder"
+          placeholder="external-sources/my-folder"
+          class="sm:col-span-2 rounded border border-slate-700 bg-slate-950 px-2 py-1 text-sm font-mono">
+        <input type="text" name="adapter" value="local"
+          class="rounded border border-slate-700 bg-slate-950 px-2 py-1 text-sm font-mono">
+        <input type="text" name="id_prefix" placeholder="(prefix)"
+          class="rounded border border-slate-700 bg-slate-950 px-2 py-1 text-sm font-mono">
+        <div class="sm:col-span-4 flex gap-2">
+          <button type="submit"
+            class="px-3 py-1 text-xs rounded bg-sky-700 hover:bg-sky-600">Preview</button>
+          <button type="button" data-adapter-bootstrap-apply
+            class="px-3 py-1 text-xs rounded bg-emerald-700 hover:bg-emerald-600 hidden">Apply selected</button>
+        </div>
+      </form>
+      <div class="mt-3" data-adapter-bootstrap-result></div>
+    </div>
+  `;
+  const form = section.querySelector("[data-adapter-bootstrap-form]");
+  const result = section.querySelector("[data-adapter-bootstrap-result]");
+  const applyBtn = section.querySelector("[data-adapter-bootstrap-apply]");
+  let lastPreview = null;
+  form.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const data = new FormData(form);
+    const body = {
+      from_folder: String(data.get("from_folder") || "").trim(),
+      adapter: String(data.get("adapter") || "local").trim(),
+      id_prefix: String(data.get("id_prefix") || "").trim(),
+      dry_run: true,
+    };
+    if (!body.from_folder) return;
+    try {
+      const resp = await postJSON("/api/adapter-config/bootstrap", body);
+      lastPreview = body;
+      result.innerHTML = adapterBootstrapBlock(resp.raw || {});
+      applyBtn.classList.toggle("hidden",
+        !(resp.raw && resp.raw.entries && resp.raw.entries.some(e => !e.conflicts_with_existing)));
+    } catch (e) {
+      result.innerHTML = errorBlock("/api/adapter-config/bootstrap", e);
+      applyBtn.classList.add("hidden");
+    }
+  });
+  applyBtn.addEventListener("click", async () => {
+    if (!lastPreview) return;
+    const ok = await confirmDialog({
+      title: "Apply bootstrap entries",
+      message: `Append all fresh entries from ${lastPreview.from_folder}.`,
+      verb: "apply",
+    });
+    if (!ok) return;
+    try {
+      const resp = await postJSON("/api/adapter-config/bootstrap",
+                                   { ...lastPreview, dry_run: false });
+      result.innerHTML = adapterBootstrapBlock(resp.raw || {});
+      applyBtn.classList.add("hidden");
+      toast(`bootstrap applied: ${(resp.raw.applied_ids || []).length}`, "ok");
+    } catch (e) {
+      result.innerHTML = errorBlock("/api/adapter-config/bootstrap", e);
+    }
+  });
+}
+
+function adapterBootstrapBlock(raw) {
+  const entries = Array.isArray(raw.entries) ? raw.entries : [];
+  if (entries.length === 0) {
+    return `<div class="text-xs text-slate-500 italic">no proposals</div>`;
+  }
+  const head = raw.applied
+    ? `<div class="text-xs text-emerald-300 mb-2">Applied ${raw.applied_ids ? raw.applied_ids.length : 0}.</div>`
+    : `<div class="text-xs text-slate-400 mb-2">${escapeHtml(raw.message || "preview")}</div>`;
+  return head + `
+    <table class="w-full text-sm" data-adapter-bootstrap-table>
+      <thead class="text-slate-500 text-xs uppercase tracking-wider">
+        <tr>
+          <th class="text-left font-normal py-1 pl-3">id</th>
+          <th class="text-left font-normal py-1">name</th>
+          <th class="text-left font-normal py-1">path</th>
+          <th class="text-left font-normal py-1 pr-3">status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${entries.map(e => {
+          const status = e.conflicts_with_existing
+            ? `<span class="text-amber-300">conflict</span>`
+            : `<span class="text-emerald-300">fresh</span>`;
+          return `<tr class="border-t border-slate-800">
+            <td class="py-1 pl-3 font-mono text-xs">${escapeHtml(e.id)}</td>
+            <td class="py-1 text-xs">${escapeHtml(e.name)}</td>
+            <td class="py-1 font-mono text-xs text-slate-400">${escapeHtml(e.config && e.config.path || "")}</td>
+            <td class="py-1 pr-3 text-xs">${status}</td>
+          </tr>`;
+        }).join("")}
+      </tbody>
+    </table>
   `;
 }
 

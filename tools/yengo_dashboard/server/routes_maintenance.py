@@ -33,6 +33,8 @@ from fastapi import APIRouter, HTTPException, Query
 
 from tools.yengo_dashboard.server.models import (
     AdapterConfigAddRequest,
+    AdapterConfigBootstrapRequest,
+    AdapterConfigBootstrapResponse,
     AdapterConfigCloneRequest,
     AdapterConfigMutationResponse,
     AdapterConfigRemoveRequest,
@@ -364,5 +366,30 @@ def build_maintenance_router(
         return _adapter_config_mutation(lambda: runner.adapter_config_remove(
             source_id=source_id, force=body.force,
         ))
+
+    @router.post(
+        "/adapter-config/bootstrap",
+        response_model=AdapterConfigBootstrapResponse,
+    )
+    def adapter_config_bootstrap(
+        body: AdapterConfigBootstrapRequest,
+    ) -> AdapterConfigBootstrapResponse:
+        """Theme 7c: bootstrap-wizard preview/apply for a source folder."""
+        try:
+            payload = runner.adapter_config_bootstrap(
+                from_folder=body.from_folder, adapter=body.adapter,
+                id_prefix=body.id_prefix, dry_run=body.dry_run,
+            )
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "puzzle_manager adapter-config bootstrap failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return AdapterConfigBootstrapResponse(raw=payload)
 
     return router

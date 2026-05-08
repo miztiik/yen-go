@@ -980,3 +980,17 @@ def test_adapter_config_edit_form_wired(app_js: str) -> None:
     assert "_wireAdapterConfigForm" in app_js
     assert "/update" in app_js
     assert "/remove" in app_js
+
+
+def test_adapter_bootstrap_section_wired(app_js: str) -> None:
+    """Theme 7c: Adapter list mounts the bootstrap-from-folder wizard.
+
+    Pin the form host + apply button + table selector so future refactors
+    don't accidentally remove the only access path to bootstrap.
+    """
+    assert 'id="adapter-bootstrap-section"' in app_js
+    assert "data-adapter-bootstrap-form" in app_js
+    assert "data-adapter-bootstrap-apply" in app_js
+    assert "data-adapter-bootstrap-table" in app_js
+    assert "/api/adapter-config/bootstrap" in app_js
+    assert "function adapterBootstrapBlock" in app_js

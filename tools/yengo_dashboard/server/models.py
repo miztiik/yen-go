@@ -758,3 +758,27 @@ class AdapterConfigMutationResponse(BaseModel):
             "({ok, action, message, source_id?, errors?[]})."
         ),
     )
+
+
+class AdapterConfigBootstrapRequest(BaseModel):
+    """``POST /api/adapter-config/bootstrap`` body (Theme 7c)."""
+
+    from_folder: str = Field(..., description="Folder to scan for subdirs.")
+    adapter: str = Field(default="local",
+                          description="Adapter kind for proposed entries.")
+    id_prefix: str = Field(default="",
+                            description="Prefix prepended to slugified IDs.")
+    dry_run: bool = Field(default=True,
+                           description="Preview-only when True.")
+
+
+class AdapterConfigBootstrapResponse(BaseModel):
+    """Bootstrap proposal/apply payload (Theme 7c)."""
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON from `adapter-config bootstrap --json` "
+            "({ok, dry_run, applied, from_folder, entries[], applied_ids?})."
+        ),
+    )

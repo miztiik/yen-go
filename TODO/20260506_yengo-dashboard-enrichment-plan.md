@@ -585,13 +585,15 @@ the file (write-tmp + os.replace).
       block; remove refuses when active; bootstrap dry-run never writes.
       *(Theme 7b ticks add/clone/remove acceptance via
       `test_adapter_config_mutations_cli.py` + `TestAdapterConfigMutationEndpoints`;
-      bootstrap dry-run still pending in Theme 7c.)*
+      Theme 7c covers bootstrap dry-run via
+      `test_adapter_config_bootstrap_cli.py::test_dry_run_proposes_without_writing`.)*
 - [x] Dashboard tests pin: schema-driven form for `local` adapter; clone
       flow; bootstrap preview → apply.
       *(Theme 7b: form wiring pinned via
       `test_adapter_config_edit_form_wired`; clone covered by
       `TestAdapterConfigMutationEndpoints.test_clone_preserves_config`;
-      bootstrap preview→apply still pending in Theme 7c.)*
+      Theme 7c: bootstrap preview + apply pinned via
+      `TestAdapterConfigBootstrapEndpoint` + `test_adapter_bootstrap_section_wired`.)*
 - [x] All mutators flow through `config-lock`; concurrent edits return 409.
       *(Theme 7b: each mutator acquires `PipelineLock` before
       `atomic_write_json`; CLI returns rc 2 with `code=pipeline-locked`
