@@ -657,7 +657,7 @@ the file (write-tmp + os.replace).
       with deliberate gaps. _(Theme 8a — `daily-status` CLI + `/api/daily/status` + `_renderDailyStatusBlock`.)_
 - [~] Preview → commit flow with the same dialog pattern as Theme 1. _(8b: read-only `daily-preview` + per-row Preview button shipped; commit/regenerate flow deferred to 8c.)_
 - [x] Cancel requires typed confirmation (destructive). _(Theme 8c — `daily-cancel` CLI + `/api/daily/cancel/{preview,apply}` + `_runDailyCancel` confirmDialog with verb `cancel <date>`.)_
-- [ ] Backfill flow respects the preview-then-apply pattern.
+- [x] Backfill flow respects the preview-then-apply pattern. _(Theme 8d — `daily-backfill` CLI + `/api/daily/backfill/{preview,apply}` + `_runDailyBackfill` confirmDialog `backfill`.)_
 
 ---
 

@@ -1038,3 +1038,11 @@ def test_daily_cancel_wired(app_js: str) -> None:
     assert "/api/daily/cancel/preview" in app_js
     assert "/api/daily/cancel/apply" in app_js
     assert "confirmDialog" in app_js
+
+
+def test_daily_backfill_wired(app_js: str) -> None:
+    """Theme 8d: status block carries a Backfill missing button."""
+    assert "_runDailyBackfill" in app_js
+    assert "data-daily-backfill-btn" in app_js
+    assert "/api/daily/backfill/preview" in app_js
+    assert "/api/daily/backfill/apply" in app_js

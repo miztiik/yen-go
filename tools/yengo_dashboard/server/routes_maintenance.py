@@ -47,6 +47,8 @@ from tools.yengo_dashboard.server.models import (
     DailyPreviewResponse,
     DailyCancelRequest,
     DailyCancelResponse,
+    DailyBackfillRequest,
+    DailyBackfillResponse,
     CleanPreviewResponse,
     CleanRequest,
     InventoryMutationApplyResponse,
@@ -544,5 +546,43 @@ def build_maintenance_router(
     def daily_cancel_apply(req: DailyCancelRequest) -> DailyCancelResponse:
         """Theme 8c: apply (deletes daily_schedule + daily_puzzles rows)."""
         return DailyCancelResponse(raw=_daily_cancel_call(req, dry_run=False))
+
+    def _daily_backfill_call(req: DailyBackfillRequest, *, dry_run: bool) -> dict:
+        try:
+            return runner.daily_backfill(
+                window_days=req.window_days, dry_run=dry_run, force=req.force,
+            )
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400 if exc.returncode == 2 else 502,
+                detail={
+                    "message": "puzzle_manager daily-backfill failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+
+    @router.post(
+        "/daily/backfill/preview",
+        response_model=DailyBackfillResponse,
+    )
+    def daily_backfill_preview(
+        req: DailyBackfillRequest,
+    ) -> DailyBackfillResponse:
+        """Theme 8d: enumerate missing dates without writing."""
+        return DailyBackfillResponse(raw=_daily_backfill_call(req, dry_run=True))
+
+    @router.post(
+        "/daily/backfill/apply",
+        response_model=DailyBackfillResponse,
+    )
+    def daily_backfill_apply(
+        req: DailyBackfillRequest,
+    ) -> DailyBackfillResponse:
+        """Theme 8d: generate each missing date inside one PipelineLock."""
+        return DailyBackfillResponse(
+            raw=_daily_backfill_call(req, dry_run=False),
+        )
 
     return router

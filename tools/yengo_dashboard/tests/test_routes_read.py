@@ -1279,3 +1279,18 @@ class TestDailyEndpoints:
             )
         assert resp.status_code == 400, resp.text
 
+    def test_backfill_preview_returns_missing(self, tmp_path: Path) -> None:
+        # Theme 8d: preview enumerates the full window when DB missing.
+        config_dir = self._seed(tmp_path)
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.post(
+                "/api/daily/backfill/preview",
+                json={"window_days": 5, "force": True},
+            )
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["dry_run"] is True
+        assert raw["window"]["days"] == 5
+        assert isinstance(raw["missing_dates"], list)
+

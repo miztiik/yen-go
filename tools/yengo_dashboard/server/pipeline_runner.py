@@ -545,6 +545,24 @@ class PipelineRunner:
             )
         return result
 
+    def daily_backfill(
+        self, *, window_days: int = 30, dry_run: bool = True,
+        force: bool = False,
+    ) -> dict:
+        """Theme 8d: wraps ``daily-backfill ... --json`` (preview + apply)."""
+        args = ["daily-backfill", "--json", "--window-days", str(window_days)]
+        if dry_run:
+            args.append("--dry-run")
+        if force:
+            args.append("--force")
+        result = self._run_json_any(args)
+        if not isinstance(result, dict):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON object, got {type(result).__name__}", "",
+            )
+        return result
+
     def pipeline_config_set(
         self, *, set_pairs: list[str], force: bool = False,
     ) -> dict:

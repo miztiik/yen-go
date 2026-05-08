@@ -481,6 +481,22 @@ Examples:
     daily_cancel_parser.add_argument("--json", action="store_true",
                                       help="Emit JSON.")
 
+    # Theme 8d: daily-backfill (gap-filling — preview-then-apply)
+    daily_backfill_parser = subparsers.add_parser(
+        "daily-backfill",
+        help="Generate missing daily challenges in the rolling window.",
+    )
+    daily_backfill_parser.add_argument("--window-days", dest="window_days",
+                                        type=int, default=30,
+                                        help="Window to scan for gaps (default 30).")
+    daily_backfill_parser.add_argument("--dry-run", action="store_true",
+                                        dest="dry_run",
+                                        help="Preview only — list missing dates.")
+    daily_backfill_parser.add_argument("--force", action="store_true",
+                                        help="Skip pipeline lock.")
+    daily_backfill_parser.add_argument("--json", action="store_true",
+                                        help="Emit JSON.")
+
     # status command
     status_parser = subparsers.add_parser("status", help="Show pipeline status")
     status_parser.add_argument(
@@ -2077,6 +2093,98 @@ def cmd_daily_cancel(args: argparse.Namespace) -> int:
             conn.close()
     except sqlite3.Error as exc:
         return _emit({"ok": False, "error": f"sqlite: {exc}"}, rc=1)
+
+    return _emit(payload)
+
+
+def cmd_daily_backfill(args: argparse.Namespace) -> int:
+    """Theme 8d: generate missing daily challenges in the rolling window.
+
+    Scans `daily_schedule` for the last `--window-days` and computes the
+    set difference vs. the expected dates. `--dry-run` emits the missing
+    list. Apply path acquires `PipelineLock` and runs `DailyGenerator`
+    once per missing date with `force=True`, then `inject_daily_schedule`
+    each result individually.
+    """
+    import sqlite3
+    from datetime import date, timedelta
+    from backend.puzzle_manager.pipeline.lock import PipelineLock, PipelineLockError
+
+    json_out = bool(getattr(args, "json", False))
+    dry_run = bool(getattr(args, "dry_run", False))
+    window = int(getattr(args, "window_days", 30) or 30)
+    today = date.today()
+    window_from = (today - timedelta(days=window - 1)).isoformat()
+    window_to = today.isoformat()
+
+    db_path = _daily_db_path()
+
+    def _emit(payload: dict, rc: int = 0) -> int:
+        if json_out:
+            print(json.dumps(payload, indent=2))
+        else:
+            label = "PREVIEW" if dry_run else "OK"
+            print(f"[{label}] window={window_from}..{window_to} "
+                  f"missing={len(payload.get('missing_dates', []))} "
+                  f"generated={payload.get('generated_count', 0)}")
+        return rc
+
+    generated: set[str] = set()
+    if db_path.exists():
+        conn = sqlite3.connect(f"file:{db_path.as_posix()}?mode=ro", uri=True)
+        try:
+            for row in conn.execute(
+                "SELECT date FROM daily_schedule WHERE date >= ? AND date <= ?",
+                (window_from, window_to),
+            ):
+                generated.add(row[0])
+        finally:
+            conn.close()
+    missing: list[str] = []
+    cur = today - timedelta(days=window - 1)
+    for _ in range(window):
+        s = cur.isoformat()
+        if s not in generated:
+            missing.append(s)
+        cur = cur + timedelta(days=1)
+
+    payload: dict[str, object] = {
+        "ok": True, "dry_run": dry_run, "db_exists": db_path.exists(),
+        "window": {"from": window_from, "to": window_to, "days": window},
+        "missing_dates": missing, "generated_count": 0, "failures": [],
+    }
+    if dry_run or not missing or not db_path.exists():
+        return _emit(payload)
+
+    if not args.force:
+        try:
+            PipelineLock(run_id="daily-backfill").acquire()
+        except PipelineLockError as exc:
+            return _emit({"ok": False, "error": f"pipeline-locked: {exc}"}, rc=2)
+
+    try:
+        from backend.puzzle_manager.daily.db_writer import inject_daily_schedule
+        generator = DailyGenerator(db_path=db_path, dry_run=False)
+        generated_count = 0
+        failures: list[dict[str, str]] = []
+        for d in missing:
+            try:
+                target = datetime.strptime(d, "%Y-%m-%d")
+                result = generator.generate(
+                    start_date=target, end_date=target, force=True,
+                )
+                if result.challenges:
+                    inject_daily_schedule(db_path, result.challenges)
+                    generated_count += 1
+                if result.failures:
+                    failures.append({"date": d,
+                                      "error": str(result.failures[0])})
+            except PuzzleManagerError as exc:
+                failures.append({"date": d, "error": str(exc)})
+        payload["generated_count"] = generated_count
+        payload["failures"] = failures
+    except PuzzleManagerError as exc:
+        return _emit({"ok": False, "error": str(exc)}, rc=1)
 
     return _emit(payload)
 
@@ -4234,6 +4342,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_daily_preview(args)
     elif args.command == "daily-cancel":
         return cmd_daily_cancel(args)
+    elif args.command == "daily-backfill":
+        return cmd_daily_backfill(args)
     elif args.command == "status":
         return cmd_status(args)
     elif args.command == "clean":

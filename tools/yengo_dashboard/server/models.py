@@ -882,3 +882,22 @@ class DailyCancelResponse(BaseModel):
             "puzzle_rows_affected, schedule_rows_deleted?})."
         ),
     )
+
+
+class DailyBackfillRequest(BaseModel):
+    """``POST /api/daily/backfill/{preview,apply}`` request (Theme 8d)."""
+
+    window_days: int = Field(default=30, ge=1, le=365)
+    force: bool = Field(default=False)
+
+
+class DailyBackfillResponse(BaseModel):
+    """``POST /api/daily/backfill/...`` payload (Theme 8d)."""
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON from `daily-backfill --json` "
+            "({ok, dry_run, window, missing_dates[], generated_count, failures[]})."
+        ),
+    )

@@ -3465,8 +3465,52 @@ function _renderDailyStatusBlock(raw) {
         <summary>Stale dates (${stale})</summary>
         <pre class="overflow-auto">${escapeHtml(JSON.stringify(raw.stale_dates, null, 2))}</pre>
       </details>` : ""}
+      ${missing > 0 ? `<div class="mt-3 flex items-center gap-2">
+        <button type="button" class="text-xs underline text-sky-600 dark:text-sky-300"
+                data-daily-backfill-btn data-window="${raw.window?.days || 30}">Backfill missing</button>
+        <span class="text-xs text-slate-500">Generates ${missing} missing date(s) inside one PipelineLock.</span>
+      </div>` : ""}
     </div>
   `;
+  const btn = host.querySelector("[data-daily-backfill-btn]");
+  if (btn) {
+    btn.addEventListener("click", () => _runDailyBackfill(parseInt(btn.dataset.window, 10) || 30));
+  }
+}
+
+async function _runDailyBackfill(window_days) {
+  // Theme 8d: preview-then-confirm-then-apply backfill.
+  let preview;
+  try {
+    preview = await postJSON("/api/daily/backfill/preview",
+      { window_days, force: false });
+  } catch (err) {
+    toast("error", `backfill preview failed: ${err.body?.detail?.message || err.message}`);
+    return;
+  }
+  const raw = preview.raw || {};
+  const missing = raw.missing_dates || [];
+  if (!missing.length) {
+    toast("info", "no missing dates");
+    return;
+  }
+  const ok = await confirmDialog({
+    title: `Backfill ${missing.length} missing date(s)`,
+    body: `Will generate daily challenges for: ${missing.slice(0, 10).join(", ")}` +
+          (missing.length > 10 ? ` … and ${missing.length - 10} more` : "") +
+          `. This acquires the pipeline lock and may take a while.`,
+    verb: "backfill",
+  });
+  if (!ok) return;
+  try {
+    const res = await postJSON("/api/daily/backfill/apply",
+      { window_days, force: false });
+    const r = res.raw || {};
+    toast("ok", `backfilled ${r.generated_count || 0} of ${missing.length} date(s)`);
+    renderDaily();
+  } catch (err) {
+    toast("error", `backfill failed: ${err.body?.detail?.message || err.message}`);
+  }
 }
 
 function _renderDailyListBlock(raw) {
