@@ -172,9 +172,22 @@ class StageResult:
         remaining: int = 0,
         resolved_paths: list[str] | None = None,
     ) -> "StageResult":
-        """Create a partial success result (some failures)."""
+        """Create a partial-success result for a stage that completed normally
+        but had per-item failures.
+
+        Per-item failures (a single SGF that failed to parse, an individual
+        adapter fetch that 404'd, etc.) are NOT stage failures — they are
+        recorded in the ``failed`` count and ``errors`` list, and downstream
+        stages should still run on the items that succeeded. This matches the
+        project doctrine: "fail fast on config errors; continue on puzzle
+        errors" (CLAUDE.md → Error Handling).
+
+        For genuine stage-level failures (config invalid, source missing,
+        unhandled exception, prerequisites unmet) use ``failure_result``
+        instead — that's what flips ``success=False`` and aborts the pipeline.
+        """
         return cls(
-            success=failed == 0,
+            success=True,
             processed=processed,
             failed=failed,
             skipped=skipped,

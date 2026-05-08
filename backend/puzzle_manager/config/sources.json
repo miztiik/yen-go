@@ -19,7 +19,7 @@
       "name": "Ambak Tsumego Collection",
       "adapter": "local",
       "config": {
-        "path": "external-sources/ambak-tsumego/problems",
+        "path": "external-sources/ambak-tsumego",
         "include_folders": [],
         "exclude_folders": [],
         "validate": true,
