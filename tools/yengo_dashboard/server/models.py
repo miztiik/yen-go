@@ -668,3 +668,46 @@ class SourceIngestStateResetResultResponse(BaseModel):
             "`backend.puzzle_manager.models.source_ingest_state.SourceIngestResetResult`."
         ),
     )
+
+
+class AdapterConfigListResponse(BaseModel):
+    """``GET /api/adapter-config`` payload — verbatim ``adapter-config list --json``
+    output (Theme 7a).
+
+    Shape owned by
+    ``backend.puzzle_manager.models.adapter_config.AdapterConfigList``.
+    """
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON of `adapter-config list --json` "
+            "({active_adapter, sources: [...with derived active+path_exists]})."
+        ),
+    )
+
+
+class AdapterConfigShowResponse(BaseModel):
+    """``GET /api/adapter-config/{id}`` payload (Theme 7a).
+
+    Shape owned by ``AdapterConfigShow``: source entry + adapter_kind +
+    schema_for_kind (JSON Schema fragment) + available_kinds.
+    """
+
+    raw: dict = Field(
+        ...,
+        description="Parsed JSON of `adapter-config show ID --json`.",
+    )
+
+
+class AdapterConfigValidateResponse(BaseModel):
+    """``GET /api/adapter-config/validate`` payload (Theme 7a)."""
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON of `adapter-config validate-all --json` "
+            "({ok, rows: [{id, ok, errors[]}]}). Shape owned by "
+            "`backend.puzzle_manager.models.adapter_config.AdapterValidationReport`."
+        ),
+    )

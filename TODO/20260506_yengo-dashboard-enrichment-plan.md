@@ -584,8 +584,11 @@ the file (write-tmp + os.replace).
 - [ ] Dashboard tests pin: schema-driven form for `local` adapter; clone
       flow; bootstrap preview → apply.
 - [ ] All mutators flow through `config-lock`; concurrent edits return 409.
-- [ ] `sources.schema.json` is the single source of truth — UI never
+- [x] `sources.schema.json` is the single source of truth — UI never
       re-encodes the schema, always fetches it via the CLI.
+      *(Theme 7a: read-only `adapter-config show` ships the schema fragment
+      from `sources.schema.json $defs/{Kind}Config`; UI renders the read-only
+      block from it. Mutation slices 7b/7c/7d will reuse the same pipe.)*
 
 ### Dependencies
 - Visually depends on Theme 0 (consistent form styling).

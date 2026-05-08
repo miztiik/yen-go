@@ -882,8 +882,70 @@ async function renderAdapters() {
           <tbody>${rows.map(adapterRow).join("")}</tbody>
         </table>
       </div>
+      <section id="adapter-validation-section" class="mt-6"></section>
     `;
+    _loadAdapterValidationSection();
   } catch (e) { root.innerHTML = errorBlock("/api/adapters", e); }
+}
+
+// Theme 7a: Adapter Configuration Management — read-only validation roll-up.
+// Surfaces the `adapter-config validate-all` health pill + per-source FAIL
+// rows above the existing adapter table. The full Add/Edit/Bootstrap UI lands
+// in subsequent Theme 7 slices and reuses this section for "Validate" feedback.
+async function _loadAdapterValidationSection() {
+  const section = document.getElementById("adapter-validation-section");
+  if (!section) return;
+  try {
+    const resp = await getJSON("/api/adapter-config/validate");
+    const raw = resp.raw || {};
+    section.innerHTML = adapterValidationBlock(raw);
+  } catch (e) {
+    section.innerHTML = errorBlock("/api/adapter-config/validate", e);
+  }
+}
+
+function adapterValidationBlock(raw) {
+  const rows = Array.isArray(raw.rows) ? raw.rows : [];
+  const failing = rows.filter(r => !r.ok);
+  const ok = raw.ok === true;
+  const pillClass = ok
+    ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/40"
+    : "bg-rose-500/15 text-rose-300 ring-rose-500/40";
+  const pillLabel = ok
+    ? `all ${rows.length} sources valid`
+    : `${failing.length} of ${rows.length} sources failing`;
+  const issuesTable = failing.length === 0 ? "" : `
+    <table class="w-full text-sm mt-3" data-adapter-validation>
+      <thead class="text-slate-500 text-xs uppercase tracking-wider">
+        <tr>
+          <th class="text-left font-normal py-1 pl-3">source</th>
+          <th class="text-left font-normal py-1">code</th>
+          <th class="text-left font-normal py-1 pr-3">message</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${failing.flatMap(r => (r.errors || []).map(err => `
+          <tr class="border-t border-slate-800">
+            <td class="py-1 pl-3 font-mono text-xs">${escapeHtml(r.id)}</td>
+            <td class="py-1 font-mono text-xs text-amber-300">${escapeHtml(err.code || "")}</td>
+            <td class="py-1 pr-3 text-xs text-slate-300">${escapeHtml(err.message || "")}</td>
+          </tr>
+        `)).join("")}
+      </tbody>
+    </table>
+  `;
+  return `
+    <div class="rounded-md border border-slate-800 bg-slate-900 p-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <h3 class="text-xs uppercase tracking-wider text-slate-500">Adapter validation</h3>
+          <span class="pill ring-1 px-2 py-0.5 rounded text-xs ${pillClass}">${pillLabel}</span>
+        </div>
+        <span class="text-xs text-slate-500 font-mono">adapter-config validate-all</span>
+      </div>
+      ${issuesTable}
+    </div>
+  `;
 }
 
 // ---------- Theme 6a: Adapter Detail Page ----------
@@ -946,8 +1008,10 @@ async function renderAdapterDetail(adapterId) {
         <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-2">config (sources.json)</h3>
         <pre class="text-xs bg-slate-900 ring-1 ring-slate-800 rounded p-3 overflow-x-auto">${escapeHtml(JSON.stringify(d.config || {}, null, 2))}</pre>
       </section>
+      <section id="adapter-config-schema-section" data-adapter-id="${escapeHtml(adapterId)}"></section>
     `;
     _loadIngestStateSection(adapterId);
+    _loadAdapterConfigSchemaSection(adapterId);
   } catch (e) {
     root.innerHTML = errorBlock(`/api/adapters/${adapterId}/details`, e);
   }
@@ -964,6 +1028,68 @@ async function _loadIngestStateSection(adapterId) {
   } catch (e) {
     section.innerHTML = errorBlock(`/api/adapters/${adapterId}/ingest-state`, e);
   }
+}
+
+// Theme 7a: schema-aware adapter-config preview on the Adapter Detail page.
+// Surfaces adapter_kind + available_kinds + schema fragment so the operator
+// can see what fields the future Edit form will render. Read-only here —
+// the Edit form ships in Theme 7b.
+async function _loadAdapterConfigSchemaSection(adapterId) {
+  const section = document.getElementById("adapter-config-schema-section");
+  if (!section) return;
+  try {
+    const resp = await getJSON(`/api/adapter-config/${encodeURIComponent(adapterId)}`);
+    const raw = resp.raw || {};
+    section.innerHTML = adapterConfigSchemaBlock(raw, adapterId);
+  } catch (e) {
+    section.innerHTML = errorBlock(`/api/adapter-config/${adapterId}`, e);
+  }
+}
+
+function adapterConfigSchemaBlock(raw, adapterId) {
+  const kind = raw.adapter_kind || "(unknown)";
+  const kinds = Array.isArray(raw.available_kinds) ? raw.available_kinds : [];
+  const schema = raw.schema_for_kind;
+  const props = (schema && schema.properties) || {};
+  const required = new Set(Array.isArray(schema && schema.required) ? schema.required : []);
+  const propRows = Object.keys(props).map(name => {
+    const def = props[name] || {};
+    const type = Array.isArray(def.type) ? def.type.join("|") : (def.type || "?");
+    const req = required.has(name) ? `<span class="text-amber-300">required</span>` : `<span class="text-slate-500">optional</span>`;
+    const desc = escapeHtml(def.description || "");
+    return `<tr class="border-t border-slate-800">
+      <td class="py-1 pl-3 font-mono text-xs">${escapeHtml(name)}</td>
+      <td class="py-1 font-mono text-xs text-slate-400">${escapeHtml(type)}</td>
+      <td class="py-1 text-xs">${req}</td>
+      <td class="py-1 pr-3 text-xs text-slate-300">${desc}</td>
+    </tr>`;
+  }).join("");
+  const propsTable = propRows
+    ? `<table class="w-full text-sm mt-2" data-adapter-config-schema>
+        <thead class="text-slate-500 text-xs uppercase tracking-wider">
+          <tr>
+            <th class="text-left font-normal py-1 pl-3">field</th>
+            <th class="text-left font-normal py-1">type</th>
+            <th class="text-left font-normal py-1">requirement</th>
+            <th class="text-left font-normal py-1 pr-3">description</th>
+          </tr>
+        </thead>
+        <tbody>${propRows}</tbody>
+      </table>`
+    : `<p class="text-xs text-slate-500 mt-2">No per-kind schema fragment — generic key/value editor will be used in Edit form.</p>`;
+  return `
+    <div class="rounded-md border border-slate-800 bg-slate-900 p-3 mt-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xs uppercase tracking-wider text-slate-500">Configuration schema</h3>
+        <span class="text-xs text-slate-500 font-mono">adapter-config show ${escapeHtml(adapterId)}</span>
+      </div>
+      <div class="mt-2 text-xs text-slate-400">
+        kind: <span class="font-mono text-sky-300">${escapeHtml(kind)}</span>
+        · available: <span class="font-mono">${escapeHtml(kinds.join(", "))}</span>
+      </div>
+      ${propsTable}
+    </div>
+  `;
 }
 
 function ingestStateBlock(s, adapterId) {

@@ -15,6 +15,9 @@ from tools.yengo_dashboard import __version__
 from tools.yengo_dashboard.server.models import (
     ActivityResponse,
     AdaptersResponse,
+    AdapterConfigListResponse,
+    AdapterConfigShowResponse,
+    AdapterConfigValidateResponse,
     FailuresSummaryResponse,
     HealthResponse,
     InventoryCheckResponse,
@@ -294,5 +297,72 @@ def build_read_router(
                 },
             ) from exc
         return SourceIngestStateResponse(raw=payload)
+
+    @router.get("/adapter-config", response_model=AdapterConfigListResponse)
+    def adapter_config_list(_request: Request) -> AdapterConfigListResponse:
+        """Theme 7a: passthrough of ``adapter-config list --json``.
+
+        Adapters page (List pane) consumes this. Returns ``{active_adapter, sources}``
+        with each source augmented with derived ``active`` + ``path_exists`` flags
+        so the table can render those columns without a second round-trip.
+        """
+        try:
+            payload = runner.adapter_config_list()
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "puzzle_manager adapter-config list --json failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return AdapterConfigListResponse(raw=payload)
+
+    @router.get("/adapter-config/validate", response_model=AdapterConfigValidateResponse)
+    def adapter_config_validate(_request: Request) -> AdapterConfigValidateResponse:
+        """Theme 7a: passthrough of ``adapter-config validate-all --json``.
+
+        Adapters page renders the per-source OK/FAIL badges from this report.
+        Health pill aggregates ``ok`` across all rows.
+        """
+        try:
+            payload = runner.adapter_config_validate_all()
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "puzzle_manager adapter-config validate-all --json failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return AdapterConfigValidateResponse(raw=payload)
+
+    @router.get(
+        "/adapter-config/{source_id}", response_model=AdapterConfigShowResponse,
+    )
+    def adapter_config_show(_request: Request, source_id: str) -> AdapterConfigShowResponse:
+        """Theme 7a: passthrough of ``adapter-config show ID --json``.
+
+        Adapter Detail page's "Configuration" tab and the future Edit form
+        consume this — the schema fragment lets the form render schema-driven
+        fields without re-encoding the schema in JS (cockpit principle #6).
+        """
+        try:
+            payload = runner.adapter_config_show(source_id)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "puzzle_manager adapter-config show --json failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return AdapterConfigShowResponse(raw=payload)
 
     return router

@@ -937,3 +937,31 @@ def test_ingest_state_reset_flow_wired(app_js: str) -> None:
     # Typed-confirm gate must wrap the apply POST.
     assert "confirmDialog({" in app_js
     assert "verb: `reset ${adapterId}`" in app_js
+
+
+def test_adapter_validation_section_wired(app_js: str) -> None:
+    """Theme 7a: Library/Adapters list mounts the validate-all roll-up.
+
+    Pins the section placeholder, the loader, the renderer, and the URL it
+    fetches. Per-source FAIL rows render via a `[data-adapter-validation]`
+    table the test suite can target.
+    """
+    assert 'id="adapter-validation-section"' in app_js
+    assert "_loadAdapterValidationSection" in app_js
+    assert "function adapterValidationBlock" in app_js
+    assert "/api/adapter-config/validate" in app_js
+    assert "data-adapter-validation" in app_js
+
+
+def test_adapter_config_schema_section_wired(app_js: str) -> None:
+    """Theme 7a: Adapter Detail page surfaces the schema-aware config block.
+
+    The block consumes `/api/adapter-config/{id}` and renders adapter_kind,
+    available_kinds, and (when present) a per-field requirement table marked
+    with `[data-adapter-config-schema]` for downstream pinning.
+    """
+    assert 'id="adapter-config-schema-section"' in app_js
+    assert "_loadAdapterConfigSchemaSection" in app_js
+    assert "function adapterConfigSchemaBlock" in app_js
+    assert "/api/adapter-config/${encodeURIComponent(adapterId)}" in app_js
+    assert "data-adapter-config-schema" in app_js

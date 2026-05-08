@@ -913,3 +913,83 @@ class TestSourceIngestStateEndpoints:
         assert raw["removed"] is True
         assert raw["rows_lost"] == 2
         assert not db_file.exists(), "apply must remove the DB"
+
+
+class TestAdapterConfigEndpoints:
+    """Theme 7a: read-only adapter-config wiring."""
+
+    def test_list_returns_active_and_path_exists(self, tmp_path: Path) -> None:
+        config_dir = _seed_real_source(
+            tmp_path, source_id="ac-list", ingested=0, skipped=0, failed=0
+        )
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.get("/api/adapter-config")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["active_adapter"] == "ac-list"
+        assert len(raw["sources"]) == 1
+        entry = raw["sources"][0]
+        assert entry["id"] == "ac-list"
+        assert entry["active"] is True
+        assert entry["path_exists"] is True
+
+    def test_show_returns_schema_and_kinds(self, tmp_path: Path) -> None:
+        config_dir = _seed_real_source(
+            tmp_path, source_id="ac-show", ingested=0, skipped=0, failed=0
+        )
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.get("/api/adapter-config/ac-show")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["adapter_kind"] == "local"
+        assert "local" in raw["available_kinds"]
+        assert raw["schema_for_kind"] is not None
+        assert "path" in raw["schema_for_kind"]["properties"]
+
+    def test_show_unknown_returns_400(self, tmp_path: Path) -> None:
+        config_dir = _seed_real_source(
+            tmp_path, source_id="ac-known", ingested=0, skipped=0, failed=0
+        )
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.get("/api/adapter-config/nonexistent")
+        assert resp.status_code == 400
+
+    def test_validate_all_flags_missing_paths(self, tmp_path: Path) -> None:
+        # Build a config with one good and one missing-path source.
+        config_dir = tmp_path / "config"
+        config_dir.mkdir(parents=True)
+        good_dir = tmp_path / "data" / "good"
+        good_dir.mkdir(parents=True)
+        (config_dir / "sources.json").write_text(
+            json.dumps(
+                {
+                    "active_adapter": "good",
+                    "sources": [
+                        {
+                            "id": "good", "name": "Good", "adapter": "local",
+                            "config": {"path": good_dir.as_posix()},
+                        },
+                        {
+                            "id": "bad", "name": "Bad", "adapter": "local",
+                            "config": {"path": (tmp_path / "missing").as_posix()},
+                        },
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.get("/api/adapter-config/validate")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["ok"] is False
+        rows_by_id = {r["id"]: r for r in raw["rows"]}
+        assert rows_by_id["good"]["ok"] is True
+        assert rows_by_id["bad"]["ok"] is False
+        codes = [e["code"] for e in rows_by_id["bad"]["errors"]]
+        assert "path-missing" in codes
+

@@ -670,6 +670,49 @@ File Locations:
         help="Cap on failed_rows sample size (default 20).",
     )
 
+    # adapter-config command (Theme 7a — read-only inspection slice)
+    adapter_config_parser = subparsers.add_parser(
+        "adapter-config",
+        help="Inspect or mutate sources.json (Theme 7).",
+    )
+    adapter_config_subparsers = adapter_config_parser.add_subparsers(
+        dest="adapter_config_action",
+        help="adapter-config sub-actions",
+    )
+    adapter_config_list = adapter_config_subparsers.add_parser(
+        "list",
+        help="List configured sources (Theme 7a).",
+    )
+    adapter_config_list.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON.",
+    )
+    adapter_config_show = adapter_config_subparsers.add_parser(
+        "show",
+        help="Show one source entry + adapter schema (Theme 7a).",
+    )
+    adapter_config_show.add_argument(
+        "source_id",
+        type=str,
+        metavar="SOURCE_ID",
+        help="The source ID to show.",
+    )
+    adapter_config_show.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON.",
+    )
+    adapter_config_validate = adapter_config_subparsers.add_parser(
+        "validate-all",
+        help="Run schema + reachability checks on every configured source (Theme 7a).",
+    )
+    adapter_config_validate.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON.",
+    )
+
     # enable-adapter command
     enable_adapter_parser = subparsers.add_parser(
         "enable-adapter",
@@ -2409,6 +2452,190 @@ def _read_ingest_counts(db_path: Path) -> tuple[int, int, int, int]:
     return (ing, skp, fld, ing + skp + fld)
 
 
+def _adapter_schema_for_kind(kind: str) -> tuple[dict[str, Any] | None, list[str]]:
+    """Pull the JSON Schema fragment for ``kind`` from ``sources.schema.json``.
+
+    Returns ``(schema_for_kind, available_kinds)``. ``schema_for_kind`` is the
+    ``$defs`` entry whose name matches ``{Kind}Config`` (case-insensitive,
+    hyphen-stripped); None when no per-kind fragment exists. ``available_kinds``
+    is every adapter currently registered with the pipeline registry — the form
+    uses this to populate the adapter-kind dropdown.
+    """
+    from backend.puzzle_manager.adapters._registry import discover_adapters, list_adapters
+    discover_adapters()
+    available = sorted(list_adapters())
+    schema_path = (
+        Path(__file__).parent / "config" / "sources.schema.json"
+    )
+    schema_doc = json.loads(schema_path.read_text(encoding="utf-8"))
+    defs = schema_doc.get("$defs", {})
+    canonical = kind.replace("-", "").lower()
+    for def_name, def_schema in defs.items():
+        if not def_name.endswith("Config"):
+            continue
+        if def_name == "SourceConfig":
+            continue
+        if def_name[: -len("Config")].lower() == canonical:
+            return def_schema, available
+    return None, available
+
+
+def _build_adapter_source_entries(
+    sources: list, active_id: str | None,
+) -> list[dict[str, Any]]:
+    """Augment each source with ``active`` + ``path_exists`` derived flags."""
+    rows: list[dict[str, Any]] = []
+    project_root = get_project_root()
+    for src in sources:
+        cfg = dict(src.config) if hasattr(src, "config") and src.config else {}
+        path_value = cfg.get("path") if isinstance(cfg, dict) else None
+        if isinstance(path_value, str) and path_value:
+            candidate = Path(path_value)
+            if not candidate.is_absolute():
+                candidate = project_root / candidate
+            path_exists: bool | None = candidate.is_dir()
+        else:
+            path_exists = None
+        rows.append({
+            "id": src.id,
+            "name": src.name,
+            "adapter": src.adapter,
+            "config": cfg,
+            "active": src.id == active_id,
+            "path_exists": path_exists,
+        })
+    return rows
+
+
+def cmd_adapter_config(args: argparse.Namespace) -> int:
+    """Execute ``adapter-config {list|show|validate-all}`` (Theme 7a — read).
+
+    Mutating sub-actions land in subsequent slices and reuse the shared
+    derived-flag helpers above.
+    """
+    action = getattr(args, "adapter_config_action", None)
+    if action is None:
+        print(
+            "Usage: puzzle_manager adapter-config {list|show|validate-all}",
+            file=sys.stderr,
+        )
+        return 2
+    try:
+        loader = ConfigLoader(Path(args.config) if args.config else None)
+        sources = loader.load_sources()
+        try:
+            active_id: str | None = loader.get_active_adapter()
+        except Exception:
+            active_id = None
+        rows = _build_adapter_source_entries(sources, active_id)
+
+        if action == "list":
+            payload = {"active_adapter": active_id, "sources": rows}
+            if args.json:
+                print(json.dumps(payload, indent=2, default=str))
+            else:
+                print(f"Active adapter: {active_id or '(none)'}")
+                for row in rows:
+                    flag = " [ACTIVE]" if row["active"] else ""
+                    pe = row["path_exists"]
+                    pe_str = "" if pe is None else (
+                        " path:OK" if pe else " path:MISSING"
+                    )
+                    print(f"  {row['id']} ({row['adapter']}){flag}{pe_str}")
+            return 0
+
+        if action == "show":
+            wanted = args.source_id
+            row = next((r for r in rows if r["id"] == wanted), None)
+            if row is None:
+                print(f"Error: unknown source '{wanted}'", file=sys.stderr)
+                return 2
+            schema_for_kind, available_kinds = _adapter_schema_for_kind(row["adapter"])
+            payload = {
+                "source": row,
+                "adapter_kind": row["adapter"],
+                "schema_for_kind": schema_for_kind,
+                "available_kinds": available_kinds,
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2, default=str))
+            else:
+                print(f"Source: {row['id']} ({row['adapter']})")
+                print(json.dumps(row["config"], indent=2))
+            return 0
+
+        if action == "validate-all":
+            issues_by_id: dict[str, list[dict[str, str]]] = {r["id"]: [] for r in rows}
+            schema_path = (
+                Path(__file__).parent / "config" / "sources.schema.json"
+            )
+            schema_doc = json.loads(schema_path.read_text(encoding="utf-8"))
+            try:
+                import jsonschema
+                validator = jsonschema.Draft202012Validator(schema_doc)
+                doc_for_validation = {
+                    "active_adapter": active_id or (rows[0]["id"] if rows else ""),
+                    "sources": [
+                        {
+                            "id": r["id"], "name": r["name"],
+                            "adapter": r["adapter"], "config": r["config"],
+                        }
+                        for r in rows
+                    ],
+                }
+                for err in validator.iter_errors(doc_for_validation):
+                    target_id: str | None = None
+                    if (
+                        len(err.absolute_path) >= 2
+                        and err.absolute_path[0] == "sources"
+                        and isinstance(err.absolute_path[1], int)
+                        and 0 <= err.absolute_path[1] < len(rows)
+                    ):
+                        target_id = rows[err.absolute_path[1]]["id"]
+                    if target_id and target_id in issues_by_id:
+                        issues_by_id[target_id].append({
+                            "code": "schema",
+                            "message": err.message,
+                            "field": "/".join(str(p) for p in err.absolute_path[2:]) or None,
+                        })
+            except ImportError:
+                pass
+
+            for row in rows:
+                pe = row["path_exists"]
+                if pe is False:
+                    issues_by_id[row["id"]].append({
+                        "code": "path-missing",
+                        "message": f"config.path does not exist: {row['config'].get('path')}",
+                        "field": "path",
+                    })
+
+            report_rows = [
+                {"id": r["id"], "ok": not issues_by_id[r["id"]],
+                 "errors": issues_by_id[r["id"]]}
+                for r in rows
+            ]
+            payload = {
+                "ok": all(rr["ok"] for rr in report_rows),
+                "rows": report_rows,
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2, default=str))
+            else:
+                for rr in report_rows:
+                    status = "OK" if rr["ok"] else "FAIL"
+                    print(f"  [{status}] {rr['id']}")
+                    for issue in rr["errors"]:
+                        print(f"      - {issue['code']}: {issue['message']}")
+            return 0
+
+        print(f"Error: unknown adapter-config action '{action}'", file=sys.stderr)
+        return 2
+    except PuzzleManagerError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+
+
 def cmd_enable_adapter(args: argparse.Namespace) -> int:
     """Execute the enable-adapter command.
 
@@ -3193,6 +3420,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_source_status(args)
     elif args.command == "source-ingest-state":
         return cmd_source_ingest_state(args)
+    elif args.command == "adapter-config":
+        return cmd_adapter_config(args)
     elif args.command == "enable-adapter":
         return cmd_enable_adapter(args)
     elif args.command == "disable-adapter":

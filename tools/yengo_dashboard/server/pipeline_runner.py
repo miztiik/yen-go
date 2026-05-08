@@ -389,6 +389,39 @@ class PipelineRunner:
             )
         return result
 
+    def adapter_config_list(self) -> dict:
+        """Theme 7a: wraps ``adapter-config list --json``."""
+        args = ["adapter-config", "list", "--json"]
+        result = self._run_json_any(args)
+        if not isinstance(result, dict):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON object, got {type(result).__name__}", "",
+            )
+        return result
+
+    def adapter_config_show(self, source_id: str) -> dict:
+        """Theme 7a: wraps ``adapter-config show ID --json``."""
+        args = ["adapter-config", "show", source_id, "--json"]
+        result = self._run_json_any(args)
+        if not isinstance(result, dict):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON object, got {type(result).__name__}", "",
+            )
+        return result
+
+    def adapter_config_validate_all(self) -> dict:
+        """Theme 7a: wraps ``adapter-config validate-all --json``."""
+        args = ["adapter-config", "validate-all", "--json"]
+        result = self._run_json_any(args)
+        if not isinstance(result, dict):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON object, got {type(result).__name__}", "",
+            )
+        return result
+
     def activity(
         self,
         *,
