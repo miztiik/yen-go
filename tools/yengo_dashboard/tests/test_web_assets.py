@@ -1117,3 +1117,27 @@ def test_run_page_has_equivalent_cli_block(app_js: str) -> None:
     # once the active adapter loads asynchronously.
     assert app_js.count("paintCliEquivalent()") >= 2
 
+
+def test_inline_help_callouts_wired(app_js: str, styles_css: str) -> None:
+    """UX-handoff slice 'Inline contextual help': Run, Adapters, Operations
+    pages must each emit a <details> help-callout with the canonical id so
+    operators can read page-level guidance without opening a separate doc.
+    """
+    assert "function helpCallout(" in app_js
+    assert "_wireHelpCallouts" in app_js
+    assert "data-help-callout" in app_js
+    # One callout per primary page.
+    for callout_id in ("help-run", "help-adapters", "help-operations"):
+        assert f'helpCallout("{callout_id}"' in app_js, (
+            f"missing helpCallout({callout_id!r}, ...) call"
+        )
+    # Must surface the operator-facing flag vocabulary.
+    for token in ("--fresh", "--dry-run", "--source-override", "--no-enrichment"):
+        assert token in app_js, f"Run-page help missing {token!r}"
+    # Operations help must call out the destructive ops by name.
+    for token in ("rollback", "vacuum-db", "inventory fix"):
+        assert token in app_js, f"Operations help missing {token!r}"
+    # Styles pin: callout class + light-theme override both present.
+    assert ".help-callout" in styles_css
+    assert 'body[data-theme="light"] .help-callout' in styles_css
+

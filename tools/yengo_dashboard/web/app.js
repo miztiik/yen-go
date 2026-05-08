@@ -1015,6 +1015,31 @@ async function renderAdapters() {
         <span class="view-header-sub">·</span>
         <span class="text-xs text-slate-400">${activeNote}</span>
       ` })}
+      ${helpCallout("help-adapters", {
+        title: "What active adapter and counts mean",
+        bodyHtml: `
+          <p>An <strong>adapter</strong> is one source's ingest pipeline
+          (one row in <code>config/sources.json</code>). Exactly one
+          adapter is <em>active</em> at a time — the active one is what
+          <code>run</code> targets unless you pass
+          <code>--source-override</code>. Switch active via
+          <code>enable-adapter</code> (Operations) or the per-row Run
+          button (which auto-passes <code>--source-override</code>).</p>
+          <ul class="help-callout-list">
+            <li><strong>ingested</strong>: puzzles successfully parsed +
+              validated this source's last ingest pass.</li>
+            <li><strong>skipped</strong>: already-published puzzles whose
+              content hash matched an existing entry.</li>
+            <li><strong>failed</strong>: puzzles that errored during
+              ingest (parse / validation / fetch). Drill in via
+              <em>source-status</em> on the adapter detail page to see
+              error messages.</li>
+            <li><strong>last activity</strong>: mtime of this source's
+              <code>.yengo-ingest.sqlite</code> — proxies last successful
+              ingest write.</li>
+          </ul>
+        `,
+      })}
       <div class="overflow-x-auto rounded-md border border-slate-800 bg-slate-900">
         <table class="w-full text-sm">
           <thead class="text-slate-500 text-xs uppercase tracking-wider sticky top-0 bg-slate-900">
@@ -2002,6 +2027,36 @@ function viewHeader(title, { subtext = "", metaHtml = "" } = {}) {
   </div>`;
 }
 
+// Inline contextual help block. Per UX-handoff: every primary view should
+// expose short page-level guidance the operator can read without leaving.
+// Uses <details> so it stays unobtrusive — open by default the first time
+// the page renders, collapsed by user preference (sessionStorage key per id).
+function helpCallout(id, { title, bodyHtml }) {
+  const stored = sessionStorage.getItem(`yengo-dashboard:help-open:${id}`);
+  const openAttr = stored === "0" ? "" : " open";
+  return `<details id="${escapeHtml(id)}" class="help-callout"${openAttr}
+                   data-help-callout="${escapeHtml(id)}">
+    <summary class="help-callout-summary">
+      <span class="help-callout-icon" aria-hidden="true">?</span>
+      <span class="help-callout-title">${escapeHtml(title)}</span>
+    </summary>
+    <div class="help-callout-body">${bodyHtml}</div>
+  </details>`;
+}
+
+// One delegate persists the open/closed preference per callout id so the
+// layout doesn't re-expand on every navigation. Cheap; called once at boot.
+function _wireHelpCallouts() {
+  document.addEventListener("toggle", (e) => {
+    const el = e.target.closest("[data-help-callout]");
+    if (!el) return;
+    sessionStorage.setItem(
+      `yengo-dashboard:help-open:${el.dataset.helpCallout}`,
+      el.open ? "1" : "0",
+    );
+  }, true);
+}
+
 // ---------- Live Run ----------
 
 let _es = null;
@@ -2287,6 +2342,29 @@ function renderLiveRun() {
       <span id="run-status">${pill("muted", "idle")}</span>
       <div id="run-stepper" class="stepper ml-2"></div>
     ` })}
+
+    ${helpCallout("help-run", {
+      title: "What this page does",
+      bodyHtml: `
+        <p>Launch a pipeline run against the active adapter, watch the live
+        subprocess output, and cancel mid-flight. The literal command is
+        always visible in the <strong>Equivalent CLI</strong> block — copy it
+        to reproduce the run from a terminal.</p>
+        <ul class="help-callout-list">
+          <li><code>--fresh</code>: wipe the source's ingest DB + runtime
+            state before running. Forces a full re-ingest. <em>Destructive.</em></li>
+          <li><code>--dry-run</code>: rehearse without writing published
+            outputs. Safe.</li>
+          <li><code>--source-override</code>: route the active adapter
+            through a different source ID for this run only.</li>
+          <li><code>--no-enrichment</code>: skip the analyze stage's KataGo
+            enrichment pass. Faster; produces less complete metadata.</li>
+          <li><code>--stage</code>: run only one of <code>ingest</code> /
+            <code>analyze</code> / <code>publish</code> instead of the full
+            pipeline.</li>
+        </ul>
+      `,
+    })}
 
     <div class="grid lg:grid-cols-[18rem,1fr] gap-6">
       <aside class="rounded-md border border-slate-800 bg-slate-900 p-4 space-y-3 self-start">
@@ -3047,6 +3125,38 @@ async function renderMaintenance() {
   root.innerHTML = `
     ${viewHeader("Operations", {
       subtext: "grouped by blast radius — diagnose first, mutate second, destroy last",
+    })}
+    ${helpCallout("help-operations", {
+      title: "Reading the blast-radius taxonomy",
+      bodyHtml: `
+        <p>Every action on this page is classified by what it touches and
+        whether it can be undone. The grouping is data-driven from
+        <code>ops catalog --json</code> — sections, Preview affordances, and
+        typed-confirm gates are all derived from one source of truth in
+        <code>backend/puzzle_manager/models/ops_catalog.py</code>.</p>
+        <ul class="help-callout-list">
+          <li><strong>vacuum-db</strong>: compact <code>yengo-search.db</code>
+            (the browser-shipped index). <code>--rebuild</code> reconstructs
+            it from the published corpus. Reversible.</li>
+          <li><strong>clean</strong>: remove <code>.pm-runtime/</code>
+            staging / logs / runtime-state by target. Reversible (no
+            published data is touched).</li>
+          <li><strong>rollback</strong>: <em>destructive</em> — removes a
+            published run's puzzles from the corpus + search DB. Recoverable
+            only by replaying the publish log. Always requires a typed-verb
+            confirm.</li>
+          <li><strong>inventory fix</strong>: deletes orphan SGFs / DB rows
+            flagged by <code>inventory --check</code>. Irreversible. Always
+            preview first.</li>
+          <li><strong>run --fresh</strong>: wipes the active source's
+            ingest DB + runtime state before running. Forces a full
+            re-ingest of every puzzle.</li>
+        </ul>
+        <p class="help-callout-foot">Buttons in the rose-fenced
+        <em>Destructive</em> section all require typed confirmation. Buttons
+        with a Preview button are guaranteed safe to inspect — Preview is
+        a read-only dry-run that returns the impact set without writing.</p>
+      `,
     })}
     <div id="maint-error" class="mb-3"></div>
 
@@ -4645,6 +4755,7 @@ setInterval(refreshRelTimes, 30_000);   // relative-time labels tick every 30s
 // already covered when it appears in the DOM. The capture-phase listener
 // is idempotent — the cache + installed-flag prevent double registration.
 _ensureOpsCatalogGuard();
+_wireHelpCallouts();
 
 // Pause polling while the tab is hidden; immediate tick + resume on focus.
 document.addEventListener("visibilitychange", () => {
