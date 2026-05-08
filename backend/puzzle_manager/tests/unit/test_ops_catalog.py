@@ -42,6 +42,9 @@ EXPECTED_MUTATING_OPS = {
     "config-lock release",
     "source-ingest-state --reset",
     "adapter-scaffold",
+    "tags rename --apply",
+    "tags merge --apply",
+    "levels rename --apply",
 }
 
 

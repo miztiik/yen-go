@@ -178,6 +178,30 @@ OPS_CATALOG: list[OpsCatalogEntry] = [
         section="destructive",
         summary="Wipe a single source's .yengo-ingest.sqlite (forces full re-ingest).",
     ),
+    OpsCatalogEntry(
+        op="tags rename --apply",
+        scope=["published_corpus", "files"],
+        reversible=False,
+        preview_supported=True,
+        section="destructive",
+        summary="Rewrite YT[] across every published SGF + config/tags.json.",
+    ),
+    OpsCatalogEntry(
+        op="tags merge --apply",
+        scope=["published_corpus", "files"],
+        reversible=False,
+        preview_supported=True,
+        section="destructive",
+        summary="Collapse N source tags into one target across SGFs + config/tags.json.",
+    ),
+    OpsCatalogEntry(
+        op="levels rename --apply",
+        scope=["published_corpus", "files"],
+        reversible=False,
+        preview_supported=True,
+        section="destructive",
+        summary="Rewrite YG[] across every published SGF + config/puzzle-levels.json.",
+    ),
 ]
 
 
