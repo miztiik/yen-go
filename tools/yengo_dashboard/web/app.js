@@ -2057,6 +2057,102 @@ function _wireHelpCallouts() {
   }, true);
 }
 
+// Slice 3: contextual help drawer. Per-route mapping → docs/ path served
+// by the existing /api/docs/file endpoint. The Guide tab was demoted from
+// the primary nav; users now reach contextual docs via the `?` toggle in
+// the top header. The /guide/{path} deep-link route stays wired.
+const _HELP_ROUTE_MAP = {
+  library:    { path: "how-to/tools/run-yengo-dashboard.md",      title: "Library — Sources & inventory" },
+  pipeline:   { path: "reference/puzzle-manager-cli.md",          title: "Pipeline — Run & history" },
+  daily:      { path: "architecture/backend/puzzle-manager.md",   title: "Daily — Daily challenge surface" },
+  activity:   { path: "architecture/tools/yengo_dashboard.md",    title: "Activity — Unified timeline" },
+  operations: { path: "reference/puzzle-manager-cli.md",          title: "Operations — Vacuum / clean / rollback" },
+  logs:       { path: "architecture/backend/logging.md",          title: "Logs — Stage logs & audit" },
+  guide:      { path: "architecture/tools/yengo_dashboard.md",    title: "Guide — Docs viewer" },
+};
+
+function _activeNavName() {
+  const active = document.querySelector(".nav-item.active");
+  return active?.dataset.nav || "library";
+}
+
+async function openHelpDrawer(routeKey) {
+  const drawer  = document.getElementById("help-drawer");
+  const backdrop = document.getElementById("help-drawer-backdrop");
+  const toggle   = document.getElementById("help-drawer-toggle");
+  if (!drawer) return;
+  const key = routeKey || _activeNavName();
+  const entry = _HELP_ROUTE_MAP[key] || _HELP_ROUTE_MAP.library;
+  drawer.hidden = false;
+  backdrop.hidden = false;
+  // Force reflow so the slide-in transition runs on the next frame.
+  void drawer.offsetWidth;
+  drawer.dataset.open = "true";
+  backdrop.dataset.open = "true";
+  drawer.setAttribute("aria-hidden", "false");
+  toggle?.setAttribute("aria-expanded", "true");
+  document.getElementById("help-drawer-title-text").textContent = entry.title;
+  document.getElementById("help-drawer-meta").innerHTML =
+    `Source: <code>docs/${escapeHtml(entry.path)}</code> · ` +
+    `<a href="/guide/${entry.path.split("/").map(encodeURIComponent).join("/")}">open in Guide</a>`;
+  const body = document.getElementById("help-drawer-body");
+  body.innerHTML = `<div class="text-zinc-500 text-sm">Loading <code>${escapeHtml(entry.path)}</code>…</div>`;
+  try {
+    const r = await fetch(`/api/docs/file?path=${encodeURIComponent(entry.path)}`);
+    if (!r.ok) {
+      body.innerHTML = `<div class="text-rose-400 text-sm">Failed to load (${r.status}).</div>`;
+      return;
+    }
+    const md = await r.text();
+    if (window.marked) {
+      window.marked.setOptions({ gfm: true, breaks: false });
+      body.innerHTML = window.marked.parse(md);
+    } else {
+      body.innerHTML = `<pre>${escapeHtml(md)}</pre>`;
+    }
+    body.scrollTop = 0;
+  } catch (err) {
+    body.innerHTML = `<div class="text-rose-400 text-sm">${escapeHtml(String(err))}</div>`;
+  }
+}
+
+function closeHelpDrawer() {
+  const drawer = document.getElementById("help-drawer");
+  const backdrop = document.getElementById("help-drawer-backdrop");
+  const toggle = document.getElementById("help-drawer-toggle");
+  if (!drawer) return;
+  drawer.dataset.open = "false";
+  backdrop.dataset.open = "false";
+  drawer.setAttribute("aria-hidden", "true");
+  toggle?.setAttribute("aria-expanded", "false");
+  setTimeout(() => {
+    if (drawer.dataset.open === "false") {
+      drawer.hidden = true;
+      backdrop.hidden = true;
+    }
+  }, 220);
+}
+
+function _wireHelpDrawer() {
+  const toggle   = document.getElementById("help-drawer-toggle");
+  const closeBtn = document.getElementById("help-drawer-close");
+  const backdrop = document.getElementById("help-drawer-backdrop");
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      const drawer = document.getElementById("help-drawer");
+      if (drawer?.dataset.open === "true") closeHelpDrawer();
+      else openHelpDrawer();
+    });
+  }
+  closeBtn?.addEventListener("click", closeHelpDrawer);
+  backdrop?.addEventListener("click", closeHelpDrawer);
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const drawer = document.getElementById("help-drawer");
+    if (drawer?.dataset.open === "true") closeHelpDrawer();
+  });
+}
+
 // ---------- Live Run ----------
 
 let _es = null;
@@ -4756,6 +4852,7 @@ setInterval(refreshRelTimes, 30_000);   // relative-time labels tick every 30s
 // is idempotent — the cache + installed-flag prevent double registration.
 _ensureOpsCatalogGuard();
 _wireHelpCallouts();
+_wireHelpDrawer();
 
 // Pause polling while the tab is hidden; immediate tick + resume on focus.
 document.addEventListener("visibilitychange", () => {

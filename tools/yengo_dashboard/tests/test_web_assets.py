@@ -1141,3 +1141,43 @@ def test_inline_help_callouts_wired(app_js: str, styles_css: str) -> None:
     assert ".help-callout" in styles_css
     assert 'body[data-theme="light"] .help-callout' in styles_css
 
+
+def test_help_drawer_replaces_guide_nav(
+    index_html: str, app_js: str, styles_css: str
+) -> None:
+    """UX-handoff slice 'Help drawer + demote Guide': the Guide primary-nav
+    button is removed; a `?` toggle in the top header opens a right-side
+    drawer that fetches the route-relevant doc via /api/docs/file. The
+    /guide/{path} deep-link route + #view-guide section remain wired for
+    backward compatibility (so existing bookmarks still resolve), but the
+    operator should never reach the standalone Guide tab from the sidebar.
+    """
+    # Guide must NOT appear as a primary-nav button.
+    assert 'data-nav="guide"' not in index_html, (
+        "Guide should be demoted from the primary nav (Slice 3)."
+    )
+    # `?` toggle + drawer markup present in the header.
+    assert 'id="help-drawer-toggle"' in index_html
+    assert 'id="help-drawer"' in index_html
+    assert 'id="help-drawer-backdrop"' in index_html
+    assert 'id="help-drawer-close"' in index_html
+    assert 'id="help-drawer-body"' in index_html
+    # Backward compat: /guide route + #view-guide section both still wired.
+    assert 'id="view-guide"' in index_html
+    # App.js wiring: route map, open/close/wire functions, fetch endpoint.
+    assert "_HELP_ROUTE_MAP" in app_js
+    assert "function openHelpDrawer(" in app_js
+    assert "function closeHelpDrawer(" in app_js
+    assert "function _wireHelpDrawer(" in app_js
+    assert "_wireHelpDrawer();" in app_js
+    assert "/api/docs/file?path=" in app_js
+    # Per-route entries — at minimum the primary nav names must be mapped.
+    for nav in ("library", "pipeline", "operations", "logs"):
+        assert f"{nav}:" in app_js, f"_HELP_ROUTE_MAP missing entry for {nav!r}"
+    # Styles pin: drawer classes + light-theme overrides both present.
+    assert ".help-drawer" in styles_css
+    assert ".help-drawer-backdrop" in styles_css
+    assert ".help-toggle" in styles_css
+    assert 'body[data-theme="light"] .help-drawer' in styles_css
+    assert 'body[data-theme="light"] .help-toggle' in styles_css
+

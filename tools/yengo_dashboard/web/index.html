@@ -70,9 +70,10 @@
       <li><button data-nav="logs" class="nav-item">
         <i data-lucide="scroll-text"></i><span>Logs</span>
       </button></li>
-      <li><button data-nav="guide"    class="nav-item">
-        <i data-lucide="book-open"></i><span>Guide</span>
-      </button></li>
+      <!-- Guide demoted from primary nav (Slice 3): docs are now surfaced via
+           the contextual `?` help drawer in the top header. The /guide/...
+           deep-link route + #view-guide section remain wired for backward
+           compatibility, so existing bookmarks still resolve. -->
     </ul>
 
     <!-- Theme toggle (System status moved to the top header chip; the bottom
@@ -121,6 +122,13 @@
         <span class="system-chip-label" id="system-chip-label">starting…</span>
         <span class="system-chip-meta" id="system-chip-meta"></span>
       </button>
+      <button id="help-drawer-toggle"
+              type="button"
+              aria-label="Open contextual help"
+              aria-controls="help-drawer"
+              aria-expanded="false"
+              title="Contextual help for this page"
+              class="help-toggle">?</button>
     </header>
 
     <main id="page-content" class="flex-1 overflow-auto px-8 py-6">
@@ -207,6 +215,34 @@
   </dialog>
 
   <div id="toast-region" role="status" aria-live="polite"></div>
+
+  <!-- Slice 3: contextual help drawer. Replaces the demoted Guide primary-nav
+       slot. The `?` button in the top header toggles this drawer; per-route
+       help docs are mapped in app.js (_HELP_ROUTE_MAP) and fetched via the
+       existing /api/docs/file endpoint. ESC and the backdrop close it. -->
+  <div id="help-drawer-backdrop" class="help-drawer-backdrop" data-open="false" hidden></div>
+  <aside id="help-drawer"
+         class="help-drawer"
+         data-open="false"
+         role="complementary"
+         aria-label="Contextual help"
+         aria-hidden="true"
+         hidden>
+    <header class="help-drawer-header">
+      <div class="help-drawer-title">
+        <span class="help-drawer-icon" aria-hidden="true">?</span>
+        <span id="help-drawer-title-text">Help</span>
+      </div>
+      <button id="help-drawer-close"
+              type="button"
+              aria-label="Close help drawer"
+              class="help-drawer-close">×</button>
+    </header>
+    <div class="help-drawer-meta" id="help-drawer-meta"></div>
+    <article id="help-drawer-body" class="help-drawer-body">
+      <div class="text-zinc-500 text-sm">Loading…</div>
+    </article>
+  </aside>
 
   <script src="/app.js" type="module"></script>
 </body>

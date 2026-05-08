@@ -812,6 +812,213 @@ body[data-theme="light"] .help-callout-body code {
 }
 body[data-theme="light"] .help-callout-foot { color: rgb(71 85 105); }      /* slate-500 */
 
+/* =============================================================================
+   HELP DRAWER (Slice 3) — replaces the demoted Guide primary-nav slot
+   =============================================================================
+   The `?` button in the top header opens a right-side slide-in drawer that
+   loads the route-relevant doc from /api/docs/file. Backdrop dims the page;
+   ESC and backdrop click close. Light theme overrides keep parity with the
+   surrounding cockpit chrome. */
+
+.help-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: 8px;
+  border-radius: 9999px;
+  border: 1px solid rgb(63 63 70);                /* zinc-700 */
+  background: rgb(24 24 27);                       /* zinc-900 */
+  color: rgb(165 180 252);                         /* indigo-300 */
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.help-toggle:hover {
+  background: rgb(49 46 129);                      /* indigo-900 */
+  color: rgb(224 231 255);                         /* indigo-100 */
+  border-color: rgb(99 102 241);                   /* indigo-500 */
+}
+.help-toggle[aria-expanded="true"] {
+  background: rgb(99 102 241);
+  color: white;
+  border-color: rgb(99 102 241);
+}
+
+.help-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 60;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.help-drawer-backdrop[data-open="true"] { opacity: 1; }
+
+.help-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(440px, 92vw);
+  background: rgb(24 24 27);                       /* zinc-900 */
+  border-left: 1px solid rgb(63 63 70);
+  box-shadow: -16px 0 32px rgba(0, 0, 0, 0.4);
+  z-index: 61;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 220ms ease;
+}
+.help-drawer[data-open="true"] { transform: translateX(0); }
+
+.help-drawer-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgb(63 63 70);
+  background: rgb(15 23 42);                       /* slate-900 */
+}
+.help-drawer-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  color: rgb(224 231 255);
+}
+.help-drawer-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  background: rgb(67 56 202);
+  color: white;
+  font-weight: 700;
+  font-size: 12px;
+}
+.help-drawer-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid rgb(63 63 70);
+  background: transparent;
+  color: rgb(161 161 170);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.help-drawer-close:hover {
+  background: rgb(39 39 42);
+  color: rgb(244 244 245);
+}
+.help-drawer-meta {
+  flex-shrink: 0;
+  padding: 8px 18px;
+  font-size: 11px;
+  color: rgb(148 163 184);                         /* slate-400 */
+  border-bottom: 1px solid rgba(63, 63, 70, 0.6);
+}
+.help-drawer-meta code {
+  background: rgb(15 23 42);
+  color: rgb(165 243 252);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+.help-drawer-meta a { color: rgb(165 180 252); text-decoration: underline; }
+.help-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 18px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgb(212 212 216);
+}
+.help-drawer-body h1,
+.help-drawer-body h2,
+.help-drawer-body h3 { color: rgb(244 244 245); margin-top: 14px; margin-bottom: 6px; }
+.help-drawer-body h1 { font-size: 17px; }
+.help-drawer-body h2 { font-size: 15px; }
+.help-drawer-body h3 { font-size: 14px; }
+.help-drawer-body code {
+  background: rgb(15 23 42);
+  color: rgb(165 243 252);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+.help-drawer-body pre {
+  background: rgb(9 9 11);
+  border: 1px solid rgb(39 39 42);
+  border-radius: 6px;
+  padding: 10px;
+  overflow-x: auto;
+}
+.help-drawer-body a { color: rgb(165 180 252); text-decoration: underline; }
+
+body[data-theme="light"] .help-toggle {
+  background: white;
+  border-color: rgb(199 210 254);
+  color: rgb(67 56 202);
+}
+body[data-theme="light"] .help-toggle:hover {
+  background: rgb(224 231 255);
+  color: rgb(49 46 129);
+  border-color: rgb(99 102 241);
+}
+body[data-theme="light"] .help-toggle[aria-expanded="true"] {
+  background: rgb(79 70 229);
+  color: white;
+  border-color: rgb(79 70 229);
+}
+body[data-theme="light"] .help-drawer {
+  background: white;
+  border-left-color: rgb(226 232 240);
+  box-shadow: -16px 0 32px rgba(15, 23, 42, 0.18);
+}
+body[data-theme="light"] .help-drawer-header {
+  background: rgb(248 250 252);
+  border-bottom-color: rgb(226 232 240);
+}
+body[data-theme="light"] .help-drawer-title { color: rgb(30 41 59); }
+body[data-theme="light"] .help-drawer-close {
+  border-color: rgb(226 232 240);
+  color: rgb(71 85 105);
+}
+body[data-theme="light"] .help-drawer-close:hover {
+  background: rgb(241 245 249);
+  color: rgb(15 23 42);
+}
+body[data-theme="light"] .help-drawer-meta {
+  color: rgb(71 85 105);
+  border-bottom-color: rgb(226 232 240);
+}
+body[data-theme="light"] .help-drawer-meta code {
+  background: rgb(241 245 249);
+  color: rgb(15 118 110);
+}
+body[data-theme="light"] .help-drawer-meta a { color: rgb(67 56 202); }
+body[data-theme="light"] .help-drawer-body { color: rgb(30 41 59); }
+body[data-theme="light"] .help-drawer-body h1,
+body[data-theme="light"] .help-drawer-body h2,
+body[data-theme="light"] .help-drawer-body h3 { color: rgb(15 23 42); }
+body[data-theme="light"] .help-drawer-body code {
+  background: rgb(241 245 249);
+  color: rgb(15 118 110);
+}
+body[data-theme="light"] .help-drawer-body pre {
+  background: rgb(248 250 252);
+  border-color: rgb(226 232 240);
+}
+body[data-theme="light"] .help-drawer-body a { color: rgb(67 56 202); }
+
 body[data-theme="light"] .view-header-title,
 body[data-theme="light"] .view-header-sub {
   color: rgb(71 85 105);         /* slate-600 — slightly darker for contrast */
