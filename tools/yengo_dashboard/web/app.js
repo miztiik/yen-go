@@ -558,7 +558,12 @@ async function openTaxonomyRenameModal({ kind, oldSlug }) {
     $("#taxonomy-rename-result").innerHTML = `<span class="text-slate-400">running preview…</span>`;
     try {
       const resp = await postJSON(endpoint, { old: oldSlug, new: newSlug });
-      $("#taxonomy-rename-result").innerHTML = _renderTaxonomyPreviewBody(resp.raw || {});
+      const resultEl = $("#taxonomy-rename-result");
+      resultEl.innerHTML = _renderTaxonomyPreviewBody(resp.raw || {});
+      const applyEndpoint = kind === "tag" ? "/api/tags/rename/apply" : "/api/levels/rename/apply";
+      _wireTaxonomyApplyButton(
+        resultEl, applyEndpoint, { old: oldSlug, new: newSlug }, newSlug,
+      );
     } catch (err) {
       $("#taxonomy-rename-result").innerHTML = errorBlock(`POST ${endpoint}`, err);
     } finally {
@@ -610,7 +615,11 @@ async function openTagMergeModal() {
     $("#tag-merge-result").innerHTML = `<span class="text-slate-400">running preview…</span>`;
     try {
       const resp = await postJSON("/api/tags/merge/preview", { sources, target });
-      $("#tag-merge-result").innerHTML = _renderTaxonomyPreviewBody(resp.raw || {});
+      const resultEl = $("#tag-merge-result");
+      resultEl.innerHTML = _renderTaxonomyPreviewBody(resp.raw || {});
+      _wireTaxonomyApplyButton(
+        resultEl, "/api/tags/merge/apply", { sources, target }, target,
+      );
     } catch (err) {
       $("#tag-merge-result").innerHTML = errorBlock(`POST /api/tags/merge/preview`, err);
     } finally {
@@ -633,15 +642,70 @@ function _renderTaxonomyPreviewBody(raw) {
     _previewStat("Target", raw.target || "—"),
     _previewStat("Affected puzzles", raw.affected_puzzle_count == null ? "—" : raw.affected_puzzle_count),
   ].join("");
+  const applyBtn = raw.valid
+    ? `<button type="button" data-taxonomy-apply class="ml-2 px-2 py-0.5 rounded bg-rose-600 hover:bg-rose-500 text-white">Apply</button>
+       <span class="ml-2 text-[11px] text-slate-500">Destructive: rewrites SGFs + config. You will be asked to type the target slug to confirm.</span>`
+    : `<span class="text-[11px] text-slate-500">Fix the errors above, then re-preview.</span>`;
   return `
     <div class="mb-2">${validBadge}</div>
     ${stats}
     ${errs}
-    <div class="mt-3 text-[11px] text-slate-500">
-      Apply path is deferred — V1 ships preview only.
-      <button type="button" disabled class="ml-2 px-2 py-0.5 rounded bg-slate-800 text-slate-500 cursor-not-allowed">Apply (deferred)</button>
-    </div>
+    <div class="mt-3">${applyBtn}</div>
   `;
+}
+
+// Theme 11 (4d): render the apply payload (after Apply succeeds or is refused).
+function _renderTaxonomyApplyBody(raw) {
+  const okBadge = raw.ok
+    ? `<span class="pill ${PILL_VARIANTS.ok}"><span class="glyph"></span>applied</span>`
+    : `<span class="pill ${PILL_VARIANTS.error}"><span class="glyph"></span>refused</span>`;
+  const errs = Array.isArray(raw.errors) && raw.errors.length
+    ? `<ul class="mt-2 list-disc list-inside text-rose-300">${raw.errors.map((e) => `<li>${escapeHtml(typeof e === "string" ? e : (e.message || JSON.stringify(e)))}</li>`).join("")}</ul>`
+    : "";
+  const sources = Array.isArray(raw.sources) ? raw.sources.join(", ") : "—";
+  const stats = [
+    _previewStat("Op", raw.op || "—"),
+    _previewStat("Sources", sources),
+    _previewStat("Target", raw.target || "—"),
+    _previewStat("Files scanned", raw.files_scanned == null ? "—" : raw.files_scanned),
+    _previewStat("Files rewritten", raw.files_rewritten == null ? "—" : raw.files_rewritten),
+    _previewStat("Config updated", raw.config_updated == null ? "—" : String(raw.config_updated)),
+    _previewStat("Audit timestamp", raw.audit_timestamp || "—"),
+  ].join("");
+  return `
+    <div class="mb-2">${okBadge}</div>
+    ${stats}
+    ${errs}
+  `;
+}
+
+// Theme 11 (4d): wire the Apply button inside a freshly-rendered preview body.
+// Caller passes a `resultEl` (the host of the preview HTML), the apply
+// `endpoint`, and the apply-request `body`. After typed-verb confirm against
+// `verb`, posts to the endpoint, replaces resultEl's innerHTML with the apply
+// payload summary, and refreshes the taxonomy section on success.
+function _wireTaxonomyApplyButton(resultEl, endpoint, body, verb) {
+  const applyBtn = resultEl.querySelector("[data-taxonomy-apply]");
+  if (!applyBtn) return;
+  applyBtn.addEventListener("click", async () => {
+    if (!await confirmDialog({verb})) return;
+    applyBtn.disabled = true;
+    resultEl.insertAdjacentHTML("beforeend",
+      `<div class="mt-2 text-xs text-slate-400" data-taxonomy-apply-status>applying…</div>`);
+    try {
+      const resp = await postJSON(endpoint, body);
+      resultEl.innerHTML = _renderTaxonomyApplyBody(resp.raw || {});
+      if (resp.raw && resp.raw.ok) {
+        toast("ok", `${resp.raw.op || "taxonomy mutation"} applied`);
+        // Refresh the Library taxonomy block so usage counts reflect the rewrite.
+        _loadTaxonomySection().catch(() => { /* graceful */ });
+      } else {
+        toast("error", `${(resp.raw && resp.raw.op) || "taxonomy mutation"} refused`);
+      }
+    } catch (err) {
+      resultEl.innerHTML = errorBlock(`POST ${endpoint}`, err);
+    }
+  });
 }
 
 // Theme 14b: Inventory health surface — badge + per-issue table.

@@ -1078,7 +1078,7 @@ def test_puzzle_search_box_in_index(index_html: str) -> None:
 
 
 def test_taxonomy_mutation_wired(app_js: str) -> None:
-    """Theme 11: inline rename + tag-merge UI is wired against the preview API."""
+    """Theme 11: inline rename + tag-merge UI wired against preview AND apply APIs."""
     assert "openTaxonomyRenameModal" in app_js
     assert "openTagMergeModal" in app_js
     assert "data-taxonomy-rename" in app_js
@@ -1086,7 +1086,15 @@ def test_taxonomy_mutation_wired(app_js: str) -> None:
     assert "/api/tags/rename/preview" in app_js
     assert "/api/tags/merge/preview" in app_js
     assert "/api/levels/rename/preview" in app_js
-    assert "Apply (deferred)" in app_js
+    # Slice 4d: apply path is now wired with typed-verb confirm.
+    assert "Apply (deferred)" not in app_js
+    assert "/api/tags/rename/apply" in app_js
+    assert "/api/tags/merge/apply" in app_js
+    assert "/api/levels/rename/apply" in app_js
+    assert "data-taxonomy-apply" in app_js
+    assert "_renderTaxonomyApplyBody" in app_js
+    assert "_wireTaxonomyApplyButton" in app_js
+    assert "confirmDialog({verb})" in app_js
 
 
 def test_adapter_scaffold_wired(app_js: str) -> None:
