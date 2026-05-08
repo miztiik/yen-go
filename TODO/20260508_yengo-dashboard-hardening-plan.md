@@ -30,27 +30,27 @@
 
 | Item | File(s) | Status |
 |------|---------|--------|
-| W1.1 Add `/daily` to SPA route allowlist | `server/app.py:110` | pending |
-| W1.2 Reject invalid adapter ID with 400 | `server/routes_maintenance.py` (adapter_config_add) | pending |
-| W1.3 Relabel `--fresh` checkbox to honest destruction wording | `web/app.js` (~`:2554`) | pending |
-| W1.4 Hide taxonomy rename/merge behind "Edit taxonomy" toggle (auto-off 5 min) + amber border | `web/app.js`, `web/styles.css` | pending |
-| W1.5 Consolidate status indicators — keep bottom strip; demote top chip to dot+version | `web/app.js:188-210` (`paintSystemChip`), styles | pending |
-| W1.6 Severity color tokens `--sev-{ok,warn,error,info}` themed for both modes | `web/styles.css` | pending |
-| W1.7 Dashboard test suite green (was 227 passed, 1 failed) | `tests/` | pending |
+| W1.1 Add `/daily` to SPA route allowlist | `server/app.py:110` | ✅ shipped (`3d74662d5`) |
+| W1.2 Reject invalid adapter ID with 400 | `server/routes_maintenance.py` (adapter_config_add) | ✅ shipped (`3d74662d5`) |
+| W1.3 Relabel `--fresh` checkbox to honest destruction wording | `web/app.js` | ✅ shipped (`3d74662d5`) |
+| W1.4 Hide taxonomy rename/merge behind "Edit taxonomy" toggle (auto-off 5 min) + amber border | `web/app.js`, `web/styles.css` | ✅ shipped (`3d74662d5`) |
+| W1.5 Consolidate status indicators — keep bottom strip; demote top chip to dot+version | `web/app.js` (`paintSystemChip`), styles | ✅ shipped (`3d74662d5`) |
+| W1.6 Severity color tokens `--sev-{ok,warn,error,info}` themed for both modes | `web/styles.css` | ✅ shipped (`3d74662d5`) |
+| W1.7 Dashboard test suite green | `tests/` | ✅ 228 passed |
 
 ## W2 — Adapter clarity (medium)
 
-- W2.1 Relabel buttons: "Import existing folder" (bootstrap) and "Create new adapter from template" (scaffold), with explanatory subtitles in the launcher modal.
-- W2.2 Adapter list: search input + explicit sort caption (current opaque sort at `app.js:1060-1067`).
-- W2.3 New per-row "Reset ingest cache" overflow action — deletes `<source>/.yengo-ingest.sqlite`. Backend route + typed-verb confirm.
-- W2.4 Surface what `Validate` actually checks (schema + path-existence per source) in a small description block on the Validate response panel.
+- W2.1 ✅ Relabel: "Import existing folder" + "Create new adapter from template" with subtitles (`b1d157c6d`).
+- W2.2 ✅ Adapter list filter input + sort caption (`b1d157c6d`).
+- W2.3 ✅ Per-row "Reset DB" calls existing `source-ingest-state --reset` modal — no new CLI needed (`b1d157c6d`).
+- W2.4 ✅ Validate panel describes what is checked (`b1d157c6d`).
 
 ## W3 — Help registry + docs (medium)
 
-- W3.1 Introduce `web/help-strings.json` keyed by control id; small inline `?` chips next to taxonomy / levels / adapters / hints; popover component.
-- W3.2 CI guard: every `data-help-id` resolves; every help-drawer doc reference exists.
-- W3.3 Header "Puzzle ID" search box → universal cmd-K palette (sources, tags, collections, puzzle hashes by prefix). Frees the header.
-- W3.4 Doc rewrite — `docs/how-to/tools/run-yengo-dashboard.md`, top-level `tools/yengo_dashboard/README.md`, `docs/reference/yengo-dashboard-api.md` to match shipped surface (drop "Phase 1 read-only" framing; update endpoint catalog).
+- W3.1 ✅ `web/help-strings.json` + inline `?` chips + popover (`e831b6b37`).
+- W3.2 ✅ CI guard — `tests/test_help_strings.py` asserts every `data-help-id` resolves and every help-drawer doc reference exists.
+- W3.3 ✅ ⌘K / Ctrl-K / `/` universal command palette replaces orphaned header search (`e831b6b37`).
+- W3.4 ✅ Doc rewrite — `run-yengo-dashboard.md` + `tools/yengo_dashboard/README.md` updated (`e831b6b37`).
 
 ## W4 — Structural (larger)
 

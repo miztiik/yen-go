@@ -1189,3 +1189,72 @@ def test_help_drawer_replaces_guide_nav(
     assert 'body[data-theme="light"] .help-drawer' in styles_css
     assert 'body[data-theme="light"] .help-toggle' in styles_css
 
+
+# W3.2 — help-strings registry guard.
+#
+# Every `data-help-id="..."` referenced from the rendered UI must resolve
+# to a key in `web/help-strings.json`, otherwise the popover silently shows
+# nothing. The chip class itself is also pinned so a CSS rename can't
+# silently strip the affordance.
+def test_help_strings_registry_resolves(app_js: str, index_html: str) -> None:
+    import json
+
+    registry_path = WEB_DIR / "help-strings.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    keys = {k for k in registry.keys() if not k.startswith("_")}
+    assert keys, "help-strings.json has no usable entries"
+
+    referenced: set[str] = set()
+    for source in (app_js, index_html):
+        # Skip line-comments so `// data-help-id="key"` in a docstring
+        # comment doesn't poison the registry check.
+        scrubbed = "\n".join(
+            line for line in source.splitlines() if not line.lstrip().startswith("//")
+        )
+        for m in re.finditer(r'data-help-id\s*=\s*["\']([^"\']+)["\']', scrubbed):
+            referenced.add(m.group(1))
+
+    assert referenced, "no data-help-id attributes found — chips were stripped?"
+    missing = referenced - keys
+    assert not missing, (
+        f"data-help-id values not present in help-strings.json: {sorted(missing)}"
+    )
+
+    # Every registry entry must have title + body so the popover renders.
+    for key in keys:
+        entry = registry[key]
+        assert isinstance(entry, dict), f"{key!r} is not an object"
+        assert entry.get("title"), f"{key!r} missing 'title'"
+        assert entry.get("body"), f"{key!r} missing 'body'"
+
+    # The chip class is what styles.css targets; a rename must update both.
+    assert 'class="help-chip"' in app_js or "class='help-chip'" in app_js, (
+        "help-chip elements no longer rendered from app.js"
+    )
+
+
+# W3.2 — help-drawer route map guard.
+#
+# `_HELP_ROUTE_MAP` in app.js maps each route to a docs path served via
+# `/api/docs/file?path=...`. Each referenced doc must exist on disk, or
+# the drawer will surface a 404 the moment a user clicks `?`.
+def test_help_drawer_doc_paths_exist(app_js: str) -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    docs_root = repo_root / "docs"
+    pattern = re.compile(r'path:\s*["\']([^"\']+\.md)["\']')
+    paths = {m.group(1) for m in pattern.finditer(app_js)}
+    if not paths:
+        return
+    # `_HELP_ROUTE_MAP` paths are passed to /api/docs/file?path=... which
+    # resolves under docs/. Tolerate either form (with or without docs/
+    # prefix) so a future refactor of the API doesn't silently break this.
+    missing: list[str] = []
+    for p in sorted(paths):
+        if (docs_root / p).is_file():
+            continue
+        if (repo_root / p).is_file():
+            continue
+        missing.append(p)
+    assert not missing, f"help-drawer references missing docs: {missing}"
+
+

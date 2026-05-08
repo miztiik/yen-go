@@ -64,6 +64,61 @@ tools/yengo_dashboard/
     test_run_controller.py     # direct controller tests + slow `validate` smoke
 ```
 
+## Recent surface additions (2026-05-08 hardening)
+
+Tracked in `TODO/20260508_yengo-dashboard-hardening-plan.md`. Code touches
+in `web/app.js` + `web/styles.css` + `web/help-strings.json`; no new
+backend routes.
+
+- **W1 bug fixes**: `/daily` SPA route allowlisted in `server/app.py`;
+  `routes_maintenance.adapter_config_add()` rejects malformed adapter ids
+  with explicit 400 (`_ADAPTER_ID_RE` = `^[a-z][a-z0-9-]*$`); `--fresh`
+  checkbox label rewritten to call out destruction; taxonomy
+  rename/merge buttons gated behind `[data-tax-edit]` toggle (5-min
+  auto-off via `_wireTaxonomyEditToggle`).
+- **W1.5/1.6 status**: top header `#system-chip` is now dot-only (label
+  hidden, version meta retained); the bottom strip remains the source of
+  truth for severity escalation. Severity tokens
+  `--sev-{ok,warn,error,info}` are themed in both light/dark.
+- **W2 adapter clarity**: bootstrap pane relabelled "Import existing
+  folder"; scaffold pane "Create new adapter from template"; adapter
+  list grew an `#adapter-filter` input + sort caption; per-row Reset DB
+  button reuses the existing `openIngestStateResetModal()` flow (no new
+  CLI subcommand — `source-ingest-state --reset` already exists);
+  validate panel paragraph spells out what the check covers.
+- **W3 contextual help + universal palette**:
+  - `web/help-strings.json` is the single source of truth for popover
+    copy. `_loadHelpStrings()` lazy-fetches once. `_wireHelpChips()`
+    delegates clicks on `[data-help-id]` and `_showHelpPopover()`
+    positions a `.help-popover` against the chip's bounding rect.
+  - `[data-help-id]` chips are inserted next to: Taxonomy heading +
+    Edit-mode toggle, taxonomy table `usage` + `rank` column headers,
+    Adapter validation heading, Import-folder heading, Create-new-
+    adapter heading, and the `--fresh` checkbox.
+  - `#palette-trigger` button replaces the orphaned puzzle-search form
+    in the top header. `_wireCommandPalette()` binds ⌘K / Ctrl-K / `/`
+    to `_openPalette()` which lazy-loads adapters / tags / levels via
+    `_ensurePaletteIndex()`. 16-hex hash detection routes to the
+    puzzle-detail SPA path; everything else navigates to the relevant
+    view. Styled by `dialog.command-palette` in `styles.css`.
+  - **Test guard** (`tests/test_web_assets.py`): every `data-help-id`
+    referenced from app.js / index.html must resolve to a key in
+    `help-strings.json`; every `_HELP_ROUTE_MAP` doc path must exist
+    under `docs/` (or the repo root).
+- **W4 partial**:
+  - Per-row Run / Ingest now pass through `confirmDialog({verb:source})`
+    and surface auto `--source-override` in the body before spawning a
+    subprocess.
+  - `taxonomyTable()` renders inline CSS sparklines (`.tax-bar` /
+    `.tax-bar-fill`) sized relative to the column's max usage_count.
+  - Library view appends a `#session-panel` "Recent activity" block
+    (last 3 runs from `/api/runs`) plus a "since your last visit" stamp
+    persisted at `localStorage["yengo-dashboard:lastVisit"]` —
+    populated by `_loadSessionPanel()`.
+- **Deferred to W5**: adapter row Edit/Clone (needs `PATCH /sources/:slug`
+  + Pydantic schema); Library decomposition (filters/results/detail
+  split with URL-state); grouped-category stacked level-band chart.
+
 ## Endpoints (Phase 1 + Phase 2 + Phase 3)
 
 | Method | Path                          | Source                                | Notes                                           |
