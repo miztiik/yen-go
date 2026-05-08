@@ -1414,6 +1414,68 @@ class TestTaxonomyMutationPreviewEndpoints:
         assert resp.status_code == 422
 
 
+class TestTaxonomyMutationApplyEndpoints:
+    """Theme 11 sub-slice 4a: invalid-preview refusal path is the safe public test.
+
+    A successful apply would rewrite real published SGFs, so the route-level
+    tests assert only the preview-refusal contract: when the slug is unknown,
+    the apply route returns 200 with `{ok:false, errors[]}` (rc=2 from the
+    CLI is tolerated). Positive apply behavior is covered by the writer-level
+    unit tests in ``backend/.../test_taxonomy_mutations_writer.py``.
+    """
+
+    def test_tags_rename_apply_unknown_slug_refused(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.post(
+                "/api/tags/rename/apply",
+                json={"old": "totally-not-a-real-tag-zzz", "new": "new-tag-zzz"},
+            )
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["ok"] is False
+        assert raw["op"] == "tags-rename"
+        assert any("unknown tag" in e for e in raw["errors"])
+
+    def test_tags_merge_apply_unknown_slug_refused(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.post(
+                "/api/tags/merge/apply",
+                json={
+                    "sources": ["nope-a-zzz", "nope-b-zzz"],
+                    "target": "merged-target-zzz",
+                },
+            )
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["ok"] is False
+        assert raw["op"] == "tags-merge"
+        assert raw["errors"]
+
+    def test_levels_rename_apply_unknown_slug_refused(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.post(
+                "/api/levels/rename/apply",
+                json={"old": "no-such-level-zzz", "new": "new-level-zzz"},
+            )
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["ok"] is False
+        assert raw["op"] == "levels-rename"
+        assert raw["errors"]
+
+    def test_tags_merge_apply_too_few_sources_returns_422(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.post(
+                "/api/tags/merge/apply",
+                json={"sources": ["only-one"], "target": "merged"},
+            )
+        assert resp.status_code == 422
+
+
 class TestAdapterScaffoldEndpoints:
     """Theme 12: preview path uses real subprocess against real config.
 

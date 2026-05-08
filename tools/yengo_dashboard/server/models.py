@@ -938,6 +938,19 @@ class TaxonomyMutationPreviewResponse(BaseModel):
     raw: dict = Field(..., description="Parsed JSON from the `--dry-run --json` CLI call.")
 
 
+class TaxonomyMutationApplyResponse(BaseModel):
+    """``POST /api/tags/rename/apply`` etc. (Theme 11 sub-slice 4a).
+
+    Cockpit principle #6: full passthrough; the CLI owns the apply payload
+    shape (``{ok, op, sources, target, files_scanned, files_rewritten,
+    config_updated, errors, audit_timestamp, message}``). On preview
+    rejection the CLI returns rc=2 with ``ok:false`` + ``errors[]`` —
+    delivered here as 200 OK with the body verbatim, not a 502.
+    """
+
+    raw: dict = Field(..., description="Parsed JSON from the `--apply --json` CLI call.")
+
+
 class TagsRenamePreviewRequest(BaseModel):
     old: str = Field(..., min_length=1)
     new: str = Field(..., min_length=1)

@@ -589,6 +589,25 @@ class PipelineRunner:
         args = ["levels", "rename", old, new, "--dry-run", "--json"]
         return self._run_taxonomy_preview(args)
 
+    def tags_rename_apply(self, *, old: str, new: str) -> dict:
+        """Theme 11 (4a): wraps ``tags rename OLD NEW --apply --json``.
+
+        Tolerates rc=2 (preview rejected → apply refused) — that's a business
+        outcome (errors[]) the dashboard renders verbatim, not a 502.
+        """
+        args = ["tags", "rename", old, new, "--apply", "--json"]
+        return self._run_taxonomy_preview(args)
+
+    def tags_merge_apply(self, *, sources: list[str], target: str) -> dict:
+        """Theme 11 (4a): wraps ``tags merge SRC... --into TARGET --apply --json``."""
+        args = ["tags", "merge", *sources, "--into", target, "--apply", "--json"]
+        return self._run_taxonomy_preview(args)
+
+    def levels_rename_apply(self, *, old: str, new: str) -> dict:
+        """Theme 11 (4a): wraps ``levels rename OLD NEW --apply --json``."""
+        args = ["levels", "rename", old, new, "--apply", "--json"]
+        return self._run_taxonomy_preview(args)
+
     def adapter_scaffold(
         self, *, new_id: str, kind: str = "local",
         name: str | None = None, path: str | None = None,

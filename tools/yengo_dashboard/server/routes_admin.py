@@ -34,6 +34,7 @@ from tools.yengo_dashboard.server.models import (
     PublishLogSearchResponse,
     TagsMergePreviewRequest,
     TagsRenamePreviewRequest,
+    TaxonomyMutationApplyResponse,
     TaxonomyMutationPreviewResponse,
 )
 from tools.yengo_dashboard.server.pipeline_runner import PipelineCommandError, PipelineRunner
@@ -97,7 +98,7 @@ def build_admin_router(*, runner: PipelineRunner) -> APIRouter:
 
     @router.post("/tags/rename/preview", response_model=TaxonomyMutationPreviewResponse)
     def tags_rename_preview(body: TagsRenamePreviewRequest) -> TaxonomyMutationPreviewResponse:
-        """Theme 11: dry-run preview of `tags rename`. Apply path deferred."""
+        """Theme 11: dry-run preview of `tags rename` (read-only)."""
         try:
             payload = runner.tags_rename_preview(old=body.old, new=body.new)
         except PipelineCommandError as exc:
@@ -112,9 +113,26 @@ def build_admin_router(*, runner: PipelineRunner) -> APIRouter:
             ) from exc
         return TaxonomyMutationPreviewResponse(raw=payload)
 
+    @router.post("/tags/rename/apply", response_model=TaxonomyMutationApplyResponse)
+    def tags_rename_apply(body: TagsRenamePreviewRequest) -> TaxonomyMutationApplyResponse:
+        """Theme 11 (4a): apply `tags rename` (rewrites SGFs + config/tags.json)."""
+        try:
+            payload = runner.tags_rename_apply(old=body.old, new=body.new)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": "puzzle_manager tags rename apply failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return TaxonomyMutationApplyResponse(raw=payload)
+
     @router.post("/tags/merge/preview", response_model=TaxonomyMutationPreviewResponse)
     def tags_merge_preview(body: TagsMergePreviewRequest) -> TaxonomyMutationPreviewResponse:
-        """Theme 11: dry-run preview of `tags merge`. Apply path deferred."""
+        """Theme 11: dry-run preview of `tags merge` (read-only)."""
         try:
             payload = runner.tags_merge_preview(sources=body.sources, target=body.target)
         except PipelineCommandError as exc:
@@ -129,9 +147,26 @@ def build_admin_router(*, runner: PipelineRunner) -> APIRouter:
             ) from exc
         return TaxonomyMutationPreviewResponse(raw=payload)
 
+    @router.post("/tags/merge/apply", response_model=TaxonomyMutationApplyResponse)
+    def tags_merge_apply(body: TagsMergePreviewRequest) -> TaxonomyMutationApplyResponse:
+        """Theme 11 (4a): apply `tags merge` (rewrites SGFs + config/tags.json)."""
+        try:
+            payload = runner.tags_merge_apply(sources=body.sources, target=body.target)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": "puzzle_manager tags merge apply failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return TaxonomyMutationApplyResponse(raw=payload)
+
     @router.post("/levels/rename/preview", response_model=TaxonomyMutationPreviewResponse)
     def levels_rename_preview(body: LevelsRenamePreviewRequest) -> TaxonomyMutationPreviewResponse:
-        """Theme 11: dry-run preview of `levels rename`. Apply path deferred."""
+        """Theme 11: dry-run preview of `levels rename` (read-only)."""
         try:
             payload = runner.levels_rename_preview(old=body.old, new=body.new)
         except PipelineCommandError as exc:
@@ -145,6 +180,23 @@ def build_admin_router(*, runner: PipelineRunner) -> APIRouter:
                 },
             ) from exc
         return TaxonomyMutationPreviewResponse(raw=payload)
+
+    @router.post("/levels/rename/apply", response_model=TaxonomyMutationApplyResponse)
+    def levels_rename_apply(body: LevelsRenamePreviewRequest) -> TaxonomyMutationApplyResponse:
+        """Theme 11 (4a): apply `levels rename` (rewrites SGFs + config/puzzle-levels.json)."""
+        try:
+            payload = runner.levels_rename_apply(old=body.old, new=body.new)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": "puzzle_manager levels rename apply failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return TaxonomyMutationApplyResponse(raw=payload)
 
     @router.post("/adapter-scaffold/preview", response_model=AdapterScaffoldResponse)
     def adapter_scaffold_preview(body: AdapterScaffoldRequest) -> AdapterScaffoldResponse:
