@@ -41,6 +41,7 @@ All archived documents include a deprecation banner at the top.
 | [katago-enrichment-audit-synthesis-2026-03-02.md](katago-enrichment-audit-synthesis-2026-03-02.md) | AI-solve remediation and initiative tracking | 2026-03 |
 | [march-2026-initiative-decomposition.md](march-2026-initiative-decomposition.md) | Historical digest for March 2026 initiative retirement out of TODO/initiatives | 2026-05 |
 | [browser-session-bulk-capture-research-2026-04-13.md](browser-session-bulk-capture-research-2026-04-13.md) | Historical research on browser-gated bulk capture for an external source | 2026-05 |
+| [kishimoto-mueller-search-optimizations-2026-03-04.md](kishimoto-mueller-search-optimizations-2026-03-04.md) | Historical implementation plan and task ledger for KM search optimizations | 2026-05 |
 | [study-mode-puzzles-without-solutions-2026-05-04.md](study-mode-puzzles-without-solutions-2026-05-04.md) | Historical rollout plan for study puzzles without recorded solution trees | 2026-05 |
 | [puzzle-quality-strategy-2026-02-25.md](puzzle-quality-strategy-2026-02-25.md) | Historical Strategy D quality-control plan and classifier roadmap | 2026-05 |
 | [puzzle-quality-scorer-research-2026-02-27.md](puzzle-quality-scorer-research-2026-02-27.md) | Historical symbolic tactical-analyzer proposal and clean-room research digest | 2026-05 |

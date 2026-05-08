@@ -1,9 +1,8 @@
 # ADR 009: Kishimoto-Mueller Search Optimizations
 
-**Last Updated:** 2026-03-05
-**Status:** APPROVED — Implementation in progress
-**Plan:** `TODO/kishimoto-mueller-search-optimizations.md`
-**Tasks:** `TODO/kishimoto-mueller-tasks.md`
+**Last Updated:** 2026-05-08
+**Status:** IMPLEMENTED — Canonical docs landed; historical plan/task bundle archived
+**Historical Record:** `docs/archive/kishimoto-mueller-search-optimizations-2026-03-04.md`
 
 ---
 
@@ -209,4 +208,4 @@ The Kishimoto-Müller paper describes **TsumeGo Explorer**, which outperformed G
 > - [Architecture: KataGo Enrichment](../../docs/architecture/tools/katago-enrichment.md) — full design decisions
 > - [How-To: Enrichment Lab](../../docs/how-to/tools/katago-enrichment-lab.md) — config usage guide
 > - [Reference: Enrichment Config](../../docs/reference/enrichment-config.md) — config field reference
-> - [Plan: KM Search Optimizations](../kishimoto-mueller-search-optimizations.md) — implementation plan
+> - [Archive: KM Search Optimizations](../../docs/archive/kishimoto-mueller-search-optimizations-2026-03-04.md) — historical plan and task ledger
