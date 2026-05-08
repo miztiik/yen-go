@@ -44,6 +44,7 @@ from tools.yengo_dashboard.server.models import (
     PipelineConfigShowResponse,
     DailyListResponse,
     DailyStatusResponse,
+    DailyPreviewResponse,
     CleanPreviewResponse,
     CleanRequest,
     InventoryMutationApplyResponse,
@@ -488,5 +489,25 @@ def build_maintenance_router(
                 },
             ) from exc
         return DailyStatusResponse(raw=payload)
+
+    @router.get(
+        "/daily/preview",
+        response_model=DailyPreviewResponse,
+    )
+    def daily_preview(date: str = Query(...)) -> DailyPreviewResponse:
+        """Theme 8b: read-only what-would-be-generated for ``date``."""
+        try:
+            payload = runner.daily_preview(date=date)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": "puzzle_manager daily-preview failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return DailyPreviewResponse(raw=payload)
 
     return router

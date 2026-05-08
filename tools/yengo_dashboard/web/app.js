@@ -3482,6 +3482,7 @@ function _renderDailyListBlock(raw) {
       <thead><tr class="text-left text-slate-500">
         <th class="py-1">Date</th><th>Technique</th>
         <th class="text-right">Puzzles</th><th>Generated at</th>
+        <th class="text-right">Action</th>
       </tr></thead>
       <tbody>
         ${rows.map((r) => `
@@ -3490,11 +3491,48 @@ function _renderDailyListBlock(raw) {
             <td>${escapeHtml(r.technique || "—")}</td>
             <td class="text-right">${r.puzzle_count}</td>
             <td class="text-xs text-slate-500">${escapeHtml(r.generated_at || "")}</td>
+            <td class="text-right">
+              <button type="button" class="text-xs underline text-sky-600 dark:text-sky-300"
+                      data-daily-preview-btn data-date="${escapeHtml(r.date)}">Preview</button>
+            </td>
           </tr>
         `).join("")}
       </tbody>
     </table>
+    <div data-daily-preview-target class="mt-3"></div>
   `;
+  host.querySelectorAll("[data-daily-preview-btn]").forEach((btn) => {
+    btn.addEventListener("click", () => _runDailyPreview(btn.dataset.date));
+  });
+}
+
+async function _runDailyPreview(date) {
+  const target = document.querySelector("[data-daily-preview-target]");
+  if (!target) return;
+  target.innerHTML = `<div class="text-xs text-slate-500">loading preview for ${escapeHtml(date)}…</div>`;
+  try {
+    const res = await getJSON(`/api/daily/preview?date=${encodeURIComponent(date)}`);
+    const raw = res.raw || {};
+    const ch = raw.challenge;
+    if (!ch) {
+      target.innerHTML = `<div class="text-sm text-slate-500">No challenge would be generated for ${escapeHtml(date)} (db_exists=${raw.db_exists}).</div>`;
+      return;
+    }
+    const std = ch.standard || {};
+    target.innerHTML = `
+      <div class="rounded border border-slate-300 dark:border-slate-700 p-3 text-sm" data-daily-preview-card>
+        <div class="font-semibold mb-1">Preview: ${escapeHtml(date)}</div>
+        <div class="text-xs text-slate-500">Read-only dry-run — nothing was written.</div>
+        <dl class="grid grid-cols-[8rem_1fr] gap-y-1 text-xs mt-2">
+          <dt class="text-slate-500">Technique</dt><dd>${escapeHtml(std.technique_of_day || "—")}</dd>
+          <dt class="text-slate-500">Standard total</dt><dd>${std.total ?? 0}</dd>
+          <dt class="text-slate-500">Version</dt><dd>${escapeHtml(ch.version || "")}</dd>
+          <dt class="text-slate-500">By-tag</dt><dd>${Object.keys(ch.by_tag || {}).length} tag(s)</dd>
+        </dl>
+      </div>`;
+  } catch (err) {
+    target.innerHTML = `<div class="text-sm text-rose-500">preview failed: ${escapeHtml(err.body?.detail?.message || err.message || String(err))}</div>`;
+  }
 }
 
 async function renderActivity() {

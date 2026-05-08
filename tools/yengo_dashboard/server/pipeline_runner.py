@@ -509,6 +509,17 @@ class PipelineRunner:
             )
         return result
 
+    def daily_preview(self, *, date: str) -> dict:
+        """Theme 8b: wraps ``daily-preview --date DATE --json`` (read-only)."""
+        args = ["daily-preview", "--date", date, "--json"]
+        result = self._run_json_any(args)
+        if not isinstance(result, dict):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON object, got {type(result).__name__}", "",
+            )
+        return result
+
     def pipeline_config_set(
         self, *, set_pairs: list[str], force: bool = False,
     ) -> dict:

@@ -842,3 +842,15 @@ class DailyStatusResponse(BaseModel):
             "missing_dates[], stale_dates[], last_regenerated_at})."
         ),
     )
+
+
+class DailyPreviewResponse(BaseModel):
+    """``GET /api/daily/preview`` payload (Theme 8b, read-only dry-run)."""
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON from `daily-preview --date DATE --json` "
+            "({ok, db_exists, date, challenge?, failures[]})."
+        ),
+    )

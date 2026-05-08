@@ -655,7 +655,7 @@ the file (write-tmp + os.replace).
 - [~] Calendar renders from `/api/daily/list`. _(8a: schedule table renders; full month-view calendar deferred to 8d.)_
 - [x] Status badge derives correctly from seeded `daily_schedule` rows
       with deliberate gaps. _(Theme 8a — `daily-status` CLI + `/api/daily/status` + `_renderDailyStatusBlock`.)_
-- [ ] Preview → commit flow with the same dialog pattern as Theme 1.
+- [~] Preview → commit flow with the same dialog pattern as Theme 1. _(8b: read-only `daily-preview` + per-row Preview button shipped; commit/regenerate flow deferred to 8c.)_
 - [ ] Cancel requires typed confirmation (destructive).
 - [ ] Backfill flow respects the preview-then-apply pattern.
 

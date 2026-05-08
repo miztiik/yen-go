@@ -452,6 +452,17 @@ Examples:
     daily_status_parser.add_argument("--json", action="store_true",
                                       help="Emit JSON.")
 
+    # Theme 8b: daily-preview (read-only what-would-be-generated)
+    daily_preview_parser = subparsers.add_parser(
+        "daily-preview",
+        help="Preview the daily challenge that would be generated for DATE (no write).",
+    )
+    daily_preview_parser.add_argument("--date", type=str, required=True,
+                                       metavar="YYYY-MM-DD",
+                                       help="Target date (YYYY-MM-DD).")
+    daily_preview_parser.add_argument("--json", action="store_true",
+                                       help="Emit JSON.")
+
     # status command
     status_parser = subparsers.add_parser("status", help="Show pipeline status")
     status_parser.add_argument(
@@ -1882,6 +1893,69 @@ def cmd_daily_status(args: argparse.Namespace) -> int:
         print(f"window {window_from}..{window_to} "
               f"generated={len(generated_dates)}/{expected_dates} "
               f"missing={len(missing)} stale={len(stale)}")
+    return 0
+
+
+def cmd_daily_preview(args: argparse.Namespace) -> int:
+    """Theme 8b: dry-run preview of the daily challenge for a single date.
+
+    Runs DailyGenerator with dry_run=True so no DB writes occur, then emits
+    the structured DailyChallenge payload (or a friendly summary) for the
+    given date. Missing source DB or empty result returns ok=true with
+    `challenge=null` so the dashboard can render a placeholder.
+    """
+    json_out = bool(getattr(args, "json", False))
+    try:
+        target = datetime.strptime(args.date, "%Y-%m-%d")
+    except (TypeError, ValueError):
+        msg = f"Error: Invalid --date '{getattr(args, 'date', None)}'. Use YYYY-MM-DD"
+        if json_out:
+            print(json.dumps({"ok": False, "error": msg}))
+        else:
+            print(msg)
+        return 1
+
+    db_path = _daily_db_path()
+    payload: dict[str, object] = {
+        "ok": True,
+        "db_exists": db_path.exists(),
+        "date": args.date,
+        "challenge": None,
+        "failures": [],
+    }
+    if not db_path.exists():
+        if json_out:
+            print(json.dumps(payload, indent=2))
+        else:
+            print(f"[OK] db missing — no preview for {args.date}")
+        return 0
+
+    try:
+        generator = DailyGenerator(db_path=db_path, dry_run=True)
+        result = generator.generate(start_date=target, end_date=target, force=True)
+    except PuzzleManagerError as e:
+        payload["ok"] = False
+        payload["error"] = str(e)
+        if json_out:
+            print(json.dumps(payload, indent=2))
+        else:
+            print(f"Error: {e}")
+        return 1
+
+    if result.challenges:
+        payload["challenge"] = result.challenges[0].model_dump(mode="json")
+    payload["failures"] = [str(f) for f in (result.failures or [])]
+
+    if json_out:
+        print(json.dumps(payload, indent=2))
+    else:
+        ch = payload["challenge"]
+        if not ch:
+            print(f"[OK] No challenge generated for {args.date}")
+        else:
+            std_total = ch.get("standard", {}).get("total", 0)  # type: ignore[union-attr]
+            tech = ch.get("standard", {}).get("technique_of_day", "")  # type: ignore[union-attr]
+            print(f"[PREVIEW] {args.date}  technique={tech!r}  standard_puzzles={std_total}")
     return 0
 
 
@@ -4034,6 +4108,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_daily_list(args)
     elif args.command == "daily-status":
         return cmd_daily_status(args)
+    elif args.command == "daily-preview":
+        return cmd_daily_preview(args)
     elif args.command == "status":
         return cmd_status(args)
     elif args.command == "clean":

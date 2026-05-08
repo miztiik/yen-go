@@ -1021,3 +1021,11 @@ def test_daily_nav_in_index(index_html: str) -> None:
     """Theme 8a: sidebar carries the Daily nav button."""
     assert 'data-nav="daily"' in index_html
     assert 'id="view-daily"' in index_html
+
+
+def test_daily_preview_wired(app_js: str) -> None:
+    """Theme 8b: per-row Preview button hits /api/daily/preview."""
+    assert "_runDailyPreview" in app_js
+    assert "data-daily-preview-btn" in app_js
+    assert "data-daily-preview-target" in app_js
+    assert "/api/daily/preview" in app_js

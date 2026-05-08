@@ -1235,3 +1235,23 @@ class TestDailyEndpoints:
         assert raw["expected_dates"] == 7
         assert isinstance(raw["missing_dates"], list)
 
+    def test_preview_db_missing_returns_null(self, tmp_path: Path) -> None:
+        # Theme 8b: read-only preview without writing.
+        config_dir = self._seed(tmp_path)
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.get("/api/daily/preview?date=2026-05-08")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["ok"] is True
+        assert raw["date"] == "2026-05-08"
+        assert "challenge" in raw
+
+    def test_preview_invalid_date_returns_400(self, tmp_path: Path) -> None:
+        # Theme 8b: bad date → CLI exits 1 → routes_maintenance maps to 502.
+        config_dir = self._seed(tmp_path)
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.get("/api/daily/preview?date=not-a-date")
+        assert resp.status_code == 502, resp.text
+
