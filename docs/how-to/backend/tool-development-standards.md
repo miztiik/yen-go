@@ -4,7 +4,7 @@ Normative standards for puzzle download tools in `tools/`. The yengo-source tool
 
 > **See also**: [TEMPLATE.md](../../../tools/core/TEMPLATE.md) — Quick-start scaffolding with copy-paste file stubs for creating a new tool. This document is the authority; the template is the skeleton.
 
-_Last updated: 2026-03-29_
+**Last Updated**: 2026-05-08
 
 ## 1. File Organization
 
@@ -787,3 +787,28 @@ All tool output MUST go under `external-sources/{tool-name}/`. This is the **sin
 ### Deprecated: Centralized Logging
 
 The `get_centralized_log_dir()` function (which reads `config/logging.json` and writes to `logs/tools/{tool}/`) is **DEPRECATED**. All tools MUST use `{output_dir}/logs/` instead. This co-locates logs with their associated data for easier debugging and cleanup.
+
+## 19. Browser-Session Fallback for Browser-Gated Sources
+
+When a source remains human-viewable in a normal browser session but starts returning challenge pages or other anti-bot responses to direct HTTP clients, keep the existing parse, convert, save, and checkpoint pipeline intact and replace only the fetch layer.
+
+### Preferred Escalation Order
+
+1. Start with the normal HTTP client and standard rate limiting.
+2. If the source becomes browser-gated, prefer userscript or extension capture inside a real user browser session.
+3. Probe CDP attach to an already-manual browser session only as a short validation step.
+4. Use LLM-driven browser control only when navigation is genuinely non-deterministic.
+
+### Required Design Rules
+
+- Treat the captured page payload as equivalent to fetched source input; downstream parsers and converters should not be rewritten just because the acquisition method changed.
+- Persist accepted payloads with the same per-item checkpoint guarantees used by download tools.
+- Add randomized inter-page delays and periodic longer pauses for sustained sessions.
+- Pause for manual recovery when challenge pages appear; do not assume challenge solving belongs in the default tool path.
+- Export browser-side buffers or local receiver state regularly during long runs.
+
+### Anti-Patterns
+
+- ❌ Rebuilding the parser or storage stack when only the fetch layer is blocked.
+- ❌ Starting with headless, stealth, or LLM-driven automation for a deterministic next-page workflow.
+- ❌ Treating challenge-solving services or proxy rotation as the default fallback path.

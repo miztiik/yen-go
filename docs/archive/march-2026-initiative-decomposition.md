@@ -4,16 +4,18 @@
 > Current canonical documentation: [Katago Enrichment Architecture](../architecture/tools/katago-enrichment.md), [Enrichment Lab GUI Architecture](../architecture/tools/enrichment-lab-gui.md), [Hint Architecture](../architecture/backend/hint-architecture.md), [SQLite Index Architecture](../concepts/sqlite-index-architecture.md), [Tsumego Frame](../concepts/tsumego-frame.md)
 > Archived: 2026-05-07
 
-**Last Updated**: 2026-05-07
+**Last Updated**: 2026-05-08
 
 ## Scope
 
 - Retirement decision date: 2026-05-07.
 - Retired scope: every March 2026 initiative directory and the March-format outliers that still lived under `TODO/initiatives/`.
 - Total retired directories: 90.
-- Out of scope: `20260413-research-101weiqi-bulk-download-strategy`, which remains in the active planning workspace.
+- Later retired separately: [Browser-Session Bulk Capture Research](browser-session-bulk-capture-research-2026-04-13.md), which was still active when the March retirement was recorded.
 
 The durable engineering knowledge from these initiatives already lives in the canonical documentation tree. This archive document preserves the planning lineage and theme clustering so the old initiative workspace no longer has to function as long-term repository memory.
+
+Source-specific initiative slugs are normalized in this digest when the original slug embedded an upstream site identity.
 
 ## Canonical Landing Zones
 
@@ -124,7 +126,7 @@ These initiatives cover the move to SQLite-backed search, browse-filter work, co
 - `20260313-2200-feature-sqlite-puzzle-index`
 - `20260314-2200-refactor-config-py-decomposition`
 - `20260314-2300-feature-advanced-search-filters`
-- `20260314-research-101weiqi-sources-architecture`
+- `20260314-research-external-source-architecture`
 - `20260314-research-db1-schema-tag-storage`
 - `20260314-research-incremental-db-feasibility`
 - `20260314-research-sequence-number-removal`
@@ -200,7 +202,7 @@ These items were important to the March portfolio but are now historical records
 20260314-2200-refactor-config-py-decomposition
 20260314-2300-feature-advanced-search-filters
 20260314-feature-enrichment-lab-config-panel
-20260314-research-101weiqi-sources-architecture
+20260314-research-external-source-architecture
 20260314-research-db1-schema-tag-storage
 20260314-research-incremental-db-feasibility
 20260314-research-lizgoban-katrain-patterns
