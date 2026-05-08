@@ -1073,6 +1073,7 @@ function adapterRow(a) {
         <button class="${baseBtn}" data-act="run"    data-source="${escapeHtml(a.id)}"${overrideHint}>Run</button>
         <button class="${baseBtn}" data-act="ingest" data-source="${escapeHtml(a.id)}"${overrideHint}>Ingest</button>
         ${enableBtn}
+        <button class="${baseBtn} text-rose-300 hover:text-rose-200" data-act="reset-ingest" data-source="${escapeHtml(a.id)}" title="Wipe this source's .yengo-ingest.sqlite. Use when published files were manually deleted and counts are stale.">Reset DB</button>
       </td>
     </tr>
     ${a.error ? `<tr><td colspan="9" class="py-2 px-3 text-xs text-rose-300 bg-rose-500/5 border-t border-rose-500/20">${escapeHtml(a.error)}</td></tr>` : ""}
@@ -1133,8 +1134,14 @@ async function renderAdapters() {
           </ul>
         `,
       })}
+      <div class="flex items-center justify-between gap-3 mt-4 mb-2 px-1">
+        <input type="search" id="adapter-filter" placeholder="Filter adapters by id or path…"
+               class="w-64 max-w-full rounded border border-slate-700 bg-slate-950 px-2 py-1 text-xs font-mono text-slate-200 placeholder:text-slate-600"
+               aria-label="Filter adapter list" />
+        <span class="text-[11px] text-slate-500">Sorted: active · failures first · most recent activity</span>
+      </div>
       <div class="overflow-x-auto rounded-md border border-slate-800 bg-slate-900">
-        <table class="w-full text-sm">
+        <table class="w-full text-sm" id="adapter-table">
           <thead class="text-slate-500 text-xs uppercase tracking-wider sticky top-0 bg-slate-900">
             <tr>
               <th class="text-left  font-normal py-2 pl-3">id</th>
@@ -1158,7 +1165,25 @@ async function renderAdapters() {
     _loadAdapterValidationSection();
     _renderAdapterBootstrapSection();
     _renderAdapterScaffoldSection();
+    _wireAdapterFilter();
   } catch (e) { root.innerHTML = errorBlock("/api/adapters", e); }
+}
+
+// W2.2 — pure-JS filter over rendered rows. Match against id (col 1) and
+// source_root path (col 8). Empty query restores all rows.
+function _wireAdapterFilter() {
+  const input = document.getElementById("adapter-filter");
+  const table = document.getElementById("adapter-table");
+  if (!input || !table) return;
+  const rows = Array.from(table.querySelectorAll("tbody tr"));
+  input.addEventListener("input", () => {
+    const q = input.value.trim().toLowerCase();
+    rows.forEach((tr) => {
+      if (!q) { tr.style.display = ""; return; }
+      const text = tr.textContent.toLowerCase();
+      tr.style.display = text.includes(q) ? "" : "none";
+    });
+  });
 }
 
 // Theme 7a: Adapter Configuration Management — read-only validation roll-up.
@@ -1216,6 +1241,7 @@ function adapterValidationBlock(raw) {
         </div>
         <span class="text-xs text-slate-500 font-mono">adapter-config validate-all</span>
       </div>
+      <p class="text-[11px] text-slate-500 mt-1">Checks each source in <code class="font-mono">config/sources.json</code>: schema fields are present and well-typed; <code class="font-mono">config.path</code> exists on disk; <code class="font-mono">adapter</code> kind is registered. Does not run the adapter or read SGFs.</p>
       ${issuesTable}
     </div>
   `;
@@ -1229,7 +1255,10 @@ function _renderAdapterBootstrapSection() {
     <div class="rounded-md border border-slate-800 bg-slate-900 p-3"
          data-adapter-bootstrap>
       <div class="flex items-center justify-between">
-        <h3 class="text-xs uppercase tracking-wider text-slate-500">Bootstrap from folder</h3>
+        <div>
+          <h3 class="text-xs uppercase tracking-wider text-slate-500">Import existing folder</h3>
+          <p class="text-[11px] text-slate-500 mt-0.5">Scan a folder of SGF subdirectories and append each as a source entry. Existing files are not modified.</p>
+        </div>
         <span class="text-xs text-slate-500 font-mono">adapter-config bootstrap</span>
       </div>
       <form class="mt-2 grid grid-cols-1 sm:grid-cols-4 gap-2"
@@ -1303,7 +1332,11 @@ function _renderAdapterScaffoldSection() {
   const section = document.getElementById("adapter-scaffold-section");
   if (!section) return;
   section.innerHTML = `
-    <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-3">Scaffold new adapter (Theme 12)</h3>
+    <div class="flex items-baseline justify-between mb-3">
+      <h3 class="text-xs uppercase tracking-wider text-slate-500">Create new adapter from template</h3>
+      <span class="text-xs text-slate-500 font-mono">adapter-scaffold</span>
+    </div>
+    <p class="text-[11px] text-slate-500 -mt-2 mb-2">Generates a new Python adapter package under <code class="font-mono">backend/puzzle_manager/adapters/</code> and appends a sources.json entry. Use this when the source needs a custom parser; for a plain folder of SGFs use <em>Import existing folder</em>.</p>
     <form data-adapter-scaffold-form class="rounded-md ring-1 ring-slate-800 bg-slate-900/60 p-3 grid md:grid-cols-2 gap-3">
       <label class="block text-xs text-slate-400">Adapter id (lowercase, dashes/underscores)
         <input type="text" name="id" required minlength="1" maxlength="64"
@@ -4652,6 +4685,10 @@ document.addEventListener("click", async (e) => {
   if (!btn) return;
   const act = btn.dataset.act;
   const source = btn.dataset.source;
+  if (act === "reset-ingest") {
+    await openIngestStateResetModal(source);
+    return;
+  }
   if (act === "enable") {
     btn.disabled = true;
     const original = btn.textContent;
