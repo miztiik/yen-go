@@ -2231,6 +2231,25 @@ function readRunForm() {
   };
 }
 
+// Build the literal CLI invocation for the current Run form. Pure function:
+// no DOM reads beyond the passed snapshot, so tests can exercise it directly.
+function buildCliEquivalent(snap) {
+  const parts = ["python", "-m", "backend.puzzle_manager", "run"];
+  if (snap.source) parts.push("--source", snap.source);
+  if (snap.stage)  parts.push("--stage",  snap.stage);
+  if (snap.fresh)           parts.push("--fresh");
+  if (snap.dry_run)         parts.push("--dry-run");
+  if (snap.source_override) parts.push("--source-override");
+  if (snap.no_enrichment)   parts.push("--no-enrichment");
+  return parts.join(" ");
+}
+
+function paintCliEquivalent() {
+  const el = $("#run-cli-equiv");
+  if (!el) return;
+  el.textContent = buildCliEquivalent(readRunForm());
+}
+
 // Re-paint the locked Source field if the Live Run pane is mounted. Called
 // whenever _activeAdapter changes (after enable/disable, or after the
 // background fetch completes). Cheap no-op if the user is on another tab.
@@ -2252,6 +2271,7 @@ function refreshSourceLock() {
     if (!hasActive) startBtn.title = "No active adapter — enable one from the Adapters tab.";
     else startBtn.removeAttribute("title");
   }
+  paintCliEquivalent();
 }
 
 function renderLiveRun() {
@@ -2302,6 +2322,17 @@ function renderLiveRun() {
           <button id="run-start"  class="flex-1 ${PILL_VARIANTS.ok}     hover:bg-emerald-500/20 disabled:opacity-40 disabled:pointer-events-none text-sm rounded-md px-3 py-1.5"${hasActive ? '' : ' disabled title="No active adapter — enable one from the Adapters tab."'}>Start</button>
           <button id="run-cancel" class="flex-1 ${PILL_VARIANTS.warn}   hover:bg-orange-500/20 disabled:opacity-40 disabled:pointer-events-none text-sm rounded-md px-3 py-1.5" disabled>Cancel</button>
         </div>
+        <div id="run-cli-equiv-block" class="pt-3 mt-2 border-t border-slate-800 space-y-1.5">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] uppercase tracking-wider text-slate-500">Equivalent CLI</span>
+            <button id="run-cli-copy" type="button"
+                    class="ml-auto text-[10px] uppercase tracking-wider text-slate-400 hover:text-slate-200 px-1.5 py-0.5 rounded border border-slate-800"
+                    aria-label="Copy CLI command to clipboard">Copy</button>
+          </div>
+          <pre id="run-cli-equiv"
+               class="font-mono text-[11px] text-emerald-300 whitespace-pre-wrap break-all bg-slate-950/60 border border-slate-800 rounded px-2 py-1.5"
+               aria-live="polite">python -m backend.puzzle_manager run</pre>
+        </div>
       </aside>
 
       <div class="space-y-3 min-w-0">
@@ -2340,6 +2371,30 @@ function renderLiveRun() {
 
   $("#run-start") .addEventListener("click", () => startRun(readRunForm()));
   $("#run-cancel").addEventListener("click", cancelActiveRun);
+
+  // Equivalent-CLI block: paint once, then re-paint on any form change so
+  // the operator can see the literal command they're about to launch.
+  paintCliEquivalent();
+  ["#run-stage", "#run-fresh", "#run-dry-run", "#run-source-override", "#run-no-enrichment"]
+    .forEach((sel) => {
+      const el = $(sel);
+      if (el) el.addEventListener("change", paintCliEquivalent);
+    });
+  const copyBtn = $("#run-cli-copy");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", async () => {
+      const text = $("#run-cli-equiv")?.textContent || "";
+      try {
+        await navigator.clipboard.writeText(text);
+        const orig = copyBtn.textContent;
+        copyBtn.textContent = "Copied";
+        setTimeout(() => { copyBtn.textContent = orig; }, 1200);
+      } catch {
+        copyBtn.textContent = "Copy failed";
+        setTimeout(() => { copyBtn.textContent = "Copy"; }, 1500);
+      }
+    });
+  }
 
   // Toolbar wiring
   $("#log-level").addEventListener("click", (e) => {

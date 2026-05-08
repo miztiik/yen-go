@@ -1098,3 +1098,22 @@ def test_adapter_scaffold_wired(app_js: str) -> None:
     assert "/api/adapter-scaffold/preview" in app_js
     assert "/api/adapter-scaffold/apply" in app_js
 
+
+def test_run_page_has_equivalent_cli_block(app_js: str) -> None:
+    """UX-handoff Slice 'Equivalent CLI': Run page must show the literal command.
+
+    Pure-function builder + DOM mount + change-event wiring + Copy button —
+    pin every wire so future churn can't silently drop the operator-facing CLI
+    preview.
+    """
+    assert "buildCliEquivalent" in app_js
+    assert "paintCliEquivalent" in app_js
+    assert "run-cli-equiv" in app_js
+    assert "run-cli-copy" in app_js
+    assert "Equivalent CLI" in app_js
+    # Builder must emit the canonical invocation prefix.
+    assert "python" in app_js and "backend.puzzle_manager" in app_js
+    # Re-paint hook on the locked-source refresh path so the block updates
+    # once the active adapter loads asynchronously.
+    assert app_js.count("paintCliEquivalent()") >= 2
+
