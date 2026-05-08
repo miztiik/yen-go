@@ -24,20 +24,20 @@ get done; the order is the prioritization, not the filter.
 
 | #  | Theme                              | Status | Phase | Notes |
 | -- | ---------------------------------- | :----: | :---: | ----- |
-| 0  | Operations / Logs UI polish        | ◐      |  P0   | viewHeader() helper + responsive Logs aside landed; screenshots TBD |
+| 0  | Operations / Logs UI polish        | ◐      |  P0   | viewHeader() helper + responsive Logs aside + equal-height ops cards landed; remaining ACs (screenshots, light-theme regression sweep) require interactive browser session — deferred |
 | 1  | Dry-run preview as first-class     | ☑      |  P0   | Shipped 2026-05-07 (1a–1e). CLI `--dry-run --json` for clean/rollback/vacuum-db; GET /api/{op}/preview; UI Preview button + impact modal |
-| 2  | Failure digest on History          | ☐      |  P0   | #1 operational question |
-| 3  | Disk / runtime footprint           | ☐      |  P0   | Cheap, high signal |
+| 2  | Failure digest on History          | ☑      |  P0   | Backend `status --failures-summary --last N --json` + `/api/status/failures-summary` passthrough + Pipeline-tab "Top failure modes" card with click-to-Logs drilldown |
+| 3  | Disk / runtime footprint           | ☑      |  P0   | `runtime-info` CLI emits `RuntimeInfo` (per-target sizes); cockpit `#system-footprint` chip + dialog rendered from `/api/runtime-info` |
 | 4  | Logs grep across files             | ☑      |  P0   | Shipped 2026-05-07 (4a CLI + 4b GET /api/logs/grep + 4c UI search box) |
 | 13 | Unified activity surface           | ☑      |  P0   | NEW: correlate runs + maintenance + publish-log + audit + lock events into one timeline |
-| 14 | Inventory health surface           | ◐      |  P0   | NEW: surface CLI's --rebuild/--reconcile/--check/--fix as actions, not just counts |
-| 16 | Reset blast-radius (backend concept)| ☐     |  P0   | NEW: name `clean / run --fresh / rollback / vacuum-db / reconcile` as one taxonomy in CLI + UI |
+| 14 | Inventory health surface           | ☑      |  P0   | NEW: surface CLI's --rebuild/--reconcile/--check/--fix as actions, not just counts (Theme 14a–14c3 landed; check + preview/apply for rebuild/reconcile/fix wired through audit + activity feed) |
+| 16 | Reset blast-radius (backend concept)| ☑     |  P0   | NEW: `ops catalog --json` (Theme 16a) is the wire contract; Operations page renders from it (16b); typed-confirm derived from `reversible`+`preview_supported` (16c). Drift fence in `tests/unit/test_ops_catalog.py`. |
 | 17 | Puzzle-ID rollback audit           | ☑      |  P0   | Dead UI removed (2026-05-07): CLI `--puzzle-id` stripped, dashboard contract slimmed to `run_id`-only |
-| 5  | Tag/Level inspector (read-only)    | ☐      |  P1   | Surfaces taxonomy that's invisible today |
-| 6  | Adapter detail page                | ☐      |  P1   | Drill-in from existing adapters table. Includes per-source ingest-DB management |
+| 5  | Tag/Level inspector (read-only)    | ☑      |  P1   | `tags list --with-usage --json` + `levels list --with-usage --json` from `models/taxonomy.py`; cockpit Library/Taxonomy sub-section pinned |
+| 6  | Adapter detail page                | ☑      |  P1   | `source-status --source ID --details --json` (Theme 6a) + `source-ingest-state` reset/dry-run (Theme 6b); cockpit drill-in from adapters table |
 | 7  | Adapter configuration management   | ✅     |  P1   | Theme 7a-7d landed: read-only validate-all/show + add/clone/update/remove + bootstrap wizard + pipeline-config show/set |
-| 8  | Daily Challenge management         | ☐      |  P2   | Whole feature is invisible today. Includes daily status surface (rolling-window health + gap detection) |
-| 9  | Run diff / compare                 | ☐      |  P2   | "what did run X do differently" |
+| 8  | Daily Challenge management         | ☑      |  P2   | Theme 8a–8d: daily-list/daily-status read-only + daily-preview + daily-cancel (typed-confirm) + daily-backfill (preview→apply); cockpit Daily section with rolling-window health + per-row actions |
+| 9  | Run diff / compare                 | ☑      |  P2   | `runs-diff RUN_A RUN_B --json` + cockpit History checkbox→Compare flow against `state/runs/*_<run_id>.json` + publish-log puzzle-set diff |
 | 10 | Puzzle Detail page                 | ✅      |  P2   | Headline feature; depends on 4, 5, 9 |
 | 11 | Tag/Level mutation (rename, merge) | ◐      |  P3   | V1 preview-only landed (`--dry-run --json` for tags rename/merge + levels rename + cockpit modals); apply path deferred |
 | 12 | Adapter scaffold (new adapter src) | ✅      |  P3   | `adapter-scaffold --kind local --id NEW_ID --dry-run --json` + cockpit preview/apply endpoints + Library/Adapters scaffold form behind typed-verb confirm |
