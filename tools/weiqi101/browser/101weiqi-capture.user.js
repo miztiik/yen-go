@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         weiqi Puzzle Capture for YenGo
 // @namespace    https://github.com/yengo
-// @version      5.53.6
+// @version      5.53.7
 // @description  Auto-captures puzzle data from weiqi.com and sends to local YenGo receiver. Start server, browse any puzzle page, it just works.
 // @match        *://www.101weiqi.com/q/*
 // @match        *://www.101weiqi.com/chessmanual/*
@@ -1296,22 +1296,75 @@
   }
 
   // ---- Book waitlist --------------------------------------------
-  function getBookWaitlist() {
-    const raw = GM_getValue(KEY_BOOK_WAITLIST, []);
-    return Array.isArray(raw) ? raw.filter((n) => Number.isFinite(n)) : [];
+  // BUGFIX v5.53.7 — Anchor-bound waitlist.
+  //
+  // Storage shape (current): { anchor: number|null, queue: number[] }
+  //   anchor: the book_id that was "active" when the waitlist was set
+  //           (or the book_id we just cascaded INTO). The next pop is
+  //           only allowed when the completing book matches `anchor`.
+  //   queue:  ordered list of book_ids to cascade into.
+  //
+  // Storage shape (legacy, accepted on read): number[]
+  //   Older script versions persisted the raw queue array with no
+  //   anchor. We accept it for back-compat but treat anchor=null,
+  //   which forces popBookWaitlist to refuse cascading until the user
+  //   re-arms the queue from the menu — preventing an unrelated-book
+  //   completion from silently consuming a stale queue.
+  function _readWaitlistRaw() {
+    const raw = GM_getValue(KEY_BOOK_WAITLIST, null);
+    if (Array.isArray(raw)) {
+      // Legacy shape: queue only, no anchor.
+      const queue = raw.filter((n) => Number.isFinite(n));
+      return { anchor: null, queue };
+    }
+    if (raw && typeof raw === "object" && Array.isArray(raw.queue)) {
+      const anchor = Number.isFinite(Number(raw.anchor))
+        ? Number(raw.anchor) : null;
+      const queue = raw.queue
+        .map((n) => Number(n))
+        .filter((n) => Number.isFinite(n) && n > 0);
+      return { anchor, queue };
+    }
+    return { anchor: null, queue: [] };
   }
-  function setBookWaitlist(list) {
-    const cleaned = (Array.isArray(list) ? list : [])
+  function _writeWaitlistRaw(state) {
+    const anchor = Number.isFinite(Number(state && state.anchor))
+      ? Number(state.anchor) : null;
+    const queue = (state && Array.isArray(state.queue) ? state.queue : [])
       .map((n) => Number(n))
       .filter((n) => Number.isFinite(n) && n > 0);
-    GM_setValue(KEY_BOOK_WAITLIST, cleaned);
-    return cleaned;
+    GM_setValue(KEY_BOOK_WAITLIST, { anchor, queue });
+    return { anchor, queue };
   }
-  function popBookWaitlist() {
-    const list = getBookWaitlist();
-    if (list.length === 0) return null;
-    const next = list.shift();
-    GM_setValue(KEY_BOOK_WAITLIST, list);
+  function getBookWaitlist() {
+    return _readWaitlistRaw().queue;
+  }
+  function getWaitlistAnchor() {
+    return _readWaitlistRaw().anchor;
+  }
+  function setBookWaitlist(list, anchor) {
+    const next = _writeWaitlistRaw({ anchor, queue: list });
+    return next.queue;
+  }
+  // Pop the next queued book id. When `currentBookId` is provided
+  // (cascade flow), refuse the pop if it doesn't match the chain
+  // anchor — protects against unrelated-book completions consuming
+  // a stale queue from a previous session.
+  function popBookWaitlist(currentBookId) {
+    const state = _readWaitlistRaw();
+    if (state.queue.length === 0) return null;
+    if (currentBookId != null && state.anchor != null
+      && Number(state.anchor) !== Number(currentBookId)) {
+      plog(
+        "WARN",
+        `Waitlist pop refused: completing book ${currentBookId} ` +
+        `does not match chain anchor ${state.anchor} ` +
+        `(queue: ${state.queue.join(", ")}). Use [Book] Waitlist to re-arm.`,
+      );
+      return null;
+    }
+    const next = state.queue.shift();
+    _writeWaitlistRaw({ anchor: state.anchor, queue: state.queue });
     return next;
   }
 
@@ -1355,7 +1408,11 @@
     try { clearBookPlan(); } catch (_) {}
     try { clearBookDiscovery(); } catch (_) {}
     clearWaitlistPickup();
-    const nextBookId = popBookWaitlist();
+    // BUGFIX v5.53.7: anchor-checked pop. If the waitlist's anchor
+    // does not match the book that just completed, popBookWaitlist
+    // refuses (logs WARN) and we treat the chain as drained — better
+    // to stop than to consume a stale queue against an unrelated book.
+    const nextBookId = popBookWaitlist(bookId);
     if (!nextBookId) {
       plog("INFO", `Waitlist drained after book ${bookId} (${reason})`);
       return false;
@@ -1366,6 +1423,9 @@
       `Waitlist cascade: book ${bookId} done (${reason}) -> ` +
         `next book ${nextBookId} (${remaining} more queued)`,
     );
+    // Re-anchor the chain to the book we're cascading into so the
+    // next completion's anchor check passes.
+    _writeWaitlistRaw({ anchor: nextBookId, queue: getBookWaitlist() });
     try { GM_setValue(KEY_PENDING_AUTOSTART_BOOK, nextBookId); } catch (_) {}
     setWaitlistPickup(nextBookId);
     location.href = `https://www.101weiqi.com/book/${nextBookId}/`;
@@ -5969,8 +6029,12 @@
   // discovery without further user input.
   GM_registerMenuCommand("[Book] Waitlist", () => {
     const current = getBookWaitlist();
+    const currentAnchor = getWaitlistAnchor();
+    const anchorLine = currentAnchor
+      ? `\nChain anchored on book ${currentAnchor} (only that book's completion can advance the queue).`
+      : "";
     const summary = current.length
-      ? `Current waitlist: ${current.join(", ")}`
+      ? `Current waitlist: ${current.join(", ")}${anchorLine}`
       : "Waitlist is empty.";
     const input = prompt(
       `${summary}\n\nEnter comma-separated book IDs to queue after the current book completes ` +
@@ -5979,7 +6043,7 @@
     );
     if (input === null) return; // cancelled — no change
     if (input.trim() === "") {
-      setBookWaitlist([]);
+      setBookWaitlist([], null);
       alert("Waitlist cleared.");
       return;
     }
@@ -5987,8 +6051,26 @@
       .split(",")
       .map((s) => parseInt(s.trim(), 10))
       .filter((n) => Number.isFinite(n) && n > 0);
-    const saved = setBookWaitlist(parsed);
-    alert(`Waitlist set: ${saved.join(", ") || "(empty)"}`);
+    // BUGFIX v5.53.7: anchor the chain to the currently active book
+    // so a later unrelated-book completion can't consume the queue.
+    // Anchor sources, in order of preference:
+    //   1. Active capture plan
+    //   2. Active discovery
+    //   3. Current /book/{id}/ page in the URL
+    //   4. None — chain becomes anchorless and pop will refuse during
+    //      cascade (user can re-arm from this menu when ready).
+    let anchor = null;
+    if (bookPlan && bookPlan.book_id) anchor = Number(bookPlan.book_id);
+    else if (bookDiscovery && bookDiscovery.book_id) anchor = Number(bookDiscovery.book_id);
+    else {
+      const bp = parseBookPath();
+      if (bp && bp.book_id) anchor = Number(bp.book_id);
+    }
+    const saved = setBookWaitlist(parsed, anchor);
+    const anchorMsg = anchor
+      ? `\nAnchored to book ${anchor}.`
+      : `\nNo active book detected — chain is anchorless. Open the source book page (or start its capture) and re-run [Book] Waitlist to anchor.`;
+    alert(`Waitlist set: ${saved.join(", ") || "(empty)"}${anchorMsg}`);
   });
 
   // --- DAILY ---
