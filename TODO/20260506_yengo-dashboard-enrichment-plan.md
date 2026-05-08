@@ -39,7 +39,7 @@ get done; the order is the prioritization, not the filter.
 | 8  | Daily Challenge management         | ☑      |  P2   | Theme 8a–8d: daily-list/daily-status read-only + daily-preview + daily-cancel (typed-confirm) + daily-backfill (preview→apply); cockpit Daily section with rolling-window health + per-row actions |
 | 9  | Run diff / compare                 | ☑      |  P2   | `runs-diff RUN_A RUN_B --json` + cockpit History checkbox→Compare flow against `state/runs/*_<run_id>.json` + publish-log puzzle-set diff |
 | 10 | Puzzle Detail page                 | ✅      |  P2   | Headline feature; depends on 4, 5, 9 |
-| 11 | Tag/Level mutation (rename, merge) | ◐      |  P3   | V1 preview-only landed (`--dry-run --json` for tags rename/merge + levels rename + cockpit modals); apply path deferred |
+| 11 | Tag/Level mutation (rename, merge) | ☑      |  P3   | Preview (`--dry-run --json`) + apply (`--apply --json`) for tags rename/merge + levels rename; cockpit modals wire typed-verb confirm into `/api/.../apply` |
 | 12 | Adapter scaffold (new adapter src) | ✅      |  P3   | `adapter-scaffold --kind local --id NEW_ID --dry-run --json` + cockpit preview/apply endpoints + Library/Adapters scaffold form behind typed-verb confirm |
 
 **Phases**:
@@ -719,11 +719,13 @@ Build only after Theme 5's read-only inspector ships and is in use.
 - ✅ `tags rename OLD NEW --dry-run --json` (validation + affected count).
 - ✅ `tags merge SRC1 SRC2 [...] --into TARGET --dry-run --json`.
 - ✅ `levels rename OLD NEW --dry-run --json`.
-- ☐ Apply path (rewrites SGFs + DB + config under `PipelineLock`) — deferred to a follow-up slice.
+- ✅ Apply path (sub-slice 4a): `--apply` flag on each subcommand. Writers in `inventory/taxonomy_mutations.py` rewrite root `YT[]`/`YG[]` across every published SGF + `atomic_write_json` the affected config; CLI takes `PipelineLock(run_id=op)` and emits a `taxonomy_{op}` row to `audit.jsonl`.
+- ✅ OPS_CATALOG registration (sub-slice 4b): `tags rename --apply` / `tags merge --apply` / `levels rename --apply` rows (`destructive`, `reversible=False`, `scope=[published_corpus, files]`); drift-fence test synced.
 
 ### UI surfaces
-- ✅ Inline rename buttons on the Taxonomy tables + a header "merge…" action on the Tags table; both open `#preview-dialog` with the preview JSON, errors, and a disabled `Apply (deferred)` button.
-- ☐ Typed-verb confirmation + Apply button (depends on backend apply path).
+- ✅ Inline rename buttons on the Taxonomy tables + a header "merge…" action on the Tags table; both open `#preview-dialog` with the preview JSON, errors, and affected-puzzle count.
+- ✅ Server apply routes (sub-slice 4c): `POST /api/tags/rename/apply`, `/api/tags/merge/apply`, `/api/levels/rename/apply` via `PipelineRunner.{tags_rename_apply,tags_merge_apply,levels_rename_apply}` (tolerates rc=2 → `ok:false` business outcome, not 502).
+- ✅ Frontend apply button (sub-slice 4d): `_renderTaxonomyPreviewBody()` emits a real `[data-taxonomy-apply]` button when `valid:true`; `_wireTaxonomyApplyButton()` binds typed-verb `confirmDialog({verb: targetSlug})` → POST apply route → `_renderTaxonomyApplyBody()` shows applied/refused pill + scanned/rewritten/config_updated/audit_timestamp; toasts and refreshes the Library taxonomy section on success.
 
 ---
 
