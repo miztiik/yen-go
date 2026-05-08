@@ -1146,13 +1146,22 @@ body[data-theme="light"] .bg-zinc-950,
 body[data-theme="light"] .bg-zinc-950\/80,
 body[data-theme="light"] .bg-zinc-950\/90 { background-color: rgb(255 255 255) !important; }
 body[data-theme="light"] .bg-slate-900,
-body[data-theme="light"] .bg-slate-900\/60 { background-color: rgb(255 255 255) !important; }
+body[data-theme="light"] .bg-slate-900\/40,
+body[data-theme="light"] .bg-slate-900\/60,
+body[data-theme="light"] .bg-slate-900\/95 { background-color: rgb(255 255 255) !important; }
 body[data-theme="light"] .bg-slate-950,
 body[data-theme="light"] .bg-slate-950\/60 { background-color: rgb(248 250 252) !important; }
+/* W4.7: sticky thead in taxonomy/library tables uses bg-slate-900/95 — also
+   cover bare bg-slate-800/30 ring/hover surfaces and border-slate-800/60
+   variants so light mode no longer paints a dark band over headers/rows. */
+body[data-theme="light"] .bg-slate-800\/30,
+body[data-theme="light"] .bg-slate-800\/60 { background-color: rgb(248 250 252) !important; }
 
 /* Borders + rings */
 body[data-theme="light"] .border-slate-700,
 body[data-theme="light"] .border-slate-800,
+body[data-theme="light"] .border-slate-800\/50,
+body[data-theme="light"] .border-slate-800\/60,
 body[data-theme="light"] .border-zinc-800 { border-color: rgb(226 232 240) !important; }
 body[data-theme="light"] .ring-1.ring-white\/5,
 body[data-theme="light"] .ring-1.ring-slate-800 { --tw-ring-color: rgb(226 232 240) !important; }
@@ -1563,3 +1572,51 @@ body[data-theme="light"] .tax-bar { background: rgb(226 232 240); }
 body[data-theme="light"] .tax-bar-fill {
   background: linear-gradient(90deg, rgb(14 165 233), rgb(56 189 248));
 }
+
+/* W4.7 — taxonomy bar fills colored by tag category. The base .tax-bar-fill
+   above is the default (sky); these category-specific selectors override for
+   tag rows that carry a data-cat attribute. Levels also opt-in via
+   data-cat="level-N" but reuse a single neutral hue (no per-level color). */
+.tax-bar[data-cat="objective"] .tax-bar-fill {
+  background: linear-gradient(90deg, rgb(251 191 36), rgb(253 224 71));
+}
+.tax-bar[data-cat="technique"] .tax-bar-fill {
+  background: linear-gradient(90deg, rgb(167 139 250), rgb(196 181 253));
+}
+.tax-bar[data-cat="tesuji"] .tax-bar-fill {
+  background: linear-gradient(90deg, rgb(45 212 191), rgb(94 234 212));
+}
+.tax-bar[data-cat^="level-"] .tax-bar-fill {
+  background: linear-gradient(90deg, rgb(99 102 241), rgb(129 140 248));
+}
+
+/* W4.7 — Library "By level" / "By content type" bar charts. Mirrors the
+   taxonomy bar but lives in tighter rows; uses a wider track since the
+   numbers are typically larger. Category hues match content-type kinds
+   (curated/practice/training) and level ordinals. */
+.lib-usage-cell { display: inline-flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.lib-usage-num { min-width: 5ch; text-align: right; }
+.lib-bar {
+  display: inline-block; width: 96px; height: 8px;
+  background: rgb(30 41 59); border-radius: 3px; overflow: hidden;
+}
+body[data-theme="light"] .lib-bar { background: rgb(226 232 240); }
+.lib-bar-fill {
+  display: block; height: 100%;
+  background: linear-gradient(90deg, rgb(56 189 248), rgb(125 211 252));
+  border-radius: 3px;
+}
+.lib-bar[data-cat="ctype-curated"]  .lib-bar-fill { background: linear-gradient(90deg, rgb(45 212 191), rgb(94 234 212)); }
+.lib-bar[data-cat="ctype-practice"] .lib-bar-fill { background: linear-gradient(90deg, rgb(167 139 250), rgb(196 181 253)); }
+.lib-bar[data-cat="ctype-training"] .lib-bar-fill { background: linear-gradient(90deg, rgb(251 191 36), rgb(253 224 71)); }
+.lib-bar[data-cat="level-0"] .lib-bar-fill { background: linear-gradient(90deg, rgb(56 189 248), rgb(125 211 252)); }
+.lib-bar[data-cat="level-1"] .lib-bar-fill { background: linear-gradient(90deg, rgb(45 212 191), rgb(94 234 212)); }
+.lib-bar[data-cat="level-2"] .lib-bar-fill { background: linear-gradient(90deg, rgb(132 204 22), rgb(190 242 100)); }
+.lib-bar[data-cat="level-3"] .lib-bar-fill { background: linear-gradient(90deg, rgb(251 191 36), rgb(253 224 71)); }
+.lib-bar[data-cat="level-4"] .lib-bar-fill { background: linear-gradient(90deg, rgb(249 115 22), rgb(253 186 116)); }
+.lib-bar[data-cat="level-5"] .lib-bar-fill { background: linear-gradient(90deg, rgb(244 63 94), rgb(252 165 165)); }
+
+/* W4.7 — inline taxonomy filter input. Sits right of the panel title; sized
+   small so it does not crowd the rename/merge buttons. */
+.tax-filter-input { width: 14ch; }
+.tax-filter-input:focus { width: 22ch; transition: width 120ms ease; }

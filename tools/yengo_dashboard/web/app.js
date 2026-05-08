@@ -421,7 +421,6 @@ async function renderOverview() {
                 </div>`).join("")}
             </div>
           </div>` : ""}
-        ${sourcesMiniTable(adapters)}
       `}
       <div class="mt-6 flex items-center justify-between text-xs text-slate-500">
         <span class="font-mono">${escapeHtml(inv.db_path || "—")}</span>
@@ -466,6 +465,7 @@ async function _loadTaxonomySection() {
       </div>
     `;
     _wireTaxonomyEditToggle(section);
+    _wireTaxonomyTagFilter(section);
     // Theme 11: wire inline rename + tag-merge buttons (delegated).
     section.querySelectorAll("[data-taxonomy-rename]").forEach((btn) => {
       btn.addEventListener("click", (e) => {
@@ -512,7 +512,45 @@ function _wireTaxonomyEditToggle(section) {
   btn.addEventListener("click", () => setMode(grid.dataset.taxEdit !== "1"));
 }
 
-// W4.5 — Library "Recent activity" session panel. Pulls the last 3 runs
+// W4.7 — inline tag filter. Hides taxonomy rows whose data-tax-row
+// (slug + category + display name, lowercased) does not include the query.
+// Pure DOM filter — no fetch — since rows are already rendered.
+function _wireTaxonomyTagFilter(section) {
+  const input = section.querySelector("[data-tax-filter='tag']");
+  if (!input) return;
+  const tagPanel = section.querySelector("[data-taxonomy='tag']");
+  if (!tagPanel) return;
+  const apply = () => {
+    const q = (input.value || "").trim().toLowerCase();
+    let shown = 0;
+    tagPanel.querySelectorAll("tr[data-tax-row]").forEach((tr) => {
+      const hit = !q || tr.dataset.taxRow.includes(q);
+      tr.style.display = hit ? "" : "none";
+      if (hit) shown++;
+    });
+    // surface a tiny "no matches" hint in the panel header
+    let badge = tagPanel.querySelector("[data-tax-filter-badge]");
+    if (q && shown === 0) {
+      if (!badge) {
+        badge = document.createElement("span");
+        badge.dataset.taxFilterBadge = "1";
+        badge.className = "text-[10px] text-amber-400 ml-2";
+        const head = tagPanel.querySelector(".px-3.py-2");
+        if (head) head.appendChild(badge);
+      }
+      badge.textContent = "no matches";
+    } else if (badge) {
+      badge.remove();
+    }
+  };
+  input.addEventListener("input", apply);
+  // Esc clears the field for fast reset.
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { input.value = ""; apply(); }
+  });
+}
+
+
 // from /api/runs and stamps a localStorage "last visit" so the operator
 // can see at a glance what changed since they last opened the dashboard.
 const _SESSION_VISIT_KEY = "yengo-dashboard:lastVisit";
@@ -539,7 +577,7 @@ async function _loadSessionPanel() {
       const rows = runs.map((r) => {
         const sev = r.status === "completed" ? "ok" : r.status === "failed" ? "error" : "neutral";
         return `
-          <a href="/runs/${encodeURIComponent(r.run_id)}" class="block rounded-md ring-1 ring-slate-800 bg-slate-900/60 px-3 py-2 hover:ring-slate-600">
+          <a href="/logs?run_id=${encodeURIComponent(r.run_id)}" class="block rounded-md ring-1 ring-slate-800 bg-slate-900/60 px-3 py-2 hover:ring-slate-600" title="Open Logs filtered by this run">
             <div class="flex items-baseline justify-between gap-3">
               <span class="font-mono text-xs truncate">${escapeHtml(r.run_id)}</span>
               ${pill(sev, r.status || "?")}
@@ -580,11 +618,18 @@ function taxonomyTable(title, rows, key, showCategory) {
     const count = r.usage_count || 0;
     const usage = count.toLocaleString();
     const pct = Math.round((count / maxUsage) * 100);
-    const bar = `<span class="tax-bar" aria-hidden="true"><span class="tax-bar-fill" style="width:${pct}%"></span></span>`;
+    // W4.7: color the bar by tag category so the eye separates objective /
+    // technique / tesuji at a glance. Levels share a single hue (no
+    // category) but vary by rank position.
+    const cat = showCategory
+      ? (r.category || "other")
+      : `level-${Math.max(0, sorted.indexOf(r))}`;
+    const bar = `<span class="tax-bar" data-cat="${escapeHtml(cat)}" aria-hidden="true"><span class="tax-bar-fill" style="width:${pct}%"></span></span>`;
     const renameBtn = slug
       ? `<button type="button" class="tax-mutate text-[10px] uppercase tracking-wider text-amber-400 hover:text-amber-200" data-taxonomy-rename="${escapeHtml(key)}" data-slug="${escapeHtml(slug)}">rename</button>`
       : "";
-    return `<tr class="border-t border-slate-800/50">
+    const filterTokens = `${slug} ${r.category || ""} ${r.name || ""}`.toLowerCase();
+    return `<tr class="border-t border-slate-800/50" data-tax-row="${escapeHtml(filterTokens)}">
       <td class="px-2 py-1 font-mono text-slate-200">${left}</td>
       <td class="px-2 py-1 text-slate-400">${mid}</td>
       <td class="px-2 py-1 text-right tabular-nums text-slate-200"><span class="tax-usage-cell">${bar}<span class="tax-usage-num">${usage}</span></span></td>
@@ -592,7 +637,11 @@ function taxonomyTable(title, rows, key, showCategory) {
     </tr>`;
   }).join("");
   const headerExtra = key === "tag"
-    ? `<button type="button" class="tax-mutate text-[10px] uppercase tracking-wider text-amber-400 hover:text-amber-200" data-taxonomy-merge="tag">merge…</button>`
+    ? `<div class="flex items-center gap-2">
+         <input type="search" data-tax-filter="tag" placeholder="filter tags…" aria-label="Filter tags"
+                class="tax-filter-input bg-transparent border border-slate-700 rounded px-2 py-0.5 text-[11px] font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+         <button type="button" class="tax-mutate text-[10px] uppercase tracking-wider text-amber-400 hover:text-amber-200" data-taxonomy-merge="tag">merge…</button>
+       </div>`
     : "";
   return `
     <div class="rounded-md ring-1 ring-slate-800 bg-slate-900/60 overflow-hidden" data-taxonomy="${escapeHtml(key)}">
@@ -982,6 +1031,10 @@ function levelsTable(rows) {
       <div class="text-sm text-slate-500 italic">no rows</div>
     </div>`;
   }
+  // W4.6: inline horizontal bars per row. Bar width is relative to the
+  // largest count in the column so distribution is visible at a glance.
+  // Color cycles by level-id ordering — earlier levels = cooler hues.
+  const max = Math.max(1, ...rows.map(([, v]) => v));
   return `<div>
     <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-2">By level</h3>
     <table class="w-full text-sm">
@@ -989,17 +1042,20 @@ function levelsTable(rows) {
         <th class="font-normal pb-1">level</th>
         <th class="font-normal pb-1 text-right tabular-nums">count</th>
       </tr></thead>
-      <tbody>${rows.map(([k, v]) => {
+      <tbody>${rows.map(([k, v], i) => {
         const meta = (_levelMeta || {})[Number(k)];
         const label = meta ? meta.label : `level ${k}`;
         const desc = meta ? meta.description : "";
+        const pct = Math.round((v / max) * 100);
         return `
         <tr class="border-t border-slate-800">
           <td class="py-1" title="${escapeHtml(desc)}">
             <span class="text-slate-200">${escapeHtml(label)}</span>
             <span class="ml-2 text-xs text-slate-500 font-mono">id=${escapeHtml(k)}</span>
           </td>
-          <td class="py-1 text-right font-mono tabular-nums">${v.toLocaleString()}</td>
+          <td class="py-1 text-right font-mono tabular-nums">
+            <span class="lib-usage-cell"><span class="lib-bar" data-cat="level-${i % 6}" aria-hidden="true"><span class="lib-bar-fill" style="width:${pct}%"></span></span><span class="lib-usage-num">${v.toLocaleString()}</span></span>
+          </td>
         </tr>`;
       }).join("")}
       </tbody>
@@ -1014,6 +1070,10 @@ function contentTypesTable(rows) {
       <div class="text-sm text-slate-500 italic">no rows</div>
     </div>`;
   }
+  // W4.6: bar visualization keyed off content-type id so curated/practice/
+  // training each get a stable hue across renders.
+  const max = Math.max(1, ...rows.map(([, v]) => v));
+  const ctypeCat = { 1: "curated", 2: "practice", 3: "training" };
   return `<div>
     <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-2">By content type</h3>
     <table class="w-full text-sm">
@@ -1025,13 +1085,17 @@ function contentTypesTable(rows) {
         const meta = (_contentTypeMeta || {})[Number(k)];
         const label = meta ? meta.label : `type ${k}`;
         const desc = meta ? meta.description : "";
+        const pct = Math.round((v / max) * 100);
+        const cat = ctypeCat[Number(k)] || "other";
         return `
         <tr class="border-t border-slate-800">
           <td class="py-1" title="${escapeHtml(desc)}">
             <span class="text-slate-200">${escapeHtml(label)}</span>
             <span class="ml-2 text-xs text-slate-500 font-mono">id=${escapeHtml(k)}</span>
           </td>
-          <td class="py-1 text-right font-mono tabular-nums">${v.toLocaleString()}</td>
+          <td class="py-1 text-right font-mono tabular-nums">
+            <span class="lib-usage-cell"><span class="lib-bar" data-cat="ctype-${escapeHtml(cat)}" aria-hidden="true"><span class="lib-bar-fill" style="width:${pct}%"></span></span><span class="lib-usage-num">${v.toLocaleString()}</span></span>
+          </td>
         </tr>`;
       }).join("")}
       </tbody>
@@ -1122,15 +1186,21 @@ function adapterRow(a) {
     ? ` title="Clicking Run will auto-pass --source-override (active is '${escapeHtml(_activeAdapter)}')"`
     : "";
   const fullPath = escapeHtml(a.source_root || "—");
+  // W4.7: when no per-source ingest DB exists, the "0/0/0" counts are
+  // meaningless (most adapters do not write SourceIngestDB — only sanderland
+  // does today). Render "—" instead so the operator does not mistake a
+  // tracking gap for a failed ingest. Same trick for total.
+  const fmtCount = (n) => a.db_exists ? n.toLocaleString() : "—";
+  const noDbTitle = a.db_exists ? "" : ` title="This adapter does not maintain a per-source ingest database. Counts unavailable; published puzzles are still tracked in yengo-content.db."`;
   return `
     <tr class="border-t border-slate-800 align-top hover:bg-slate-800/30">
       <td class="py-2 pl-3 pr-4 font-mono text-sm"><a href="/adapters/${encodeURIComponent(a.id)}" data-adapter-link="${escapeHtml(a.id)}" class="text-sky-300 hover:underline">${escapeHtml(a.id)}</a>${activeMarker}</td>
       <td class="py-2 pr-4">${adapterHealthDot(a)}</td>
       <td class="py-2 pr-4">${lastRun}</td>
-      <td class="py-2 pr-4 text-right font-mono tabular-nums text-sm">${a.ingested.toLocaleString()}</td>
-      <td class="py-2 pr-4 text-right font-mono tabular-nums text-sm text-orange-300">${a.skipped.toLocaleString()}</td>
-      <td class="py-2 pr-4 text-right font-mono tabular-nums text-sm text-rose-300">${a.failed.toLocaleString()}</td>
-      <td class="py-2 pr-4 text-right font-mono tabular-nums text-sm text-slate-300">${a.total.toLocaleString()}</td>
+      <td class="py-2 pr-4 text-right font-mono tabular-nums text-sm"${noDbTitle}>${fmtCount(a.ingested)}</td>
+      <td class="py-2 pr-4 text-right font-mono tabular-nums text-sm text-orange-300"${noDbTitle}>${fmtCount(a.skipped)}</td>
+      <td class="py-2 pr-4 text-right font-mono tabular-nums text-sm text-rose-300"${noDbTitle}>${fmtCount(a.failed)}</td>
+      <td class="py-2 pr-4 text-right font-mono tabular-nums text-sm text-slate-300"${noDbTitle}>${fmtCount(a.total)}</td>
       <td class="py-2 pr-4 text-xs text-slate-500 font-mono" title="${fullPath}">${escapeHtml(a.source_root || "—")}</td>
       <td class="py-2 pr-3 whitespace-nowrap">
         <a class="${baseBtn} inline-flex items-center justify-center"
@@ -1795,6 +1865,10 @@ function adapterConfigSchemaBlock(raw, adapterId) {
   const schema = raw.schema_for_kind;
   const props = (schema && schema.properties) || {};
   const required = new Set(Array.isArray(schema && schema.required) ? schema.required : []);
+  // W4.7: prefill the edit form with the current values so include / exclude
+  // (and any other persisted setting) are immediately visible/editable.
+  const currentCfg = (raw.source && raw.source.config) || {};
+  const currentName = (raw.source && raw.source.name) || "";
   const propRows = Object.keys(props).map(name => {
     const def = props[name] || {};
     const type = Array.isArray(def.type) ? def.type.join("|") : (def.type || "?");
@@ -1844,19 +1918,48 @@ function adapterConfigSchemaBlock(raw, adapterId) {
           Display name
           <input type="text" name="display_name"
             class="mt-1 block w-full rounded border border-slate-700 bg-slate-950 px-2 py-1 text-sm font-mono"
+            value="${escapeHtml(currentName)}"
             placeholder="(unchanged)" data-adapter-config-edit-name>
         </label>
         ${Object.keys(props).map(name => {
           const def = props[name] || {};
           const type = Array.isArray(def.type) ? def.type[0] : (def.type || "string");
+          const isArray = String(type) === "array";
+          const isObject = String(type) === "object";
+          const cur = currentCfg[name];
+          let prefill = "";
+          if (cur != null) {
+            if (isArray && Array.isArray(cur)) prefill = cur.join("\n");
+            else if (isObject) prefill = JSON.stringify(cur, null, 2);
+            else if (typeof cur === "object") prefill = JSON.stringify(cur);
+            else prefill = String(cur);
+          }
+          // W4.7: arrays render as a multi-line textarea (one item per line)
+          // and serialize to a JSON array on save. Objects fall back to a
+          // raw-JSON textarea so include/exclude path lists become editable
+          // without a dedicated array-of-strings widget.
+          const helper = isArray
+            ? `<span class="text-[10px] text-slate-500 ml-1">one per line</span>`
+            : isObject
+              ? `<span class="text-[10px] text-slate-500 ml-1">raw JSON</span>`
+              : "";
+          const widget = (isArray || isObject)
+            ? `<textarea name="${escapeHtml(name)}"
+                data-adapter-config-edit-field="${escapeHtml(name)}"
+                data-adapter-config-edit-type="${escapeHtml(String(type))}"
+                rows="${isArray ? 4 : 6}"
+                class="mt-1 block w-full rounded border border-slate-700 bg-slate-950 px-2 py-1 text-sm font-mono"
+                placeholder="${isArray ? 'path/one\npath/two' : '{}'}">${escapeHtml(prefill)}</textarea>`
+            : `<input type="text" name="${escapeHtml(name)}"
+                data-adapter-config-edit-field="${escapeHtml(name)}"
+                data-adapter-config-edit-type="${escapeHtml(String(type))}"
+                value="${escapeHtml(prefill)}"
+                class="mt-1 block w-full rounded border border-slate-700 bg-slate-950 px-2 py-1 text-sm font-mono"
+                placeholder="(JSON value or leave blank)">`;
           return `<label class="block text-xs text-slate-400">
             <span class="font-mono text-slate-300">${escapeHtml(name)}</span>
-            <span class="text-slate-500"> (${escapeHtml(String(type))})</span>
-            <input type="text" name="${escapeHtml(name)}"
-              data-adapter-config-edit-field="${escapeHtml(name)}"
-              data-adapter-config-edit-type="${escapeHtml(String(type))}"
-              class="mt-1 block w-full rounded border border-slate-700 bg-slate-950 px-2 py-1 text-sm font-mono"
-              placeholder="(JSON value or leave blank)">
+            <span class="text-slate-500"> (${escapeHtml(String(type))})</span>${helper}
+            ${widget}
           </label>`;
         }).join("")}
         <div class="flex gap-2 pt-1">
@@ -1897,8 +2000,18 @@ async function _wireAdapterConfigForm(adapterId) {
       const setPairs = [];
       form.querySelectorAll("[data-adapter-config-edit-field]").forEach((inp) => {
         const k = inp.getAttribute("data-adapter-config-edit-field");
-        const v = inp.value.trim();
-        if (v !== "") setPairs.push(`${k}=${v}`);
+        const t = inp.getAttribute("data-adapter-config-edit-type") || "string";
+        const raw = (inp.value || "").trim();
+        if (raw === "") return;
+        let value = raw;
+        if (t === "array") {
+          // W4.7: textarea → JSON array (skip blank lines, trim entries).
+          const items = raw.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+          value = JSON.stringify(items);
+        }
+        // Other types pass through; the CLI tries json.loads then falls back
+        // to string. So `"true"`/`42`/`{...}` all work as the operator typed.
+        setPairs.push(`${k}=${value}`);
       });
       const nameInp = form.querySelector("[data-adapter-config-edit-name]");
       const payload = { set_pairs: setPairs };
@@ -3837,6 +3950,18 @@ async function _renderLogsStagePane() {
         }
       }
     } catch { /* ignore malformed prefill */ }
+    // W4.7: honor `?run_id=...` in the URL (from Library "Recent activity"
+    // links) by prefilling the grep pattern with the run id and triggering
+    // the search. The link replaces the broken /runs/{id} target so that
+    // operators can jump from a recent run row straight into its log lines.
+    try {
+      const qs = new URLSearchParams(location.search);
+      const rid = qs.get("run_id");
+      if (rid && !$("#lg-pattern").value) {
+        $("#lg-pattern").value = rid;
+        _runLogsGrep();
+      }
+    } catch { /* ignore */ }
   } catch (err) {
     pane.innerHTML = errorBlock("/api/logs/stage-files", err);
   }
@@ -5248,7 +5373,13 @@ _ensureOpsCatalogGuard();
 _wireHelpCallouts();
 _wireHelpDrawer();
 _wireHelpChips();
-_wireCommandPalette();
+// W4.7 — universal Cmd+K palette retired. Lazy-fetched on first open which
+// felt slow, and overlapped with inline taxonomy filtering. Hide the
+// trigger button (kept in DOM for now in case we re-introduce a focused
+// puzzle-id lookup later). The button has Tailwind `flex` set as a class,
+// which beats the `[hidden]` attribute, so override display directly.
+const _paletteTrigger = document.getElementById("palette-trigger");
+if (_paletteTrigger) _paletteTrigger.style.display = "none";
 
 // Pause polling while the tab is hidden; immediate tick + resume on focus.
 document.addEventListener("visibilitychange", () => {
