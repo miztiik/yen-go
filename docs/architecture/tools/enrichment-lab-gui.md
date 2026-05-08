@@ -33,10 +33,15 @@ BesoGo uses 1-indexed `(col, row)` coordinates internally. `board.js` exports `g
 ### D5: BesoGo Board + Tree (unified)
 
 v4.1 replaced the previous GhostBan canvas + separate BesoGo tree with a single `besogo.create()` call that provides:
+
 - SVG Go board with kaya-wood theme
+
 - Full Go rule enforcement (captures, ko, suicide prevention)
+
 - SGF parsing and move-tree navigation
+
 - Solution tree panel synced to board position
+
 - Stone placement via click (auto tool)
 
 The prior GhostBan approach lacked Go rules and could not sync with the tree. Unifying on BesoGo eliminates the two-library coordination problem.
@@ -44,14 +49,17 @@ The prior GhostBan approach lacked Go rules and could not sync with the tree. Un
 ### D6: BesoGo Tree Panel (branch coloring)
 
 Solution tree uses BesoGo's `treePanel.js` (copied from `tools/sgf-viewer-besogo/`), modified (~50 lines) for:
+
 - Correct branch coloring (green) from SGF C[] "Correct" comment
+
 - Wrong branch coloring (red) from SGF C[] "Wrong"/"Refutation" comment
+
 - Colored ring around nodes for visual correctness indication
 
 ### D7: Two Independent Workflows
 
 | Workflow | API | Purpose |
-|----------|-----|---------|
+| ---------- | ----- | --------- |
 | **Enrich** | `POST /api/enrich` (SSE) | Full 10-stage pipeline with stage-by-stage progress |
 | **Analyze** | `POST /api/analyze` | Single KataGo query on any board position (~1-3s) |
 
@@ -75,7 +83,7 @@ The sidebar is split into three zones: fixed-top (SGF input + engine status — 
 
 ## Component Map
 
-```
+```text
 gui/
 ├── index.html              # Entry point
 ├── lib/besogo/             # BesoGo board + tree (9 files, treePanel.js modified)
@@ -110,5 +118,7 @@ gui/
 `rm -rf tools/puzzle-enrichment-lab/gui/` + remove StaticFiles mount from bridge.py (2 lines). <2 minutes.
 
 > **See also:**
+>
 > - [gui/README.md](../../../tools/puzzle-enrichment-lab/gui/README.md) — Quick start
+>
 > - [How-To: Enrichment Lab](../../how-to/tools/katago-enrichment-lab.md) — Current operational guide

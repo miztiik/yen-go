@@ -9,7 +9,7 @@ Complete reference for technique tags used in puzzle classification.
 ### Capture Techniques
 
 | Tag | Description | Aliases |
-|-----|-------------|---------|
+| ----- | ------------- | --------- |
 | `ladder` | Diagonal chase capture (shicho) | shicho, running fight |
 | `snapback` | Sacrifice then recapture with gain | snap back, uttegaeshi |
 | `ko` | Ko fight situation | ko fight |
@@ -24,7 +24,7 @@ Complete reference for technique tags used in puzzle classification.
 ### Connection Techniques
 
 | Tag | Description | Aliases |
-|-----|-------------|---------|
+| ----- | ------------- | --------- |
 | `connect` | Connect two groups | connection |
 | `cut` | Separate opponent's groups | cutting |
 | `cross_cut` | Four alternating stones pattern | crosscut |
@@ -35,7 +35,7 @@ Complete reference for technique tags used in puzzle classification.
 ### Eye/Life Techniques
 
 | Tag | Description | Aliases |
-|-----|-------------|---------|
+| ----- | ------------- | --------- |
 | `eye_steal` | Destroys eye potential | eye stealing, me tori |
 | `false_eye` | Creates false eye | false eye shape |
 | `seki` | Mutual life situation | mutual life |
@@ -46,7 +46,7 @@ Complete reference for technique tags used in puzzle classification.
 ### Dead Shapes
 
 | Tag | Description | Aliases |
-|-----|-------------|---------|
+| ----- | ------------- | --------- |
 | `bent_four` | Bent four in the corner | bent 4 |
 | `l_group` | L-shaped dead group | L group, L shape |
 | `bulky_five` | Five-stone dead shape | bulky 5 |
@@ -56,7 +56,7 @@ Complete reference for technique tags used in puzzle classification.
 ### Move Shapes
 
 | Tag | Description | Aliases |
-|-----|-------------|---------|
+| ----- | ------------- | --------- |
 | `hane` | Diagonal wrap move | hanetsugi |
 | `clamp` | Attachment move | attachment, tsuke |
 | `placement` | Play inside enemy group | uchikomi |
@@ -67,7 +67,7 @@ Complete reference for technique tags used in puzzle classification.
 ### General Tags
 
 | Tag | Description | Aliases |
-|-----|-------------|---------|
+| ----- | ------------- | --------- |
 | `tesuji` | General clever move | technique |
 | `reading` | Requires deep reading | calculation |
 | `sacrifice` | Sacrificing stones | sacrifice play |
@@ -102,8 +102,11 @@ Complete reference for technique tags used in puzzle classification.
 ### Tag Normalization
 
 Input tags are normalized:
+
 - `"shicho"` → `"ladder"`
+
 - `"Snap Back"` → `"snapback"`
+
 - `"GETA"` → `"net"`
 
 ---
@@ -113,22 +116,31 @@ Input tags are normalized:
 Tags are detected during the Tag stage of the pipeline:
 
 1. **Solution Analysis** - Examine move sequences
-2. **Capture Events** - Track captures during playback
-3. **Board State** - Compare initial/final positions
-4. **Shape Recognition** - Identify known patterns
+
+1. **Capture Events** - Track captures during playback
+
+1. **Board State** - Compare initial/final positions
+
+1. **Shape Recognition** - Identify known patterns
 
 ### Detection Examples
 
 **Ladder Detection**:
+
 - 6+ consecutive ataris in diagonal direction
+
 - Captured group moves toward edge/center
 
 **Snapback Detection**:
+
 - Player sacrifices stone(s)
+
 - Immediately recaptures with gain
 
 **Ko Detection**:
+
 - Ko event triggered during solution
+
 - Position repeats with ko rule
 
 ---
@@ -138,7 +150,7 @@ Tags are detected during the Tag stage of the pipeline:
 Daily challenges rotate through techniques:
 
 | Day | Primary | Secondary |
-|-----|---------|-----------|
+| ----- | --------- | ----------- |
 | 1 | ladder | escape |
 | 2 | snapback | throw_in |
 | 3 | ko | seki |
@@ -162,7 +174,7 @@ Daily challenges rotate through techniques:
 Typical distribution in collections:
 
 | Tag | Frequency |
-|-----|-----------|
+| ----- | ----------- |
 | tesuji | ~35% |
 | killing | ~25% |
 | living | ~20% |
@@ -208,6 +220,7 @@ all_tags = config.get_all_tags()
 ## Adding New Tags
 
 1. Add to `config/tags.json`:
+
    ```json
    {
      "tags": ["...", "new_technique"],
@@ -217,14 +230,16 @@ all_tags = config.get_all_tags()
    }
    ```
 
-2. Implement detection (optional):
+1. Implement detection (optional):
+
    ```python
    # In stages/tag.py
    def _detect_new_technique(self, puzzle, board_history):
        return is_detected
    ```
 
-3. Add to category:
+1. Add to category:
+
    ```json
    {
      "categories": {
@@ -238,7 +253,7 @@ all_tags = config.get_all_tags()
 ## Japanese-English Glossary
 
 | Japanese | English | Tag |
-|----------|---------|-----|
+| ---------- | --------- | ----- |
 | Shicho | Ladder | `ladder` |
 | Uttegaeshi | Snapback | `snapback` |
 | Ko | Ko | `ko` |
@@ -258,5 +273,7 @@ all_tags = config.get_all_tags()
 ## See Also
 
 - [reference/configuration.md](configuration.md) - Configuration reference
+
 - [architecture/backend/stages.md](../architecture/backend/stages.md) - Pipeline stages
+
 - [getting-started/play.md](../getting-started/play.md) - Player guide

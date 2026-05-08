@@ -13,7 +13,7 @@ This is distinct from **difficulty calibration** (Cho Chikun collections, `test_
 Each technique is validated against 5 measurable dimensions:
 
 | # | Dimension | What It Checks | Example |
-|---|-----------|----------------|---------|
+| --- | ----------- | ---------------- | --------- |
 | CD-1 | **Correct move** | Pipeline extracts the right first move (GTP format) | Snapback puzzle → K10 |
 | CD-2 | **Technique tags** | Pipeline detects the expected technique tag(s) | Snapback puzzle → `["snapback"]` |
 | CD-3 | **Difficulty range** | Assigned level falls within an acceptable band | Elementary snapback → 110–180 |
@@ -33,7 +33,7 @@ The remaining 25 active tags fall into three groups:
 ### Objectives (what the puzzle asks)
 
 | Tag | Description | Fixture Source |
-|-----|-------------|----------------|
+| ----- | ------------- | ---------------- |
 | `life-and-death` | Kill or save a group | yengo-source 1042 |
 | `living` | Make a group alive (two eyes) | yengo-source 1121 |
 | `ko` | Win a ko fight | Lab-built |
@@ -43,7 +43,7 @@ The remaining 25 active tags fall into three groups:
 ### Tesuji (tactical tricks)
 
 | Tag | Description | Fixture Source |
-|-----|-------------|----------------|
+| ----- | ------------- | ---------------- |
 | `snapback` | Sacrifice, then recapture larger group | Lab-built |
 | `double-atari` | Threaten two groups at once | Lab-built |
 | `ladder` | Diagonal chase across the board | Lab-built |
@@ -61,7 +61,7 @@ The remaining 25 active tags fall into three groups:
 ### Shape/Pattern categories
 
 | Tag | Description | Fixture Source |
-|-----|-------------|----------------|
+| ----- | ------------- | ---------------- |
 | `eye-shape` | Recognize eye formations | Lab-built |
 | `dead-shapes` | Identify inherently dead shapes | Lab-built |
 | `escape` | Run away with a threatened group | Lab-built |
@@ -77,7 +77,7 @@ Each technique's ground truth is defined as a `TechniqueSpec` (TypedDict) with t
 **Required fields (5 calibration dimensions):**
 
 | Field | Type | Description |
-|-------|------|-------------|
+| ------- | ------ | ------------- |
 | `fixture` | `str` | SGF filename in `tests/fixtures/` |
 | `correct_move_gtp` | `str` | Expected correct first move in GTP format (e.g., "B2") |
 | `expected_tags` | `list[str]` | Tags the pipeline should detect (subset check) |
@@ -89,7 +89,7 @@ Each technique's ground truth is defined as a `TechniqueSpec` (TypedDict) with t
 **Optional edge-case fields:**
 
 | Field | Type | Default | Description |
-|-------|------|---------|-------------|
+| ------- | ------ | --------- | ------------- |
 | `ko_context` | `str` | — | `"none"`, `"direct"`, or `"approach"` |
 | `move_order` | `str` | — | `"strict"`, `"flexible"`, or `"miai"` |
 | `board_size` | `int` | 19 | Board size (9 or 19) |
@@ -102,20 +102,28 @@ Each technique's ground truth is defined as a `TechniqueSpec` (TypedDict) with t
 Technique calibration tests are in `test_technique_calibration.py`:
 
 - **3 unit tests** (no KataGo needed, run in ~1s):
+
   - `test_all_tags_have_registry_entry` — Every active tag in `config/tags.json` has a registry entry
+
   - `test_registry_entries_reference_existing_fixtures` — Every referenced fixture file exists on disk
+
   - `test_no_excluded_tags_in_registry` — Excluded tags aren't accidentally present
 
 - **5 parametrized integration tests** (require live KataGo):
+
   - `test_correct_move` — CD-1: correct move matches expected GTP coord
+
   - `test_technique_tags` — CD-2: expected tags are detected (subset check)
+
   - `test_difficulty_range` — CD-3: difficulty within `[min_level_id, max_level_id]`
+
   - `test_refutations` — CD-4: refutation count ≥ `min_refutations`
+
   - `test_teaching_comments` — CD-5: teaching comments present when expected
 
 ### Execution flow
 
-```
+```text
 For each technique (25 entries):
   1. Load fixture SGF from tests/fixtures/
   2. Start KataGo engine (class-scoped, shared across all tests)
@@ -142,7 +150,7 @@ pytest tests/test_technique_calibration.py -k "snapback" -v
 ## Calibration vs Other Test Suites
 
 | Suite | Purpose | KataGo? | Puzzles | Time |
-|-------|---------|---------|---------|------|
+| ------- | --------- | --------- | --------- | ------ |
 | **Technique calibration** | Per-tag enrichment quality gates | Yes | 25 (one per technique) | ~5–10 min |
 | **Golden 5** (`test_golden5.py`) | Core capability smoke test | Yes | 5 canonical puzzles | ~2–3 min |
 | **Difficulty calibration** (`test_calibration.py`) | Difficulty score accuracy | Yes | 15 (Cho Chikun collections) | ~15–30 min |
@@ -152,7 +160,7 @@ pytest tests/test_technique_calibration.py -k "snapback" -v
 
 Beyond the 25 primary fixtures (one per technique), an **extended benchmark** directory contains difficulty-stratified variants for the 5 most common techniques:
 
-```
+```text
 tests/fixtures/extended-benchmark/
 ├── README.md
 ├── life-and-death_elem_1001.sgf    # Elementary L&D
@@ -179,18 +187,29 @@ All sourced from `external-sources/yengo-source/` collections.
 Calibration fixtures must meet these quality criteria (from the technique calibration initiative charter):
 
 1. **Valid SGF** — Parseable by sgfmill, no structural bugs
-2. **Correct solution** — At least one `RIGHT`-marked or `C[Correct]` branch
-3. **Proper tagging** — YT property matches the intended technique
-4. **Realistic position** — From a real game or established problem collection
-5. **Appropriate difficulty** — YG level matches the fixture's actual complexity
-6. **Wrong branches** — At least one wrong variation for refutation testing (preferred)
-7. **Standard board** — 9x9 or 19x19 (no non-standard sizes)
-8. **Clean metadata** — No leftover debug properties or conflicting tags
+
+1. **Correct solution** — At least one `RIGHT`-marked or `C[Correct]` branch
+
+1. **Proper tagging** — YT property matches the intended technique
+
+1. **Realistic position** — From a real game or established problem collection
+
+1. **Appropriate difficulty** — YG level matches the fixture's actual complexity
+
+1. **Wrong branches** — At least one wrong variation for refutation testing (preferred)
+
+1. **Standard board** — 9x9 or 19x19 (no non-standard sizes)
+
+1. **Clean metadata** — No leftover debug properties or conflicting tags
 
 > **See also:**
 >
 > - [Concepts: Technique Detection](./technique-detection.md) — How detectors work
+>
 > - [Concepts: Quality](./quality.md) — AC quality levels and metrics
+>
 > - [Concepts: Tags](./tags.md) — Full tag taxonomy
+>
 > - [How-To: KataGo Enrichment Lab](../how-to/tools/katago-enrichment-lab.md) — Running the enrichment lab
+>
 > - [Reference: KataGo Enrichment Config](../reference/katago-enrichment-config.md) — Configuration reference

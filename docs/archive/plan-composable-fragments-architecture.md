@@ -1,10 +1,10 @@
+# Snapshot-Centric Query Architecture — Plan V2
+
 > ⚠️ **ARCHIVED** — This document records the snapshot/shard query architecture that was replaced by the SQLite puzzle index.
 > The current canonical architecture is [Concepts: SQLite Index Architecture](../concepts/sqlite-index-architecture.md).
 > Kept for historical reference only.
 
 ---
-
-# Snapshot-Centric Query Architecture — Plan V2
 
 **Last Updated**: 2026-02-22
 **Status**: P0–P5 Implemented — Awaiting Review
@@ -22,15 +22,23 @@
 Every phase must complete this mandatory gate before the next phase can start:
 
 1. **Implementation complete for phase**
-2. **Systems Architect Review**
-3. **Fix all architect findings**
-4. **Principal Staff Software Engineer Review**
-5. **Fix all staff findings**
-6. **Gate close: phase marked DONE**
+
+1. **Systems Architect Review**
+
+1. **Fix all architect findings**
+
+1. **Principal Staff Software Engineer Review**
+
+1. **Fix all staff findings**
+
+1. **Gate close: phase marked DONE**
 
 Rules:
+
 - Reviews are **sequential, never parallel**.
+
 - No downstream phase work starts until current phase gate is closed.
+
 - Any reopened finding reverts phase to `IN REVIEW`.
 
 ### 0.1.1 Definition of Done per Phase Gate (Objective Pass/Fail)
@@ -42,9 +50,13 @@ Each phase must satisfy all criteria in order. Any failed criterion blocks progr
 Pass only if all are true:
 
 - Phase scope tasks are implemented and mapped to task IDs in this plan.
+
 - Unit/integration checks for phase scope are green.
+
 - Architecture artifacts are updated (contracts, schemas, and diagrams if changed).
+
 - No unresolved follow-up markers in touched phase-scope files.
+
 - Runtime complexity and data-shape impacts are documented for phase scope.
 
 #### B) Ready for Principal Staff Software Engineer Review
@@ -52,9 +64,13 @@ Pass only if all are true:
 Pass only if all are true:
 
 - All architect review findings are resolved and verified.
+
 - New/updated tests cover functional and edge-case behavior introduced by phase.
+
 - Operational constraints are validated (bounded fetch strategy, no all-pages scans).
+
 - Failure-mode behavior is documented and testable (empty intersections, missing metadata, stale cursor).
+
 - Code/doc changes are internally consistent with naming and route contracts.
 
 #### C) Gate Close (Phase DONE)
@@ -62,9 +78,13 @@ Pass only if all are true:
 Pass only if all are true:
 
 - All staff review findings are resolved and verified.
+
 - Phase tracking table row is updated to DONE with review dates and owners.
+
 - Decision records required by the phase are completed (for P0, canonical ADR below).
+
 - No open blocker labeled for that phase.
+
 - Exit criteria evidence is linked (test outputs, review notes, artifacts).
 
 #### D) Fail Conditions (Automatic Reopen)
@@ -72,25 +92,28 @@ Pass only if all are true:
 Any of the following reopens the phase to `IN REVIEW`:
 
 - Regressions detected in phase-owned behaviors.
+
 - New unresolved review finding linked to phase scope.
+
 - Contract drift between plan, schema, and implementation.
+
 - Missing evidence for a previously claimed pass criterion.
 
 ### 0.2 Phase Tracking Table
 
 | Phase | Scope | Impl Status | Architect Review | Architect Fixes | Staff Review | Staff Fixes | Gate Status | Owner | Notes |
-|------|-------|-------------|------------------|-----------------|-------------|-------------|------------|-------|-------|
+| ------ | ------- | ------------- | ------------------ | ----------------- | ------------- | ------------- | ------------ | ------- | ------- |
 | P0 | Naming + contracts + deployment topology | DONE | NOT STARTED | NOT STARTED | NOT STARTED | NOT STARTED | OPEN | Agent | 2026-02-21: terminology doc, topology ADR (repo-static), system-overview updated |
-| P1 | Backend snapshot shard writer + pipeline wiring | DONE | DONE | DONE | DONE | DONE | **CLOSED** | Agent | 2026-02-21: shard_models, shard_key, shard_writer, snapshot_builder, quality in id_maps/publish, 119 tests. 2026-02-22: Pipeline wiring complete (V2-T04B/C/D/E). Architect review: 4 blocking findings fixed — (F1) SnapshotValidationError caught in publish.py. (F2) Old snapshot cleanup after activation. (F3) Dead PaginationConfig removed. (F4) compact_entry dict eliminated. Staff review: 1 blocking finding fixed — (S1) Incremental test verifies old snapshot removal. 1641 tests pass. |
+| P1 | Backend snapshot shard writer + pipeline wiring | DONE | DONE | DONE | DONE | DONE | CLOSED | Agent | 2026-02-21: shard_models, shard_key, shard_writer, snapshot_builder, quality in id_maps/publish, 119 tests. 2026-02-22: Pipeline wiring complete (V2-T04B/C/D/E). Architect review: 4 blocking findings fixed — (F1) SnapshotValidationError caught in publish.py. (F2) Old snapshot cleanup after activation. (F3) Dead PaginationConfig removed. (F4) compact_entry dict eliminated. Staff review: 1 blocking finding fixed — (S1) Incremental test verifies old snapshot removal. 1641 tests pass. |
 | P2 | Frontend query planner + loaders | DONE | DONE | DONE | NOT STARTED | NOT STARTED | OPEN | Agent | 2026-02-21: P2 impl (141 tests). 2026-02-22: Architect review PASS (no blocking findings). Big-bang 3-silo removal: deleted level-loader, tag-loader, pagination, usePaginatedPuzzles, useMasterIndexes, useFilterState + 7 old test files. Rewrote puzzleLoaders to use shard system. Stripped indexes.ts, puzzleLoader.ts, collectionService.ts. Fixed all page imports. |
 | P3 | Routing + canonical URL normalization | DONE | DONE | DONE | NOT STARTED | NOT STARTED | OPEN | Agent | 2026-02-22: P3 impl (77 tests). New route system: /contexts/{dim}/{slug} for training/technique/collection/quality, /modes/{name} for daily/random/rush. Canonical URL module with compact filter keys (l,t,c,q), offset, id. useCanonicalUrl + useShardFilters hooks. Rewrote app.tsx router. Reconnected all 5 P3-stubbed pages. Deleted useFilterParams. Updated AppHeader for client-side nav. Architect review: 3 blocking findings fixed — (F1) canonicalize now preserves unknown params per §3.2. (F2) useCanonicalUrl setters use refs to eliminate stale closures + stabilize callback identity. (F3) CollectionViewPage handlePuzzleChange uses useCanonicalUrl setOffset/setId instead of manual URL writes. Also fixed: (F4) RushBrowsePage masterLoaded=false until real counts wired. (F6) Static import for tagSlugToId in CollectionViewPage. |
-| P4 | Reconcile/rollback + atomic publish switch + pipeline wiring | DONE | DONE | DONE | DONE | DONE | **CLOSED** | Agent | 2026-02-22: P1 wiring + P4 combined. SnapshotBuilder wired into PublishStage.run() with incremental entry merge. PaginationWriter removed from publish. ShardWriter assigns collection n. Entry reconstruction from level shards. Atomic writes for pointer/manifest/state. Rollback refactored to snapshot rebuild. Cleanup updated for snapshots. Architect review 2026-02-22: PASS (4 findings fixed). Staff review 2026-02-22: PASS (1 finding fixed). 1641 tests pass. |
-| P5 | Legacy code removal + full validation | DONE | DONE | DONE | DONE | DONE | **CLOSED** | Agent | 2026-02-22: Frontend old loaders removed in P2. Backend: PaginationWriter + pagination_models + PaginationConfig deleted. 6 old test files deleted. core/__init__.py re-exports cleaned. Stale comments updated. Architect review 2026-02-22: PASS. Staff review 2026-02-22: PASS (stale comment fixed). 1641 tests pass. |
+| P4 | Reconcile/rollback + atomic publish switch + pipeline wiring | DONE | DONE | DONE | DONE | DONE | CLOSED | Agent | 2026-02-22: P1 wiring + P4 combined. SnapshotBuilder wired into PublishStage.run() with incremental entry merge. PaginationWriter removed from publish. ShardWriter assigns collection n. Entry reconstruction from level shards. Atomic writes for pointer/manifest/state. Rollback refactored to snapshot rebuild. Cleanup updated for snapshots. Architect review 2026-02-22: PASS (4 findings fixed). Staff review 2026-02-22: PASS (1 finding fixed). 1641 tests pass. |
+| P5 | Legacy code removal + full validation | DONE | DONE | DONE | DONE | DONE | CLOSED | Agent | 2026-02-22: Frontend old loaders removed in P2. Backend: PaginationWriter + pagination_models + PaginationConfig deleted. 6 old test files deleted. `core/__init__.py` re-exports cleaned. Stale comments updated. Architect review 2026-02-22: PASS. Staff review 2026-02-22: PASS (stale comment fixed). 1641 tests pass. |
 
 ### 0.3 Task Tracking Table
 
 | Task ID | Description | Phase | Status | Reviewer Blocker | Depends On |
-|--------|-------------|-------|--------|------------------|------------|
+| -------- | ------------- | ------- | -------- | ------------------ | ------------ |
 | V2-T01 | Terminology + schema contract update | P0 | DONE | None | - |
 | V2-T02 | Deployment topology decision record | P0 | DONE | None | - |
 | V2-T03 | Snapshot manifest + shard models | P1 | DONE | None | V2-T01 |
@@ -109,7 +132,7 @@ Any of the following reopens the phase to `IN REVIEW`:
 **Tasks added during architect/staff review:**
 
 | Task ID | Description | Phase | Status | Reviewer Blocker | Depends On |
-|--------|-------------|-------|--------|------------------|------------|
+| -------- | ------------- | ------- | -------- | ------------------ | ------------ |
 | V2-T03B | Shard key computation module | P1 | DONE | None | V2-T03 |
 | V2-T06A | Manifest + shard meta loader service | P2 | DONE | None | V2-T04 |
 | V2-T06B | Shard page loader + entry decoder | P2 | DONE | None | V2-T06A |
@@ -130,12 +153,15 @@ Any of the following reopens the phase to `IN REVIEW`:
 Use **Snapshot** as the primary architectural term.
 
 - **Snapshot** = immutable release boundary of the searchable puzzle corpus.
+
 - **Shard** = physical data unit inside a snapshot (previously called fragment).
 
 ### Rationale
 
 - “Snapshot” better communicates evolution, rollback, de-evolution, and deterministic publishing.
+
 - “Fragment” is still useful as an internal implementation term but not ideal as the product-facing architecture name.
+
 - This plan adopts: **Snapshot-Centric Query Architecture** with **query shards**.
 
 ---
@@ -145,13 +171,21 @@ Use **Snapshot** as the primary architectural term.
 Replace the current 3-silo view system (`by-level/`, `by-tag/`, `by-collection/`) with immutable snapshot releases that contain precomputed query shards for 1D and 2D intersections. The frontend uses a deterministic query planner to resolve filters to the most selective shard set using compact URL keys.
 
 Critical-gap fixes included in V2:
+
 - Mandatory snapshoting (no deferred snapshot model)
+
 - Explicit support for missing metadata via `none` buckets
+
 - Exact count guarantees for 1D/2D and explicit derived-count policy for higher dimensions
+
 - Canonical URL normalization rules for deep-link consistency
+
 - Atomic publish switch to avoid mixed-state reads
+
 - Cache invalidation keyed by snapshot/build checksums
+
 - Complexity contract clarified: bounded O(k) fetches, not blanket O(1) claims
+
 - Quality dimension (`q`) included in V2 backend and frontend scope
 
 ---
@@ -162,7 +196,7 @@ Critical-gap fixes included in V2:
 
 SGF files are **shared** at the top level — not duplicated per snapshot. They are content-addressed (filename = content hash) and append-only, so they are safe to share across snapshot versions. Snapshot directories contain only the manifest and query shard views.
 
-```
+```text
 yengo-puzzle-collections/
   sgf/                                    # SHARED — not snapshot-scoped
     0001/
@@ -192,14 +226,18 @@ yengo-puzzle-collections/
 #### 3.1.1 Frontend Bootstrap Sequence
 
 GitHub Pages is a static CDN — there is no runtime atomic file swap. The "atomic switch" means:
+
 1. Pipeline builds the new snapshot fully in a staging directory.
-2. Pipeline validates checksums and cardinality invariants.
-3. Pipeline writes `active-snapshot.json` with the new snapshot ID.
-4. All artifacts are committed and pushed in a single git push.
+
+1. Pipeline validates checksums and cardinality invariants.
+
+1. Pipeline writes `active-snapshot.json` with the new snapshot ID.
+
+1. All artifacts are committed and pushed in a single git push.
 
 **Frontend boot sequence (2 network hops before first shard load):**
 
-```
+```text
 1. App loads → fetch active-snapshot.json → get snapshot_id
 2. Construct base path: snapshots/{snapshot_id}/
 3. Fetch manifest.json from that base path
@@ -209,13 +247,15 @@ GitHub Pages is a static CDN — there is no runtime atomic file swap. The "atom
 ```
 
 **Mitigation for the extra round-trip:**
+
 - `active-snapshot.json` is tiny (~50 bytes) — cache with short TTL (e.g., 60s).
+
 - Alternative: embed `snapshot_id` into the HTML at Vite build time (`import.meta.env.VITE_SNAPSHOT_ID`). Eliminates hop 1 entirely but requires rebuild on every publish. Decision deferred to V2-T02 (deployment topology).
 
 **Why SGF is shared (not snapshot-scoped):**
 
 | Concern | Shared SGF | Snapshot-scoped SGF |
-|---------|-----------|--------------------|
+| --------- | ----------- | -------------------- |
 | Storage at 500K | 240 MB (once) | 240 MB × N snapshots |
 | Rollback safety | Content-addressed: old SGF files are never modified or deleted | Each snapshot is self-contained |
 | Publish workflow | SGF written to `sgf/` first, then snapshot views built referencing them | SGF copied into snapshot dir |
@@ -226,7 +266,7 @@ GitHub Pages is a static CDN — there is no runtime atomic file swap. The "atom
 
 ### 3.2 URL Grammar (Canonical)
 
-```
+```text
 /contexts/{dimension}/{slug}[?l=...][&t=...][&c=...][&q=...][&match=all|any][&offset={n}][&id={puzzleId}]
 ```
 
@@ -235,7 +275,7 @@ There is **no `/search` route** and **no `snapshot` URL param**. Every query is 
 #### 3.2.0 Dimension Path Names and Value Format
 
 | URL dimension | Data dimension | Path value format | Example URL |
-|--------------|---------------|-------------------|-------------|
+| -------------- | --------------- | ------------------- | ------------- |
 | `training` | level | **slug** (human-readable) | `/contexts/training/beginner` |
 | `technique` | tag | **slug** (human-readable) | `/contexts/technique/net` |
 | `collection` | collection | **slug** (human-readable) | `/contexts/collection/cho-chikun-life-death-elementary` |
@@ -243,36 +283,54 @@ There is **no `/search` route** and **no `snapshot` URL param**. Every query is 
 
 **Path uses slugs; query params use numeric IDs.** This gives human-readable URLs for browsing while keeping filter params compact:
 
-```
+```text
 /contexts/training/beginner?t=36,10&q=3&offset=42&id=fc38f029
 ```
 
 **Frontend resolution:** slug → numeric ID via `configService` lookup → shard key construction (`beginner` → `120` → `l120`).
 
 URL semantics:
+
 - `offset` is the zero-based navigation position in the resolved filtered result set.
+
 - `id` is the puzzle identifier for the currently displayed board puzzle. It is appended to the context URL when a puzzle is being shown on the board.
+
 - Deterministic canonical base = route + sorted filter params + `offset`; `id` is required when a specific puzzle is being shown on board.
 
 **Why no standalone `/puzzles/{id}` or `/search?id=` route:**
+
 - Puzzle IDs are content hashes — no human can guess or type them.
+
 - Users always enter via a context dimension (collection, technique, training level).
+
 - Searching all shards for a puzzle ID is O(N) — does not scale at 500K puzzles.
+
 - The `&id=` param on a context route is sufficient: it identifies the board puzzle *within* the already-resolved shard context.
 
 URL contract decisions (locked):
+
 - All canonical routes are context-based: `/contexts/{dimension}/{slug}`.
+
 - Path segments use **slugs** (human-readable). Query filter params use **numeric IDs** (compact).
+
 - No standalone `/puzzles/{id}` canonical route. No `/search` route. No `snapshot` param.
+
 - `id` is appended as query param on context routes when board puzzle identity must be explicit.
+
 - `id` value must use the stable puzzle identifier format defined by schema contract; do not expose raw storage hashes as public-facing URL identifiers.
+
 - `offset` may be omitted when not required for shareability; when present, it is part of deterministic replay within the active snapshot.
+
 - Compact keys are mandatory for dimension filters: `l`, `t`, `c`, `q`.
 
 Canonicalization rules:
+
 - query params sorted deterministically
+
 - duplicate IDs removed and sorted ascending
+
 - unknown future params preserved (pass-through)
+
 - normalized URL written back via `replaceState`
 
 ### 3.2.1 Navigation Model: `offset` (Not Page Cursor)
@@ -282,7 +340,7 @@ The URL uses `offset` — the **zero-based puzzle position** in the resolved sha
 **Why offset, not page cursor:**
 
 | Concern | `cursor=p{N}` (page-level) | `offset={n}` (puzzle-position) |
-|---------|---------------------------|-------------------------------|
+| --------- | --------------------------- | ------------------------------- |
 | Human meaning | "I'm on page 8" | "I'm looking at puzzle 3756" |
 | Page-size coupling | URL breaks if `page_size` changes between snapshots | Stable across page-size changes |
 | Deep-link precision | Points to a page of 500 entries | Points to exact puzzle position |
@@ -291,7 +349,7 @@ The URL uses `offset` — the **zero-based puzzle position** in the resolved sha
 
 **Frontend page resolution from offset:**
 
-```
+```text
 offset = 3756
 page_size = 500 (from manifest)
 page_number = floor(3756 / 500) + 1 = 8
@@ -304,17 +362,25 @@ fetch: shards/l120/page-008.json → entry at position 256
 **`id` param relationship:** When `offset` and `id` are both present, they are redundant by design — `id` is the puzzle identifier at that offset.
 
 **Cross-snapshot mismatch handling (bounded):** If a snapshot changes and the puzzle at the recorded `offset` differs from `id`, the frontend:
+
 1. Checks current page and adjacent pages (±2 pages, max 5 pages scanned).
-2. If `id` is found within that window → update `offset` to the new position.
-3. If `id` is NOT found within the window → show "Puzzle moved or removed" message, reset to `offset=0`.
-4. **Never** scan the entire shard — this would violate §4.1's bounded-fetch contract.
+
+1. If `id` is found within that window → update `offset` to the new position.
+
+1. If `id` is NOT found within the window → show "Puzzle moved or removed" message, reset to `offset=0`.
+
+1. **Never** scan the entire shard — this would violate §4.1's bounded-fetch contract.
 
 ### 3.3 Missing Metadata Policy (Required)
 
 All dimensions include explicit `none` bucket IDs:
+
 - `level=0` (unassigned level)
+
 - `tag=0` (untagged)
+
 - `collection=0` (no collection)
+
 - `quality=0` (unassigned quality)
 
 This ensures every puzzle is queryable even when only partial metadata exists.
@@ -328,9 +394,13 @@ This ensures every puzzle is queryable even when only partial metadata exists.
 ### 4.1 Runtime Complexity
 
 - **Puzzle SGF fetch**: network O(1), compute O(1) — path `sgf/{batch}/{hash}.sgf` resolved from shard entry `p` field
+
 - **Single-select 1D/2D query**: network O(1) shard fetch
+
 - **Multi-select query**: network O(k) shard fetches for selected values; compute O(k + merge)
+
 - **No runtime path may require loading all pages of a large corpus**
+
 - **No puzzle-ID search across shards** — puzzle identity is always resolved within a context-anchored shard
 
 Where `k` is number of resolved shards chosen by planner.
@@ -338,8 +408,11 @@ Where `k` is number of resolved shards chosen by planner.
 ### 4.2 Count Accuracy Contract
 
 - 1D and 2D counts: **exact**
+
 - 3D+ counts: either
+
   - exact from optional hot 3D materializations, or
+
   - explicitly labeled **derived** (never shown as exact)
 
 No silent approximation.
@@ -347,7 +420,7 @@ No silent approximation.
 ### 4.4 Failure Modes
 
 | Failure | Frontend Behavior |
-|---------|------------------|
+| --------- | ------------------ |
 | `active-snapshot.json` fetch fails | Show offline/error screen with retry button. No shard navigation possible. |
 | `manifest.json` fetch fails | Same as above — manifest is required for all shard resolution. |
 | Shard `meta.json` fetch fails | Cascading filter counts unavailable. Show filters without counts. Shard pages still loadable. |
@@ -363,7 +436,7 @@ No silent approximation.
 
 Planner selects shard strategy by strict decision tree:
 
-```
+```text
 1. Compute exact shard key from active filters (e.g., {level:120, tag:36} → "l120-t36")
 2. if manifest.shards[key] exists → DIRECT: fetch that shard (O(1))
 3. else if multi-select → MERGE: fetch each single-value shard in parallel, merge client-side (O(k))
@@ -381,7 +454,7 @@ The planner is a simple lookup + fallback chain, not an optimizer. The shard cou
 ## 5. Storage Budget (500K Puzzles)
 
 | Component | Raw Size | Notes |
-|-----------|--------:|-------|
+| ----------- | --------: | ------- |
 | SGF files (500K × 480 B avg) | 240 MB | **Shared** — single copy at `sgf/`, not per-snapshot |
 | Snapshot shard pages (1D + 2D compact) | ~340 MB | Array encoding + context elision (per active snapshot) |
 | Snapshot manifest + shard metas | ~2 MB | Scales with taxonomy |
@@ -392,7 +465,7 @@ The planner is a simple lookup + fallback chain, not an optimizer. The shard cou
 **File count budget (500K puzzles):**
 
 | Component | File Count | Notes |
-|-----------|----------:|---------|
+| ----------- | ----------: | --------- |
 | SGF files | 500,000 | In ~250 batch dirs (2000/dir) |
 | Shard page files | ~8,000 | 1D + non-empty 2D shards, variable pages each |
 | Shard meta files | ~3,000 | One per non-empty shard |
@@ -410,7 +483,7 @@ The planner is a simple lookup + fallback chain, not an optimizer. The shard cou
 Shard key = sorted dimension prefixes joined by `-`:
 
 | Prefix | Dimension | Example |
-|--------|-----------|---------|
+| -------- | ----------- | --------- |
 | `l` | level | `l120` |
 | `t` | tag | `t36` |
 | `c` | collection | `c6` |
@@ -494,8 +567,11 @@ Collection shards include the `n` field — the **1-indexed sequence number** as
 ```
 
 `n` is unique per collection, contiguous (no gaps), and 1-indexed. **`n` is repacked on every publish** — when puzzles are added or removed from a collection, all `n` values are reassigned contiguously (1, 2, 3, ..., count). This means `n` is NOT stable across publishes; saved references to "puzzle #347" may point to a different puzzle after a new publish. This is acceptable because:
+
 - Collection URLs use `offset` (not `n`) for position within the filtered shard.
+
 - `n` is a display/navigation aid ("puzzle 42 of 900"), not a persistent identifier.
+
 - The `&id=` param on the URL persists the actual puzzle identity across publishes.
 
 #### 6.2.5 Collection×Level 2D Shard (`c6-l120/page-001.json`)
@@ -516,13 +592,15 @@ Level is elided. Collection `n` is retained for navigation. `n` is the **global 
 ```
 
 Note: In `c6-l120`, puzzle with `n=1` is collection puzzle #1 globally. If the full `c6` shard has 900 puzzles and only 854 are level 120, the 2D shard contains 854 entries with non-contiguous `n` values (e.g., 1, 2, 4, 5, 8...). "Jump to #N" from a filtered collection view navigates to the full `c6` context.
-```
+
+```text
 
 #### 6.2.6 Quality 1D Shard (`q3/page-001.json`)
 
 Quality is elided. Full entry with all other dimensions.
 
-```json
+```
+
 {
   "type": "shard",
   "shard": "q3",
@@ -533,7 +611,8 @@ Quality is elided. Full entry with all other dimensions.
     ["0003/bb91f004", 160, [36, 60], [],       [3, 1,  8, 1]]
   ]
 }
-```
+
+```text
 
 Note: `q` is elided in quality-keyed shards (implicit from shard key `q3`). In all other shards, `q` is an explicit field in the entry schema.
 ```
@@ -567,13 +646,15 @@ The manifest is the global table of contents. It lists all shards with their cou
 **Materialization policy:** 2D shards are generated only when intersection count ≥ 1. Empty intersections (e.g., `c147-q5` with 0 puzzles) produce no shard directory and no manifest entry.
 
 **Why no TOC in manifest:** Cross-tabulation counts (e.g., "level 120 has 31,000 puzzles with tag 36") are stored in shard metas (§6.4), not the manifest. This avoids data duplication and consistency risk. The frontend loads the relevant shard meta lazily when cascading filter counts are needed.
-```
+
+```text
 
 ### 6.4 Shard Meta Schema
 
 Each shard directory contains a `meta.json` with summary statistics and per-dimension distribution maps. Shard metas are the **single source of truth** for cascading filter counts — the manifest does not duplicate this data.
 
-```json
+```
+
 {
   "shard": "l120",
   "count": 55000,
@@ -587,7 +668,8 @@ Each shard directory contains a `meta.json` with summary statistics and per-dime
     "quality":    { "1": 5000, "2": 30000, "3": 15000, "0": 5000 }
   }
 }
-```
+
+```text
 
 **`schema` in meta (not in pages):** The `schema` field declares the field order for all page entries in this shard. Page files do not repeat the schema — they reference the same order declared in `meta.json`. This saves ~30 bytes per page × ~10K pages = ~300 KB at scale.
 
@@ -840,6 +922,7 @@ P0 cannot be marked DONE until this ADR-lite section is fully completed and sign
 ## 10. Dependency Graph (V2)
 
 ```
+
 P0:
   V2-T01 ──→ V2-T03
   V2-T02 ──→ V2-T04, V2-T08
@@ -870,7 +953,8 @@ P5:
 
 Quality rollout:
   V2-T04 ──→ V2-T13A ──→ V2-T13B
-```
+
+```text
 
 ---
 

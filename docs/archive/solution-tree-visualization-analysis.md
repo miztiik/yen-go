@@ -1,28 +1,38 @@
+# Solution Tree / Move Tree Visualization — Deep Analysis
+
 > ⚠️ **ARCHIVED** — This document is preserved for historical context.
 > Current canonical documentation: [Architecture: Goban Integration](../architecture/frontend/goban-integration.md)
 > Archived: 2026-05-06
 
-# Solution Tree / Move Tree Visualization — Deep Analysis
+---
 
 > **Last Updated**: 2026-02-17  
 > **Purpose**: Deep technical analysis of how Go/Tsumego solution trees are rendered across major implementations, with actual rendering code, layout algorithms, and comparison for Yen-Go's tree visualization feature.
-
+>
 > **See also**:
 >
+
 - [Go Board JavaScript Libraries Analysis](./go-board-js-libraries-analysis.md) — Historical board-library comparison
+
 - [Architecture: Frontend Overview](../architecture/frontend/overview.md) — Current frontend design decisions
+>
 > - [Concepts: SGF Properties](../concepts/sgf-properties.md) — Custom SGF property definitions
 
 ---
 
 ## Table of Contents
 
-1. [Goban (OGS) Move Tree](#1-goban-yengo-source-move-tree)
-2. [BesoGo Tree Panel](#2-besogo-tree-panel)
-3. [Sabaki Game Graph](#3-sabaki-game-graph)
-4. [yengo-source Solution Tree](#4-goproblemscoms-solution-tree)
-5. [Comparison Matrix](#5-comparison-matrix)
-6. [Recommendations for Yen-Go](#6-recommendations-for-yen-go)
+1. [Goban (OGS) Move Tree](#1-goban-ogs-move-tree)
+
+1. [BesoGo Tree Panel](#2-besogo-tree-panel)
+
+1. [Sabaki Game Graph](#3-sabaki-game-graph)
+
+1. [yengo-source Solution Tree](#4-yengo-source-solution-tree)
+
+1. [Comparison Matrix](#5-comparison-matrix)
+
+1. [Recommendations for Yen-Go](#6-recommendations-for-yen-go)
 
 ---
 
@@ -37,8 +47,10 @@
 The yengo-source move tree is a **Canvas 2D** renderer with a three-phase pipeline:
 
 1. **Layout** — `MoveTree.layout()` assigns grid positions to every node
-2. **Path Drawing** — `move_tree_recursiveDrawPath()` draws connecting lines
-3. **Node Drawing** — `move_tree_drawRecursive()` draws stones + labels
+
+1. **Path Drawing** — `move_tree_recursiveDrawPath()` draws connecting lines
+
+1. **Node Drawing** — `move_tree_drawRecursive()` draws stones + labels
 
 The tree renders inside a scrollable container with a single canvas that repositions itself to match the visible viewport (virtual scrolling pattern).
 
@@ -161,8 +173,11 @@ layout(x, min_y, layout_hash, line_color) {
 **Key properties**:
 
 - `move_tree_layout_vector[x]` tracks the highest occupied Y for each column X, preventing overlaps
+
 - Trunk always at y=0, branches fill in below
+
 - `layout_hash` stores `"x,y" → node` mapping for click/hover lookup
+
 - Branch lines are allocated space in the parent column (`x-1`) to prevent line crossings
 
 ### 1.4 Static Configuration
@@ -313,6 +328,7 @@ move_tree_hilightNode(ctx, node, color, viewport) {
 Colors:
 
 - `#6BAADA` (light blue) — Current move path
+
 - `#6BDA6B` (light green) — Review move path (during game review)
 
 ### 1.8 Scrolling and Virtual Rendering
@@ -320,8 +336,11 @@ Colors:
 The canvas uses a **virtual scrolling** pattern:
 
 - An inner container is sized to hold the entire tree
+
 - The canvas is only as large as the visible viewport
+
 - On scroll, the canvas repositions its CSS `top`/`left` and redraws only visible nodes
+
 - Viewport culling skips nodes outside the visible rectangle
 
 ```javascript
@@ -353,19 +372,19 @@ if (node) {
 
 ### 1.10 Summary
 
-| Aspect             | Detail                                                        |
+| Aspect | Detail |
 | ------------------ | ------------------------------------------------------------- |
-| **Rendering**      | Canvas 2D with virtual scrolling                              |
-| **Layout**         | Recursive column-allocation (trunk at y=0, branches below)    |
-| **Nodes**          | Themed stones (pre-rendered images) with move number labels   |
-| **Paths**          | Quadratic Bezier curves, color-coded per branch               |
-| **Correct/Wrong**  | Green/Red ring around stone (`correct_answer`/`wrong_answer`) |
-| **Active Path**    | Blue rectangle highlight, off-path nodes at 40% opacity       |
-| **Transpositions** | Isobranch detection + purple Bezier curves                    |
-| **Custom Moves**   | Full variation tree support via trunk/branches model          |
-| **Scalability**    | Viewport culling + virtual scroll = handles large trees       |
-| **Click**          | Grid-based lookup via `layout_hash` → `jumpTo(node)`          |
-| **Standalone**     | No — tightly coupled to GobanCanvas + GoEngine                |
+| **Rendering** | Canvas 2D with virtual scrolling |
+| **Layout** | Recursive column-allocation (trunk at y=0, branches below) |
+| **Nodes** | Themed stones (pre-rendered images) with move number labels |
+| **Paths** | Quadratic Bezier curves, color-coded per branch |
+| **Correct/Wrong** | Green/Red ring around stone (`correct_answer`/`wrong_answer`) |
+| **Active Path** | Blue rectangle highlight, off-path nodes at 40% opacity |
+| **Transpositions** | Isobranch detection + purple Bezier curves |
+| **Custom Moves** | Full variation tree support via trunk/branches model |
+| **Scalability** | Viewport culling + virtual scroll = handles large trees |
+| **Click** | Grid-based lookup via `layout_hash` → `jumpTo(node)` |
+| **Standalone** | No — tightly coupled to GobanCanvas + GoEngine |
 
 ---
 
@@ -380,8 +399,10 @@ if (node) {
 BesoGo's tree panel is a **pure SVG** renderer that draws the game tree as a navigable visualization. It consists of:
 
 1. An SVG root element with computed `viewBox` and scaled `width`/`height`
-2. Three rendering layers: bottom (current marker), paths, and nodes
-3. A recursive tree builder that assigns grid positions
+
+1. Three rendering layers: bottom (current marker), paths, and nodes
+
+1. A recursive tree builder that assigns grid positions
 
 ### 2.2 Constants and Sizing
 
@@ -477,7 +498,9 @@ function finishPath(path, color) {
 **Path geometry**:
 
 - Same-row → horizontal line (`h-120`)
+
 - 1-row drop → 45° diagonal (`l-120,-120`)
+
 - Multi-row drop → diagonal + vertical + diagonal (double-bend)
 
 ### 2.5 Node Icons
@@ -606,19 +629,19 @@ Full rebuild creates a new SVG and replaces the old one. Navigation changes only
 
 ### 2.9 Summary
 
-| Aspect            | Detail                                                      |
+| Aspect | Detail |
 | ----------------- | ----------------------------------------------------------- |
-| **Rendering**     | SVG elements (paths, circles, rects)                        |
-| **Layout**        | Recursive depth-first with `nextOpen[]` column tracker      |
-| **Nodes**         | SVG stones (circles) with move number labels                |
-| **Paths**         | SVG `<path>` with straight lines and diagonals (not Bezier) |
-| **Correct/Wrong** | No built-in support (no puzzle mode)                        |
-| **Active Node**   | Turquoise rectangle highlight (full opacity)                |
-| **Hover**         | Semi-transparent turquoise rectangle on hover               |
-| **Custom Moves**  | Full editing support (add/remove nodes)                     |
-| **Scalability**   | Full SVG rebuild on tree change; container overflow scroll  |
-| **Click**         | Direct `onclick` on each node's SVG rectangle               |
-| **Standalone**    | No — integrated with BesoGo editor                          |
+| **Rendering** | SVG elements (paths, circles, rects) |
+| **Layout** | Recursive depth-first with `nextOpen[]` column tracker |
+| **Nodes** | SVG stones (circles) with move number labels |
+| **Paths** | SVG `<path>` with straight lines and diagonals (not Bezier) |
+| **Correct/Wrong** | No built-in support (no puzzle mode) |
+| **Active Node** | Turquoise rectangle highlight (full opacity) |
+| **Hover** | Semi-transparent turquoise rectangle on hover |
+| **Custom Moves** | Full editing support (add/remove nodes) |
+| **Scalability** | Full SVG rebuild on tree change; container overflow scroll |
+| **Click** | Direct `onclick` on each node's SVG rectangle |
+| **Standalone** | No — integrated with BesoGo editor |
 
 ---
 
@@ -633,8 +656,10 @@ Full rebuild creates a new SVG and replaces the old one. Navigation changes only
 Sabaki's GameGraph is a **Preact-based SVG renderer** with three component classes:
 
 1. **`GameGraphNode`** — Individual node rendering (circles, squares, diamonds, bookmarks)
-2. **`GameGraphEdge`** — Lines connecting parent to child
-3. **`GameGraph`** — Container managing layout, viewport, and interaction
+
+1. **`GameGraphEdge`** — Lines connecting parent to child
+
+1. **`GameGraph`** — Container managing layout, viewport, and interaction
 
 ### 3.2 Layout Algorithm (Matrix Dict)
 
@@ -717,11 +742,11 @@ render({position: [left, top], type, current, fill, nodeSize}, {hover}) {
 }
 ```
 
-| Node Type  | Shape         | When Used               |
+| Node Type | Shape | When Used |
 | ---------- | ------------- | ----------------------- |
-| `circle`   | Circle        | Normal stone placement  |
-| `square`   | Square        | Pass move               |
-| `diamond`  | Diamond       | Setup node (no move)    |
+| `circle` | Circle | Normal stone placement |
+| `square` | Square | Pass move |
+| `diamond` | Diamond | Setup node (no move) |
 | `bookmark` | Bookmark/flag | Hotspot (`HO` property) |
 
 ### 3.4 Node Colors (Semantic)
@@ -744,14 +769,14 @@ let opacity = onCurrentTrack ? 1 : 0.5; // Off-path nodes fade
 let fill = `rgb(${fillRGB.map((x) => x * opacity).join(",")})`;
 ```
 
-| SGF Property  | Color                | Meaning            |
+| SGF Property | Color | Meaning |
 | ------------- | -------------------- | ------------------ |
-| `BM`          | Red (#F02311)        | Bad move           |
-| `DO`          | Purple (#922B8F)     | Doubtful move      |
-| `IT`          | Blue (#4886D5)       | Interesting move   |
-| `TE`          | Green (#59A80F)      | Tesuji (good move) |
-| `C`/`GC`/etc. | Orange (#FFAE3D)     | Has comment        |
-| none          | Light gray (#EEEEEE) | Default            |
+| `BM` | Red (#F02311) | Bad move |
+| `DO` | Purple (#922B8F) | Doubtful move |
+| `IT` | Blue (#4886D5) | Interesting move |
+| `TE` | Green (#59A80F) | Tesuji (good move) |
+| `C`/`GC`/etc. | Orange (#FFAE3D) | Has comment |
+| none | Light gray (#EEEEEE) | Default |
 
 ### 3.5 Edge Drawing (Polylines)
 
@@ -853,18 +878,18 @@ for (let x = minX; x <= maxX; x++) {
 
 ### 3.9 Summary
 
-| Aspect            | Detail                                                    |
+| Aspect | Detail |
 | ----------------- | --------------------------------------------------------- |
-| **Rendering**     | SVG via Preact components                                 |
-| **Layout**        | Matrix-dict with collision avoidance (vertical main line) |
-| **Nodes**         | SVG paths: circles, squares, diamonds, bookmarks          |
-| **Paths**         | SVG polylines (straight + bend), styled by current-ness   |
-| **Correct/Wrong** | SGF annotations (BM/DO/IT/TE) → semantic colors           |
-| **Active Path**   | Brighter fill + thicker edge stroke                       |
-| **Custom Moves**  | Full variation support                                    |
-| **Scalability**   | Viewport culling, CSS transform panning                   |
-| **Click**         | Grid-coordinate calculation from mouse position           |
-| **Standalone**    | Partially — depends on `@sabaki/immutable-gametree`       |
+| **Rendering** | SVG via Preact components |
+| **Layout** | Matrix-dict with collision avoidance (vertical main line) |
+| **Nodes** | SVG paths: circles, squares, diamonds, bookmarks |
+| **Paths** | SVG polylines (straight + bend), styled by current-ness |
+| **Correct/Wrong** | SGF annotations (BM/DO/IT/TE) → semantic colors |
+| **Active Path** | Brighter fill + thicker edge stroke |
+| **Custom Moves** | Full variation support |
+| **Scalability** | Viewport culling, CSS transform panning |
+| **Click** | Grid-coordinate calculation from mouse position |
+| **Standalone** | Partially — depends on `@sabaki/immutable-gametree` |
 
 ---
 
@@ -879,54 +904,66 @@ for (let x = minX; x <= maxX; x++) {
 From prior analysis of the yengo-source.com JavaScript bundles:
 
 1. **The tree component is lazy-loaded** — The component (`p.bY`) is code-split and loaded on demand when the user opens the tree view
-2. **It receives pre-processed data**:
+
+1. **It receives pre-processed data**:
+
    - `baseSgf` — The base SGF string
+
    - `rightCompressedPaths` — Correct solution paths (compressed)
+
    - `wrongCompressedPaths` — Incorrect answer paths
+
    - `questionCompressedPaths` — Intermediate/question paths
+
    - `commentCompressedPaths` — Paths with pedagogical comments
+
    - `autoScrollToCurrentNode` — Auto-scroll behavior flag
+
    - `options: { minHeight }` — Layout options
 
-3. **Compressed path encoding** — Solution paths are compressed into string tokens via `v.FU()`. This is more efficient than full SGF trees for transmission.
+1. **Compressed path encoding** — Solution paths are compressed into string tokens via `v.FU()`. This is more efficient than full SGF trees for transmission.
 
-4. **Correctness annotations** — Stored in SGF `C[]` property using keywords: `RIGHT`, `FORCE`, `NOTTHIS`, `CHOICE`
+1. **Correctness annotations** — Stored in SGF `C[]` property using keywords: `RIGHT`, `FORCE`, `NOTTHIS`, `CHOICE`
 
-5. **Canvas 2D rendering stack** — The parent board engine uses 6 layered canvases. The tree component likely uses Canvas 2D as well (consistent with the codebase).
+1. **Canvas 2D rendering stack** — The parent board engine uses 6 layered canvases. The tree component likely uses Canvas 2D as well (consistent with the codebase).
 
 ### 4.2 User-Reported Features
 
 Based on user description of the yengo-source.com tree:
 
-| Feature            | Detail                                             |
+| Feature | Detail |
 | ------------------ | -------------------------------------------------- |
-| **Visual quality** | "Very nice and beautiful"                          |
-| **Custom moves**   | Allows adding custom exploratory moves to the tree |
-| **Path coding**    | Correct paths visually distinct from wrong paths   |
-| **Interactivity**  | Click on tree node → board jumps to that position  |
+| **Visual quality** | "Very nice and beautiful" |
+| **Custom moves** | Allows adding custom exploratory moves to the tree |
+| **Path coding** | Correct paths visually distinct from wrong paths |
+| **Interactivity** | Click on tree node → board jumps to that position |
 
 ### 4.3 What We Can Infer
 
 Given the site's architecture (React + webpack + Canvas 2D board):
 
 - **Likely Canvas 2D** for the tree as well (consistency with board engine)
+
 - **Color-coded paths** based on the compressed path sets (right=green, wrong=red, question=yellow)
+
 - **Node styling** probably uses the same stone textures as the board for visual consistency
+
 - **Scroll/pan** for large trees with auto-scroll to current position
+
 - **Click-to-navigate** with coordinate-based hit testing (standard pattern)
 
 ### 4.4 Summary
 
-| Aspect            | Detail                                             |
+| Aspect | Detail |
 | ----------------- | -------------------------------------------------- |
-| **Rendering**     | Likely Canvas 2D (matches board engine)            |
-| **Layout**        | Unknown (code is minified & lazy-loaded)           |
-| **Nodes**         | Likely themed stones (same as board)               |
-| **Paths**         | Color-coded: right/wrong/question/comment          |
+| **Rendering** | Likely Canvas 2D (matches board engine) |
+| **Layout** | Unknown (code is minified & lazy-loaded) |
+| **Nodes** | Likely themed stones (same as board) |
+| **Paths** | Color-coded: right/wrong/question/comment |
 | **Correct/Wrong** | SGF `C[RIGHT]`/`C[NOTTHIS]` + compressed path sets |
-| **Custom Moves**  | Yes — exploratory moves can be added               |
-| **Scalability**   | Auto-scroll to current node                        |
-| **Standalone**    | No — proprietary, not extractable                  |
+| **Custom Moves** | Yes — exploratory moves can be added |
+| **Scalability** | Auto-scroll to current node |
+| **Standalone** | No — proprietary, not extractable |
 
 ---
 
@@ -934,48 +971,48 @@ Given the site's architecture (React + webpack + Canvas 2D board):
 
 ### 5.1 Technical Comparison
 
-| Feature              | Goban (OGS)                                    | BesoGo                                  | Sabaki                                       | yengo-source                 |
+| Feature | Goban (OGS) | BesoGo | Sabaki | yengo-source |
 | -------------------- | ---------------------------------------------- | --------------------------------------- | -------------------------------------------- | -------------------------- |
-| **Rendering Tech**   | Canvas 2D                                      | SVG                                     | SVG (Preact)                                 | Canvas 2D (likely)         |
-| **Layout Direction** | Horizontal (L→R moves, T→B variations)         | Horizontal (L→R)                        | Vertical (T→B moves, L→R variations)         | Unknown                    |
-| **Layout Algorithm** | Recursive column-allocation with layout vector | Recursive DFS with nextOpen[]           | Matrix-dict with collision avoidance         | Unknown                    |
-| **Node Size**        | 28px cells (11px radius + 3px padding)         | 30px cells (120 SVG units × 0.25 scale) | Configurable `gridSize` prop                 | Unknown                    |
-| **Node Shape**       | Themed stones (pre-rendered images)            | SVG circles (black/white/grey)          | SVG path shapes (circle/square/diamond/flag) | Unknown                    |
-| **Move Labels**      | Move number or coordinates (configurable)      | Move number always                      | None (color only)                            | Unknown                    |
-| **Branch Lines**     | Quadratic Bezier curves                        | SVG paths (straight + diagonal)         | SVG polylines (straight + bend)              | Unknown                    |
-| **Line Colors**      | 7 colors per branch-depth                      | Black only                              | Gray (#777) or light gray (#ccc)             | Color-coded by correctness |
-| **Trunk Line**       | Always black, y=0                              | Same as branches                        | Same as branches (thicker when current)      | Unknown                    |
+| **Rendering Tech** | Canvas 2D | SVG | SVG (Preact) | Canvas 2D (likely) |
+| **Layout Direction** | Horizontal (L→R moves, T→B variations) | Horizontal (L→R) | Vertical (T→B moves, L→R variations) | Unknown |
+| **Layout Algorithm** | Recursive column-allocation with layout vector | Recursive DFS with nextOpen[] | Matrix-dict with collision avoidance | Unknown |
+| **Node Size** | 28px cells (11px radius + 3px padding) | 30px cells (120 SVG units × 0.25 scale) | Configurable `gridSize` prop | Unknown |
+| **Node Shape** | Themed stones (pre-rendered images) | SVG circles (black/white/grey) | SVG path shapes (circle/square/diamond/flag) | Unknown |
+| **Move Labels** | Move number or coordinates (configurable) | Move number always | None (color only) | Unknown |
+| **Branch Lines** | Quadratic Bezier curves | SVG paths (straight + diagonal) | SVG polylines (straight + bend) | Unknown |
+| **Line Colors** | 7 colors per branch-depth | Black only | Gray (#777) or light gray (#ccc) | Color-coded by correctness |
+| **Trunk Line** | Always black, y=0 | Same as branches | Same as branches (thicker when current) | Unknown |
 
 ### 5.2 Puzzle Support Comparison
 
-| Feature            | Goban (OGS)                                   | BesoGo                        | Sabaki                                | yengo-source               |
+| Feature | Goban (OGS) | BesoGo | Sabaki | yengo-source |
 | ------------------ | --------------------------------------------- | ----------------------------- | ------------------------------------- | ------------------------ |
-| **Correct Answer** | `correct_answer` → green ring (#33ff33)       | None                          | `TE` prop → green (#59A80F) fill      | `C[RIGHT]` → green path  |
-| **Wrong Answer**   | `wrong_answer` → red ring (#ff3333)           | None                          | `BM` prop → red (#F02311) fill        | `C[NOTTHIS]` → red path  |
-| **Comment**        | `text` → blue ring (#3333ff)                  | None                          | Comment props → orange (#FFAE3D) fill | `commentCompressedPaths` |
-| **Active Path**    | Blue rect (#6BAADA) + 40% opacity on off-path | Turquoise rect (full opacity) | Brighter fill + thicker stroke        | Auto-scroll to current   |
-| **Custom Moves**   | Yes (trunk/branch model)                      | Yes (full editor)             | Yes (variation support)               | Yes (exploratory)        |
+| **Correct Answer** | `correct_answer` → green ring (#33ff33) | None | `TE` prop → green (#59A80F) fill | `C[RIGHT]` → green path |
+| **Wrong Answer** | `wrong_answer` → red ring (#ff3333) | None | `BM` prop → red (#F02311) fill | `C[NOTTHIS]` → red path |
+| **Comment** | `text` → blue ring (#3333ff) | None | Comment props → orange (#FFAE3D) fill | `commentCompressedPaths` |
+| **Active Path** | Blue rect (#6BAADA) + 40% opacity on off-path | Turquoise rect (full opacity) | Brighter fill + thicker stroke | Auto-scroll to current |
+| **Custom Moves** | Yes (trunk/branch model) | Yes (full editor) | Yes (variation support) | Yes (exploratory) |
 
 ### 5.3 Performance and Scalability
 
-| Feature              | Goban (OGS)                                   | BesoGo                                      | Sabaki                          |
+| Feature | Goban (OGS) | BesoGo | Sabaki |
 | -------------------- | --------------------------------------------- | ------------------------------------------- | ------------------------------- |
-| **Virtual Scroll**   | Yes — canvas repositions to viewport          | No — full SVG rebuild                       | Yes — viewport culling          |
-| **Viewport Culling** | Yes — skip off-screen nodes                   | No — all nodes always in DOM                | Yes — only render visible nodes |
-| **Update Strategy**  | Full redraw on any change                     | 3-tier: rebuild / move marker / update icon | Component-level updates         |
-| **Tree Rebuild**     | Layout recomputation + full canvas redraw     | Create new SVG, replace old                 | Matrix-dict recomputation       |
-| **Large Trees**      | Handles well (O(n) layout + culled rendering) | Degrades (all SVG elements in DOM)          | Handles well (culled rendering) |
-| **Memory**           | Single canvas (low)                           | Full SVG DOM (moderate)                     | Virtual DOM diff (moderate)     |
+| **Virtual Scroll** | Yes — canvas repositions to viewport | No — full SVG rebuild | Yes — viewport culling |
+| **Viewport Culling** | Yes — skip off-screen nodes | No — all nodes always in DOM | Yes — only render visible nodes |
+| **Update Strategy** | Full redraw on any change | 3-tier: rebuild / move marker / update icon | Component-level updates |
+| **Tree Rebuild** | Layout recomputation + full canvas redraw | Create new SVG, replace old | Matrix-dict recomputation |
+| **Large Trees** | Handles well (O(n) layout + culled rendering) | Degrades (all SVG elements in DOM) | Handles well (culled rendering) |
+| **Memory** | Single canvas (low) | Full SVG DOM (moderate) | Virtual DOM diff (moderate) |
 
 ### 5.4 Integration Considerations
 
-| Feature          | Goban (OGS)                        | BesoGo                          | Sabaki                          |
+| Feature | Goban (OGS) | BesoGo | Sabaki |
 | ---------------- | ---------------------------------- | ------------------------------- | ------------------------------- |
-| **Framework**    | Vanilla DOM                        | Vanilla DOM                     | Preact (compatible with Yen-Go) |
-| **Dependencies** | GoEngine, themes, callbacks        | besogo.js (editor core)         | @sabaki/immutable-gametree      |
-| **Extractable**  | Difficult (coupled to GobanCanvas) | Moderate (self-contained panel) | Moderate (separate component)   |
-| **TypeScript**   | Yes                                | No                              | No (but clean JS)               |
-| **License**      | Apache 2.0                         | MIT                             | MIT                             |
+| **Framework** | Vanilla DOM | Vanilla DOM | Preact (compatible with Yen-Go) |
+| **Dependencies** | GoEngine, themes, callbacks | besogo.js (editor core) | @sabaki/immutable-gametree |
+| **Extractable** | Difficult (coupled to GobanCanvas) | Moderate (self-contained panel) | Moderate (separate component) |
+| **TypeScript** | Yes | No | No (but clean JS) |
+| **License** | Apache 2.0 | MIT | MIT |
 
 ---
 
@@ -988,54 +1025,64 @@ Given Yen-Go's constraints (Preact, TypeScript, static-first, already using goba
 **Option A: Use yengo-source move tree directly** (Lowest effort)
 
 - Yen-Go already has goban integrated
+
 - The move tree renderer is accessible via `Goban.move_tree_container` and `Goban.move_tree_redraw()`
+
 - Supports correct/wrong rings, active path highlighting, click navigation
+
 - Drawbacks: Canvas 2D (not Preact-idiomatic), horizontal layout only, coupled to GobanCanvas
 
 **Option B: Custom Preact tree component** (Best fit)
 
 - Build a Preact SVG component inspired by Sabaki's approach
+
 - Uses Yen-Go's existing SGF tree data from `parseSgfToTree`
+
 - Full control over puzzle-specific styling (correct/wrong/hint paths)
+
 - Can be designed as a standalone component, independent of goban
+
 - Vertical OR horizontal layout based on screen orientation
 
 **Option C: Port BesoGo's treePanel** (Middle ground)
 
 - Clean, simple SVG rendering logic (~200 lines)
+
 - Easy to understand and modify
+
 - Would need: TypeScript conversion, Preact wrapper, puzzle annotations
+
 - Drawbacks: No viewport culling, full rebuild pattern
 
 ### 6.2 Recommended Architecture for Custom Tree
 
 If building a custom tree (Option B), the recommended architecture combines the best patterns:
 
-| Aspect            | Source Inspiration                        | Rationale                                           |
+| Aspect | Source Inspiration | Rationale |
 | ----------------- | ----------------------------------------- | --------------------------------------------------- |
-| **Rendering**     | SVG (Sabaki-style)                        | Preact-idiomatic, scalable, accessible              |
-| **Layout**        | yengo-source column-allocation                     | Better for puzzles (trunk at top, variations below) |
-| **Node shapes**   | Sabaki semantic shapes                    | Circles for moves, diamonds for setup               |
-| **Correct/Wrong** | yengo-source ring pattern                          | Green/red rings are standard in Go puzzle UIs       |
-| **Active path**   | yengo-source opacity (0.4 off-path) + Sabaki color | Clear visual hierarchy                              |
-| **Line style**    | yengo-source Bezier curves                         | More visually appealing than straight lines         |
-| **Colors**        | yengo-source branch colors (7 distinct)            | Better for complex puzzles with many variations     |
-| **Viewport**      | Sabaki virtual rendering                  | Performance for large trees                         |
-| **Click**         | Sabaki grid-coordinate calculation        | Standard pattern                                    |
+| **Rendering** | SVG (Sabaki-style) | Preact-idiomatic, scalable, accessible |
+| **Layout** | yengo-source column-allocation | Better for puzzles (trunk at top, variations below) |
+| **Node shapes** | Sabaki semantic shapes | Circles for moves, diamonds for setup |
+| **Correct/Wrong** | yengo-source ring pattern | Green/red rings are standard in Go puzzle UIs |
+| **Active path** | yengo-source opacity (0.4 off-path) + Sabaki color | Clear visual hierarchy |
+| **Line style** | yengo-source Bezier curves | More visually appealing than straight lines |
+| **Colors** | yengo-source branch colors (7 distinct) | Better for complex puzzles with many variations |
+| **Viewport** | Sabaki virtual rendering | Performance for large trees |
+| **Click** | Sabaki grid-coordinate calculation | Standard pattern |
 
 ### 6.3 Key Design Decisions
 
-| Decision                     | Recommendation                                  | Reasoning                                                                 |
+| Decision | Recommendation | Reasoning |
 | ---------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------- |
-| **Layout direction**         | Horizontal (L→R)                                | Matches yengo-source convention, better for wide screens typical in puzzle solving |
-| **Node representation**      | SVG circles filled with stone color             | Visual consistency with the board                                         |
-| **Move labels**              | Move number inside stone                        | Essential for puzzle navigation                                           |
-| **Correct/wrong indicators** | Colored ring (green/red) around stone           | Clear, non-obstructive, established pattern                               |
-| **Branch line style**        | Quadratic Bezier curves with branch colors      | Visually distinguishable branches                                         |
-| **Active path**              | Blue background highlight + off-path fade       | Matches yengo-source, clear navigation                                             |
-| **Scroll**                   | CSS overflow: auto on container                 | Simple, native scrollbar                                                  |
-| **Click behavior**           | Click node → jump to that position on board     | Standard pattern across all implementations                               |
-| **Solution gating**          | Tree hidden until wrong move or explicit review | Yen-Go Holy Law: no spoilers                                              |
+| **Layout direction** | Horizontal (L→R) | Matches yengo-source convention, better for wide screens typical in puzzle solving |
+| **Node representation** | SVG circles filled with stone color | Visual consistency with the board |
+| **Move labels** | Move number inside stone | Essential for puzzle navigation |
+| **Correct/wrong indicators** | Colored ring (green/red) around stone | Clear, non-obstructive, established pattern |
+| **Branch line style** | Quadratic Bezier curves with branch colors | Visually distinguishable branches |
+| **Active path** | Blue background highlight + off-path fade | Matches yengo-source, clear navigation |
+| **Scroll** | CSS overflow: auto on container | Simple, native scrollbar |
+| **Click behavior** | Click node → jump to that position on board | Standard pattern across all implementations |
+| **Solution gating** | Tree hidden until wrong move or explicit review | Yen-Go Holy Law: no spoilers |
 
 ---
 

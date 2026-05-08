@@ -3,8 +3,11 @@
 > **See also**:
 >
 > - [Architecture: Puzzle Solving](./puzzle-solving.md) — Core move validation logic
+>
 > - [Architecture: Puzzle Modes (legacy)](./puzzle-modes.md) — Historical mode descriptions
+>
 > - [Architecture: State Management](./state-management.md) — Progress tracking
+>
 > - [Architecture: UI Layout](./ui-layout.md) — Page layout patterns
 
 **Last Updated**: 2026-03-29
@@ -16,9 +19,12 @@
 All puzzle-playing modes in Yen-Go share a single `PuzzleSetPlayer` component backed by `SolverView`. Each mode is a **thin wrapper page** that provides:
 
 1. A `PuzzleSetLoader` (or `StreamingPuzzleSetLoader` for infinite modes)
-2. `renderHeader()` — mode-specific header/HUD
-3. `renderSummary()` — mode-specific completion/results screen
-4. Configuration props (`failOnWrong`, `autoAdvanceEnabled`, `minimal`, etc.)
+
+1. `renderHeader()` — mode-specific header/HUD
+
+1. `renderSummary()` — mode-specific completion/results screen
+
+1. Configuration props (`failOnWrong`, `autoAdvanceEnabled`, `minimal`, etc.)
 
 This eliminates duplicate board rendering, move validation, and puzzle lifecycle management.
 
@@ -26,7 +32,7 @@ This eliminates duplicate board rendering, move validation, and puzzle lifecycle
 
 ## Architecture Diagram
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
 │  Page (thin wrapper)                                │
 │  ┌───────────────┐  ┌───────────────────────────┐   │
@@ -80,7 +86,7 @@ PuzzleSetPlayer detects streaming loaders via `'hasMore' in loader` and calls `l
 ## Mode Configuration Matrix
 
 | Mode | Page | Loader | `failOnWrong` | `failOnWrongDelayMs` | `autoAdvanceEnabled` | `minimal` | Streaming |
-|------|------|--------|---------------|---------------------|---------------------|-----------|-----------|
+| ------ | ------ | -------- | --------------- | --------------------- | --------------------- | ----------- | ----------- |
 | Collection | CollectionViewPage | CollectionPuzzleLoader | false | 400 (default) | undefined (global) | false | No |
 | Daily | DailyChallengePage | DailyPuzzleLoader | true | 400 (default) | undefined (global) | false | No |
 | Training | TrainingViewPage | TrainingPuzzleLoader | false | 400 (default) | undefined (global) | false | No |
@@ -95,8 +101,11 @@ PuzzleSetPlayer detects streaming loaders via `'hasMore' in loader` and calls `l
 ## SolverView `minimal` Mode
 
 When `minimal={true}`:
+
 - Only the `solver-board-col` renders (the goban board)
+
 - The sidebar column (hints, solution tree, move explorer) is hidden
+
 - Used by Rush mode for maximum board space under time pressure
 
 ---
@@ -110,8 +119,10 @@ When `minimal={true}`:
 ### Page States
 
 1. **Countdown** — 3-2-1 countdown before game starts
-2. **Playing** — PuzzleSetPlayer with RushOverlay HUD
-3. **Finished** — Results screen (score, best, stats)
+
+1. **Playing** — PuzzleSetPlayer with RushOverlay HUD
+
+1. **Finished** — Results screen (score, best, stats)
 
 ### Key Props
 
@@ -146,7 +157,9 @@ When `minimal={true}`:
 ### Behavior
 
 - `hasMore()` always returns true — infinite puzzle supply
+
 - `loadMore()` picks a random puzzle from SQLite, avoids repeats via `usedPuzzleIds` set
+
 - Filters by level and optional tag slug
 
 ---
@@ -156,8 +169,10 @@ When `minimal={true}`:
 ### Why PuzzleSetPlayer for Everything?
 
 1. **DRY**: Board rendering, move validation, puzzle lifecycle, auto-advance, and progress tracking are identical across modes
-2. **Proven**: DailyChallengePage was the first PSP consumer and validated the pattern
-3. **Maintainable**: Bug fixes to solving logic fix all 8 modes simultaneously
+
+1. **Proven**: DailyChallengePage was the first PSP consumer and validated the pattern
+
+1. **Maintainable**: Bug fixes to solving logic fix all 8 modes simultaneously
 
 ### Why StreamingPuzzleSetLoader?
 

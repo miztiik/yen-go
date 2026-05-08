@@ -26,8 +26,10 @@ This means the entire `external-sources/tasuki/cho-chikun-elementary/` collectio
 ### Why This Matters
 
 1. **Not just textbooks.** Many puzzle collections exist as position-only files — no solution tree anywhere. Scraping, OCR, community contributions, and manual imports all produce these. There is no solution to look up; the positions are standalone.
-2. **Two correct answers is fine.** If KataGo finds two winning first moves, that's a learning opportunity ("both B[ac] and B[ba] work — can you find both?"). We are not reproducing a book answer; we are helping people learn and have fun.
-3. **KataGo is the authority.** We already trust KataGo for refutation generation, difficulty estimation, validation, and teaching. Trusting it to identify the correct first move is a natural extension — it's what the engine is best at.
+
+1. **Two correct answers is fine.** If KataGo finds two winning first moves, that's a learning opportunity ("both B[ac] and B[ba] work — can you find both?"). We are not reproducing a book answer; we are helping people learn and have fun.
+
+1. **KataGo is the authority.** We already trust KataGo for refutation generation, difficulty estimation, validation, and teaching. Trusting it to identify the correct first move is a natural extension — it's what the engine is best at.
 
 ### Cho Chikun (9p) Perspective
 
@@ -42,13 +44,17 @@ This means the entire `external-sources/tasuki/cho-chikun-elementary/` collectio
 During analysis, we already:
 
 - Run KataGo on the initial position (Step 3-4 in `enrich_single_puzzle`)
+
 - Look at the top moves by winrate and policy (Step 5: `validate_correct_move`)
+
 - Identify wrong moves by low winrate delta (Step 6: `generate_refutations`)
 
 **Finding the correct move is the logical inverse of finding wrong moves.** The move with the highest winrate (from the puzzle player's perspective) IS the correct first move. Adding a separate `solve` stage before `analyze` would:
 
 - Duplicate KataGo queries (solve queries the same position that analyze will query again)
+
 - Break the single-responsibility of the enrichment orchestrator into a two-pass system
+
 - Require a separate engine lifecycle, config, and error handling path
 
 **Instead:** Extend the existing `enrich_single_puzzle()` to handle the "no solution tree" case by inverting the candidate selection logic that already exists in `generate_refutations.py`.
@@ -57,13 +63,13 @@ During analysis, we already:
 
 Today's refutation logic in `generate_refutations.py` already does 90% of what AI-Solve needs — just from the opposite perspective:
 
-| Existing Logic (refutations)                   | New Logic (AI-solve)                           |
+| Existing Logic (refutations) | New Logic (AI-solve) |
 | ---------------------------------------------- | ---------------------------------------------- |
-| Find moves where winrate **drops** the most    | Find the move where winrate is **highest**     |
-| `Δwr > delta_threshold` → move is wrong        | `Δwr < T_good` → move is correct (tesuji)      |
-| Exclude the correct move from candidates       | The top move IS the correct move               |
-| Build opponent's punishment PV                 | Build player's continuation PV (solution tree) |
-| Cap at `refutation_max_count=3` wrong branches | Select top 1-2 correct first moves             |
+| Find moves where winrate **drops** the most | Find the move where winrate is **highest** |
+| `Δwr > delta_threshold` → move is wrong | `Δwr < T_good` → move is correct (tesuji) |
+| Exclude the correct move from candidates | The top move IS the correct move |
+| Build opponent's punishment PV | Build player's continuation PV (solution tree) |
+| Cap at `refutation_max_count=3` wrong branches | Select top 1-2 correct first moves |
 
 This is a clean functional inversion — not a new pipeline stage.
 
@@ -77,7 +83,7 @@ The enrichment pipeline already contains ALL the engine calls, coordinate handli
 
 ### Modified Pipeline Flow
 
-```
+```text
 Step 1:  Parse SGF & extract metadata (UNCHANGED)
 Step 2:  Extract correct first move
          ├── IF solution tree exists → extract as today (UNCHANGED)
@@ -132,7 +138,6 @@ async def solve_position(
     Returns SolveResult with correct_move(s), confidence, and solution PV.
     """
 
-
 def classify_move_quality(
     analysis: AnalysisResponse,
     root_winrate: float,
@@ -165,7 +170,6 @@ def classify_move_quality(
     descending (best moves first).
     """
 
-
 async def confirm_correct_move(
     engine: LocalEngine,
     position: Position,
@@ -181,7 +185,6 @@ async def confirm_correct_move(
     This catches false positives where a move looks good superficially but
     the opponent has a strong refutation making it dubious.
     """
-
 
 async def build_solution_continuation(
     engine: LocalEngine,
@@ -199,7 +202,6 @@ async def build_solution_continuation(
 
     Returns list of SGF coordinates forming the solution mainline.
     """
-
 
 def inject_solution_into_sgf(
     root: SgfNode,
@@ -222,7 +224,7 @@ def inject_solution_into_sgf(
 
 For each candidate move in the initial analysis, classify quality using consecutive engine states:
 
-```
+```text
 Δwr = wr_before - wr_after  (sign-adjusted by player color)
 Δscore = score_before - score_after
 
@@ -235,11 +237,17 @@ Thresholds (configured in ai_solve section):
 **Explanation in plain language:**
 
 - `wr` = winrate (chance to win), so `Δwr` is "how much win chance changed after this move."
+
 - `score` = expected point lead, so `Δscore` is "how much expected point advantage changed."
+
 - Signs are flipped by player color so "positive drop" always means "this player hurt themselves," no matter Black or White.
+
 - Then simple cutoffs:
+
   - If the damage is tiny (`Δwr` below `T_good`) → label it **TE** (good move / tesuji).
+
   - If the damage is huge (`Δwr` above `T_hotspot`) → label it **BM+HO** (bad move and major turning point).
+
   - Otherwise, if damage is clearly bad (`Δwr` above `T_bad`) → label it **BM** (bad move).
 
 This reuses the same signal pipeline that `generate_refutations.py` already computes — just classifying from the opposite direction.
@@ -265,7 +273,6 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
-
 class SolvedMove(BaseModel):
     """A correct first move discovered by KataGo."""
     move_sgf: str           # SGF coordinate (e.g., "ac")
@@ -276,7 +283,6 @@ class SolvedMove(BaseModel):
     visits: int             # Visits allocated to this move
     solution_pv: list[str]  # Continuation PV beyond first move (SGF coords)
     confidence: str         # "high" | "medium" | "low"
-
 
 class MoveClassification(BaseModel):
     """Quality classification for a candidate move.
@@ -294,7 +300,6 @@ class MoveClassification(BaseModel):
     score_delta: float      # Δscore from root
     policy_prior: float
     classification: str     # "TE" | "BM" | "BM_HO" | "neutral"
-
 
 class SolveResult(BaseModel):
     """Complete result from AI position solving."""
@@ -368,20 +373,17 @@ class AiSolveThresholds(BaseModel):
     T_bad: float = 0.08
     T_hotspot: float = 0.25
 
-
 class AiSolveGoalInference(BaseModel):
     """Thresholds for inferring puzzle goal (kill/live/ko)."""
     score_delta_kill_threshold: float = 15.0
     ownership_alive_threshold: float = 0.7
     ownership_dead_threshold: float = -0.7
 
-
 class AiSolveConfirmation(BaseModel):
     """Confirmation query settings to verify AI-discovered correct move."""
     enabled: bool = True
     require_opponent_response: bool = True
     min_delta_after_opponent: float = 0.10
-
 
 class AiSolveConfig(BaseModel):
     """AI-Solve configuration for position-only puzzle enrichment.
@@ -546,11 +548,11 @@ AI-solved puzzles must be distinguishable from human-solved ones downstream.
 
 ### New Field: `ac` (AI Correctness)
 
-| Value  | Meaning                                                            |
+| Value | Meaning |
 | ------ | ------------------------------------------------------------------ |
 | `ac:0` | Not AI-solved (solution from source SGF — default, omitted when 0) |
-| `ac:1` | AI-solved (KataGo discovered the correct first move)               |
-| `ac:2` | AI-solved + human verified (future: review queue)                  |
+| `ac:1` | AI-solved (KataGo discovered the correct first move) |
+| `ac:2` | AI-solved + human verified (future: review queue) |
 
 **Wire format:** `YQ[q:2;rc:0;hc:0;ac:1]`
 
@@ -623,75 +625,109 @@ timings["ai_solve"] = elapsed
 ### Pre-Implementation Validation
 
 - [ ] `config/katago-enrichment.json` schema bumped to v1.14 with `ai_solve` section and changelog entry
+
 - [ ] `config/schemas/katago-enrichment.schema.json` updated with `ai_solve` properties (if schema file exists)
+
 - [ ] `AiSolveConfig` Pydantic model validates against JSON (test: `load_enrichment_config()` with new section)
+
 - [ ] `load_enrichment_config()` loads `ai_solve` section without breaking existing configs (optional field, `None` default)
+
 - [ ] Config with NO `ai_solve` key → `config.ai_solve is None` → feature disabled → zero behavior change
 
 ### Functional Validation
 
 - [ ] Position-only SGF (no children) + `--allow-ai-solve` → AI-Solve discovers correct move → full enrichment succeeds
+
 - [ ] SGF with existing solution tree → AI-Solve bypassed entirely, zero behavior change
+
 - [ ] `--allow-ai-solve` flag enables AI-Solve even when `config.ai_solve.enabled=false`
+
 - [ ] Without flag and config disabled → hard rejection as today (backward compatible)
+
 - [ ] Two correct moves detected (both < `T_good`) → both injected, `miai` move_order inferred
+
 - [ ] Confirmation query rejects false positive (top move doesn't survive opponent's best response)
+
 - [ ] `YQ` property includes `ac:1` for AI-solved puzzles, omits `ac` for human-solved
+
 - [ ] `AiAnalysisResult.ai_solved` is `True`, `phase_timings` includes `"ai_solve"` key
+
 - [ ] Solution continuation built correctly (mainline PV up to `solution_max_depth`)
 
 ### Move Classification Validation
 
 - [ ] Move with Δwr < T_good (0.02) → classified as TE (tesuji/correct)
+
 - [ ] Move with Δwr > T_hotspot (0.25) → classified as BM+HO (blunder)
+
 - [ ] Move with T_bad < Δwr < T_hotspot → classified as BM (bad move)
+
 - [ ] Move with T_good < Δwr < T_bad → classified as neutral
+
 - [ ] Sign adjustment correct for Black-to-play puzzles (positive Δwr = player hurt themselves)
+
 - [ ] Sign adjustment correct for White-to-play puzzles (PL[W]) — inverted correctly
+
 - [ ] Classification thresholds read from `config.ai_solve.thresholds`, not hardcoded
 
 ### Integration Validation
 
 - [ ] Steps 3-9 of `enrich_single_puzzle` produce identical output whether solution came from SGF or AI-Solve
+
 - [ ] `extract_correct_first_move(root)` succeeds after `inject_solution_into_sgf()` — the contract
+
 - [ ] Refutation generation works normally after AI-Solve injection (same correct_move_gtp, same candidates)
+
 - [ ] Difficulty estimation works normally (policy_prior, visits_to_solve populated from AI-Solve analysis)
+
 - [ ] Teaching comments and hints generated correctly (tags, corner, move_order populated)
+
 - [ ] `compose_enriched_sgf()` produces valid SGF with AI-solved branches
 
 ### Edge Cases
 
 - [ ] Seki position → AI-Solve handles correctly (winrate near 0.5, confidence="low")
+
 - [ ] Ko position → AI-Solve detects ko context, sets `goal_inference="ko"`
+
 - [ ] Multiple equally good moves (within `min_winrate_gap`) → selects up to `max_correct_moves=2`
+
 - [ ] No move exceeds `min_winrate_gap` over second-best → rejects (returns error result)
+
 - [ ] 9×9 board puzzles → coordinate handling correct (`gtp_to_sgf`, `sgf_to_gtp` with board_size)
+
 - [ ] 13×13 board puzzles → coordinate handling correct
+
 - [ ] Empty position (no stones, only SZ) → rejected gracefully ("no stones in position")
+
 - [ ] Position with only one legal move → trivially solved
+
 - [ ] White-to-play puzzles (`PL[W]`) → sign adjustment correct, `W[coord]C[Correct]` injected (not `B[]`)
+
 - [ ] Position where all moves are bad (defending side losing regardless) → rejected or flagged
 
 ---
 
 ## Documentation Updates Required
 
-| Document                                       | Change                                               | Type         |
+| Document | Change | Type |
 | ---------------------------------------------- | ---------------------------------------------------- | ------------ |
-| `config/katago-enrichment.json`                | Add `ai_solve` section, bump to v1.14                | Config       |
-| `config/schemas/katago-enrichment.schema.json` | Add `ai_solve` schema definition (if exists)         | Schema       |
-| `CLAUDE.md` (root)                             | Add `ac` to YQ property description table            | Reference    |
-| `.github/copilot-instructions.md`              | Add `ac` to YQ property description table            | Reference    |
-| `docs/concepts/quality.md`                     | Add `ac` field definition, AI-Solve quality tier     | Concepts     |
-| `docs/architecture/tools/katago-enrichment.md` | Add AI-Solve phase description, design rationale     | Architecture |
-| `docs/how-to/backend/enrichment-lab.md`        | Add `--allow-ai-solve` usage, position-only workflow | How-To       |
-| `docs/reference/enrichment-config.md`          | Add `ai_solve` config section reference table        | Reference    |
-| `CHANGELOG.md`                                 | Add AI-Solve feature entry                           | Changelog    |
+| `config/katago-enrichment.json` | Add `ai_solve` section, bump to v1.14 | Config |
+| `config/schemas/katago-enrichment.schema.json` | Add `ai_solve` schema definition (if exists) | Schema |
+| `CLAUDE.md` (root) | Add `ac` to YQ property description table | Reference |
+| `.github/copilot-instructions.md` | Add `ac` to YQ property description table | Reference |
+| `docs/concepts/quality.md` | Add `ac` field definition, AI-Solve quality tier | Concepts |
+| `docs/architecture/tools/katago-enrichment.md` | Add AI-Solve phase description, design rationale | Architecture |
+| `docs/how-to/backend/enrichment-lab.md` | Add `--allow-ai-solve` usage, position-only workflow | How-To |
+| `docs/reference/enrichment-config.md` | Add `ai_solve` config section reference table | Reference |
+| `CHANGELOG.md` | Add AI-Solve feature entry | Changelog |
 
 **Cross-references required** (per documentation rules):
 
 - Architecture doc → links to Concepts (quality.md) and How-To (enrichment-lab.md)
+
 - How-To doc → links to Architecture (rationale) and Reference (config)
+
 - Concepts doc → links to Architecture (design) and Reference (config)
 
 ---
@@ -728,7 +764,6 @@ class TestClassifyMoveQuality:
     def test_all_moves_classified(self):
         """Every move in analysis gets a classification."""
 
-
 class TestSolvePosition:
     """Test the main solve_position() function with mock engine."""
 
@@ -759,7 +794,6 @@ class TestSolvePosition:
     async def test_returns_goal_inference(self):
         """SolveResult.goal_inference populated based on score/ownership analysis."""
 
-
 class TestConfirmCorrectMove:
     """Test the confirmation query logic."""
 
@@ -772,7 +806,6 @@ class TestConfirmCorrectMove:
     async def test_uses_confirmation_visits_from_config(self):
         """Confirmation query uses config.ai_solve.confirmation_visits."""
 
-
 class TestBuildSolutionContinuation:
     """Test solution path construction."""
 
@@ -784,7 +817,6 @@ class TestBuildSolutionContinuation:
 
     async def test_handles_9x9_coordinates(self):
         """GTP↔SGF conversion correct for 9×9 board."""
-
 
 class TestInjectSolutionIntoSgf:
     """Test SGF tree mutation."""
@@ -806,7 +838,6 @@ class TestInjectSolutionIntoSgf:
 
     def test_solution_continuation_as_grandchildren(self):
         """Correct child has its own children forming the solution mainline."""
-
 
 class TestGoalInference:
     """Test puzzle goal detection from KataGo signals."""
@@ -889,39 +920,42 @@ class TestAiSolveCalibration:
 
 ## Implementation Order
 
-| Phase                     | Files Changed/Created                                                                                     | Effort | Dependencies                                                                                               |
+| Phase | Files Changed/Created | Effort | Dependencies |
 | ------------------------- | --------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------- |
-| **P1: Config**            | `config.py` (add `AiSolveConfig` + sub-models), `config/katago-enrichment.json` (add section, bump v1.14) | Small  | None                                                                                                       |
-| **P2: Model**             | `models/solve_result.py` (NEW)                                                                            | Small  | P1                                                                                                         |
-| **P3: Core solver**       | `analyzers/solve_position.py` (NEW — ~200 lines)                                                          | Medium | P1, P2, existing `engine/local_subprocess.py`, `models/analysis_request.py`, `models/analysis_response.py` |
-| **P4: Integration**       | `analyzers/enrich_single.py` (Step 2 conditional, ~40 lines added)                                        | Small  | P3                                                                                                         |
-| **P5: CLI**               | `cli.py` (`--allow-ai-solve` flag, pass to `enrich_single_puzzle`)                                        | Small  | P4                                                                                                         |
-| **P6: Quality tracking**  | `analyzers/sgf_enricher.py` (YQ `ac` field), `models/ai_analysis_result.py` (`ai_solved` field)           | Small  | P4                                                                                                         |
-| **P7: Unit tests**        | `tests/test_solve_position.py` (NEW — ~250 lines)                                                         | Medium | P3                                                                                                         |
-| **P8: Integration tests** | `tests/test_ai_solve_integration.py` (NEW — ~150 lines)                                                   | Medium | P4, P5, P6                                                                                                 |
-| **P9: Calibration tests** | `tests/test_ai_solve_calibration.py` (NEW — ~100 lines), `tests/fixtures/ai_solve/` (NEW)                 | Medium | P3, P4, live KataGo                                                                                        |
-| **P10: Documentation**    | See documentation table above (~9 files)                                                                  | Small  | P6                                                                                                         |
+| **P1: Config** | `config.py` (add `AiSolveConfig` + sub-models), `config/katago-enrichment.json` (add section, bump v1.14) | Small | None |
+| **P2: Model** | `models/solve_result.py` (NEW) | Small | P1 |
+| **P3: Core solver** | `analyzers/solve_position.py` (NEW — ~200 lines) | Medium | P1, P2, existing `engine/local_subprocess.py`, `models/analysis_request.py`, `models/analysis_response.py` |
+| **P4: Integration** | `analyzers/enrich_single.py` (Step 2 conditional, ~40 lines added) | Small | P3 |
+| **P5: CLI** | `cli.py` (`--allow-ai-solve` flag, pass to `enrich_single_puzzle`) | Small | P4 |
+| **P6: Quality tracking** | `analyzers/sgf_enricher.py` (YQ `ac` field), `models/ai_analysis_result.py` (`ai_solved` field) | Small | P4 |
+| **P7: Unit tests** | `tests/test_solve_position.py` (NEW — ~250 lines) | Medium | P3 |
+| **P8: Integration tests** | `tests/test_ai_solve_integration.py` (NEW — ~150 lines) | Medium | P4, P5, P6 |
+| **P9: Calibration tests** | `tests/test_ai_solve_calibration.py` (NEW — ~100 lines), `tests/fixtures/ai_solve/` (NEW) | Medium | P3, P4, live KataGo |
+| **P10: Documentation** | See documentation table above (~9 files) | Small | P6 |
 
 **Total estimated scope:**
 
 - ~500 lines of new code (3 new files: `solve_position.py`, `solve_result.py`, test files)
+
 - ~50 lines of modified code (4 modified files: `enrich_single.py`, `cli.py`, `config.py`, `sgf_enricher.py`)
+
 - ~500 lines of tests (3 new test files)
+
 - ~9 documentation files updated
 
 ---
 
 ## Risks and Mitigations
 
-| Risk                                                  | Severity              | Mitigation                                                                                                                                    |
+| Risk | Severity | Mitigation |
 | ----------------------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| KataGo finds wrong correct move for complex positions | MEDIUM                | Confirmation query (play move + check opponent); `min_winrate_gap` threshold; `ac:1` quality flag lets downstream filter                      |
-| Dual-solution confusion (book answer vs AI answer)    | LOW                   | This is a feature, not a bug. `max_correct_moves=2` + miai detection. Learning platform values exploration.                                   |
-| Performance: extra KataGo queries for AI-Solve        | LOW                   | Only runs for position-only puzzles; `solve_visits=1000` is comparable to existing `deep_enrich.visits=2000`; confirmation adds 1 extra query |
-| Seki false positives (winrate ~0.5, ambiguous)        | MEDIUM                | `goal_inference` config; seki-specific ownership check; reject when confidence="low"                                                          |
-| Ko oscillation confusing threshold logic              | MEDIUM                | Reuse existing `ko_analysis` config from enrichment; `ko_detection` module handles PV repeat detection                                        |
-| Breaking existing behavior                            | **NONE**              | Feature gated behind `config.ai_solve.enabled=false` + `--allow-ai-solve` flag. Default OFF. Existing tests unaffected.                       |
-| Advanced/expert puzzles where AI misreads             | HIGH for those levels | `ac:1` quality flag; `min_winrate_gap` prevents low-confidence solves; future: human review queue for `ac:1` puzzles                          |
+| KataGo finds wrong correct move for complex positions | MEDIUM | Confirmation query (play move + check opponent); `min_winrate_gap` threshold; `ac:1` quality flag lets downstream filter |
+| Dual-solution confusion (book answer vs AI answer) | LOW | This is a feature, not a bug. `max_correct_moves=2` + miai detection. Learning platform values exploration. |
+| Performance: extra KataGo queries for AI-Solve | LOW | Only runs for position-only puzzles; `solve_visits=1000` is comparable to existing `deep_enrich.visits=2000`; confirmation adds 1 extra query |
+| Seki false positives (winrate ~0.5, ambiguous) | MEDIUM | `goal_inference` config; seki-specific ownership check; reject when confidence="low" |
+| Ko oscillation confusing threshold logic | MEDIUM | Reuse existing `ko_analysis` config from enrichment; `ko_detection` module handles PV repeat detection |
+| Breaking existing behavior | **NONE** | Feature gated behind `config.ai_solve.enabled=false` + `--allow-ai-solve` flag. Default OFF. Existing tests unaffected. |
+| Advanced/expert puzzles where AI misreads | HIGH for those levels | `ac:1` quality flag; `min_winrate_gap` prevents low-confidence solves; future: human review queue for `ac:1` puzzles |
 
 ### Cho Chikun (9p) Risk Assessment
 
@@ -932,8 +966,11 @@ class TestAiSolveCalibration:
 ## Non-Goals (Explicitly Out of Scope)
 
 - **Full branching solution tree generation.** AI-Solve produces a mainline (first correct move + continuation PV). Deep branching trees (opponent has multiple responses, each with correct follow-up) are a future extension.
+
 - **Replacing human-authored solutions.** AI-Solve is additive. When a solution tree exists, it is never overwritten or modified.
+
 - **Auto-enabling for all sources.** Each source must opt-in via config or CLI flag. No source silently gets AI-Solve.
+
 - **AI difficulty estimation bypass.** AI-solved puzzles still go through the full difficulty estimation pipeline. `ac:1` is metadata, not a skip flag.
 
 ---
@@ -952,12 +989,12 @@ AB[be][dc][cc][eb][fb][bc]AW[bb][ab][db][da][cb])
 
 **Step 2b: AI-Solve runs with `solve_visits=1000`:**
 
-| Move (GTP) | Move (SGF) | Winrate | Δwr   | Policy | Classification |
+| Move (GTP) | Move (SGF) | Winrate | Δwr | Policy | Classification |
 | ---------- | ---------- | ------- | ----- | ------ | -------------- |
-| A3         | ac         | 0.98    | -0.01 | 0.45   | TE (correct)   |
-| B1         | ba         | 0.62    | 0.35  | 0.12   | BM+HO          |
-| C1         | ca         | 0.55    | 0.42  | 0.08   | BM+HO          |
-| A4         | ad         | 0.71    | 0.26  | 0.05   | BM+HO          |
+| A3 | ac | 0.98 | -0.01 | 0.45 | TE (correct) |
+| B1 | ba | 0.62 | 0.35 | 0.12 | BM+HO |
+| C1 | ca | 0.55 | 0.42 | 0.08 | BM+HO |
+| A4 | ad | 0.71 | 0.26 | 0.05 | BM+HO |
 
 **Confirmation:** Play B[ac], opponent responds W[ba] → Black winrate 0.97 → `min_delta_after_opponent` (0.10) check PASSED.
 
@@ -979,7 +1016,9 @@ AB[be][dc][cc][eb][fb][bc]AW[bb][ab][db][da][cb]
 **Pipeline continues (Steps 3-9):** validate → refutations → difficulty → hints → `AiAnalysisResult` with:
 
 - `ai_solved=True`
+
 - `YQ[q:1;rc:0;hc:0;ac:1]`
+
 - `phase_timings={"parse": 0.01, "ai_solve": 1.23, "query": 0.02, "validate": 0.85, ...}`
 
 ---
@@ -988,16 +1027,16 @@ AB[be][dc][cc][eb][fb][bc]AW[bb][ab][db][da][cb]
 
 The AI-Solve design intentionally mirrors `generate_refutations.py` to maintain architectural consistency:
 
-| Concept               | `generate_refutations.py` (existing)                        | `solve_position.py` (new)                             |
+| Concept | `generate_refutations.py` (existing) | `solve_position.py` (new) |
 | --------------------- | ----------------------------------------------------------- | ----------------------------------------------------- |
-| Engine query          | `AnalysisRequest.with_puzzle_region()`                      | Same                                                  |
-| Move filtering        | `identify_candidates()` → exclude correct, filter by policy | `classify_move_quality()` → classify all moves by Δwr |
-| Core threshold        | `delta_threshold=0.08` (move is "wrong enough")             | `T_bad=0.08` (same value, inverse meaning)            |
-| Per-move query        | `generate_single_refutation()` → play wrong, get opponent   | `confirm_correct_move()` → play correct, get opponent |
-| PV extraction         | `opp_best.pv[:pv_cap]` → refutation sequence                | `build_solution_continuation()` → solution mainline   |
-| Escalation            | `RefutationEscalationConfig` → retry with higher visits     | `AiSolveConfirmation` → verify with opponent response |
-| Coordinate conversion | `gtp_to_sgf()`, `sgf_to_gtp()` with `board_size`            | Same functions, same board_size awareness             |
-| Config source         | `config.refutations.*`                                      | `config.ai_solve.*`                                   |
-| Logging               | `log_with_context(stage="refutations")`                     | `log_with_context(stage="ai_solve")`                  |
+| Engine query | `AnalysisRequest.with_puzzle_region()` | Same |
+| Move filtering | `identify_candidates()` → exclude correct, filter by policy | `classify_move_quality()` → classify all moves by Δwr |
+| Core threshold | `delta_threshold=0.08` (move is "wrong enough") | `T_bad=0.08` (same value, inverse meaning) |
+| Per-move query | `generate_single_refutation()` → play wrong, get opponent | `confirm_correct_move()` → play correct, get opponent |
+| PV extraction | `opp_best.pv[:pv_cap]` → refutation sequence | `build_solution_continuation()` → solution mainline |
+| Escalation | `RefutationEscalationConfig` → retry with higher visits | `AiSolveConfirmation` → verify with opponent response |
+| Coordinate conversion | `gtp_to_sgf()`, `sgf_to_gtp()` with `board_size` | Same functions, same board_size awareness |
+| Config source | `config.refutations.*` | `config.ai_solve.*` |
+| Logging | `log_with_context(stage="refutations")` | `log_with_context(stage="ai_solve")` |
 
 This parallelism is deliberate — it means developers familiar with one module can immediately understand the other.

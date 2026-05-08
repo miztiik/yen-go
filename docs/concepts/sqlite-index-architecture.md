@@ -30,10 +30,12 @@ Duplicate detection runs during ingest against `yengo-content.db` using a
 two-phase check:
 
 1. **Position hash gate** — `canonical_position_hash()` computes
+
    `SHA256("SZ{n}:B[sorted_ab]:W[sorted_aw]:PL[player]")[:16]` from board setup
    only (stones + size + player to move). No solution tree, comments, or metadata.
 
-2. **Solution fingerprint comparison** — when a position collision is found from
+1. **Solution fingerprint comparison** — when a position collision is found from
+
    the same source, `compute_solution_fingerprint()` compares the moves-only
    serialization of the solution tree (comment/whitespace insensitive, branch-order
    insensitive). Same fingerprint → reject as true duplicate. Different fingerprint
@@ -42,7 +44,7 @@ two-phase check:
 ### Decision Summary
 
 | Position | Source | Fingerprint | Result |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | NO MATCH | — | — | Allow |
 | MATCH | Different | — | Allow (cross-source bypass) |
 | MATCH | Same | MATCH | Reject (true duplicate) |
@@ -59,7 +61,7 @@ not involved in dedup; it is purely for published puzzle identity.
 ### `puzzles` Table
 
 | Column | Type | Description |
-|--------|------|-------------|
+| -------- | ------ | ------------- |
 | `content_hash` | TEXT PRIMARY KEY | 16-char hex (matches GN, filename) |
 | `batch` | TEXT NOT NULL | Batch directory (e.g., "0001") |
 | `level_id` | INTEGER NOT NULL | Numeric level ID (110-230) |
@@ -74,14 +76,14 @@ not involved in dedup; it is purely for published puzzle identity.
 ### `puzzle_tags` Table
 
 | Column | Type | Description |
-|--------|------|-------------|
+| -------- | ------ | ------------- |
 | `content_hash` | TEXT NOT NULL | FK → puzzles.content_hash |
 | `tag_id` | INTEGER NOT NULL | Numeric tag ID |
 
 ### `puzzle_collections` Table
 
 | Column | Type | Description |
-|--------|------|-------------|
+| -------- | ------ | ------------- |
 | `content_hash` | TEXT NOT NULL | FK → puzzles.content_hash |
 | `collection_id` | INTEGER NOT NULL | Numeric collection ID |
 | `sequence_number` | INTEGER | Position within collection |
@@ -89,7 +91,7 @@ not involved in dedup; it is purely for published puzzle identity.
 ### `collections` Table
 
 | Column | Type | Description |
-|--------|------|-------------|
+| -------- | ------ | ------------- |
 | `id` | INTEGER PRIMARY KEY | Numeric collection ID |
 | `slug` | TEXT NOT NULL | Collection slug |
 | `name` | TEXT NOT NULL | Display name |
@@ -104,8 +106,11 @@ not involved in dedup; it is purely for published puzzle identity.
 When multiple sources contribute to the same collection, synthetic edition rows are added:
 
 - **Parent row**: `attrs` contains `{"is_parent": true, "edition_ids": [123456, 789012]}`
+
 - **Edition rows**: `attrs` contains `{"parent_id": 10, "label": "Edition 1 (42 puzzles)", "type": "author"}`
+
 - **Edition IDs**: Deterministic hash `SHA256(slug:source) % 10M + 100K`, range 100K–10.1M (config IDs are 1–200)
+
 - **Puzzle mapping**: Puzzles are remapped from parent to edition via `puzzle_collections`
 
 Frontend queries add `json_extract(attrs, '$.parent_id') IS NULL` to hide editions from browse/search.
@@ -128,7 +133,7 @@ FTS5 virtual table for full-text search on collection names and slugs.
 ### `daily_schedule` Table
 
 | Column | Type | Description |
-|--------|------|-------------|
+| -------- | ------ | ------------- |
 | `date` | TEXT PRIMARY KEY | ISO date (YYYY-MM-DD) |
 | `version` | TEXT NOT NULL | Daily format version (e.g., "2.2") |
 | `generated_at` | TEXT NOT NULL | ISO timestamp of generation |
@@ -138,7 +143,7 @@ FTS5 virtual table for full-text search on collection names and slugs.
 ### `daily_puzzles` Table
 
 | Column | Type | Description |
-|--------|------|-------------|
+| -------- | ------ | ------------- |
 | `date` | TEXT NOT NULL | ISO date (FK → daily_schedule.date) |
 | `content_hash` | TEXT NOT NULL | FK → puzzles.content_hash |
 | `section` | TEXT NOT NULL | Challenge section: "standard", "timed", or "by_tag" |
@@ -164,7 +169,7 @@ Depth presets (`quick`, `medium`, `deep`) provide a user-friendly abstraction ov
 The frontend translates a preset selection into a SQL range filter:
 
 | Preset | Depth Range | SQL Clause |
-|--------|-------------|------------|
+| -------- | ------------- | ------------ |
 | `quick` | 1–2 | `cx_depth >= 1 AND cx_depth <= 2` |
 | `medium` | 3–5 | `cx_depth >= 3 AND cx_depth <= 5` |
 | `deep` | 6+ | `cx_depth >= 6` (no upper bound) |
@@ -206,7 +211,8 @@ Each pipeline run reads `yengo-content.db` for existing entries, merges with new
 All DB and version file writes use a temp-file + `os.replace()` pattern to prevent partial/corrupt files:
 
 1. Write to `yengo-search.db.tmp` (or `db-version.json.tmp`)
-2. Atomically replace: `os.replace(tmp_path, final_path)`
+
+1. Atomically replace: `os.replace(tmp_path, final_path)`
 
 This applies to publish, rollback, and reconcile operations.
 
@@ -233,5 +239,7 @@ The frontend stores the current `db_version` in `localStorage` on init. A `check
 > **See also**:
 >
 > - [Architecture: System Overview](../architecture/system-overview.md) — High-level architecture
+>
 > - [Architecture: Database Deployment Topology](../architecture/backend/database-deployment-topology.md) — Deployment ADR
+>
 > - [Concepts: Numeric ID Scheme](./numeric-id-scheme.md) — ID ranges for levels, tags, collections

@@ -3,14 +3,16 @@
 > **See also**:
 >
 > - [Architecture: Frontend Overview](./overview.md) — Technology stack, PWA
+>
 > - [Architecture: State Management](./state-management.md) — localStorage patterns
+>
 > - [Architecture: Puzzle Solving](./puzzle-solving.md) — Move validation
 
 **Last Updated**: 2026-03-24
 
 ## Directory Layout
 
-```
+```text
 frontend/src/
 ├── app.tsx               # App entry, routing
 ├── components/           # Reusable UI components
@@ -60,9 +62,13 @@ frontend/src/
 Services encapsulate data access. Key services:
 
 - `sqliteService.ts` — Initializes sql.js WASM, loads `yengo-search.db`
+
 - `puzzleQueryService.ts` — SQL queries for puzzle search/filtering
+
 - `configService.ts` — Numeric ID ↔ slug resolution facade
+
 - `solutionVerifier.ts` — Validates moves against precomputed solution trees
+
 - `rulesEngine.ts` — Go rules: captures, ko, suicide, legality
 
 ## Models
@@ -70,37 +76,47 @@ Services encapsulate data access. Key services:
 All data structures are typed. Key types from `models/puzzle.ts`:
 
 - `Stone` — Integer type: `BLACK = -1`, `WHITE = 1`, `EMPTY = 0`
+
 - `SolutionNode` — Tree node with `move`, `branches`, `isWinning`
+
 - `Puzzle` — Full puzzle: `boardSize`, `initialState`, `solutionTree`, `hints`, `metadata`
+
 - `Move` — `{ x, y, color }`
+
 - `MoveValidationResult` — `{ isCorrect, nextNode?, isWinning? }`
 
 ## State Management
 
 - **No global state library** — Preact signals or prop drilling
+
 - **localStorage** — User progress, preferences, achievements
+
 - **Versioned schemas** — All localStorage data has version field
 
 ## Board Rendering
 
 - **goban library** — SVG/Canvas rendering with theme support (Shell/Slate stones, custom board color)
+
 - **SVG default** — SVGRenderer is the default; Canvas (with Phong-shaded stones) is opt-in via `localStorage`
+
 - **Dark mode** — Custom dark board color via `customBoardColor` callback, live switching via MutationObserver on `data-theme`
+
 - **Touch support** — Mobile-first design
+
 - **Keyboard navigation** — Full WCAG 2.1 AA compliance
 
 ## Page Mode Color Identity
 
 Each page has a distinctive accent color set via `PageLayout` `mode` prop:
 
-| Page             | Mode          | Color   |
+| Page | Mode | Color |
 | ---------------- | ------------- | ------- |
-| Daily Challenge  | `daily`       | Amber   |
-| Puzzle Rush      | `rush`        | Rose    |
-| Collections      | `collections` | Purple  |
-| Training         | `training`    | Blue    |
-| Technique Focus  | `technique`   | Emerald |
-| Random Challenge | `random`      | Indigo  |
+| Daily Challenge | `daily` | Amber |
+| Puzzle Rush | `rush` | Rose |
+| Collections | `collections` | Purple |
+| Training | `training` | Blue |
+| Technique Focus | `technique` | Emerald |
+| Random Challenge | `random` | Indigo |
 
 ## Configuration Loading
 
@@ -108,10 +124,10 @@ Each page has a distinctive accent color set via `PageLayout` `mode` prop:
 
 The Vite dev server uses a custom plugin `serveRootStaticFiles()` in `vite.config.ts` to mount parent-directory paths into the dev server:
 
-| URL Path                     | Maps To                        |
+| URL Path | Maps To |
 | ---------------------------- | ------------------------------ |
 | `/yengo-puzzle-collections/` | `../yengo-puzzle-collections/` |
-| `/config/`                   | `../config/`                   |
+| `/config/` | `../config/` |
 
 This avoids Vite's default restriction against serving files outside the project root. Content types are set for `.json` and `.sgf` files. Path traversal (`..`) is blocked.
 

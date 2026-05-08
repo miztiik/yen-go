@@ -3,9 +3,13 @@
 > **See also**:
 >
 > - [Concepts: Tags](../../concepts/tags.md) — Tag taxonomy and definitions
+>
 > - [Architecture: Enrichment](./enrichment.md) — Enrichment pipeline overview
+>
 > - [Architecture: Tactical Analyzer](./tactical-analyzer.md) — Board-level pattern detection
+>
 > - [Architecture: Pipeline](./pipeline.md) — Pipeline stages
+>
 > - [Config: tags.json](../../../config/tags.json) — Canonical tag definitions (28 tags)
 
 **Last Updated**: 2026-03-09
@@ -23,8 +27,10 @@ This principle was established after expert review by two 9-dan professional Go 
 The previous tagger defaulted to `life-and-death` when no technique was detected. This was wrong because:
 
 1. **Not every tsumego is life-and-death** — Many puzzles are tesuji, capture, connection, or endgame problems
-2. **Pedagogically misleading** — A student browsing "life-and-death" expects "make two eyes" or "kill the corner," not "find the clever tactical move"
-3. **Source tags exist** — When source adapters provide category metadata, those tags are preserved and provide the primary classification
+
+1. **Pedagogically misleading** — A student browsing "life-and-death" expects "make two eyes" or "kill the corner," not "find the clever tactical move"
+
+1. **Source tags exist** — When source adapters provide category metadata, those tags are preserved and provide the primary classification
 
 **Current behavior:** `detect_techniques()` returns an empty list when no technique is confidently detected. Source-provided tags are preserved separately by the analyze stage.
 
@@ -62,23 +68,23 @@ Comment keywords are HIGH confidence because the puzzle author explicitly named 
 "eye" matches in "make an eye" but NOT in "eyebrow"
 ```
 
-| English Keyword      | Tag                | Japanese Keyword | Tag            |
+| English Keyword | Tag | Japanese Keyword | Tag |
 | -------------------- | ------------------ | ---------------- | -------------- |
-| ladder               | `ladder`           | シチョウ         | `ladder`       |
-| net, geta            | `net`              | ゲタ             | `net`          |
-| snapback, snap back  | `snapback`         | ウッテガエシ     | `snapback`     |
-| ko                   | `ko`               | コウ             | `ko`           |
-| throw-in, throw in   | `throw-in`         | ホウリコミ       | `throw-in`     |
-| sacrifice            | `sacrifice`        | セキ             | `seki`         |
-| eye                  | `eye-shape`        | 攻め合い         | `capture-race` |
-| connect              | `connection`       | ナカデ           | `nakade`       |
-| cut                  | `cutting`          |                  |                |
-| squeeze              | `liberty-shortage` |                  |                |
-| under the stones     | `under-the-stones` |                  |                |
-| seki                 | `seki`             |                  |                |
-| nakade               | `nakade`           |                  |                |
-| capture race, semeai | `capture-race`     |                  |                |
-| double + atari       | `double-atari`     |                  |                |
+| ladder | `ladder` | シチョウ | `ladder` |
+| net, geta | `net` | ゲタ | `net` |
+| snapback, snap back | `snapback` | ウッテガエシ | `snapback` |
+| ko | `ko` | コウ | `ko` |
+| throw-in, throw in | `throw-in` | ホウリコミ | `throw-in` |
+| sacrifice | `sacrifice` | セキ | `seki` |
+| eye | `eye-shape` | 攻め合い | `capture-race` |
+| connect | `connection` | ナカデ | `nakade` |
+| cut | `cutting` |  |  |
+| squeeze | `liberty-shortage` |  |  |
+| under the stones | `under-the-stones` |  |  |
+| seki | `seki` |  |  |
+| nakade | `nakade` |  |  |
+| capture race, semeai | `capture-race` |  |  |
+| double + atari | `double-atari` |  |  |
 
 ### Phase 2: Board Pattern Analysis (varies by technique)
 
@@ -133,14 +139,23 @@ After capturing exactly 1 stone:
 These techniques are too subtle for algorithmic detection without full-position solving. They are ONLY tagged from comment keywords:
 
 - `net` — Requires reading all possible escape routes
+
 - `throw-in` — Requires understanding sacrifice intent
+
 - `sacrifice` — Requires understanding strategic purpose
+
 - `nakade` — Requires vital point reasoning
+
 - `eye-shape` — Too ambiguous without context
+
 - `connection`, `cutting` — Too common as moves
+
 - `double-atari` — Possible but current detection unreliable
+
 - `liberty-shortage` — Requires understanding squeeze sequence
+
 - `under-the-stones` — Requires capture-and-replay sequence
+
 - `seki` — Requires mutual-life reading
 
 ---
@@ -150,8 +165,10 @@ These techniques are too subtle for algorithmic detection without full-position 
 Capture-race is assigned MODERATE confidence from board analysis (not emitted alone). It requires:
 
 1. **Localized check** — Only examines groups adjacent to the capture site (not the entire board)
-2. **Mutual low-liberty** — Both sides must have groups with ≤3 liberties near the capture
-3. **Only emitted at HIGH** — Requires comment confirmation to reach emission threshold, OR multiple board signals upgrading to CERTAIN
+
+1. **Mutual low-liberty** — Both sides must have groups with ≤3 liberties near the capture
+
+1. **Only emitted at HIGH** — Requires comment confirmation to reach emission threshold, OR multiple board signals upgrading to CERTAIN
 
 **Why localized:** The old tagger scanned the entire board for any groups with ≤4 liberties. In real game positions, there are almost always low-liberty groups somewhere. The localized check only considers groups relevant to the actual problem.
 
@@ -183,38 +200,38 @@ builder.build()             → standardize_move_comment() for serialization
 
 When source-provided tags and detected tags coexist:
 
-| Priority | Source                            | Handling                                        |
+| Priority | Source | Handling |
 | -------- | --------------------------------- | ----------------------------------------------- |
-| 1        | Source-provided tags (adapter YT) | Preserved if present — human curation signal    |
-| 2        | High-confidence detected tags     | Merged with source tags                         |
-| 3        | No tags from either source        | Empty YT — honest, can be tagged manually later |
+| 1 | Source-provided tags (adapter YT) | Preserved if present — human curation signal |
+| 2 | High-confidence detected tags | Merged with source tags |
+| 3 | No tags from either source | Empty YT — honest, can be tagged manually later |
 
 ---
 
 ## Architectural Decisions Record
 
-| Decision                                        | Rationale                                                                                        | Date       |
+| Decision | Rationale | Date |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------- |
-| Remove `life-and-death` fallback                | Misleading; not all tsumego are L&D; source tags provide primary classification                  | 2026-02-22 |
-| Word-boundary matching without regex            | Plain string ops; avoids regex complexity; `_contains_word()` prevents substring false positives | 2026-02-22 |
-| Ko from Board.\_ko_point only                   | Go-rules-verified; eliminates "single stone in atari = ko" false positives                       | 2026-02-22 |
-| Ladder requires 3+ chase simulation             | Single-atari diagonal escape is too common; chase simulation confirms actual ladder pattern      | 2026-02-22 |
-| Snapback requires sacrifice-recapture geometry  | Single-stone capture is ubiquitous; snapback needs our-group-in-atari-with-multiple-stones shape | 2026-02-22 |
-| Net detection comment-only (no board heuristic) | "Opponent at distance 2 with few liberties" matches too many normal positions                    | 2026-02-22 |
-| Capture-race localized to capture site          | Whole-board scan for low-liberty groups produced massive false positives                         | 2026-02-22 |
-| Confidence enum for evidence scoring            | Enables future multi-signal fusion; makes emission threshold explicit                            | 2026-02-22 |
-| Preserve source-provided tags                   | Adapter tags from source metadata carry human curation signal                                    | 2026-02-22 |
+| Remove `life-and-death` fallback | Misleading; not all tsumego are L&D; source tags provide primary classification | 2026-02-22 |
+| Word-boundary matching without regex | Plain string ops; avoids regex complexity; `_contains_word()` prevents substring false positives | 2026-02-22 |
+| Ko from Board.\_ko_point only | Go-rules-verified; eliminates "single stone in atari = ko" false positives | 2026-02-22 |
+| Ladder requires 3+ chase simulation | Single-atari diagonal escape is too common; chase simulation confirms actual ladder pattern | 2026-02-22 |
+| Snapback requires sacrifice-recapture geometry | Single-stone capture is ubiquitous; snapback needs our-group-in-atari-with-multiple-stones shape | 2026-02-22 |
+| Net detection comment-only (no board heuristic) | "Opponent at distance 2 with few liberties" matches too many normal positions | 2026-02-22 |
+| Capture-race localized to capture site | Whole-board scan for low-liberty groups produced massive false positives | 2026-02-22 |
+| Confidence enum for evidence scoring | Enables future multi-signal fusion; makes emission threshold explicit | 2026-02-22 |
+| Preserve source-provided tags | Adapter tags from source metadata carry human curation signal | 2026-02-22 |
 
 ---
 
 ## Impact Assessment
 
-| Previous Behavior                               | New Behavior                                       | Effect                                 |
+| Previous Behavior | New Behavior | Effect |
 | ----------------------------------------------- | -------------------------------------------------- | -------------------------------------- |
-| ~70% puzzles tagged `life-and-death` (fallback) | Many become untagged (source tags still preserved) | Honest classification                  |
-| Every single-stone capture → `snapback`         | Only sacrifice-recapture geometry → `snapback`     | Eliminates majority of false positives |
-| Every single-stone-in-atari → `ko`              | Only Board-verified ko shape → `ko`                | Near-zero false positives              |
-| Diagonal atari escape → `ladder`                | 3+ chase simulation → `ladder`                     | Very low false positive rate           |
-| Distance-2 weak group → `net`                   | Comment only → `net`                               | No board false positives               |
-| Whole-board low-liberty scan → `capture-race`   | Localized scan near capture site                   | Relevant detection only                |
-| `"cut"` matches `"execute"`                     | Word-boundary matching                             | No substring false positives           |
+| ~70% puzzles tagged `life-and-death` (fallback) | Many become untagged (source tags still preserved) | Honest classification |
+| Every single-stone capture → `snapback` | Only sacrifice-recapture geometry → `snapback` | Eliminates majority of false positives |
+| Every single-stone-in-atari → `ko` | Only Board-verified ko shape → `ko` | Near-zero false positives |
+| Diagonal atari escape → `ladder` | 3+ chase simulation → `ladder` | Very low false positive rate |
+| Distance-2 weak group → `net` | Comment only → `net` | No board false positives |
+| Whole-board low-liberty scan → `capture-race` | Localized scan near capture site | Relevant detection only |
+| `"cut"` matches `"execute"` | Word-boundary matching | No substring false positives |

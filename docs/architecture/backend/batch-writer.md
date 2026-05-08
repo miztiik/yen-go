@@ -10,13 +10,16 @@ The `batch_writer` module provides utilities for organizing SGF puzzle files int
 flat batch directories with:
 
 - **O(1) fast path** for high-throughput publishing using in-memory state tracking
+
 - **O(N) fallback** with filesystem scanning for recovery/initialization
+
 - **Schema versioning** for forward/backward compatibility
+
 - **Crash recovery** via filesystem reconstruction (supports legacy layout)
 
 ## Path Structure
 
-```
+```text
 {sgf_root}/{NNNN}/{puzzle_id}.sgf
 
 Example:
@@ -33,10 +36,10 @@ The level is stored in each SGF file (`YG` property) and in view index entries
 
 Batch sizes are configured in `pipeline.json`, not hardcoded:
 
-| Setting                   | Default | Purpose                           |
+| Setting | Default | Purpose |
 | ------------------------- | ------- | --------------------------------- |
-| `batch.max_files_per_dir` | 2000    | Max SGF files per batch directory |
-| `batch.size`              | 2000    | Max puzzles per pipeline run      |
+| `batch.max_files_per_dir` | 2000 | Max SGF files per batch directory |
+| `batch.size` | 2000 | Max puzzles per pipeline run |
 
 **Source of truth**: `backend/puzzle_manager/config/pipeline.json`
 
@@ -96,28 +99,28 @@ state.save(sgf_root)
 
 Main class for batch directory management.
 
-| Method                             | Complexity | Description                    |
+| Method | Complexity | Description |
 | ---------------------------------- | ---------- | ------------------------------ |
-| `get_next_batch_number()`          | O(N)       | Scan filesystem for next batch |
-| `get_batch_dir(batch_num)`         | O(1)       | Get/create batch directory     |
-| `get_batch_dir_fast(batch, files)` | O(1)       | Fast path with state           |
-| `is_batch_full(batch_num)`         | O(N)       | Check if batch is full         |
-| `advance_batch()`                  | O(1)       | Increment cached batch number  |
-| `clear_cache()`                    | O(1)       | Clear cached batch number      |
-| `get_batch_summary()`              | O(N)       | Stats for all batches          |
+| `get_next_batch_number()` | O(N) | Scan filesystem for next batch |
+| `get_batch_dir(batch_num)` | O(1) | Get/create batch directory |
+| `get_batch_dir_fast(batch, files)` | O(1) | Fast path with state |
+| `is_batch_full(batch_num)` | O(N) | Check if batch is full |
+| `advance_batch()` | O(1) | Increment cached batch number |
+| `clear_cache()` | O(1) | Clear cached batch number |
+| `get_batch_summary()` | O(N) | Stats for all batches |
 
 ### BatchState
 
 Persistent state tracking for O(1) operations.
 
-| Method                                          | Description                         |
+| Method | Description |
 | ----------------------------------------------- | ----------------------------------- |
-| `load(state_dir)`                               | Load state from file                |
-| `save(state_dir)`                               | Save state atomically               |
-| `load_or_recover(sgf_root, batch_size)`         | Load or recover from filesystem     |
-| `recover_from_filesystem(sgf_root, batch_size)` | Reconstruct state from files        |
-| `record_file_saved(batch_size)`                 | Update state after successful write |
-| `record_error(error)`                           | Track errors for debugging          |
+| `load(state_dir)` | Load state from file |
+| `save(state_dir)` | Save state atomically |
+| `load_or_recover(sgf_root, batch_size)` | Load or recover from filesystem |
+| `recover_from_filesystem(sgf_root, batch_size)` | Reconstruct state from files |
+| `record_file_saved(batch_size)` | Update state after successful write |
+| `record_error(error)` | Track errors for debugging |
 
 ## Design Decisions
 
@@ -128,8 +131,11 @@ Persistent state tracking for O(1) operations.
 **Rationale**:
 
 - Frontend `expandPath("0001/hash")` → `sgf/0001/hash.sgf` works directly
+
 - No path reconstruction ambiguity in compact view entries
+
 - Simpler rollback (single global batch counter)
+
 - Difficulty reassessment doesn't require file moves
 
 ### Global Batch Counter
@@ -139,7 +145,9 @@ Persistent state tracking for O(1) operations.
 **Rationale**:
 
 - Puzzles of all levels coexist in the same batch directories
+
 - Simpler state management (one file, not per-level)
+
 - Batch numbers are purely a sharding mechanism, not semantic
 
 ### Config-Driven Batch Size
@@ -149,7 +157,9 @@ Persistent state tracking for O(1) operations.
 **Rationale**:
 
 - Single source of truth: `pipeline.json` → `BatchConfig` → `BatchWriter`
+
 - No silent default shadowing
+
 - Easy to override for testing (tests use `max_files_per_dir=10`)
 
 ### Legacy Format Support
@@ -157,9 +167,11 @@ Persistent state tracking for O(1) operations.
 `recover_from_filesystem()` supports both:
 
 - **New**: `sgf/{NNNN}/*.sgf` directories
+
 - **Legacy**: `sgf/{level}/batch-{NNNN}/*.sgf` directories (fallback scan)
 
 > **See also**:
 >
 > - [Architecture: Pipeline](../../../docs/architecture/backend/pipeline.md) — Pipeline overview
+>
 > - [How-To: Run Pipeline](../../../docs/how-to/backend/run-pipeline.md) — Operations guide

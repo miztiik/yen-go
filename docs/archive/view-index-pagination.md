@@ -11,7 +11,9 @@
 > **See instead**:
 >
 > - [Concepts: SQLite Index Architecture](../../concepts/sqlite-index-architecture.md) — Canonical terminology
+>
 > - [Architecture: System Overview](../system-overview.md) — Current directory layout
+>
 > - [Architecture: Database Deployment Topology](../database-deployment-topology.md) — Deployment ADR
 
 ---
@@ -21,7 +23,9 @@
 The old view system used `PaginationWriter` to produce three append-only paginated directory structures:
 
 - `views/by-level/{numeric_id}/page-NNN.json`
+
 - `views/by-tag/{numeric_id}/page-NNN.json`
+
 - `views/by-collection/{numeric_id}/page-NNN.json`
 
 With master index files (`views/by-*/index.json`) and a `.pagination-state.json` tracking file.
@@ -29,9 +33,12 @@ With master index files (`views/by-*/index.json`) and a `.pagination-state.json`
 This was replaced by the snapshot-centric architecture because:
 
 1. **No cross-dimensional filtering** — filtering by level+tag required loading both views and merging client-side
-2. **Append-only limitation** — couldn't efficiently remove or reclassify entries
-3. **No atomic publish** — partial writes during crashes left inconsistent state
-4. **Unbounded memory for recovery** — filesystem scan on state corruption read every page
+
+1. **Append-only limitation** — couldn't efficiently remove or reclassify entries
+
+1. **No atomic publish** — partial writes during crashes left inconsistent state
+
+1. **Unbounded memory for recovery** — filesystem scan on state corruption read every page
 
 The current system uses SQLite databases (`yengo-search.db` for frontend queries, `yengo-content.db` for dedup). See [Concepts: SQLite Index Architecture](../../concepts/sqlite-index-architecture.md).
 
@@ -41,13 +48,13 @@ This document describes the architecture for scalable view index pagination in t
 
 The pagination system is implemented in:
 
-| Component            | Location                                           | Purpose               |
+| Component | Location | Purpose |
 | -------------------- | -------------------------------------------------- | --------------------- |
-| `PaginationConfig`   | `backend/puzzle_manager/models/config.py`          | Configuration model   |
-| `PaginationState`    | `backend/puzzle_manager/core/pagination_models.py` | State tracking models |
-| `PaginationWriter`   | `backend/puzzle_manager/core/pagination_writer.py` | Core pagination logic |
-| Publish integration  | `backend/puzzle_manager/stages/publish.py`         | Pipeline integration  |
-| Rollback integration | `backend/puzzle_manager/rollback.py`               | Rollback support      |
+| `PaginationConfig` | `backend/puzzle_manager/models/config.py` | Configuration model |
+| `PaginationState` | `backend/puzzle_manager/core/pagination_models.py` | State tracking models |
+| `PaginationWriter` | `backend/puzzle_manager/core/pagination_writer.py` | Core pagination logic |
+| Publish integration | `backend/puzzle_manager/stages/publish.py` | Pipeline integration |
+| Rollback integration | `backend/puzzle_manager/rollback.py` | Rollback support |
 
 ### Key Methods
 
@@ -69,13 +76,13 @@ writer.generate_master_indexes()
 
 ### Test Coverage
 
-| Test File                                | Tests | Coverage                 |
+| Test File | Tests | Coverage |
 | ---------------------------------------- | ----- | ------------------------ |
-| `test_pagination_writer.py`              | 24    | Core operations          |
-| `test_pagination_contracts.py`           | 12    | Output format validation |
-| `test_pagination_rollback.py`            | 13    | Rollback operations      |
-| `test_pagination_state.py`               | 14    | Crash recovery           |
-| `integration/test_publish_pagination.py` | 12    | End-to-end scenarios     |
+| `test_pagination_writer.py` | 24 | Core operations |
+| `test_pagination_contracts.py` | 12 | Output format validation |
+| `test_pagination_rollback.py` | 13 | Rollback operations |
+| `test_pagination_state.py` | 14 | Crash recovery |
+| `integration/test_publish_pagination.py` | 12 | End-to-end scenarios |
 
 ## Historical Context (Pre-v4.0)
 
@@ -96,7 +103,9 @@ def _update_indexes(self, puzzles: list[dict]) -> None:
 **Issues that motivated pagination**:
 
 - Memory: O(N) where N = total puzzles
+
 - Performance: Full rewrite on every append
+
 - Scalability: Degrades as collection grows
 
 ### Current Approach
@@ -123,12 +132,15 @@ def append_puzzles(self, level: str, puzzles: list[dict]) -> None:
 **Rationale**:
 
 - Enables O(page_size) memory usage
+
 - Simplifies concurrent access (no mid-file modifications)
+
 - Previous pages serve as stable cache targets
 
 **Trade-offs**:
 
 - Cannot delete individual puzzles from middle pages
+
 - Rollback requires full rebuild of affected levels
 
 ---
@@ -140,13 +152,17 @@ def append_puzzles(self, level: str, puzzles: list[dict]) -> None:
 **Rationale**:
 
 - `.pm-runtime/state/` has 45-day cleanup retention
+
 - State should live as long as the data it describes
+
 - Git-tracked for disaster recovery
+
 - Simpler mental model (state is part of output)
 
 **Trade-offs**:
 
 - State file visible in output directory (mitigated: dotfile naming)
+
 - Must handle concurrent access if ever needed (currently single-threaded)
 
 ---
@@ -158,12 +174,15 @@ def append_puzzles(self, level: str, puzzles: list[dict]) -> None:
 **Rationale**:
 
 - 500 × ~200 bytes = ~100KB per page (reasonable HTTP payload)
+
 - Balances memory efficiency with I/O overhead
+
 - User-configured to 500 (original suggestion was 1000)
 
 **Trade-offs**:
 
 - More pages to manage for large collections
+
 - Slightly more I/O operations
 
 ---
@@ -175,8 +194,11 @@ def append_puzzles(self, level: str, puzzles: list[dict]) -> None:
 **Rationale** (updated v4.0):
 
 - Eliminates dual-format complexity in frontend and backend
+
 - Frontend only needs one code path (directory structure)
+
 - Consistent URL patterns for caching
+
 - Small collections simply have 1 page
 
 **History**: Originally threshold-based (≤500 flat, >500 paginated). Migrated to always-paginated in v4.0 to reduce code complexity. The `enabled` and `pagination_threshold` fields were removed from `PaginationConfig`, and `paginated` was removed from `LevelPaginationState`.
@@ -190,19 +212,22 @@ def append_puzzles(self, level: str, puzzles: list[dict]) -> None:
 **Rationale**:
 
 - Simpler than tombstone/delta tracking
+
 - Guarantees consistency with actual file state
+
 - Avoids complex page rewriting logic
 
 **Trade-offs**:
 
 - Slower rollback for large levels
+
 - Temporary memory spike during rebuild
 
 ---
 
 ## Architecture Diagram
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                        PUBLISH STAGE                            │
 ├─────────────────────────────────────────────────────────────────┤
@@ -245,7 +270,7 @@ def append_puzzles(self, level: str, puzzles: list[dict]) -> None:
 
 ### Append Flow (Normal Publish)
 
-```
+```text
 1. Publish stage receives batch of new puzzles
 2. For each affected level:
    a. Load pagination state from .pagination-state.json
@@ -259,7 +284,7 @@ def append_puzzles(self, level: str, puzzles: list[dict]) -> None:
 
 ### Rollback Flow
 
-```
+```text
 1. RollbackManager receives list of puzzle IDs to remove
 2. Read publish log entries for affected puzzles
 3. Group by level (from entry.level)
@@ -290,7 +315,9 @@ def append_puzzles(self, level: str, puzzles: list[dict]) -> None:
 **Responsibilities**:
 
 - Load/save pagination state
+
 - Append puzzles to levels/tags
+
 - Generate master indexes with distribution counters
 
 **Key Methods**:
@@ -500,33 +527,42 @@ PROTECTED_FILES = [
 If `.pagination-state.json` is corrupted or missing:
 
 1. Log warning about missing/corrupt state
-2. Scan file system to reconstruct state
-3. For each level/tag directory:
+
+1. Scan file system to reconstruct state
+
+1. For each level/tag directory:
+
    - Count pages
+
    - Read last page to get entry count
-4. Write recovered state file
-5. Continue with operation
+
+1. Write recovered state file
+
+1. Continue with operation
 
 ### Page Write Failure
 
 If page write fails mid-operation:
 
 1. State file NOT updated (atomic write pattern)
-2. Next run detects mismatch (pages on disk vs state)
-3. Recovery scan corrects state
-4. Operation retries successfully
+
+1. Next run detects mismatch (pages on disk vs state)
+
+1. Recovery scan corrects state
+
+1. Operation retries successfully
 
 ---
 
 ## Performance Characteristics
 
-| Operation           | Memory           | Time   | I/O        |
+| Operation | Memory | Time | I/O |
 | ------------------- | ---------------- | ------ | ---------- |
-| Append 100 to empty | O(100)           | <100ms | 2 writes   |
-| Append 100 to 10K   | O(500)           | <200ms | 1-2 writes |
-| Rebuild 500 entries | O(500)           | <500ms | 1 write    |
-| Full rebuild 10K    | O(500)           | <5s    | 20 writes  |
-| State recovery      | O(levels × tags) | <5s    | Reads only |
+| Append 100 to empty | O(100) | <100ms | 2 writes |
+| Append 100 to 10K | O(500) | <200ms | 1-2 writes |
+| Rebuild 500 entries | O(500) | <500ms | 1 write |
+| Full rebuild 10K | O(500) | <5s | 20 writes |
+| State recovery | O(levels × tags) | <5s | Reads only |
 
 ---
 
@@ -535,25 +571,32 @@ If page write fails mid-operation:
 ### Phase 1: Core (Completed)
 
 1. Created `pagination_writer.py` and `pagination_models.py`
-2. Added `PaginationConfig` to config model
-3. Wrote comprehensive unit tests
+
+1. Added `PaginationConfig` to config model
+
+1. Wrote comprehensive unit tests
 
 ### Phase 2: Publish Integration (Completed)
 
 1. Modified `publish.py` to use PaginationWriter
-2. All views are always-paginated (no flat mode)
-3. Numeric view directory names via `IdMaps`
+
+1. All views are always-paginated (no flat mode)
+
+1. Numeric view directory names via `IdMaps`
 
 ### Phase 3: Rollback Integration (Completed)
 
 1. Refactored `rollback.py` to rebuild paginated directories
-2. Added rebuild logic for paginated levels
-3. State file updated after rollback
+
+1. Added rebuild logic for paginated levels
+
+1. State file updated after rollback
 
 ### Phase 4: Cleanup Protection (Completed)
 
 1. Added `.pagination-state.json` to PROTECTED_FILES
-2. Verify cleanup doesn't affect pagination
+
+1. Verify cleanup doesn't affect pagination
 
 ---
 
@@ -564,8 +607,13 @@ Test specification covers unit tests, state management tests, structure transiti
 **Key test categories**:
 
 1. Unit tests for PaginationWriter
-2. State management tests
-3. Structure transition tests
-4. Rollback integration tests
-5. Frontend compatibility tests
-6. Performance benchmarks
+
+1. State management tests
+
+1. Structure transition tests
+
+1. Rollback integration tests
+
+1. Frontend compatibility tests
+
+1. Performance benchmarks

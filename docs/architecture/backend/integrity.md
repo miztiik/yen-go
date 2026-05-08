@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [How-To: Rollback](../../how-to/backend/rollback.md) — Rollback operations
+>
 > - [How-To: Monitor](../../how-to/backend/monitor.md) — Observability
+>
 > - [Architecture: Pipeline](./pipeline.md) — Pipeline stages
 
 **Last Updated**: 2026-02-20
@@ -17,10 +19,14 @@ Design for puzzle collection integrity: validation, audit trails, trace observab
 YenGo ensures puzzle collection integrity through:
 
 1. **Validation** — Schema and content verification
-2. **Trace Observability** — Per-file trace_id through entire pipeline (Spec 110)
-3. **Publish Logs** — Audit trail for all changes
-4. **Inventory** — Complete collection state
-5. **Rollback** — Selective undo by run_id
+
+1. **Trace Observability** — Per-file trace_id through entire pipeline (Spec 110)
+
+1. **Publish Logs** — Audit trail for all changes
+
+1. **Inventory** — Complete collection state
+
+1. **Rollback** — Selective undo by run_id
 
 ---
 
@@ -29,14 +35,16 @@ YenGo ensures puzzle collection integrity through:
 ### Design Goals
 
 1. **Debug Failed Processing** — Quickly identify why a specific file failed
-2. **Audit Provenance** — Trace any published puzzle back to its source
-3. **Monitor Progress** — Track batch processing status in real-time
+
+1. **Audit Provenance** — Trace any published puzzle back to its source
+
+1. **Monitor Progress** — Track batch processing status in real-time
 
 ### Trace Map Architecture
 
 Per-run `trace_id` mapping replaces the heavy trace registry. Trace IDs flow via an ephemeral flat JSON file:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ INGEST STAGE                                                            │
 │   source_file: yengo-source-problems-...-102                              │
@@ -100,12 +108,12 @@ After publish, the **publish log** is the permanent trace record:
 
 ### Key Properties
 
-| Identifier          | Stage Available | Notes                                |
+| Identifier | Stage Available | Notes |
 | ------------------- | --------------- | ------------------------------------ |
-| `source_file`       | All stages      | Pipeline-internal puzzle ID          |
-| `trace_id`          | All stages      | 16-char hex UUID for log correlation |
-| `original_filename` | Published       | Original filename from source        |
-| `puzzle_id`         | Publish only    | Content hash (final, in GN property) |
+| `source_file` | All stages | Pipeline-internal puzzle ID |
+| `trace_id` | All stages | 16-char hex UUID for log correlation |
+| `original_filename` | Published | Original filename from source |
+| `puzzle_id` | Publish only | Content hash (final, in GN property) |
 
 ---
 
@@ -115,28 +123,32 @@ After publish, the **publish log** is the permanent trace record:
 
 Puzzle validation is config-driven from `config/puzzle-validation.json` (schema version 2.0, fail-fast loading — missing config raises `FileNotFoundError`). Two implementations share the same rules:
 
-| Validator               | Location                                          | Used By                                           |
+| Validator | Location | Used By |
 | ----------------------- | ------------------------------------------------- | ------------------------------------------------- |
-| `tools.core.validation` | `tools/core/validation.py`                        | Download tools (t-dragon, tsumego_hero, yengo-source) |
-| `PuzzleValidator`       | `backend/puzzle_manager/core/puzzle_validator.py` | Pipeline adapters (yengo-source, yengo-source, yengo-source)   |
+| `tools.core.validation` | `tools/core/validation.py` | Download tools (t-dragon, tsumego_hero, yengo-source) |
+| `PuzzleValidator` | `backend/puzzle_manager/core/puzzle_validator.py` | Pipeline adapters (yengo-source, yengo-source, yengo-source) |
 
 **Validation checks (in order):**
 
 1. Board width within `[min_board_dimension, max_board_dimension]` (default: 5-19)
-2. Board height within `[min_board_dimension, max_board_dimension]`
-3. Stone count >= `min_stones` (default: 2 — Go-valid minimum for attacker + defender)
-4. Solution depth >= `min_solution_depth` (default: 1 — solution must exist)
-5. Solution depth <= `max_solution_depth` (default: 30)
+
+1. Board height within `[min_board_dimension, max_board_dimension]`
+
+1. Stone count >= `min_stones` (default: 2 — Go-valid minimum for attacker + defender)
+
+1. Solution depth >= `min_solution_depth` (default: 1 — solution must exist)
+
+1. Solution depth <= `max_solution_depth` (default: 30)
 
 ### Pipeline Validation
 
 Each stage validates its inputs and outputs:
 
-| Stage   | Validation                                           |
+| Stage | Validation |
 | ------- | ---------------------------------------------------- |
-| INGEST  | SGF syntax, board size, stone bounds, solution depth |
-| ANALYZE | Level validity, tag existence                        |
-| PUBLISH | Schema compliance, no duplicates                     |
+| INGEST | SGF syntax, board size, stone bounds, solution depth |
+| ANALYZE | Level validity, tag existence |
+| PUBLISH | Schema compliance, no duplicates |
 
 ### Schema Validation
 
@@ -149,8 +161,11 @@ python -m backend.puzzle_manager validate
 Checks:
 
 - Required properties present (GN, YV, YM, YG, YQ, YX)
+
 - Property formats match patterns
+
 - Level slugs exist in config
+
 - Tags exist in config
 
 ---
@@ -162,14 +177,16 @@ Checks:
 Every publish operation creates an audit trail enabling:
 
 - Selective rollback by run_id
+
 - Change history
+
 - Compliance auditing
 
 ### Format
 
 JSONL files in `yengo-puzzle-collections/.puzzle-inventory-state/publish-log/`:
 
-```
+```text
 .puzzle-inventory-state/publish-log/
 ├── 2026-01-30.jsonl
 ├── 2026-01-31.jsonl
@@ -198,16 +215,18 @@ JSONL files in `yengo-puzzle-collections/.puzzle-inventory-state/publish-log/`:
 **Notes**:
 
 - `puzzle_id` is the 16-char content hash (same as filename). The SGF file's `GN` property uses the `YENGO-{puzzle_id}` format (e.g., `GN[YENGO-a1b2c3d4e5f67890]`).
+
 - `level` and `collections` added in Spec 138 to enable targeted rollback of view indexes.
+
 - `level`, `collections`, and `trace_id` are omitted from JSONL when empty/None for backward compatibility.
 
 ### Operations
 
-| Operation | Description               |
+| Operation | Description |
 | --------- | ------------------------- |
-| `add`     | New puzzle added          |
-| `update`  | Existing puzzle modified  |
-| `delete`  | Puzzle removed (rollback) |
+| `add` | New puzzle added |
+| `update` | Existing puzzle modified |
+| `delete` | Puzzle removed (rollback) |
 
 ---
 
@@ -218,7 +237,9 @@ JSONL files in `yengo-puzzle-collections/.puzzle-inventory-state/publish-log/`:
 The inventory provides:
 
 - Complete puzzle count
+
 - Distribution by level/tag
+
 - Quick state verification
 
 ### Location
@@ -266,8 +287,11 @@ python -m backend.puzzle_manager inventory
 A safety net that automatically reconciles inventory after a configurable number of publish runs.
 
 - **Config**: `PipelineConfig.reconcile_interval` (default: 20, 0 = disabled)
+
 - **Tracking**: `AuditMetrics.runs_since_last_reconcile` increments after each publish
+
 - **Trigger**: When counter reaches `reconcile_interval`, reconcile runs automatically
+
 - **Reset**: Counter resets to 0 after each reconcile
 
 This guards against drift from incremental updates over many runs. The reconcile uses `parse_root_properties_only()` (fast root-only SGF parser) with `ThreadPoolExecutor(max_workers=8)` for parallel I/O.
@@ -285,12 +309,14 @@ Rollback is **atomic** — either all puzzles from a run are removed, or none.
 ### Process
 
 1. **Identify run** — `python -m backend.puzzle_manager publish-log list`
-2. **Preview** — `python -m backend.puzzle_manager rollback --run-id 20260130-abc12345 --dry-run`
-3. **Execute** — `python -m backend.puzzle_manager rollback --run-id 20260130-abc12345`
+
+1. **Preview** — `python -m backend.puzzle_manager rollback --run-id 20260130-abc12345 --dry-run`
+
+1. **Execute** — `python -m backend.puzzle_manager rollback --run-id 20260130-abc12345`
 
 ### Rollback Steps
 
-```
+```text
 1. Read publish-log entries for run_id
 2. Collect affected levels, tags, collections from entry metadata
 3. Batch-remove all puzzle IDs from affected indexes (single save_state())
@@ -306,8 +332,11 @@ Rollback is **atomic** — either all puzzles from a run are removed, or none.
 ### Safety Features
 
 - **Dry-run default** — Preview before executing
+
 - **Confirmation prompt** — Explicit confirmation required
+
 - **Audit trail** — Rollback operations logged
+
 - **Transactional** — Partial rollback leaves consistent state
 
 ---
@@ -342,21 +371,21 @@ python -m backend.puzzle_manager clean --target all
 
 ## Data Retention
 
-| Data Type        | Location                                   | Retention    |
+| Data Type | Location | Retention |
 | ---------------- | ------------------------------------------ | ------------ |
-| Published SGF    | `yengo-puzzle-collections/sgf/`            | Permanent    |
-| View indexes     | `yengo-puzzle-collections/views/`          | Permanent    |
-| Publish logs     | `.puzzle-inventory-state/publish-log/`     | Permanent    |
-| Inventory        | `.puzzle-inventory-state/inventory.json`   | Permanent    |
-| Audit log        | `.puzzle-inventory-state/audit.jsonl`      | Permanent    |
+| Published SGF | `yengo-puzzle-collections/sgf/` | Permanent |
+| View indexes | `yengo-puzzle-collections/views/` | Permanent |
+| Publish logs | `.puzzle-inventory-state/publish-log/` | Permanent |
+| Inventory | `.puzzle-inventory-state/inventory.json` | Permanent |
+| Audit log | `.puzzle-inventory-state/audit.jsonl` | Permanent |
 | Rollback backups | `.puzzle-inventory-state/rollback-backup/` | Until commit |
-| Staging          | `.pm-runtime/staging/`                     | 45 days      |
-| State            | `.pm-runtime/state/archived/`              | 90 days      |
-| Logs             | `.pm-runtime/logs/`                        | 30 days      |
+| Staging | `.pm-runtime/staging/` | 45 days |
+| State | `.pm-runtime/state/archived/` | 90 days |
+| Logs | `.pm-runtime/logs/` | 30 days |
 
 ### Directory Organization (Spec 107)
 
-```
+```text
 yengo-puzzle-collections/
 ├── .puzzle-inventory-state/    # Operational files (hidden)
 │   ├── audit.jsonl             # Rollback audit log
@@ -374,15 +403,19 @@ yengo-puzzle-collections/
 ### Write-Ahead Logging
 
 1. Entry written to publish-log BEFORE file written
-2. On crash recovery, log is source of truth
-3. Incomplete writes are detected and cleaned
+
+1. On crash recovery, log is source of truth
+
+1. Incomplete writes are detected and cleaned
 
 ### Idempotency
 
 Running the same pipeline twice with same inputs:
 
 - Produces identical outputs
+
 - No duplicate puzzles
+
 - No state corruption
 
 ### Verification
@@ -398,7 +431,11 @@ python -m backend.puzzle_manager inventory --check --fix
 **Integrity Check** (Spec 107) verifies:
 
 - `total_puzzles` equals actual SGF file count (FR-021)
+
 - Level counts match files per level directory (FR-022)
+
 - No orphan entries (publish log entry without file) (FR-019)
+
 - No orphan files (file without publish log entry) (FR-020)
+
 - Exit code 0 if pass, non-zero if fail (FR-023)

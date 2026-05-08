@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Architecture: Frontend Structure](../../architecture/frontend/structure.md) — Directory layout
+>
 > - [Architecture: State Management](../../architecture/frontend/state-management.md) — State patterns
+>
 > - [How-To: Local Development](./local-development.md) — Testing setup
 
 **Last Updated**: 2026-02-16
@@ -16,7 +18,7 @@ How to create and integrate UI components in the Yen-Go frontend.
 
 ### Directory Structure
 
-```
+```text
 frontend/src/components/
 ├── GobanBoard/
 │   ├── GobanBoard.tsx      # Board wrapper
@@ -41,13 +43,13 @@ frontend/src/components/
 
 ### Naming Conventions
 
-| Type                | Convention | Example             |
+| Type | Convention | Example |
 | ------------------- | ---------- | ------------------- |
-| Component file      | PascalCase | `PuzzleCard.tsx`    |
-| Component directory | PascalCase | `GobanBoard/`       |
-| Utility file        | kebab-case | `accuracy-color.ts` |
-| Types file          | kebab-case | `page-mode.ts`      |
-| Export file         | index.ts   | `index.ts`          |
+| Component file | PascalCase | `PuzzleCard.tsx` |
+| Component directory | PascalCase | `GobanBoard/` |
+| Utility file | kebab-case | `accuracy-color.ts` |
+| Types file | kebab-case | `page-mode.ts` |
+| Export file | index.ts | `index.ts` |
 
 ---
 
@@ -310,14 +312,14 @@ Colors are defined in `styles/app.css` and adapt to light/dark mode automaticall
 
 Each page mode has its own accent family (set by `PageLayout` mode prop):
 
-| Mode        | Border token                      | Text token                      | Light token                      |
+| Mode | Border token | Text token | Light token |
 | ----------- | --------------------------------- | ------------------------------- | -------------------------------- |
-| daily       | `--color-mode-daily-border`       | `--color-mode-daily-text`       | `--color-mode-daily-light`       |
-| training    | `--color-mode-training-border`    | `--color-mode-training-text`    | `--color-mode-training-light`    |
-| technique   | `--color-mode-technique-border`   | `--color-mode-technique-text`   | `--color-mode-technique-light`   |
+| daily | `--color-mode-daily-border` | `--color-mode-daily-text` | `--color-mode-daily-light` |
+| training | `--color-mode-training-border` | `--color-mode-training-text` | `--color-mode-training-light` |
+| technique | `--color-mode-technique-border` | `--color-mode-technique-text` | `--color-mode-technique-light` |
 | collections | `--color-mode-collections-border` | `--color-mode-collections-text` | `--color-mode-collections-light` |
-| rush        | `--color-mode-rush-border`        | `--color-mode-rush-text`        | `--color-mode-rush-light`        |
-| random      | `--color-mode-random-border`      | `--color-mode-random-text`      | `--color-mode-random-light`      |
+| rush | `--color-mode-rush-border` | `--color-mode-rush-text` | `--color-mode-rush-light` |
+| random | `--color-mode-random-border` | `--color-mode-random-text` | `--color-mode-random-light` |
 
 ```tsx
 {
@@ -448,14 +450,23 @@ test("error state visual", async ({ page }) => {
 When adding a new component:
 
 - [ ] Create component file with TypeScript types and `FunctionalComponent`
+
 - [ ] Style using Tailwind utility classes + CSS custom property tokens
+
 - [ ] Create index.ts with named exports
+
 - [ ] Add unit tests (Vitest + @testing-library/preact)
+
 - [ ] Add visual test if UI-heavy (Playwright)
+
 - [ ] Document props with JSDoc or inline comments
+
 - [ ] Use `className` (not `class`) for JSX attributes
+
 - [ ] Wrap in `PageLayout` with correct `mode` if it's a page
+
 - [ ] Verify responsive behavior (mobile-first breakpoints)
+
 - [ ] Check accessibility (semantic HTML, `role`, `aria-*`, keyboard)
 
 ---
@@ -531,5 +542,7 @@ const Modal: FunctionalComponent<{ isOpen: boolean; children: ComponentChildren 
 > **See also**:
 >
 > - [Architecture: Frontend Overview](../../architecture/frontend/overview.md) — Directory structure and theme system
+>
 > - [Concepts: Design Tokens](../../concepts/design-tokens.md) — Full color token reference
+>
 > - [Architecture: Testing](../../architecture/frontend/testing.md) — Test strategy and visual testing

@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Reference: Documentation Structure](documentation-structure.md) — Canonical docs placement rules
+>
 > - [How-To: Troubleshoot](../how-to/backend/troubleshoot.md) — Recovery workflow after mistakes
+>
 > - [Architecture: System Overview](../architecture/system-overview.md) — Repo layout and data boundaries
 
 **Last Updated**: 2026-05-06
@@ -12,7 +14,7 @@ Copy and paste this at the start of your conversation with an agent.
 
 ---
 
-```
+```text
 CRITICAL GIT SAFETY RULES - READ BEFORE ANY GIT OPERATIONS
 
 This repository has multiple agents working concurrently. Untracked files (crawler output, runtime data) will be PERMANENTLY DESTROYED by careless git operations.
@@ -57,7 +59,6 @@ DO NOT use git stash. ASK ME how to proceed.
 - external-sources/*/sgf/ - Crawled puzzles (hours to regenerate)
 - external-sources/*/logs/ - Crawl history (lost forever)
 
-
 If any of your git operations would affect these directories, STOP and ask me first.
 ```
 
@@ -66,8 +67,9 @@ If any of your git operations would affect these directories, STOP and ask me fi
 ## See Also
 
 - [CLAUDE.md](../../CLAUDE.md) - Git Safety Rules section
+
 - [copilot-instructions.md](../../.github/copilot-instructions.md) - Full agent guidelines
 
 ---
 
-_Last Updated: 2026-02-15_
+**Last Updated**: 2026-02-15

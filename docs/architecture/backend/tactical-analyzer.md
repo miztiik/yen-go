@@ -3,8 +3,11 @@
 > **See also**:
 >
 > - [Architecture: Enrichment](./enrichment.md) — Enrichment pipeline overview
+>
 > - [Architecture: Tagging Strategy](./tagging-strategy.md) — Tag detection design
+>
 > - [Concepts: Tags](../../concepts/tags.md) — Tag taxonomy and definitions
+>
 > - [Concepts: Quality](../../concepts/quality.md) — YQ/YX metrics
 
 **Last Updated**: 2026-02-26
@@ -28,16 +31,21 @@ It runs during the **analyze** stage after technique detection, merging its auto
 The existing tagger (`core/tagger.py`) focuses on comment-keyword detection with confidence scoring. The tactical analyzer uses a fundamentally different approach: **board simulation**. Keeping them separate:
 
 1. **Single Responsibility** — Comment parsing vs. board analysis are orthogonal concerns
-2. **Independent testability** — Board positions can be unit-tested without SGF parsing
-3. **Composability** — Tags from both sources merge at the analyze stage level
+
+1. **Independent testability** — Board positions can be unit-tested without SGF parsing
+
+1. **Composability** — Tags from both sources merge at the analyze stage level
 
 ### Board Simulation Over Heuristics
 
 All detectors work by actually playing moves on a `Board` copy:
 
 - **Ladder detection**: Simulates the full chase sequence (runner extends → chaser re-ataris) with 1-step lookahead for move selection
+
 - **Snapback detection**: Plays sacrifice, simulates opponent capture, verifies group size comparison
+
 - **Capture pattern**: Plays the first move and counts immediate captures
+
 - **Eye counting**: Flood-fills enclosed empty regions surrounded by the target group
 
 This ensures **high precision** — a ladder is only reported if the chase actually works for ≥3 iterations on the board.
@@ -69,7 +77,8 @@ All algorithms are original implementations using board simulation. They are **n
 **Solution**: Skip the recapture entirely. After the opponent captures our bait, check:
 
 1. Opponent's group at the capture point has exactly 1 liberty
-2. Opponent's group size > number of stones we sacrificed
+
+1. Opponent's group size > number of stones we sacrificed
 
 This is equivalent to confirming the recapture would net more stones. It's a deliberate shortcut that avoids modifying `Board.play()`'s ko logic, which is used across the entire codebase.
 
@@ -84,9 +93,12 @@ This is equivalent to confirming the recapture would net more stones. It's a del
 **Solution**: Check directional extension instead:
 
 1. Find an adjacent opponent stone `n` belonging to a 2-stone group
-2. Get the other stone `other` in the group
-3. Compute direction vector: `dx = n.x - other.x`, `dy = n.y - other.y`
-4. The first move must be at `n + (dx, dy)` — i.e., extending the line beyond `n`
+
+1. Get the other stone `other` in the group
+
+1. Compute direction vector: `dx = n.x - other.x`, `dy = n.y - other.y`
+
+1. The first move must be at `n + (dx, dy)` — i.e., extending the line beyond `n`
 
 This correctly identifies the "head" position: the point that continues the line of two stones.
 
@@ -110,7 +122,7 @@ The four instinct patterns (extend-from-atari, connect-against-peep, hane-at-hea
 
 ## Architecture
 
-```
+```text
 analyze_tactics(game: SGFGame) → TacticalAnalysis
     │
     ├── _build_board(game) → Board
@@ -134,34 +146,41 @@ analyze_tactics(game: SGFGame) → TacticalAnalysis
 
 ## Detector Summary
 
-| Detector                             | Output            | Tag(s) Produced                | Threshold             |
+| Detector | Output | Tag(s) Produced | Threshold |
 | ------------------------------------ | ----------------- | ------------------------------ | --------------------- |
-| `detect_ladder`                      | `LadderResult`    | `ladder`                       | depth ≥ 3             |
-| `detect_snapback`                    | `bool`            | `snapback`                     | sacrifice recaptured  |
-| `detect_capture_pattern`             | `CaptureType`     | `capture` (fallback)           | —                     |
-| `count_eyes` / `assess_group_status` | `GroupStatus`     | `life-and-death`               | dead/critical groups  |
-| `find_weak_groups`                   | `list[WeakGroup]` | `life-and-death`               | ≤2 liberties          |
-| `detect_seki`                        | `bool`            | `seki`                         | mutual 1-2 lib groups |
-| `detect_instinct_pattern`            | `InstinctType`    | `escape`, `connection`, `hane` | pattern-specific      |
+| `detect_ladder` | `LadderResult` | `ladder` | depth ≥ 3 |
+| `detect_snapback` | `bool` | `snapback` | sacrifice recaptured |
+| `detect_capture_pattern` | `CaptureType` | `capture` (fallback) | — |
+| `count_eyes` / `assess_group_status` | `GroupStatus` | `life-and-death` | dead/critical groups |
+| `find_weak_groups` | `list[WeakGroup]` | `life-and-death` | ≤2 liberties |
+| `detect_seki` | `bool` | `seki` | mutual 1-2 lib groups |
+| `detect_instinct_pattern` | `InstinctType` | `escape`, `connection`, `hane` | pattern-specific |
 
 ### Ladder Detection Algorithm
 
 See [Algorithm Design Decisions → Ladder](#ladder-1-step-lookahead-for-move-selection) for full rationale.
 
 1. Play first move → check if adjacent opponent group is newly in atari
-2. Trace chase: runner extends at single liberty → must get exactly 2 liberties
-3. Chaser picks the atari move via **1-step lookahead**: for each candidate, simulate the runner's next extension and prefer the move where the runner still gets exactly 2 libs (correct ladder diagonal)
-4. Chase ≥3 iterations → confirmed ladder
+
+1. Trace chase: runner extends at single liberty → must get exactly 2 liberties
+
+1. Chaser picks the atari move via **1-step lookahead**: for each candidate, simulate the runner's next extension and prefer the move where the runner still gets exactly 2 libs (correct ladder diagonal)
+
+1. Chase ≥3 iterations → confirmed ladder
 
 ### Snapback Detection Algorithm
 
 See [Algorithm Design Decisions → Snapback](#snapback-group-size-comparison-without-recapture) for full rationale.
 
 1. Play first move → check if our group has exactly 1 liberty (bait)
-2. Simulate opponent capturing bait at that liberty
-3. Check if opponent's new group at capture point has exactly 1 liberty
-4. Compare group sizes: `opponent_group_size > sacrificed_stones` → snapback
-5. Recapture is **not** played (avoids false ko detection — see design decisions)
+
+1. Simulate opponent capturing bait at that liberty
+
+1. Check if opponent's new group at capture point has exactly 1 liberty
+
+1. Compare group sizes: `opponent_group_size > sacrificed_stones` → snapback
+
+1. Recapture is **not** played (avoids false ko detection — see design decisions)
 
 ---
 
@@ -184,19 +203,21 @@ The ENRICH_IF_ABSENT policy ensures source-provided tags are never overwritten.
 
 ## Data Types
 
-| Type               | Fields                                                         | Purpose                             |
+| Type | Fields | Purpose |
 | ------------------ | -------------------------------------------------------------- | ----------------------------------- |
 | `TacticalAnalysis` | ladder, snapback, capture, groups, weak_groups, seki, instinct | Container for all detection results |
-| `LadderResult`     | outcome, depth, breaker_point                                  | Ladder chase outcome                |
-| `WeakGroup`        | stones, liberties, status                                      | Group with ≤2 liberties             |
-| `GroupStatus`      | Enum: ALIVE, DEAD, CRITICAL, UNSETTLED                         | Life/death assessment               |
-| `CaptureType`      | Enum: NONE, TRIVIAL, FORCED, NET                               | Capture classification              |
-| `InstinctType`     | Enum: NONE, EXTEND_FROM_ATARI, CONNECT, HANE_HEAD_OF_TWO       | Instinct move types                 |
+| `LadderResult` | outcome, depth, breaker_point | Ladder chase outcome |
+| `WeakGroup` | stones, liberties, status | Group with ≤2 liberties |
+| `GroupStatus` | Enum: ALIVE, DEAD, CRITICAL, UNSETTLED | Life/death assessment |
+| `CaptureType` | Enum: NONE, TRIVIAL, FORCED, NET | Capture classification |
+| `InstinctType` | Enum: NONE, EXTEND_FROM_ATARI, CONNECT, HANE_HEAD_OF_TWO | Instinct move types |
 
 ---
 
 ## Future Work (Phase 2-4)
 
 - **Hint integration**: Feed `generate_tactical_hint()` into `core/hints.py` for YH property
+
 - **Quality scoring**: Use `compute_tactical_complexity()` as input to YQ metrics
+
 - **Classifier enhancement**: Feed tactical patterns into difficulty classification

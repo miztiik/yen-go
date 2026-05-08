@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Run Pipeline](../how-to/backend/run-pipeline.md) — Full pipeline guide
+>
 > - [CLI Quick Reference](../reference/cli-quick-ref.md) — Command cheat sheet
+>
 > - [Troubleshooting](../how-to/backend/troubleshoot.md) — Common errors & fixes
 
 **Last Updated**: 2026-03-09
@@ -15,6 +17,7 @@ Quick guide for operators who need to run the puzzle pipeline.
 ## Prerequisites
 
 - Python 3.11+
+
 - Access to the Yen-Go repository
 
 ## Installation
@@ -65,20 +68,23 @@ python -m backend.puzzle_manager inventory
 
 ## Common Operations
 
-| Task               | Command                                                                    |
+| Task | Command |
 | ------------------ | -------------------------------------------------------------------------- |
-| Run full pipeline  | `python -m backend.puzzle_manager run --source <source_id>`                |
+| Run full pipeline | `python -m backend.puzzle_manager run --source <source_id>` |
 | Run specific stage | `python -m backend.puzzle_manager run --source <source_id> --stage ingest` |
-| Check status       | `python -m backend.puzzle_manager status`                                  |
-| View inventory     | `python -m backend.puzzle_manager inventory`                               |
-| Preview rollback   | `python -m backend.puzzle_manager rollback --run-id X --dry-run`           |
-| Clean staging      | `python -m backend.puzzle_manager clean --target staging`                  |
+| Check status | `python -m backend.puzzle_manager status` |
+| View inventory | `python -m backend.puzzle_manager inventory` |
+| Preview rollback | `python -m backend.puzzle_manager rollback --run-id X --dry-run` |
+| Clean staging | `python -m backend.puzzle_manager clean --target staging` |
 
 ---
 
 ## Next Steps
 
 - [Run Pipeline](../how-to/backend/run-pipeline.md) — Detailed pipeline guide
+
 - [Configure Sources](../how-to/backend/configure-sources.md) — Source setup
+
 - [Monitor](../how-to/backend/monitor.md) — Observability
+
 - [Rollback](../how-to/backend/rollback.md) — Undoing imports

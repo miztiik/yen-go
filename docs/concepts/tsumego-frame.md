@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Architecture: KataGo Enrichment — D3, D33, D40](../architecture/tools/katago-enrichment.md) — Why the frame exists and key design decisions
+>
 > - [How-To: Enrichment Lab](../how-to/tools/katago-enrichment-lab.md) — Running enrichment with frame applied
+>
 > - [Reference: KataGo Enrichment Config](../reference/katago-enrichment-config.md) — Frame configuration options
 
 **Last Updated**: 2026-03-13
@@ -15,8 +17,11 @@
 A **tsumego frame** is an artificial arrangement of stones placed around a Go puzzle before submitting it to KataGo for analysis. Without a frame, the puzzle sits alone on a 19×19 board surrounded by hundreds of empty intersections. KataGo's neural network interprets this as a whole-board game position, causing:
 
 - **Policy leakage** — the network's move-probability distribution spreads across the entire board instead of concentrating on the puzzle
+
 - **Ownership ambiguity** — the ownership head sees mostly "dame" (neutral) territory; it cannot tell which groups are alive or dead
+
 - **Komi-driven bias** — with no surrounding stones, one side appears to be "winning" based solely on komi
+
 - **Accuracy collapse** — empirical testing shows puzzle validation accuracy drops from ~95 % to ~60 % without a frame (see [D3](../architecture/tools/katago-enrichment.md))
 
 The frame solves these problems by making the position look like a realistic mid-game board with clearly divided territory.
@@ -29,22 +34,22 @@ The frame solves these problems by making the position look like a realistic mid
 
 The implementation combines techniques from two open-source projects:
 
-| Source                                                                            | License | What We Use                                                                        |
+| Source | License | What We Use |
 | --------------------------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------- |
-| **KaTrain** ([GitHub](https://github.com/sanderland/katrain), SHA `877684f`)      | MIT     | Zone-based fill algorithm, attacker inference, normalization, ko-threat placement  |
-| **ghostban** ([GitHub](https://github.com/goproblems/ghostban), v3.0.0-alpha.155) | MIT     | Non-board-edge border placement, bbox-based territory formula, `offence_to_win=10` |
+| **KaTrain** ([GitHub](https://github.com/sanderland/katrain), SHA `877684f`) | MIT | Zone-based fill algorithm, attacker inference, normalization, ko-threat placement |
+| **ghostban** ([GitHub](https://github.com/goproblems/ghostban), v3.0.0-alpha.155) | MIT | Non-board-edge border placement, bbox-based territory formula, `offence_to_win=10` |
 
 ### Pipeline: Crop First, Then Frame
 
 Per [D33](../architecture/tools/katago-enrichment.md), the puzzle is **cropped to a tight board** (9×9 or 13×13) before the frame is applied. The frame is never applied to the original 19×19 board — that would waste hundreds of stones on empty space.
 
-```
+```text
 Original 19×19  →  Crop to 9×9/13×13  →  Apply tsumego frame  →  Send to KataGo
 ```
 
 ### Step-by-Step Algorithm
 
-```
+```text
 1. Guess attacker    — edge-proximity heuristic: which colour's stones are closer
                        to the board edges?  That side is the DEFENDER; the opponent
                        is the ATTACKER (trying to kill the group)
@@ -76,7 +81,7 @@ Original 19×19  →  Crop to 9×9/13×13  →  Apply tsumego frame  →  Send t
 
 For a top-left corner puzzle (`X` = Black/Attacker, `O` = White/Defender):
 
-```
+```text
 OOOOOOOOOOOOO    ← Defence zone (solid White block)
 OOOOOOOOOOOOO
 OO.OO.OO.OO.    ← checkerboard holes far from seam
@@ -109,23 +114,25 @@ V2 used row-major/column-major iteration to divide the board into two zones. Thi
 V3 replaced the linear scan with BFS flood-fill from seed points:
 
 1. **Defender BFS** from the far corner (top-right after normalize) — fills up to `defense_area` cells
-2. **Attacker BFS** from border wall cells + opposite corner — fills remaining cells
-3. ~~**Multi-seed fallback** — if >5% of frameable cells are unreached, add secondary seeds~~ *(removed in V3.2)*
+
+1. **Attacker BFS** from border wall cells + opposite corner — fills remaining cells
+
+1. ~~**Multi-seed fallback** — if >5% of frameable cells are unreached, add secondary seeds~~ *(removed in V3.2)*
 
 **Why this works:**
 
-| Property           | BFS Flood-Fill                                             | Linear Scan (V2)                                       |
+| Property | BFS Flood-Fill | Linear Scan (V2) |
 | ------------------ | ---------------------------------------------------------- | ------------------------------------------------------ |
-| Connectivity       | **Guaranteed** — BFS grows from seed = single component    | **Not guaranteed** — scan wraps around puzzle region    |
-| Dead stones        | **None** — every stone placed is adjacent to prior stone   | **Common** — checkerboard holes produce isolated stones |
-| Territory balance  | **Score-neutral** — 50/50 split, puzzle outcome decides    | **Attacker-biased** — offence_to_win gave artificial lead |
-| Ownership signal   | **Strong** — connected blocks read as living territory     | **Mixed** — isolated stones read as dead/captured       |
+| Connectivity | **Guaranteed** — BFS grows from seed = single component | **Not guaranteed** — scan wraps around puzzle region |
+| Dead stones | **None** — every stone placed is adjacent to prior stone | **Common** — checkerboard holes produce isolated stones |
+| Territory balance | **Score-neutral** — 50/50 split, puzzle outcome decides | **Attacker-biased** — offence_to_win gave artificial lead |
+| Ownership signal | **Strong** — connected blocks read as living territory | **Mixed** — isolated stones read as dead/captured |
 
 ### Zone-Based Fill (Active — KaTrain/GP Algorithm)
 
 The **active implementation** (`tsumego_frame_gp.py`) uses KaTrain's count-based fill approach. It iterates cells in row-major order with a counter. The first `defense_area` cells become one colour; the rest become the other colour:
 
-```
+```text
 O O O O O O O O    ← solid defender zone (ownership near -1.0)
 O O O O O O O O
 X X X X X X X X    ← dense seam (100% fill)
@@ -134,12 +141,12 @@ X X . X . X . X    ← attacker zone with checkerboard holes far from seam
 
 **Why this works:**
 
-| Property           | Zone-Based                                                | Checkerboard                                          |
+| Property | Zone-Based | Checkerboard |
 | ------------------ | --------------------------------------------------------- | ----------------------------------------------------- |
-| Ownership signal   | Strong (~±1.0) — solid blocks read as territory           | Weak (~0.0) — alternating looks contested             |
+| Ownership signal | Strong (~±1.0) — solid blocks read as territory | Weak (~0.0) — alternating looks contested |
 | Policy containment | Strong — dense fill leaves few legal moves outside puzzle | Moderate — 50% empty frame has playable intersections |
-| Stone density      | ~65–75% average (100% at seam, ~50% far)                  | ~50% everywhere                                       |
-| Territory balance  | Count-based split with `offence_to_win` advantage         | Exact 50/50 alternation                               |
+| Stone density | ~65–75% average (100% at seam, ~50% far) | ~50% everywhere |
+| Territory balance | Count-based split with `offence_to_win` advantage | Exact 50/50 alternation |
 
 ### The Dense Seam
 
@@ -153,7 +160,7 @@ Near the boundary between the two zones (`|count - defense_area| ≤ board_size`
 
 Yen-Go's enrichment pipeline applies the tsumego frame and sends the framed position to KataGo once:
 
-```
+```text
 Parse SGF  →  Crop  →  Apply frame  →  KataGo analysis (1 pass)  →  Extract results
 ```
 
@@ -163,7 +170,7 @@ This is sufficient for our current needs: correct-move validation, difficulty es
 
 yengo-source uses a **2-pass mechanism** as a diagnostic/research feature:
 
-```
+```text
 Pass 1: Analyse raw position (NO frame)   → baseline winrate, policy, ownership
 Pass 2: Analyse WITH frame                → constrained winrate, policy, ownership
 Compare: delta between passes reveals frame impact
@@ -173,12 +180,12 @@ The delta measures how much the frame changes KataGo's evaluation. Large deltas 
 
 **Parameters observed on yengo-source:**
 
-| Parameter | Value                       |
+| Parameter | Value |
 | --------- | --------------------------- |
-| Model     | b10 (10-block, compact)     |
-| Backend   | WebGL (GPU in browser)      |
-| Visits    | 500                         |
-| Frame     | Toggle on/off via UI button |
+| Model | b10 (10-block, compact) |
+| Backend | WebGL (GPU in browser) |
+| Visits | 500 |
+| Frame | Toggle on/off via UI button |
 
 **Our position:** 2-pass is not needed for production enrichment. It could be added as an optional diagnostic mode in the lab tool if frame calibration work requires it in the future.
 
@@ -186,11 +193,11 @@ The delta measures how much the frame changes KataGo's evaluation. Large deltas 
 
 ## Key Parameters
 
-| Parameter        | Default  | Source   | Description                                                                                                      |
+| Parameter | Default | Source | Description |
 | ---------------- | -------- | -------- | ---------------------------------------------------------------------------------------------------------------- |
-| `margin`         | 2        | KaTrain  | Empty rows/columns around puzzle stones where no frame stones are placed                                         |
-| `ko_type`        | `"none"` | KaTrain  | `"none"`, `"direct"`, or `"approach"` — adds ko-threat patterns when applicable                                  |
-| `synthetic_komi` | `false`  | Lizzie   | Experimental: recompute komi from filled territory areas instead of preserving original. Not for production use.  |
+| `margin` | 2 | KaTrain | Empty rows/columns around puzzle stones where no frame stones are placed |
+| `ko_type` | `"none"` | KaTrain | `"none"`, `"direct"`, or `"approach"` — adds ko-threat patterns when applicable |
+| `synthetic_komi` | `false` | Lizzie | Experimental: recompute komi from filled territory areas instead of preserving original. Not for production use. |
 
 > **Removed in V3:** `offence_to_win` (previously defaulted to 10). Territory split is now score-neutral (50/50). The puzzle outcome alone determines the winning margin.
 
@@ -203,8 +210,10 @@ Frame stone placement is guarded by three validation checks. Each candidate plac
 ### Guard Ordering
 
 1. **Eye detection** — skip if the point is a single-point or two-point eye of the defender. Filling eyes destroys the defender's living potential.
-2. **Self-legality** — skip if the placed stone's group would have zero liberties (suicide). Uses BFS liberty counting.
-3. **Puzzle stone protection** — skip if placement would reduce any adjacent puzzle-stone group to zero liberties.
+
+1. **Self-legality** — skip if the placed stone's group would have zero liberties (suicide). Uses BFS liberty counting.
+
+1. **Puzzle stone protection** — skip if placement would reduce any adjacent puzzle-stone group to zero liberties.
 
 These guards are implemented in `analyzers/liberty.py` (extracted per MH-1 governance constraint when helpers exceeded 120 lines).
 
@@ -219,8 +228,11 @@ Each frame records a `fill_density` value: `stones_added / frameable_area`. This
 ### Skip Counters
 
 `FrameResult` includes three skip counters for diagnostic purposes:
+
 - `stones_skipped_illegal` — placements that would create zero-liberty groups
+
 - `stones_skipped_puzzle_protect` — placements that would capture puzzle stones
+
 - `stones_skipped_eye` — placements that would fill defender eyes
 
 ### Nearly-Full Board Handling (F11)
@@ -236,12 +248,17 @@ When the frameable area is less than 5% of the total board, `build_frame()` retu
 After all frame stones are placed, `validate_frame()` checks:
 
 1. **No truly isolated stones** — every frame stone must have at least one orthogonal neighbor (of any color). Stones at the zone boundary between defender and attacker fill may have only opposite-color neighbors (seam stones) — this is expected.
-2. **Connectivity diagnostics** — component counts for defender and attacker fill zones are logged. Multiple components are allowed when puzzle geometry splits the frameable area.
+
+1. **Connectivity diagnostics** — component counts for defender and attacker fill zones are logged. Multiple components are allowed when puzzle geometry splits the frameable area.
 
 If validation fails (truly isolated stones detected), the frame is rejected:
+
 - `WARNING` log with full diagnostics (component counts, dead stone counts)
+
 - Failed frame position logged as SGF for troubleshooting
+
 - `FrameResult` returned with original position and `frame_stones_added=0`
+
 - Callers handle "frame skipped" gracefully (same as F11 nearly-full board)
 
 ---
@@ -250,9 +267,9 @@ If validation fails (truly isolated stones detected), the frame is rejected:
 
 1. **BFS seed placement determines zone division.** The defender and attacker BFS seeds are placed at fixed far corners after normalization. On small boards (9×9) where the puzzle region geometrically splits the frameable area, the BFS may produce multiple disconnected components per color — this is logged as INFO and is an inherent geometry constraint, not a fill quality issue.
 
-2. **Ko-threat placement degrades on small boards.** On a crowded 9×9 board, the 5 candidate positions for ko-threat patterns may all be blocked. A warning is logged (`"Ko threats requested ... but insufficient room"`), but the framed position is still returned without ko material. Callers should check logs if ko analysis quality matters. On 19×19 boards, ko threats are placed **before** territory fill to avoid placement conflicts.
+1. **Ko-threat placement degrades on small boards.** On a crowded 9×9 board, the 5 candidate positions for ko-threat patterns may all be blocked. A warning is logged (`"Ko threats requested ... but insufficient room"`), but the framed position is still returned without ko material. Callers should check logs if ko analysis quality matters. On 19×19 boards, ko threats are placed **before** territory fill to avoid placement conflicts.
 
-3. **Synthetic komi is experimental.** When `synthetic_komi=True`, komi is recomputed from the territory fill areas. This can stabilize engine evaluations for some puzzles but may distort puzzle semantics for others. Not enabled by default.
+1. **Synthetic komi is experimental.** When `synthetic_komi=True`, komi is recomputed from the territory fill areas. This can stabilize engine evaluations for some puzzles but may distort puzzle semantics for others. Not enabled by default.
 
 ---
 
@@ -260,25 +277,30 @@ If validation fails (truly isolated stones detected), the frame is rejected:
 
 During development, we compared our algorithm against **Lizzie YZY** ([GitHub](https://github.com/yzyray/lizzieyzy), GPL-3.0), a Leela Zero/KataGo GUI that includes tsumego framing in `rules/Tsumego.java`. Key differences:
 
-| Aspect               | Yen-Go (adopted)                                       | Lizzie (researched, not adopted)                          |
+| Aspect | Yen-Go (adopted) | Lizzie (researched, not adopted) |
 | -------------------- | ------------------------------------------------------ | --------------------------------------------------------- |
-| Fill strategy        | BFS flood-fill from seed points (V3)                   | Side-specific checkerboard with hard boundaries           |
-| Orientation          | Normalize to TL (flip + axis-swap) → single code path   | 4 separate case branches (left/right/top/bottom)          |
-| Territory split      | Score-neutral 50/50 split                              | Half-board area balancing with residual komi              |
-| Ko threats           | Fixed 4-stone patterns in far corners                  | Same patterns with extensive no-room fallback diagnostics |
-| Komi                 | Preserved (default) or synthetic (opt-in)              | Always recomputed from territory                          |
-| Attacker inference   | Edge-distance + ratio + cover-side tie-break           | Cover-side scoring as primary heuristic                   |
+| Fill strategy | BFS flood-fill from seed points (V3) | Side-specific checkerboard with hard boundaries |
+| Orientation | Normalize to TL (flip + axis-swap) → single code path | 4 separate case branches (left/right/top/bottom) |
+| Territory split | Score-neutral 50/50 split | Half-board area balancing with residual komi |
+| Ko threats | Fixed 4-stone patterns in far corners | Same patterns with extensive no-room fallback diagnostics |
+| Komi | Preserved (default) or synthetic (opt-in) | Always recomputed from territory |
+| Attacker inference | Edge-distance + ratio + cover-side tie-break | Cover-side scoring as primary heuristic |
 
 **What we adopted from Lizzie:**
+
 - Cover-side attacker tie-breaker as secondary heuristic (C3)
+
 - Ko-room warning diagnostics (C1)
+
 - Optional synthetic komi mode for experimentation (C4)
 
 **What we rejected:**
-- Side-specific branch explosion (4× duplicated logic) — normalization eliminates this need
-- Checkerboard-dominant fill — produces weak ownership signal
-- Zobrist hash integration during framing — unnecessary for our pipeline
 
+- Side-specific branch explosion (4× duplicated logic) — normalization eliminates this need
+
+- Checkerboard-dominant fill — produces weak ownership signal
+
+- Zobrist hash integration during framing — unnecessary for our pipeline
 
 ---
 
@@ -308,6 +330,7 @@ This renders the raw position and the framed position side by side using `X` (Bl
 Both primary source projects are MIT-licensed and cited in the module header:
 
 - **KaTrain** — https://github.com/sanderland/katrain (SHA `877684f9a2ff913120e2d608a4eb8202dc1fc8ed`)
+
 - **ghostban** — https://github.com/goproblems/ghostban (v3.0.0-alpha.155)
 
 Additionally researched (not adopted as source code):

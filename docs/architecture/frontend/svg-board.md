@@ -13,14 +13,14 @@ The Go board is rendered using the [OGS goban library](https://github.com/online
 
 ### Why Canvas over SVG (Spec 132)
 
-| Aspect        | Canvas (goban)                                        | SVG (goban)                      | Decision    |
+| Aspect | Canvas (goban) | SVG (goban) | Decision |
 | ------------- | ----------------------------------------------------- | -------------------------------- | ----------- |
-| Stone quality | Phong-shaded, Shell/Slate themes, specular highlights | Flat fills, uniform colors       | **Canvas**  |
-| Board texture | Kaya wood grain via texture image                     | Solid color only                 | **Canvas**  |
-| Dark mode     | "Night Play" built-in theme                           | Manual CSS overrides             | **Canvas**  |
-| Performance   | Pre-rendered stone sprites, lazy updates              | DOM thrashing with many elements | **Canvas**  |
-| Accessibility | goban provides keyboard nav + ARIA                    | Same (goban handles both)        | Neutral     |
-| Debugging     | Opaque pixel buffer                                   | DOM inspection                   | SVG (minor) |
+| Stone quality | Phong-shaded, Shell/Slate themes, specular highlights | Flat fills, uniform colors | **Canvas** |
+| Board texture | Kaya wood grain via texture image | Solid color only | **Canvas** |
+| Dark mode | "Night Play" built-in theme | Manual CSS overrides | **Canvas** |
+| Performance | Pre-rendered stone sprites, lazy updates | DOM thrashing with many elements | **Canvas** |
+| Accessibility | goban provides keyboard nav + ARIA | Same (goban handles both) | Neutral |
+| Debugging | Opaque pixel buffer | DOM inspection | SVG (minor) |
 
 **Conclusion**: Canvas provides dramatically better visual quality through Phong-shaded stones and texture support. The goban library handles accessibility equally in both modes. Canvas is the default; users can switch to SVG via localStorage preference.
 
@@ -40,7 +40,7 @@ function getRendererPreference(): RendererPreference {
 
 ### SVG Element Hierarchy
 
-```
+```text
 <svg viewBox="0 0 {width} {height}" width="100%" height="100%">
   <rect class="board-background" />          <!-- Board wood texture -->
   <g class="board-lines">                    <!-- Grid lines -->
@@ -94,7 +94,9 @@ interface Region {
 **Corner codes**:
 
 - `TL` = Top-Left, `TR` = Top-Right, `BL` = Bottom-Left, `BR` = Bottom-Right
+
 - `T` = Top-Center, `B` = Bottom-Center, `L` = Left-Center, `R` = Right-Center
+
 - `C` = Center
 
 ### ViewBox Adjustment for Partial Boards
@@ -235,15 +237,15 @@ function svgShadow(x: number, y: number): SVGCircleElement {
 
 Positional highlights indicate areas of interest for hints or feedback:
 
-| Type      | Visual               | Use Case                   |
+| Type | Visual | Use Case |
 | --------- | -------------------- | -------------------------- |
-| Circle    | Empty circle outline | Mark a point               |
-| Square    | Empty square outline | Mark a point (alternative) |
-| Triangle  | Empty triangle       | Important point            |
-| Cross (X) | X mark               | Wrong move / removal       |
-| Plus (+)  | Plus mark            | Last move indicator        |
-| Block     | Filled square        | Territory marker           |
-| Label     | Text (A-Z, 1-99)     | Variation labels           |
+| Circle | Empty circle outline | Mark a point |
+| Square | Empty square outline | Mark a point (alternative) |
+| Triangle | Empty triangle | Important point |
+| Cross (X) | X mark | Wrong move / removal |
+| Plus (+) | Plus mark | Last move indicator |
+| Block | Filled square | Territory marker |
+| Label | Text (A-Z, 1-99) | Variation labels |
 
 ### Implementation
 
@@ -326,8 +328,10 @@ const HIGHLIGHT_COLORS = {
 ### Automatic Scaling Behavior
 
 1. **Desktop (landscape)**: Board fills available height, centered horizontally
-2. **Mobile (portrait)**: Board fills available width, aspect ratio maintained
-3. **Partial boards**: Aspect ratio adjusts to region dimensions
+
+1. **Mobile (portrait)**: Board fills available width, aspect ratio maintained
+
+1. **Partial boards**: Aspect ratio adjusts to region dimensions
 
 ### Breakpoint Handling
 
@@ -410,9 +414,13 @@ function update(changes: ChangeSet) {
 Maximum elements for a 19x19 board:
 
 - Stones: 361
+
 - Shadows: 361
+
 - Markup: ~50 (typical)
+
 - Event targets: 361
+
 - **Total**: ~1,200 SVG elements
 
 This is well within SVG performance limits (issues typically start at 10,000+ elements).
@@ -426,13 +434,20 @@ The existing `Board.tsx` uses HTML Canvas (882 lines).
 ### Migration Steps
 
 1. Create new `SvgBoard.tsx` component alongside existing Canvas board
-2. Implement core rendering (stones, lines, hoshi)
-3. Add markup layer (highlights, labels)
-4. Add event handling (clicks, hover)
-5. Add partial board support (viewBox adjustment)
-6. Feature-flag switch between Canvas and SVG
-7. Validate with visual regression tests
-8. Remove Canvas implementation
+
+1. Implement core rendering (stones, lines, hoshi)
+
+1. Add markup layer (highlights, labels)
+
+1. Add event handling (clicks, hover)
+
+1. Add partial board support (viewBox adjustment)
+
+1. Feature-flag switch between Canvas and SVG
+
+1. Validate with visual regression tests
+
+1. Remove Canvas implementation
 
 ### Backward Compatibility
 
@@ -449,5 +464,7 @@ export function Board(props: BoardProps) {
 ## See Also
 
 - [Go Rules Engine](./go-rules-engine.md) - Capture, ko, and liberty calculation
+
 - [Puzzle Solving Flow](./puzzle-solving.md) - How board state integrates with puzzles
+
 - [Reference: Besogo](https://github.com/yewang/besogo) - Source of architecture patterns

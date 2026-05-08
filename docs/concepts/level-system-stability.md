@@ -9,7 +9,7 @@ The 9-level difficulty system is **permanently frozen** as of schema v10 (Spec 1
 ## The 9 Permanent Level Slugs
 
 | ID | Slug | Name | Rank Range |
-|----|------|------|------------|
+| ---- | ------ | ------ | ------------ |
 | 1 | `novice` | Novice | 30k–26k |
 | 2 | `beginner` | Beginner | 25k–21k |
 | 3 | `elementary` | Elementary | 20k–16k |
@@ -27,30 +27,45 @@ The 9-level difficulty system is **permanently frozen** as of schema v10 (Spec 1
 ## What "Frozen" Means
 
 - **Level slugs** are permanent identifiers used in SGF paths (`sgf/{level}/batch-{NNNN}/`), YG properties, view indexes, and frontend routing.
+
 - **Display names** (`name`, `shortName`) may be updated for localization without a schema bump.
+
 - **Rank ranges** may be refined if Go ranking conventions change, but slug identifiers remain stable.
+
 - **No levels may be added, removed, or reordered** without a major schema version bump (e.g., v10 → v11).
 
 ## Why Frozen
 
 1. **Path stability**: SGF files are stored at `sgf/{level}/batch-{NNNN}/`. Changing level slugs would require migrating all published files.
-2. **View index integrity**: `views/by-level/{level}.json` indexes use level slugs as filenames.
-3. **Frontend routing**: Routes like `/collections/level-{slug}` depend on stable slugs.
-4. **User progress**: Player progress in `localStorage` references level slugs. Changing them would invalidate progress data.
-5. **External references**: GitHub Pages URLs contain level slugs. Changing them would break external links.
+
+1. **View index integrity**: `views/by-level/{level}.json` indexes use level slugs as filenames.
+
+1. **Frontend routing**: Routes like `/collections/level-{slug}` depend on stable slugs.
+
+1. **User progress**: Player progress in `localStorage` references level slugs. Changing them would invalidate progress data.
+
+1. **External references**: GitHub Pages URLs contain level slugs. Changing them would break external links.
 
 ## Changing the Level System
 
 If a future spec requires modifying levels:
 
 1. Create a new spec with explicit migration plan
-2. Bump SGF schema to next major version
-3. Write a migration script (like `migrate_sharding.py`)
-4. Update all view indexes
-5. Provide frontend migration for localStorage data
-6. Document the change in CHANGELOG.md
+
+1. Bump SGF schema to next major version
+
+1. Write a migration script (like `migrate_sharding.py`)
+
+1. Update all view indexes
+
+1. Provide frontend migration for localStorage data
+
+1. Document the change in CHANGELOG.md
 
 > **See also**:
+>
 > - [config/puzzle-levels.json](../../config/puzzle-levels.json) — Source of truth
+>
 > - [Architecture: Pipeline](../architecture/backend/pipeline.md) — How levels flow through the pipeline
+>
 > - [Concepts: Tags](./tags.md) — Tag taxonomy (also stable, but not frozen)

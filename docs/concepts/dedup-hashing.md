@@ -11,7 +11,7 @@ This document is the canonical reference for the three-hash system used to detec
 The pipeline uses three independent hashes — each with exactly one job:
 
 | Hash | Computed From | Purpose | Length | Stored In |
-|------|--------------|---------|--------|-----------|
+| ------ | -------------- | --------- | -------- | ----------- |
 | `position_hash` | Board setup: `SZ + sorted(AB) + sorted(AW) + PL` | Ingest dedup gate (position identity) | 16 hex | `yengo-content.db` column |
 | `solution_fingerprint` | Moves-only solution tree serialization | Same-source variant detection | 16 hex | `yengo-content.db` column |
 | `content_hash` | Full SGF text verbatim | Publish identity / filename / GN property | 16 hex | `yengo-content.db` PK, `yengo-search.db` PK |
@@ -35,7 +35,7 @@ SHA256("SZ{board_size}:B[{sorted_ab}]:W[{sorted_aw}]:PL[{first_player}]")[:16]
 ### Inputs
 
 | Input | Source | Default |
-|-------|--------|---------|
+| ------- | -------- | --------- |
 | `SZ[]` | Board size | `19` |
 | `AB[]` | Black setup stones (sorted lexicographically) | — |
 | `AW[]` | White setup stones (sorted lexicographically) | — |
@@ -44,14 +44,19 @@ SHA256("SZ{board_size}:B[{sorted_ab}]:W[{sorted_aw}]:PL[{first_player}]")[:16]
 ### Not Included
 
 - Solution tree moves (`B[]`, `W[]` after root)
+
 - Comments (`C[]`)
+
 - YenGo custom properties (`Y*`)
+
 - Annotations, markup
 
 ### Properties
 
 - **Deterministic**: Same stones always produce the same hash
+
 - **Order-independent**: `AB[pd][qd]` and `AB[qd][pd]` produce the same hash
+
 - **Player-sensitive**: `PL[B]` and `PL[W]` produce different hashes
 
 ### Location
@@ -75,34 +80,44 @@ SHA256(canonical_tree_serialization.encode('utf-8'))[:16]
 ### Serialization Rules (Version 1)
 
 1. **Node token**: `{color}{move_sgf}{'!' if correct else '?'}` — e.g., `Bds!`, `Wcs?`
-2. **Tree walk**: Depth-first, children sorted lexicographically by token before recursing
-3. **Branching**: Multiple children → parenthesized groups, sorted. Single child → no parens
-4. **Root skip**: Root `SolutionNode` has no move — serialization starts from its children
+
+1. **Tree walk**: Depth-first, children sorted lexicographically by token before recursing
+
+1. **Branching**: Multiple children → parenthesized groups, sorted. Single child → no parens
+
+1. **Root skip**: Root `SolutionNode` has no move — serialization starts from its children
 
 ### What's Included
 
 - Move color (`B` or `W`)
+
 - Move SGF coordinate (e.g., `ds`, `cs`)
+
 - Correctness flag (`!` for correct, `?` for wrong)
 
 ### What's Excluded
 
 - Comments (`C[]`)
+
 - YenGo properties (`Y*`)
+
 - Annotations, markup
+
 - Whitespace, formatting
 
 ### Worked Examples
 
 **Linear puzzle** (all correct):
-```
+
+```text
 SGF:    ;B[ds];W[cs];B[ar];W[ap];B[es];W[ao];B[dr]
 Tokens: Bds!Wcs!Bar!Wap!Bes!Wao!Bdr!
 Hash:   SHA256("Bds!Wcs!Bar!Wap!Bes!Wao!Bdr!")[:16]
 ```
 
 **Branched puzzle** (root has correct `B[ds]` and wrong `B[ab]`):
-```
+
+```text
 Sort:   "Bab?" < "Bds!" (lexicographic)
 Result: (Bab?)(Bds!Wcs!Bar!)
 Hash:   SHA256("(Bab?)(Bds!Wcs!Bar!)")[:16]
@@ -111,14 +126,17 @@ Hash:   SHA256("(Bab?)(Bds!Wcs!Bar!)")[:16]
 ### Properties
 
 - **Deterministic**: Same moves + correctness always produce the same hash
+
 - **Comment-insensitive**: Different `C[]` values → same fingerprint
+
 - **Branch-order-insensitive**: Children sorted before hashing
+
 - **Correctness-sensitive**: Same move marked correct vs wrong → different fingerprint
 
 ### Fingerprint Versioning
 
 | `fingerprint_version` | Algorithm |
-|---|---|
+| --- | --- |
 | 1 | Moves + correctness, siblings sorted lexicographically |
 | 2+ (future) | Could add ko-state, pass moves, nested depth, etc. |
 
@@ -151,7 +169,9 @@ Uses the **entire SGF text verbatim** — any change (including whitespace or co
 ### Usage
 
 - Publish stage generates `GN[YENGO-{content_hash}]`
+
 - Filename: `{content_hash}.sgf`
+
 - Primary key in both `yengo-content.db` and `yengo-search.db`
 
 ## Decision Matrix
@@ -159,7 +179,7 @@ Uses the **entire SGF text verbatim** — any change (including whitespace or co
 The dedup check runs during ingest. Only puzzles with a position-hash collision reach the fingerprint comparison.
 
 | Position Hash | Source | Fingerprint | FP Version | Result | Event Type |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | NO MATCH | — | — | — | **Allow** | `no_collision` |
 | MATCH | Different | — | — | **Allow** | `cross_source_allowed` |
 | MATCH | Same | MATCH | Same | **Reject** | `true_duplicate` |
@@ -171,7 +191,7 @@ The dedup check runs during ingest. Only puzzles with a position-hash collision 
 Every position collision is logged as a structured event with `action: dedup_collision` and an `event_type` field:
 
 | Event Type | Meaning | Outcome |
-|---|---|---|
+| --- | --- | --- |
 | `no_collision` | Unique position (not logged) | Allowed |
 | `true_duplicate` | Same position + same source + same fingerprint | Rejected |
 | `variant_allowed` | Same position + same source + different fingerprint | Allowed |
@@ -207,5 +227,7 @@ CREATE INDEX idx_sgf_pos_sol  ON sgf_files(position_hash, solution_fingerprint);
 > **See also**:
 >
 > - [SQLite Index Architecture](sqlite-index-architecture.md) — Full database schemas and terminology
+>
 > - [Collection Editions](collection-editions.md) — Cross-source collision handling and edition splitting
+>
 > - [Architecture: Pipeline](../architecture/backend/pipeline.md) — 3-stage pipeline flow

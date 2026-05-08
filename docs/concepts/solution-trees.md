@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [How-To: Create Adapter](../how-to/backend/create-adapter.md) — Handling move alternation
+>
 > - [Concepts: SQLite Index Architecture](./sqlite-index-architecture.md) — Position-hash dedup context
+>
 > - [Architecture: SGF](../architecture/backend/sgf.md) — Parser and property design
 
 **Last Updated**: 2026-04-12
@@ -18,7 +20,7 @@ A **solution tree** represents all possible correct (and incorrect) move sequenc
 
 ### Basic Structure
 
-```
+```text
 Root (setup position)
 ├── Black move 1 (correct) ✓
 │   └── White response
@@ -56,8 +58,10 @@ Sequential moves are written as:
 This means:
 
 1. Black plays at aa
-2. White responds at bb
-3. Black continues at cc
+
+1. White responds at bb
+
+1. Black continues at cc
 
 ### Variations (Branches)
 
@@ -70,6 +74,7 @@ When there are multiple choices at a position, SGF uses parentheses to create br
 This means:
 
 - Black can play at aa, OR
+
 - Black can play at bb
 
 These are **sibling variations** at the same position.
@@ -86,7 +91,7 @@ In puzzle context, **miai** means multiple equally correct first moves. The play
 
 Black can live by playing at A OR B (either works equally well):
 
-```
+```text
 . . B . .
 B B W W .
 . W . . .
@@ -117,11 +122,11 @@ B B W W .
 
 **Go Rule**: Players MUST alternate turns.
 
-| Pattern   | Valid? | Interpretation                    |
+| Pattern | Valid? | Interpretation |
 | --------- | ------ | --------------------------------- |
-| B → W → B | ✓      | Normal sequence                   |
-| B → B     | ✗      | Invalid as sequence, must be miai |
-| W → W → W | ✗      | Invalid as sequence, must be miai |
+| B → W → B | ✓ | Normal sequence |
+| B → B | ✗ | Invalid as sequence, must be miai |
+| W → W → W | ✗ | Invalid as sequence, must be miai |
 
 ### Detection in Code
 
@@ -163,7 +168,9 @@ In YenGo SGF format, correct moves are marked in variation structure:
 The frontend uses this structure to:
 
 - Validate player moves
+
 - Show feedback ("Correct!" or "Try again")
+
 - Display the full solution tree
 
 ---
@@ -172,7 +179,7 @@ The frontend uses this structure to:
 
 Complex puzzles have deeper trees with multiple levels:
 
-```
+```text
 Black move 1 (correct)
 ├── White response 1 (most common)
 │   └── Black move 2 ✓
@@ -191,6 +198,7 @@ Black move 1 (correct)
 Some puzzles allow moves in different orders:
 
 - Playing A→B→C gives same result as A→C→B
+
 - Both paths are correct (transposition)
 
 This is marked with `YO[flexible]` in YenGo puzzles:
@@ -205,19 +213,21 @@ YO[flexible]  ; Move order is flexible
 
 ## Summary Table
 
-| Term             | Meaning                         | SGF Representation               |
+| Term | Meaning | SGF Representation |
 | ---------------- | ------------------------------- | -------------------------------- |
-| Sequential moves | One move after another          | `;B[aa];W[bb]`                   |
-| Variations       | Different choices at same point | `(;B[aa])(;B[bb])`               |
-| Miai             | Equally good alternatives       | Same-color moves as variations   |
-| Correct move     | Part of winning solution        | Usually first variation          |
-| Wrong move       | Common mistake                  | Other variations with refutation |
-| Transposition    | Different order, same result    | `YO[flexible]` flag              |
+| Sequential moves | One move after another | `;B[aa];W[bb]` |
+| Variations | Different choices at same point | `(;B[aa])(;B[bb])` |
+| Miai | Equally good alternatives | Same-color moves as variations |
+| Correct move | Part of winning solution | Usually first variation |
+| Wrong move | Common mistake | Other variations with refutation |
+| Transposition | Different order, same result | `YO[flexible]` flag |
 
 ---
 
 ## Related Documentation
 
 - [How-To: Create Adapter](../how-to/backend/create-adapter.md) — Implementing miai detection
+
 - [Reference: SGF Properties](../reference/sgf-properties.md) — YenGo custom properties
+
 - [Architecture: SGF](../architecture/backend/sgf.md) — Parser implementation

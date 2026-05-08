@@ -8,7 +8,9 @@ How to inspect, reset, and troubleshoot the per-source ingest state database
 > **See also:**
 >
 > - [Architecture: Source Ingest Database](../../architecture/backend/source-ingest-db.md) — design rationale, schema, lifecycle.
+>
 > - [Concepts: SQLite Index Architecture](../../concepts/sqlite-index-architecture.md) — terminology, the three databases.
+>
 > - [How-To: CLI Reference](./cli-reference.md) — full pipeline commands.
 
 ## What it is
@@ -33,7 +35,7 @@ python -m backend.puzzle_manager source-status t-hero
 
 Output (text):
 
-```
+```text
 Per-Source Ingest DB Status
 ==============================================================================
   t-hero (local)
@@ -66,7 +68,7 @@ python -m backend.puzzle_manager run --source t-hero --fresh
 
 Output starts with:
 
-```
+```text
 [fresh] wiped SourceIngestDB for 't-hero' at .../external-sources/t-hero/sgf
 [fresh] wiped 3 runtime state file(s) under .pm-runtime/state
 ```
@@ -98,7 +100,7 @@ for the exact tiebreak rules.
 ## Common issues
 
 | Symptom | Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | `SourceIdMismatchError` on open | DB was created for a different `source_id` (e.g. you renamed the source). | Move or wipe the DB: `python -m backend.puzzle_manager run --source <id> --fresh`. |
 | `SchemaVersionError: db is newer than code` | You downgraded `puzzle_manager`. | Upgrade back, or wipe with `--fresh` (loses skip history). |
 | `database is locked` warnings on Windows | AV/indexer holding WAL files. | The DB uses `busy_timeout=5000` and retries. If persistent, exclude `external-sources/` from your AV scanner. |
@@ -120,7 +122,11 @@ and safe to skip.
 These options no longer exist as of the SourceIngestDB migration:
 
 - `resume: true` / `resume: false` in `sources.json` config — stripped on load
+
   with a one-time WARNING.
+
 - `core.checkpoint.AdapterCheckpoint` and the legacy
+
   `.pm-runtime/state/<source_id>_checkpoint.json` files.
+
 - The `_compute_config_signature()` MD5 drift warning (was never actionable).

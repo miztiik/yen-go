@@ -12,8 +12,10 @@
 Three independent reviews were conducted:
 
 1. **Expert Code Review** (Principal Engineer + Cho Chikun 9p + Lee Sedol 9p) — Line-level bug audit
-2. **Principal Review Gap Plan (009)** — Architecture-level gap analysis against 5 promised outcomes
-3. **Algorithmic Review** — Deep analysis of statistical/Go-domain logic flaws
+
+1. **Principal Review Gap Plan (009)** — Architecture-level gap analysis against 5 promised outcomes
+
+1. **Algorithmic Review** — Deep analysis of statistical/Go-domain logic flaws
 
 Each review found overlapping AND unique issues. This document extracts the **verified findings** (confirmed against actual source code), flags **false positives** (review claims that don't match the code), and adds **gaps none of the reviews caught**.
 
@@ -21,14 +23,14 @@ Each review found overlapping AND unique issues. This document extracts the **ve
 
 ## Verdict Summary
 
-| Area                        | Status                                                  | Confidence        |
+| Area | Status | Confidence |
 | --------------------------- | ------------------------------------------------------- | ----------------- |
-| Correct-move validation     | Implemented, algorithmically weak for L&D               | ~70%              |
-| Wrong-move refutation trees | Partial — single PV lines, not branching trees          | ~50%              |
-| Difficulty estimation       | Implemented, calibration fragile, collinear weights     | ~65%              |
-| Teaching comments           | Template-only, generic, low pedagogical ceiling         | ~40%              |
-| Hints                       | Implemented, **broken on non-19x19 boards**             | ~80% (19x19 only) |
-| KataGo integration          | Protocol-correct, config-correct, operationally fragile | ~75%              |
+| Correct-move validation | Implemented, algorithmically weak for L&D | ~70% |
+| Wrong-move refutation trees | Partial — single PV lines, not branching trees | ~50% |
+| Difficulty estimation | Implemented, calibration fragile, collinear weights | ~65% |
+| Teaching comments | Template-only, generic, low pedagogical ceiling | ~40% |
+| Hints | Implemented, **broken on non-19x19 boards** | ~80% (19x19 only) |
+| KataGo integration | Protocol-correct, config-correct, operationally fragile | ~75% |
 
 ---
 
@@ -46,12 +48,12 @@ These are verified bugs that produce wrong output for real puzzles.
 
 The regex `u:[01]` looks like a bug, but it actually matches the **pipeline's canonical definition**:
 
-| Source                                    | `u` Means                                                                      | Valid Values |
+| Source | `u` Means | Valid Values |
 | ----------------------------------------- | ------------------------------------------------------------------------------ | ------------ |
-| `docs/concepts/quality.md`                | "Unique correct first move" — 0=miai, 1=unique                                 | 0 or 1       |
-| `docs/architecture/backend/enrichment.md` | "1 if single correct first move"                                               | 0 or 1       |
-| Pipeline `core/complexity.py`             | `is_unique_first_move(game)` — checks if exactly 1 child has `is_correct=True` | 0 or 1       |
-| Enrichment lab `_build_yx()`              | `len(set(wrong_moves))` — count of unique wrong first moves                    | 0, 1, 2, 3   |
+| `docs/concepts/quality.md` | "Unique correct first move" — 0=miai, 1=unique | 0 or 1 |
+| `docs/architecture/backend/enrichment.md` | "1 if single correct first move" | 0 or 1 |
+| Pipeline `core/complexity.py` | `is_unique_first_move(game)` — checks if exactly 1 child has `is_correct=True` | 0 or 1 |
+| Enrichment lab `_build_yx()` | `len(set(wrong_moves))` — count of unique wrong first moves | 0, 1, 2, 3 |
 
 The enrichment lab **redefines `u`** from a binary "is the correct answer unique?" to a count of distinct wrong first moves. These are completely different things.
 
@@ -75,9 +77,9 @@ The enrichment lab **redefines `u`** from a binary "is the correct answer unique
 
    Regex stays `u:[01]`. No downstream changes needed.
 
-2. **Add new optional field `w` to YX** for wrong-first-move count (the metric the lab WAS computing):
+1. **Add new optional field `w` to YX** for wrong-first-move count (the metric the lab WAS computing):
 
-   ```
+   ```text
    YX[d:5;r:3;s:24;u:1;w:3]     # w = number of distinct wrong first moves found
    YX[d:5;r:3;s:24;u:1;w:3;a:2] # w before a (optional fields)
    ```
@@ -88,9 +90,12 @@ The enrichment lab **redefines `u`** from a binary "is the correct answer unique
    r"^d:\d+;r:\d+;s:\d+;u:[01](;w:\d+)?(;a:\d+)?$"
    ```
 
-3. **Update docs:**
+1. **Update docs:**
+
    - `docs/concepts/quality.md` — add `w` field definition
+
    - `docs/architecture/backend/enrichment.md` — add `w` field
+
    - `CLAUDE.md` — clarify YX field descriptions
 
 **Why this is the right call:** The pipeline's `u` is already consumed by `core/complexity.py`, move alternation detection, and the view schema's `x` array. Breaking its semantics to mean "wrong move count" would cascade through the entire system. Adding a new field `w` is additive and safe — old consumers ignore it, new consumers can use it.
@@ -188,8 +193,11 @@ The code promises "ownership-based thresholds" for Life & Death puzzles, but val
 **Fix direction:**
 
 - Add ownership sweep for target stones (from `AB`/`AW` setup) to `_validate_life_and_death()`
+
 - Promote ownership delta to first-class acceptance criterion
+
 - Keep winrate/policy as secondary tiebreakers
+
 - Requires: `KataGoResponse` already has `ownership` field — just need to wire it into validation
 
 **Effort:** Medium — requires identifying target group stones from puzzle setup  
@@ -208,8 +216,10 @@ Additionally confirmed: `_compare_results()` is called WITHOUT `correct_move_gtp
 **Fix direction:**
 
 1. Add escalation trigger: if Quick engine disagrees with the curated `correct_move` → ALWAYS escalate, regardless of winrate confidence
-2. Pass `correct_move_gtp` to `_compare_results()` to activate F2 per-move tiebreaker
-3. Make tiebreaker tolerance (0.05) configurable via `katago-enrichment.json`
+
+1. Pass `correct_move_gtp` to `_compare_results()` to activate F2 per-move tiebreaker
+
+1. Make tiebreaker tolerance (0.05) configurable via `katago-enrichment.json`
 
 **Effort:** Medium  
 **Tests:** Add test where Quick engine returns 0.0 winrate (confident wrong) for a valid puzzle
@@ -277,10 +287,14 @@ Furthermore: KataGo finds a 15-move ladder trivial (99% policy prior → "novice
 **Fix direction:**
 
 1. Reduce `policy_rank` + `visits_to_solve` combined weight to ~40%
-2. Increase `structural` weight to 35-40% (solution depth, branch count)
-3. Add new factor: `solution_length` (number of forced moves in solution) — distinct from depth
-4. Add confidence intervals to handle PUCT noise
-5. Make this transparent: add score decomposition fields to output for auditability
+
+1. Increase `structural` weight to 35-40% (solution depth, branch count)
+
+1. Add new factor: `solution_length` (number of forced moves in solution) — distinct from depth
+
+1. Add confidence intervals to handle PUCT noise
+
+1. Make this transparent: add score decomposition fields to output for auditability
 
 **Effort:** Medium — algorithm change + config update  
 **Tests:** Add boundary-value tests at level transitions
@@ -333,8 +347,11 @@ Seki 3-signal detection uses `abs(root_score) < 5.0`, but KataGo's Tromp-Taylor 
 **Fix direction:**
 
 - Read `max_time` from lab_mode config; if >0, apply per-analysis timeout
+
 - On timeout: kill engine process, log error, mark puzzle as FLAGGED with reason
+
 - Add `--timeout` CLI arg (overrides config)
+
 - Add watchdog for batch mode (~50 lines)
 
 **Effort:** Medium  
@@ -351,7 +368,9 @@ Seki 3-signal detection uses `abs(root_score) < 5.0`, but KataGo's Tromp-Taylor 
 **Fix direction:**
 
 - Validate model file availability at engine startup (fail fast, not mid-pipeline)
+
 - If referee unavailable in lab mode: clear error message, suggest model download
+
 - Add `scripts/download_models.py` integration check
 
 **Effort:** Small-medium  
@@ -382,8 +401,11 @@ Run-to-run variance for the same puzzle isn't measured. PUCT search with differe
 **Fix direction:**
 
 - Add repeat-run variance tests in calibration
+
 - Define acceptance tolerance (e.g., difficulty may differ by at most 1 level across runs)
+
 - Use `reportAnalysisWinratesAs = SIDETOMOVE` + fixed symmetry count for reproducibility
+
 - Document known failure modes
 
 **Effort:** Medium  
@@ -435,7 +457,7 @@ else:
 
 #### The Problem
 
-```
+```text
 nnMaxBatchSize * GPUs (8) < numSearchThreads * numAnalysisThreads (16)
 Simultaneous GPU queries could exceed batch capacity.
 Increase nnMaxBatchSize for better performance.
@@ -479,7 +501,7 @@ nnMaxBatchSize = 8   # = 4 * 2
 
 #### Current State (7+ scattered locations)
 
-```
+```text
 yen-go/                                # REPO ROOT
 ├─ analysis_logs/                      # SPILLED KataGo logs (14 files!) - CWD hazard
 ├─ calibration_results.txt             # Manual pytest capture
@@ -493,7 +515,7 @@ yen-go/                                # REPO ROOT
 
 #### Proposed Standard Layout
 
-```
+```text
 tools/puzzle-enrichment-lab/
 ├─ .lab-runtime/                       # ALL runtime outputs (gitignored)
 │  ├─ logs/                             # Python enrichment logs (per-run)
@@ -514,23 +536,36 @@ tools/puzzle-enrichment-lab/
 **Design principles:**
 
 1. **Single runtime root:** `.lab-runtime/` (mirrors main pipeline's `.pm-runtime/`)
-2. **All gitignored:** `.lab-runtime/` in `.gitignore`
-3. **Input vs output separation:** `tests/fixtures/` = INPUT only. `calibration/results/` moves to `.lab-runtime/calibration/`
-4. **No CWD-dependent paths:** KataGo `logDir` overridden via `-override-config logDir=<absolute>` at startup
-5. **Easy cleanup:** `rm -rf .lab-runtime/` clears everything
-6. **Repo root clean:** No more `analysis_logs/` or `calibration_results.txt` at repo root
+
+1. **All gitignored:** `.lab-runtime/` in `.gitignore`
+
+1. **Input vs output separation:** `tests/fixtures/` = INPUT only. `calibration/results/` moves to `.lab-runtime/calibration/`
+
+1. **No CWD-dependent paths:** KataGo `logDir` overridden via `-override-config logDir=<absolute>` at startup
+
+1. **Easy cleanup:** `rm -rf .lab-runtime/` clears everything
+
+1. **Repo root clean:** No more `analysis_logs/` or `calibration_results.txt` at repo root
 
 **Migration:**
 
 1. Create `.lab-runtime/` directory structure
-2. Update `log_config.py` to use `.lab-runtime/logs/`
-3. Update `tsumego_analysis.cfg` (or override at startup): `logDir` → `.lab-runtime/katago-logs/`
-4. Update `cli.py` default `--output-dir` to `.lab-runtime/output/`
-5. Update `scripts/run_calibration.py` output to `.lab-runtime/calibration/`
-6. Move `tests/fixtures/calibration/results/` contents to `.lab-runtime/calibration/`
-7. Add `.lab-runtime/` to `.gitignore`
-8. Delete repo-root `analysis_logs/` and `calibration_results.txt`
-9. Update README with new layout
+
+1. Update `log_config.py` to use `.lab-runtime/logs/`
+
+1. Update `tsumego_analysis.cfg` (or override at startup): `logDir` → `.lab-runtime/katago-logs/`
+
+1. Update `cli.py` default `--output-dir` to `.lab-runtime/output/`
+
+1. Update `scripts/run_calibration.py` output to `.lab-runtime/calibration/`
+
+1. Move `tests/fixtures/calibration/results/` contents to `.lab-runtime/calibration/`
+
+1. Add `.lab-runtime/` to `.gitignore`
+
+1. Delete repo-root `analysis_logs/` and `calibration_results.txt`
+
+1. Update README with new layout
 
 **Effort:** Medium — ~8 file changes + directory restructure  
 **Tests:** Verify all output goes to `.lab-runtime/`, no CWD spillage
@@ -578,9 +613,12 @@ The `batch` command already does both in one pass, but single-file enrichment re
 #### Problems
 
 1. **Two-step is error-prone** — users forget step 2, or use the wrong JSON with the wrong SGF
-2. **"Patch" is the wrong verb** — this isn't patching a bug, it's applying AI analysis results to produce enriched output
-3. **Inconsistent with `batch`** — batch does both in one pass; why can't single-file?
-4. **Integration friction** — when integrating into the main pipeline, one command is cleaner than two
+
+1. **"Patch" is the wrong verb** — this isn't patching a bug, it's applying AI analysis results to produce enriched output
+
+1. **Inconsistent with `batch`** — batch does both in one pass; why can't single-file?
+
+1. **Integration friction** — when integrating into the main pipeline, one command is cleaner than two
 
 #### Resolution
 
@@ -597,8 +635,10 @@ python -m cli enrich --sgf puzzle.sgf --output result.json
 When `--emit-sgf` is provided, the `enrich` command:
 
 1. Runs full KataGo analysis → produces `AiAnalysisResult`
-2. Writes JSON to `--output` (as today)
-3. Calls `enrich_sgf(sgf_text, result)` → writes enriched SGF to `--emit-sgf`
+
+1. Writes JSON to `--output` (as today)
+
+1. Calls `enrich_sgf(sgf_text, result)` → writes enriched SGF to `--emit-sgf`
 
 This is exactly what `batch` already does per-puzzle — just wire the same logic into `enrich`.
 
@@ -606,13 +646,13 @@ This is exactly what `batch` already does per-puzzle — just wire the same logi
 
 Better verbs than "patch":
 
-| Verb       | Meaning                              | Recommendation                  |
+| Verb | Meaning | Recommendation |
 | ---------- | ------------------------------------ | ------------------------------- |
-| `apply`    | Apply enrichment results to SGF      | **Preferred** — clear, standard |
-| `stamp`    | Stamp enrichment properties onto SGF | OK but unusual                  |
-| `merge`    | Merge analysis into SGF              | Conflicts with git terminology  |
-| `embed`    | Embed analysis into SGF              | OK                              |
-| `inscribe` | Write properties into SGF            | Too fancy                       |
+| `apply` | Apply enrichment results to SGF | **Preferred** — clear, standard |
+| `stamp` | Stamp enrichment properties onto SGF | OK but unusual |
+| `merge` | Merge analysis into SGF | Conflicts with git terminology |
+| `embed` | Embed analysis into SGF | OK |
+| `inscribe` | Write properties into SGF | Too fancy |
 
 **Recommendation:** Rename `patch` → `apply`. Keep it as the standalone command for when you already have JSON and just need to produce the SGF:
 
@@ -624,8 +664,11 @@ python -m cli apply --sgf puzzle.sgf --result result.json --output enriched.sgf
 **3. Implementation plan:**
 
 - Add `--emit-sgf` optional arg to `enrich` subcommand (~10 lines)
+
 - Rename `patch` → `apply` in argparse (keep `patch` as alias for backward compat)
+
 - Update `--help` text and README
+
 - `batch` command unchanged (already works correctly)
 
 **Effort:** Small (15-20 lines of CLI code)  
@@ -647,10 +690,14 @@ python -m cli apply --sgf puzzle.sgf --result result.json --output enriched.sgf
 **Fix direction:**
 
 1. Add 3-5 variants per technique (random or condition-based selection)
-2. Use board region (corner vs center), stone count, solution depth to select variant
-3. Reference actual board coordinates and engine-specific reading mechanics
-4. Tie explanations to concrete evidence: policy delta, tactical threat, liberty swing
-5. For wrong moves: explain WHY using refutation PV contents, not just "This is wrong"
+
+1. Use board region (corner vs center), stone count, solution depth to select variant
+
+1. Reference actual board coordinates and engine-specific reading mechanics
+
+1. Tie explanations to concrete evidence: policy delta, tactical threat, liberty swing
+
+1. For wrong moves: explain WHY using refutation PV contents, not just "This is wrong"
 
 **Effort:** Medium  
 **Tests:** Assert no two adjacent puzzles get identical comments
@@ -668,9 +715,12 @@ python -m cli apply --sgf puzzle.sgf --result result.json --output enriched.sgf
 **Fix direction:**
 
 1. Multi-branch exploration per wrong first move (depth + breadth caps)
-2. Capture top 2-3 opponent responses when winrate differences are small (<0.05)
-3. Store confidence/coverage metadata per branch
-4. Keep within SGF limitations (subtree depth cap per difficulty tier)
+
+1. Capture top 2-3 opponent responses when winrate differences are small (<0.05)
+
+1. Store confidence/coverage metadata per branch
+
+1. Keep within SGF limitations (subtree depth cap per difficulty tier)
 
 **Effort:** Medium-large refactor  
 **Tests:** Add test with multi-response position, verify branching
@@ -753,11 +803,11 @@ Won't detect refutation branches nested deeper in the tree.
 
 These were flagged as bugs but are either already fixed or misread the code:
 
-| #   | Claim                                          | Actual State                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| # | Claim | Actual State |
 | --- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| S7  | `DifficultyResult` is dead code                | **MISLEADING** — The reviewers were confused by a naming mismatch. The **file** is `difficulty_result.py` but the **class** is `DifficultyEstimate`. There is no class called `DifficultyResult` anywhere in the codebase. `DifficultyEstimate` IS actively used: created by `estimate_difficulty()`, consumed by `_build_difficulty_snapshot()` in `enrich_single.py`, mapped to `DifficultySnapshot` in `AiAnalysisResult`. Full runtime call chain: `enrich_puzzle_from_sgf()` → `estimate_difficulty()` → returns `DifficultyEstimate` → `_build_difficulty_snapshot(estimate)` → `DifficultySnapshot` stored in output. The file name is misleading — consider renaming `difficulty_result.py` → `difficulty_estimate.py` to match the class. |
-| C3  | Refutation branch color truncates at exactly 4 | **PARTIALLY FALSE** — the PV cap at 4 (P0.4) limits the input, so color assignment never needs >4 entries. The color logic itself could handle more IF the cap were raised. The cap is the real bug, not the colors.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| M5  | Level mismatch distance is wrong               | **FALSE** — IDs DO increment by 10 (110, 120, ..., 230). The code is correct for current data. It's fragile but not buggy.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| S7 | `DifficultyResult` is dead code | **MISLEADING** — The reviewers were confused by a naming mismatch. The **file** is `difficulty_result.py` but the **class** is `DifficultyEstimate`. There is no class called `DifficultyResult` anywhere in the codebase. `DifficultyEstimate` IS actively used: created by `estimate_difficulty()`, consumed by `_build_difficulty_snapshot()` in `enrich_single.py`, mapped to `DifficultySnapshot` in `AiAnalysisResult`. Full runtime call chain: `enrich_puzzle_from_sgf()` → `estimate_difficulty()` → returns `DifficultyEstimate` → `_build_difficulty_snapshot(estimate)` → `DifficultySnapshot` stored in output. The file name is misleading — consider renaming `difficulty_result.py` → `difficulty_estimate.py` to match the class. |
+| C3 | Refutation branch color truncates at exactly 4 | **PARTIALLY FALSE** — the PV cap at 4 (P0.4) limits the input, so color assignment never needs >4 entries. The color logic itself could handle more IF the cap were raised. The cap is the real bug, not the colors. |
+| M5 | Level mismatch distance is wrong | **FALSE** — IDs DO increment by 10 (110, 120, ..., 230). The code is correct for current data. It's fragile but not buggy. |
 
 ---
 
@@ -829,8 +879,11 @@ The `enrich` command produces JSON only. To get an enriched SGF, you must run `p
 **Fix direction:** Name log files per-run: `logs/{YYYYMMDD}_{run_id}_enrichment.log`
 
 - Example: `logs/20260302_92fb3590_enrichment.log`
+
 - Keep the daily rotation as a fallback for runs that don't have a run_id (shouldn't happen, but defense-in-depth)
+
 - Implementation: in `setup_logging()`, if `run_id` is provided, use `FileHandler` with run-specific filename instead of `TimedRotatingFileHandler`
+
 - Old logs can still be cleaned by date prefix
 
 **Effort:** Small — ~15 lines in `log_config.py`  
@@ -842,14 +895,16 @@ See P2.6.
 **File:** `katago/tsumego_analysis.cfg` lines 78-82  
 **Source:** KataGo stderr log from real run:
 
-```
+```text
 nnMaxBatchSize * number of GPUs (8) < numSearchThreads * numAnalysisThreads (16)
 ```
 
 Current config:
 
 - `numAnalysisThreads = 2`
+
 - `numSearchThreadsPerAnalysisThread = 8` → total search threads = 16
+
 - `nnMaxBatchSize = 8`
 
 KataGo warns that 16 threads can queue GPU queries faster than the batch size (8) can handle. The GPU processes 8 at a time but 16 threads are queuing, causing serialization delays.
@@ -857,7 +912,9 @@ KataGo warns that 16 threads can queue GPU queries faster than the batch size (8
 **Fix direction:** Either:
 
 - **Option A:** Increase `nnMaxBatchSize` to 16 (= numSearch × numAnalysis) — uses more GPU memory but eliminates bottleneck
+
 - **Option B:** Reduce `numSearchThreadsPerAnalysisThread` to 4 — reduces parallelism but stays within batch limit
+
 - **Option C (recommended):** Set `nnMaxBatchSize` = `numSearchThreadsPerAnalysisThread` × `numAnalysisThreads` as a rule. Add a startup validation check in `engine/local_subprocess.py` that parses the cfg and warns if mismatched.
 
 **Effort:** Small — 1-line cfg change + optional validation  
@@ -867,22 +924,25 @@ See P2.7.
 
 **Confirmed locations of output artifacts:**
 
-| Location                                                          | Contents                           | Created by                                    |
+| Location | Contents | Created by |
 | ----------------------------------------------------------------- | ---------------------------------- | --------------------------------------------- |
-| `tools/puzzle-enrichment-lab/logs/`                               | Python enrichment log              | `log_config.py`                               |
-| `tools/puzzle-enrichment-lab/analysis_logs/`                      | KataGo stderr logs (8 files)       | `tsumego_analysis.cfg` `logDir=analysis_logs` |
-| `tools/puzzle-enrichment-lab/output/`                             | Batch output (empty)               | `cli.py --output-dir`                         |
-| `tools/puzzle-enrichment-lab/test-results/`                       | Benchmark outputs                  | Test runs                                     |
-| `tools/puzzle-enrichment-lab/tests/fixtures/calibration/results/` | Calibration run snapshots (3 dirs) | `scripts/run_calibration.py`                  |
-| `analysis_logs/` **(REPO ROOT!)**                                 | Spilled KataGo logs (14 files)     | CWD-relative `logDir` hazard                  |
-| `calibration_results.txt` **(REPO ROOT!)**                        | Pytest tee output                  | Manual shell command                          |
+| `tools/puzzle-enrichment-lab/logs/` | Python enrichment log | `log_config.py` |
+| `tools/puzzle-enrichment-lab/analysis_logs/` | KataGo stderr logs (8 files) | `tsumego_analysis.cfg` `logDir=analysis_logs` |
+| `tools/puzzle-enrichment-lab/output/` | Batch output (empty) | `cli.py --output-dir` |
+| `tools/puzzle-enrichment-lab/test-results/` | Benchmark outputs | Test runs |
+| `tools/puzzle-enrichment-lab/tests/fixtures/calibration/results/` | Calibration run snapshots (3 dirs) | `scripts/run_calibration.py` |
+| `analysis_logs/` **(REPO ROOT!)** | Spilled KataGo logs (14 files) | CWD-relative `logDir` hazard |
+| `calibration_results.txt` **(REPO ROOT!)** | Pytest tee output | Manual shell command |
 
 **Problems:**
 
 1. **KataGo `logDir = analysis_logs`** is a relative path in cfg — resolves against CWD, NOT against cfg file location. Running from repo root spills logs into repo root `analysis_logs/`.
-2. **No single `.pm-runtime`-style output root** — the main pipeline centralizes runtime data in `.pm-runtime/`; the enrichment lab has no equivalent.
-3. **Calibration results** live inside `tests/fixtures/` (mixed with input fixtures) — confusing: are they fixtures or outputs?
-4. **Root-level `calibration_results.txt`** is a manual artifact with no convention.
+
+1. **No single `.pm-runtime`-style output root** — the main pipeline centralizes runtime data in `.pm-runtime/`; the enrichment lab has no equivalent.
+
+1. **Calibration results** live inside `tests/fixtures/` (mixed with input fixtures) — confusing: are they fixtures or outputs?
+
+1. **Root-level `calibration_results.txt`** is a manual artifact with no convention.
 
 See P2.8 for the consolidated layout fix.
 
@@ -903,19 +963,19 @@ See P2.9.
 
 Current config values in `katago-enrichment.json` v1.11 that should be reviewed:
 
-| Config Key                            | Current                | Issue                             | Recommended                        |
+| Config Key | Current | Issue | Recommended |
 | ------------------------------------- | ---------------------- | --------------------------------- | ---------------------------------- |
-| `difficulty.weights.policy_rank`      | 30                     | Collinear with visits             | 20                                 |
-| `difficulty.weights.visits_to_solve`  | 30                     | Collinear with policy             | 20                                 |
-| `difficulty.weights.structural`       | 20                     | Too low for human difficulty      | 35                                 |
-| `difficulty.weights.trap_density`     | 20                     | Reasonable                        | 25                                 |
-| `refutation.pv_cap`                   | N/A (hardcoded 4)      | Should be config-driven, per-tier | Add: `{"elementary": 4, "dan": 8}` |
-| `validation.tree_validation_sort_key` | N/A (hardcoded policy) | Should use visits                 | Fix in code, no config needed      |
-| `dual_engine.tiebreaker_tolerance`    | N/A (hardcoded 0.05)   | Should be configurable            | Add to config                      |
-| `lab_mode.max_time`                   | 0                      | Dead config                       | Wire to actual timeout logic       |
-| `seki.score_threshold`                | N/A (hardcoded 5.0)    | Too rigid for Tromp-Taylor        | Make configurable                  |
-| `nnMaxBatchSize`                      | 8 (in cfg)             | < numSearch×numAnalysis (16)      | Set to 16 (= threads)              |
-| `numSearchThreadsPerAnalysisThread`   | 8 (in cfg)             | May be too high for single-GPU    | Tune per machine                   |
+| `difficulty.weights.policy_rank` | 30 | Collinear with visits | 20 |
+| `difficulty.weights.visits_to_solve` | 30 | Collinear with policy | 20 |
+| `difficulty.weights.structural` | 20 | Too low for human difficulty | 35 |
+| `difficulty.weights.trap_density` | 20 | Reasonable | 25 |
+| `refutation.pv_cap` | N/A (hardcoded 4) | Should be config-driven, per-tier | Add: `{"elementary": 4, "dan": 8}` |
+| `validation.tree_validation_sort_key` | N/A (hardcoded policy) | Should use visits | Fix in code, no config needed |
+| `dual_engine.tiebreaker_tolerance` | N/A (hardcoded 0.05) | Should be configurable | Add to config |
+| `lab_mode.max_time` | 0 | Dead config | Wire to actual timeout logic |
+| `seki.score_threshold` | N/A (hardcoded 5.0) | Too rigid for Tromp-Taylor | Make configurable |
+| `nnMaxBatchSize` | 8 (in cfg) | < numSearch×numAnalysis (16) | Set to 16 (= threads) |
+| `numSearchThreadsPerAnalysisThread` | 8 (in cfg) | May be too high for single-GPU | Tune per machine |
 
 ---
 
@@ -936,65 +996,94 @@ Current config values in `katago-enrichment.json` v1.11 that should be reviewed:
 ### Sprint 1: Critical Correctness (Day 1-2)
 
 1. **P0.1** — YX `u` field: resolve semantic mismatch (align lab to pipeline definition OR expand pipeline)
-2. **P0.2** — Tree validation: `policy_prior` → `visits` (1-line fix)
-3. **P1.3** — Throw-in upper edge: add `row >= board_size - 1` check (2-line fix)
-4. **P1.7** — Config weight sum validator (5-line Pydantic validator)
-5. **G2** — Pass `correct_move_gtp` to `_compare_results()` (dead code revival)
-6. **Rename** `difficulty_result.py` → `difficulty_estimate.py` to match class name (avoid future confusion)
+
+1. **P0.2** — Tree validation: `policy_prior` → `visits` (1-line fix)
+
+1. **P1.3** — Throw-in upper edge: add `row >= board_size - 1` check (2-line fix)
+
+1. **P1.7** — Config weight sum validator (5-line Pydantic validator)
+
+1. **G2** — Pass `correct_move_gtp` to `_compare_results()` (dead code revival)
+
+1. **Rename** `difficulty_result.py` → `difficulty_estimate.py` to match class name (avoid future confusion)
 
 > ✅ Validation: `pytest -m "unit or golden5"` — all pass, no KataGo calibration needed
 
 ### Sprint 2: Coordinate & Hint Correctness (Day 3-4)
 
-7. **P0.3** — Hint coordinate: pass `board_size` through pipeline (multi-file trace)
-8. **G3** — Audit all `Stone.gtp_coord` usage, replace with `gtp_coord_for(board_size)`
-9. **G5** — Create 9×9 and 13×13 test fixtures (3-5 each) + coordinate unit tests
-10. **Docs:** Update `docs/concepts/quality.md` with board-size requirement for hints
+1. **P0.3** — Hint coordinate: pass `board_size` through pipeline (multi-file trace)
+
+1. **G3** — Audit all `Stone.gtp_coord` usage, replace with `gtp_coord_for(board_size)`
+
+1. **G5** — Create 9×9 and 13×13 test fixtures (3-5 each) + coordinate unit tests
+
+1. **Docs:** Update `docs/concepts/quality.md` with board-size requirement for hints
 
 > ✅ Validation: `pytest -m "unit or golden5"` — includes 9×9 golden puzzle
 
 ### Sprint 3: Depth & Refutation Quality (Day 5-7)
 
-11. **P0.4** — PV cap: make configurable per difficulty tier (add to `katago-enrichment.json`)
-12. **P3.3** — Refutation branch colors: dynamic loop for any PV length
-13. **P1.2** — Dual engine: add escalation on correct-move disagreement
-14. **P2.2** — Engine model availability check at startup (fail fast)
-15. **Docs:** Update `docs/architecture/tools/katago-enrichment.md`
+1. **P0.4** — PV cap: make configurable per difficulty tier (add to `katago-enrichment.json`)
+
+1. **P3.3** — Refutation branch colors: dynamic loop for any PV length
+
+1. **P1.2** — Dual engine: add escalation on correct-move disagreement
+
+1. **P2.2** — Engine model availability check at startup (fail fast)
+
+1. **Docs:** Update `docs/architecture/tools/katago-enrichment.md`
 
 > ✅ Validation: `pytest -m "unit or golden5"` — tesuji golden puzzle tests escalation
 
 ### Sprint 4: Algorithm Quality (Day 8-12)
 
-16. **P1.1** — Wire ownership grid into L&D validation
-17. **P1.6** — Reweight difficulty: reduce collinearity, boost structural weight
-18. **G4** — Wire `StructuralDifficultyWeights` from config instead of hardcoded values
-19. **P1.5** — Ko capture verification (board state tracking)
-20. **Docs:** Update `docs/concepts/levels.md` with revised weight rationale
+1. **P1.1** — Wire ownership grid into L&D validation
+
+1. **P1.6** — Reweight difficulty: reduce collinearity, boost structural weight
+
+1. **G4** — Wire `StructuralDifficultyWeights` from config instead of hardcoded values
+
+1. **P1.5** — Ko capture verification (board state tracking)
+
+1. **Docs:** Update `docs/concepts/levels.md` with revised weight rationale
 
 > ✅ Validation: `pytest -m "unit or golden5 or regression"` — then run calibration ONCE to baseline
 
 ### Sprint 5: Robustness & Infrastructure (Day 13-17)
 
-21. **P2.1** — Add timeout/cancellation for KataGo analysis (wire or remove `max_time`)
-22. **P2.4** — Add determinism/stability tests (repeat-run variance on 3 puzzles)
-23. **G1** — Wire `max_time` config or delete the dead field
-24. **P2.3** — Batch concurrency (async processing)
-25. **P2.5** — Add `--emit-sgf` to `enrich` command, rename `patch` → `apply`
-26. **P2.6** — Per-run log files with `{YYYYMMDD}_{run_id}_enrichment.log` naming
-27. **P2.7** — Fix KataGo `nnMaxBatchSize` vs thread count mismatch
-28. **P2.8** — Consolidate all output artifacts into standard directory layout
-29. **P2.9** — Fix KataGo `logDir` CWD-dependency via `-override-config`
+1. **P2.1** — Add timeout/cancellation for KataGo analysis (wire or remove `max_time`)
+
+1. **P2.4** — Add determinism/stability tests (repeat-run variance on 3 puzzles)
+
+1. **G1** — Wire `max_time` config or delete the dead field
+
+1. **P2.3** — Batch concurrency (async processing)
+
+1. **P2.5** — Add `--emit-sgf` to `enrich` command, rename `patch` → `apply`
+
+1. **P2.6** — Per-run log files with `{YYYYMMDD}_{run_id}_enrichment.log` naming
+
+1. **P2.7** — Fix KataGo `nnMaxBatchSize` vs thread count mismatch
+
+1. **P2.8** — Consolidate all output artifacts into standard directory layout
+
+1. **P2.9** — Fix KataGo `logDir` CWD-dependency via `-override-config`
 
 > ✅ Validation: `pytest -m "unit or golden5 or regression"`
 
 ### Sprint 6: Pedagogy & Polish (Day 18-22)
 
-30. **P3.1** — Expand teaching comment templates (3-5 variants per technique)
-31. **P3.2** — Multi-branch refutation trees
-32. **P1.4** — Ladder staircase detection
-33. **P1.8** — Seki validation threshold
-34. **G6** — PV truncation → teaching comment cascade fix
-35. **Docs:** Final doc sweep — all `docs/architecture/tools/` and `docs/concepts/` updated
+1. **P3.1** — Expand teaching comment templates (3-5 variants per technique)
+
+1. **P3.2** — Multi-branch refutation trees
+
+1. **P1.4** — Ladder staircase detection
+
+1. **P1.8** — Seki validation threshold
+
+1. **G6** — PV truncation → teaching comment cascade fix
+
+1. **Docs:** Final doc sweep — all `docs/architecture/tools/` and `docs/concepts/` updated
 
 > ✅ Final Validation: Full calibration run (`test_calibration.py`) + `pytest -m "not scale"`
 
@@ -1002,28 +1091,28 @@ Current config values in `katago-enrichment.json` v1.11 that should be reviewed:
 
 ## TEST COVERAGE GAPS (All Reviews Combined)
 
-| Area                         | Current Coverage     | Gap                                         |
+| Area | Current Coverage | Gap |
 | ---------------------------- | -------------------- | ------------------------------------------- |
-| Move validation (L&D)        | Excellent            | Ownership-based validation untested         |
-| Move validation (ko)         | Good                 | Ko detection false positives not tested     |
-| Move validation (seki)       | Good                 | No real SGF fixtures for seki               |
-| Refutation generation        | Good                 | No test for >4 move sequences               |
-| Refutation branching         | Missing              | Only single-PV tests                        |
-| Difficulty estimation        | Good                 | No boundary-value tests (level transitions) |
-| Difficulty stability         | Missing              | No repeat-run variance tests                |
-| Teaching comments            | Exists               | No variant diversity tests                  |
-| Hint generation              | Exists               | No 9×9/13×13 tests                          |
-| Technique classification     | Exists               | No edge-ladder tests                        |
-| CLI batch mode               | Exists               | No timeout/recovery tests                   |
-| 9×9 / 13×13 boards           | **Missing entirely** | No fixtures exist                           |
-| Tree validation (deep)       | **Missing**          | Only surface-level tested                   |
-| KataGo timeout/hang          | **Missing**          | No timeout tests                            |
-| Ko false-positive regression | **Missing**          | No tests                                    |
-| Ownership validation         | **Missing**          | Not implemented                             |
-| Score decomposition audit    | **Missing**          | No transparency tests                       |
-| Per-run log isolation        | **Missing**          | No test for run_id in log filename          |
-| KataGo cfg validation        | **Missing**          | No thread/batch mismatch check              |
-| Output directory consistency | **Missing**          | No test for CWD-independent output          |
+| Move validation (L&D) | Excellent | Ownership-based validation untested |
+| Move validation (ko) | Good | Ko detection false positives not tested |
+| Move validation (seki) | Good | No real SGF fixtures for seki |
+| Refutation generation | Good | No test for >4 move sequences |
+| Refutation branching | Missing | Only single-PV tests |
+| Difficulty estimation | Good | No boundary-value tests (level transitions) |
+| Difficulty stability | Missing | No repeat-run variance tests |
+| Teaching comments | Exists | No variant diversity tests |
+| Hint generation | Exists | No 9×9/13×13 tests |
+| Technique classification | Exists | No edge-ladder tests |
+| CLI batch mode | Exists | No timeout/recovery tests |
+| 9×9 / 13×13 boards | **Missing entirely** | No fixtures exist |
+| Tree validation (deep) | **Missing** | Only surface-level tested |
+| KataGo timeout/hang | **Missing** | No timeout tests |
+| Ko false-positive regression | **Missing** | No tests |
+| Ownership validation | **Missing** | Not implemented |
+| Score decomposition audit | **Missing** | No transparency tests |
+| Per-run log isolation | **Missing** | No test for run_id in log filename |
+| KataGo cfg validation | **Missing** | No thread/batch mismatch check |
+| Output directory consistency | **Missing** | No test for CWD-independent output |
 
 ---
 
@@ -1035,14 +1124,14 @@ The current calibration tests (`test_calibration.py`) process 15 puzzles through
 
 ### Current Test Inventory (The Problem)
 
-| Test                  | Puzzles              | Time      | KataGo? |
+| Test | Puzzles | Time | KataGo? |
 | --------------------- | -------------------- | --------- | ------- |
-| Unit tests (all)      | 0 (mocked)           | ~20s      | No      |
-| `test_calibration.py` | 15 (5×3 collections) | 5-15 min  | Yes     |
-| `test_perf_smoke.py`  | 33                   | 10-17 min | Yes     |
-| `test_perf_100.py`    | 100                  | 30-60 min | Yes     |
-| `test_perf_1k.py`     | 1,000                | 5-10 hr   | Yes     |
-| `test_perf_10k.py`    | 6,951                | 15-33 hr  | Yes     |
+| Unit tests (all) | 0 (mocked) | ~20s | No |
+| `test_calibration.py` | 15 (5×3 collections) | 5-15 min | Yes |
+| `test_perf_smoke.py` | 33 | 10-17 min | Yes |
+| `test_perf_100.py` | 100 | 30-60 min | Yes |
+| `test_perf_1k.py` | 1,000 | 5-10 hr | Yes |
+| `test_perf_10k.py` | 6,951 | 15-33 hr | Yes |
 
 The current approach runs **batch first, then checks results**. This is backwards — algorithm correctness should be proven on 1 puzzle before scaling to 1,000.
 
@@ -1051,70 +1140,107 @@ The current approach runs **batch first, then checks results**. This is backward
 **Tier 0 — Algorithm Unit Tests (No KataGo, ~20s)**
 
 - Mock KataGo responses with known-good JSON
+
 - Test each analyzer in isolation with controlled inputs
+
 - This is where ALL bug fixes get their first test
+
 - Run after every code change: `pytest -m unit`
 
 **Tier 1 — Golden 5 Integration (Real KataGo, ~2-3 min)**
 
 - Pick **5 canonical puzzles** — 1 per motif:
+
   1. Simple L&D (elementary, 3-move, 19×19)
-  2. Ko puzzle (intermediate)
-  3. Sacrifice tesuji (advanced, low-policy correct move)
-  4. 9×9 puzzle (coordinate validation)
-  5. Multi-response puzzle (u>1 wrong moves)
+
+  1. Ko puzzle (intermediate)
+
+  1. Sacrifice tesuji (advanced, low-policy correct move)
+
+  1. 9×9 puzzle (coordinate validation)
+
+  1. Multi-response puzzle (u>1 wrong moves)
+
 - Each puzzle tests a specific capability end-to-end
+
 - Run after algorithm changes: `pytest -m golden5`
+
 - **If it works for these 5, the algorithm is sound**
 
 **Tier 2 — Regression Set (Real KataGo, ~10 min)**
 
 - The existing `controls-10` set (10 puzzles)
+
 - Run before merging: `pytest -m regression`
+
 - Validates no regression from the golden 5 expansion
 
 **Tier 3 — Calibration (Real KataGo, ~15-30 min)**
 
 - The existing `test_calibration.py` with Cho Chikun sets
+
 - Run **only before releases or after difficulty algorithm changes**
+
 - NEVER run as part of a bug fix validation cycle
+
 - Mark as `@pytest.mark.calibration` (not `slow`)
 
 **Tier 4 — Scale (Real KataGo, hours-days)**
 
 - perf-100, perf-1k, perf-10k
+
 - Run **only in CI/CD or overnight**
+
 - NEVER run locally during development
 
 ### Action Items for Test Strategy
 
 1. **Create `golden5` marker** and select 5 canonical puzzles
-2. **Create `calibration` marker** separate from `slow`
-3. **Add per-puzzle integration tests** (parametrized by fixture, 1 puzzle each)
-4. **Document the tier system** in `tests/README.md`
-5. **Default dev command:** `pytest -m "unit or golden5"` (~3 min total)
-6. **Pre-merge command:** `pytest -m "unit or golden5 or regression"` (~13 min total)
-7. **Release command:** `pytest -m "not (slow or scale)"` (~30 min total)
+
+1. **Create `calibration` marker** separate from `slow`
+
+1. **Add per-puzzle integration tests** (parametrized by fixture, 1 puzzle each)
+
+1. **Document the tier system** in `tests/README.md`
+
+1. **Default dev command:** `pytest -m "unit or golden5"` (~3 min total)
+
+1. **Pre-merge command:** `pytest -m "unit or golden5 or regression"` (~13 min total)
+
+1. **Release command:** `pytest -m "not (slow or scale)"` (~30 min total)
 
 ### Current Calibration Assets
 
 - **Cho Chikun Elementary** (30 SGFs) — baseline beginner/elementary
+
 - **Cho Chikun Intermediate** (30 SGFs) — baseline intermediate/upper-int
+
 - **Cho Chikun Advanced** (30 SGFs) — baseline advanced/dan
+
 - **Ko subset** (5 SGFs) — ko-specific validation
+
 - **Controls-10** (10 SGFs) — mixed difficulty controls
+
 - **Perf-33** (33 SGFs) — core reference set (all tags, all difficulties)
+
 - **Scale-100/1k/10k** — performance benchmarking only
+
 - Three calibration run snapshots (2026-03-02)
 
 ### Needed Fixture Additions
 
 - **9×9 corpus** — 3-5 puzzles for coordinate and small-board validation
+
 - **13×13 corpus** — 3-5 puzzles for medium-board validation
+
 - **Seki fixtures** — 3-5 real seki puzzles
+
 - **False ko fixtures** — 3 puzzles with coordinate recurrence that aren't actually ko
+
 - **Edge ladder fixtures** — 3 puzzles with edge-following ladders
+
 - **Low-policy tesuji fixtures** — 3 puzzles with sacrifice moves (high visits, low policy)
+
 - **Multi-response fixtures** — 3 puzzles with 2-3 correct first moves (miai)
 
 ---
@@ -1125,23 +1251,26 @@ Per project guidelines, every feature change, bug fix, or enhancement MUST inclu
 
 ### Docs That Must Be Updated Per Fix
 
-| Fix                       | Doc File(s) to Update                                                                |
+| Fix | Doc File(s) to Update |
 | ------------------------- | ------------------------------------------------------------------------------------ |
-| P0.1 (YX `u` semantics)   | `docs/concepts/quality.md` — clarify `u` field definition                            |
-| P0.2 (tree validation)    | `docs/architecture/tools/katago-enrichment.md` — note sort-by-visits                 |
-| P0.3 (hint coordinates)   | `docs/concepts/quality.md` — note board-size requirement for hints                   |
-| P0.4 (PV cap)             | `docs/architecture/tools/katago-enrichment.md` — document configurable PV cap        |
-| P1.1 (ownership)          | `docs/architecture/tools/katago-enrichment.md` — document ownership-based validation |
-| P1.6 (difficulty weights) | `docs/concepts/levels.md` — update weight descriptions                               |
-| Test strategy             | `tools/puzzle-enrichment-lab/tests/README.md` — document tier system                 |
-| Config changes            | `config/README.md` — update any new config fields                                    |
+| P0.1 (YX `u` semantics) | `docs/concepts/quality.md` — clarify `u` field definition |
+| P0.2 (tree validation) | `docs/architecture/tools/katago-enrichment.md` — note sort-by-visits |
+| P0.3 (hint coordinates) | `docs/concepts/quality.md` — note board-size requirement for hints |
+| P0.4 (PV cap) | `docs/architecture/tools/katago-enrichment.md` — document configurable PV cap |
+| P1.1 (ownership) | `docs/architecture/tools/katago-enrichment.md` — document ownership-based validation |
+| P1.6 (difficulty weights) | `docs/concepts/levels.md` — update weight descriptions |
+| Test strategy | `tools/puzzle-enrichment-lab/tests/README.md` — document tier system |
+| Config changes | `config/README.md` — update any new config fields |
 
 ### What Counts as "Documentation Done"
 
 1. Updated relevant `docs/` file with new behavior
-2. Cross-reference callouts added ("See also" section)
-3. "Last Updated" date bumped
-4. Config schemas updated if config changed
+
+1. Cross-reference callouts added ("See also" section)
+
+1. "Last Updated" date bumped
+
+1. Config schemas updated if config changed
 
 ---
 
@@ -1150,13 +1279,20 @@ Per project guidelines, every feature change, bug fix, or enhancement MUST inclu
 A fix is accepted only if ALL are true:
 
 1. The bug is verified against actual source code (not just review claims)
-2. Unit test covers the specific failure mode (Tier 0 — no KataGo needed)
-3. Integration test for 1 puzzle validates end-to-end (Tier 1 — golden 5)
-4. Existing unit tests still pass: `pytest -m unit`
-5. Config changes are backward-compatible (old configs still load)
-6. **Documentation updated** — relevant `docs/` file, config schema if applicable
-7. Code follows existing patterns and style
-8. **Calibration is NOT required** for individual bug fixes — only for difficulty algorithm changes
+
+1. Unit test covers the specific failure mode (Tier 0 — no KataGo needed)
+
+1. Integration test for 1 puzzle validates end-to-end (Tier 1 — golden 5)
+
+1. Existing unit tests still pass: `pytest -m unit`
+
+1. Config changes are backward-compatible (old configs still load)
+
+1. **Documentation updated** — relevant `docs/` file, config schema if applicable
+
+1. Code follows existing patterns and style
+
+1. **Calibration is NOT required** for individual bug fixes — only for difficulty algorithm changes
 
 ---
 
@@ -1165,15 +1301,24 @@ A fix is accepted only if ALL are true:
 All three reviews agree these aspects are sound:
 
 1. **Dual-Engine Referee Pattern** — Quick engine → escalate if uncertain → referee confirms
-2. **KataGo Tsumego Config** — Score utility disabled (0.0), conservative pass, correct for L&D
-3. **Tag-Aware Validation Dispatch** — Different thresholds for L&D vs ko vs seki vs capture-race
-4. **Winrate Rescue Logic** — Correct moves with low policy but high winrate auto-accepted
-5. **Property Policy System** — Enrich-if-absent / enrich-if-partial / override / preserve
-6. **Config-Driven Architecture** — All thresholds from JSON (except the bugs above)
-7. **AiAnalysisResult Model** — Schema versioning (v8), enrichment tiers, traceability
-8. **Test Infrastructure** — 33+ test files, 10,600+ lines of test code
-9. **Curated-First Merging** — SGF-annotated wrong moves take priority over AI-discovered
-10. **Pydantic Models** — Strong typing throughout, catches many errors at parse time
+
+1. **KataGo Tsumego Config** — Score utility disabled (0.0), conservative pass, correct for L&D
+
+1. **Tag-Aware Validation Dispatch** — Different thresholds for L&D vs ko vs seki vs capture-race
+
+1. **Winrate Rescue Logic** — Correct moves with low policy but high winrate auto-accepted
+
+1. **Property Policy System** — Enrich-if-absent / enrich-if-partial / override / preserve
+
+1. **Config-Driven Architecture** — All thresholds from JSON (except the bugs above)
+
+1. **AiAnalysisResult Model** — Schema versioning (v8), enrichment tiers, traceability
+
+1. **Test Infrastructure** — 33+ test files, 10,600+ lines of test code
+
+1. **Curated-First Merging** — SGF-annotated wrong moves take priority over AI-discovered
+
+1. **Pydantic Models** — Strong typing throughout, catches many errors at parse time
 
 ---
 

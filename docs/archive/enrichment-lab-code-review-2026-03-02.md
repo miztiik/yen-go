@@ -261,61 +261,61 @@ Won't detect refutation branches nested deeper in the tree.
 
 1. **Dual-Engine Referee Pattern** (`dual_engine.py`): Quick engine → escalate if uncertain → referee confirms. Sound architecture with proper winrate tiebreaker.
 
-2. **KataGo Tsumego Config** (`tsumego_analysis.cfg`): Score utility disabled (0.0), conservative pass enabled, pre-root history ignored. Correct for life-and-death, not full-game territory.
+1. **KataGo Tsumego Config** (`tsumego_analysis.cfg`): Score utility disabled (0.0), conservative pass enabled, pre-root history ignored. Correct for life-and-death, not full-game territory.
 
-3. **Tag-Aware Validation Dispatch** (`validate_correct_move.py`): Different thresholds for life-and-death vs ko vs seki vs capture-race. Seki uses 3-signal detection (balanced winrate + near-zero score + reasonable move).
+1. **Tag-Aware Validation Dispatch** (`validate_correct_move.py`): Different thresholds for life-and-death vs ko vs seki vs capture-race. Seki uses 3-signal detection (balanced winrate + near-zero score + reasonable move).
 
-4. **Winrate Rescue Logic** (`validate_correct_move.py` ~lines 434-443): Correct moves with low policy but high winrate (>=0.92) are auto-accepted. This correctly handles tesuji that the neural net initially misjudges.
+1. **Winrate Rescue Logic** (`validate_correct_move.py` ~lines 434-443): Correct moves with low policy but high winrate (>=0.92) are auto-accepted. This correctly handles tesuji that the neural net initially misjudges.
 
-5. **Property Policy System** (`property_policy.py` + `sgf_enricher.py`): Enrich-if-absent / enrich-if-partial / override / preserve. Respects existing annotations.
+1. **Property Policy System** (`property_policy.py` + `sgf_enricher.py`): Enrich-if-absent / enrich-if-partial / override / preserve. Respects existing annotations.
 
-6. **Config-Driven Architecture** (`config.py`): All thresholds, weights, level IDs loaded from JSON. No hardcoded magic numbers (except the bugs above).
+1. **Config-Driven Architecture** (`config.py`): All thresholds, weights, level IDs loaded from JSON. No hardcoded magic numbers (except the bugs above).
 
-7. **AiAnalysisResult Model** (`models/ai_analysis_result.py`): Schema versioning (v8), enrichment tiers, traceability (trace_id, run_id). Production-quality.
+1. **AiAnalysisResult Model** (`models/ai_analysis_result.py`): Schema versioning (v8), enrichment tiers, traceability (trace_id, run_id). Production-quality.
 
-8. **Test Infrastructure**: 34+ test files with dual-layer testing (mocks for CI, real KataGo for integration). Calibration scripts with disjoint train/eval populations.
+1. **Test Infrastructure**: 34+ test files with dual-layer testing (mocks for CI, real KataGo for integration). Calibration scripts with disjoint train/eval populations.
 
-9. **Curated-First Merging** (`generate_refutations.py` ~line 398): SGF-annotated wrong moves take priority over AI-discovered ones. Respects human curation.
+1. **Curated-First Merging** (`generate_refutations.py` ~line 398): SGF-annotated wrong moves take priority over AI-discovered ones. Respects human curation.
 
 ---
 
 ## TEST COVERAGE GAPS
 
-| Area                             | Coverage  | Gap                                         |
+| Area | Coverage | Gap |
 | -------------------------------- | --------- | ------------------------------------------- |
-| Move validation (life-and-death) | Excellent | —                                           |
-| Move validation (ko)             | Good      | Ko detection false positives not tested     |
-| Move validation (seki)           | Good      | No real SGF fixtures for seki               |
-| Refutation generation            | Good      | No test for >4 move sequences               |
-| Difficulty estimation            | Good      | No boundary-value tests (level transitions) |
-| Teaching comments                | Unknown   | test file exists but not reviewed           |
-| Hint generation                  | Unknown   | test file exists but not reviewed           |
-| Technique classification         | Unknown   | test file exists but not reviewed           |
-| CLI batch mode                   | Unknown   | test file exists but not reviewed           |
-| 9x9 / 13x13 boards               | Missing   | No fixtures for non-19x19                   |
-| Tree validation (deep)           | Missing   | Only surface-level validation tested        |
-| KataGo timeout/hang              | Missing   | No timeout tests                            |
+| Move validation (life-and-death) | Excellent | — |
+| Move validation (ko) | Good | Ko detection false positives not tested |
+| Move validation (seki) | Good | No real SGF fixtures for seki |
+| Refutation generation | Good | No test for >4 move sequences |
+| Difficulty estimation | Good | No boundary-value tests (level transitions) |
+| Teaching comments | Unknown | test file exists but not reviewed |
+| Hint generation | Unknown | test file exists but not reviewed |
+| Technique classification | Unknown | test file exists but not reviewed |
+| CLI batch mode | Unknown | test file exists but not reviewed |
+| 9x9 / 13x13 boards | Missing | No fixtures for non-19x19 |
+| Tree validation (deep) | Missing | Only surface-level validation tested |
+| KataGo timeout/hang | Missing | No timeout tests |
 
 ---
 
 ## SUMMARY TABLE: Fix Priority
 
-| #   | Issue                                      | Severity    | Effort                  | Impact                         |
+| # | Issue | Severity | Effort | Impact |
 | --- | ------------------------------------------ | ----------- | ----------------------- | ------------------------------ |
-| C1  | Tree validation sorts by policy not visits | CRITICAL    | Small (1 line)          | Dan puzzles rejected           |
-| C2  | Hint coords hardcode 19x19                 | CRITICAL    | Small (pass board_size) | All non-19x19 hints wrong      |
-| C3  | Refutation branches truncate at 4 colors   | CRITICAL    | Small (dynamic loop)    | Complex refutations incomplete |
-| C4  | YX regex rejects u>1                       | CRITICAL    | Small (regex fix)       | Complexity data lost           |
-| S1  | Single refutation response                 | SIGNIFICANT | Medium                  | Incomplete refutations         |
-| S2  | PV cap at 4 moves                          | SIGNIFICANT | Small (configurable)    | Dan refutations incomplete     |
-| S3  | Ladder detection edge cases                | SIGNIFICANT | Medium                  | Ladders misclassified          |
-| S4  | Throw-in edge detection                    | SIGNIFICANT | Small (add upper bound) | Throw-ins missed               |
-| S5  | Ko false positives                         | SIGNIFICANT | Large                   | Wrong ko classification        |
-| S6  | Visits noise in difficulty                 | SIGNIFICANT | Medium                  | ~1 level jitter                |
-| S7  | DifficultyResult dead code                 | SIGNIFICANT | Small (delete or use)   | Confusing codebase             |
-| S8  | No KataGo timeout                          | SIGNIFICANT | Medium                  | CLI hangs possible             |
-| S9  | Weight sums not validated                  | SIGNIFICANT | Small (validator)       | Silent misconfiguration        |
-| S10 | Generic teaching comments                  | SIGNIFICANT | Medium                  | Low teaching value             |
+| C1 | Tree validation sorts by policy not visits | CRITICAL | Small (1 line) | Dan puzzles rejected |
+| C2 | Hint coords hardcode 19x19 | CRITICAL | Small (pass board_size) | All non-19x19 hints wrong |
+| C3 | Refutation branches truncate at 4 colors | CRITICAL | Small (dynamic loop) | Complex refutations incomplete |
+| C4 | YX regex rejects u>1 | CRITICAL | Small (regex fix) | Complexity data lost |
+| S1 | Single refutation response | SIGNIFICANT | Medium | Incomplete refutations |
+| S2 | PV cap at 4 moves | SIGNIFICANT | Small (configurable) | Dan refutations incomplete |
+| S3 | Ladder detection edge cases | SIGNIFICANT | Medium | Ladders misclassified |
+| S4 | Throw-in edge detection | SIGNIFICANT | Small (add upper bound) | Throw-ins missed |
+| S5 | Ko false positives | SIGNIFICANT | Large | Wrong ko classification |
+| S6 | Visits noise in difficulty | SIGNIFICANT | Medium | ~1 level jitter |
+| S7 | DifficultyResult dead code | SIGNIFICANT | Small (delete or use) | Confusing codebase |
+| S8 | No KataGo timeout | SIGNIFICANT | Medium | CLI hangs possible |
+| S9 | Weight sums not validated | SIGNIFICANT | Small (validator) | Silent misconfiguration |
+| S10 | Generic teaching comments | SIGNIFICANT | Medium | Low teaching value |
 
 ---
 
@@ -324,32 +324,46 @@ Won't detect refutation branches nested deeper in the tree.
 ### Phase 1: Critical Bugs (correctness)
 
 1. C1 — Tree validation: policy → visits (1-line fix)
-2. C4 — YX regex: `u:[01]` → `u:\d+` (1-line fix)
-3. C3 — Refutation colors: hardcoded → dynamic loop (5-line fix)
-4. C2 — Hint coords: pass board_size through pipeline (multi-file, needs tracing)
+
+1. C4 — YX regex: `u:[01]` → `u:\d+` (1-line fix)
+
+1. C3 — Refutation colors: hardcoded → dynamic loop (5-line fix)
+
+1. C2 — Hint coords: pass board_size through pipeline (multi-file, needs tracing)
 
 ### Phase 2: Significant Go Domain Issues
 
-5. S4 — Throw-in upper boundary (2-line fix)
-6. S2 — PV cap configurable per difficulty (config + 5 lines)
-7. S3 — Ladder staircase detection (rewrite ~20 lines)
-8. S7 — Delete or wire DifficultyResult model
-9. S9 — Config weight sum validator (5-line Pydantic validator)
+1. S4 — Throw-in upper boundary (2-line fix)
+
+1. S2 — PV cap configurable per difficulty (config + 5 lines)
+
+1. S3 — Ladder staircase detection (rewrite ~20 lines)
+
+1. S7 — Delete or wire DifficultyResult model
+
+1. S9 — Config weight sum validator (5-line Pydantic validator)
 
 ### Phase 3: Robustness & Quality
 
-10. S8 — KataGo timeout (new watchdog, ~50 lines)
-11. S5 — Ko capture validation (board state tracking, large)
-12. S1 — Multiple refutation responses (medium refactor)
-13. S6 — Difficulty confidence intervals (algorithm change)
-14. S10 — Teaching comment variants (template expansion)
+1. S8 — KataGo timeout (new watchdog, ~50 lines)
+
+1. S5 — Ko capture validation (board state tracking, large)
+
+1. S1 — Multiple refutation responses (medium refactor)
+
+1. S6 — Difficulty confidence intervals (algorithm change)
+
+1. S10 — Teaching comment variants (template expansion)
 
 ### Phase 4: Test Coverage
 
-15. Add 9x9/13x13 fixtures and tests
-16. Add deep tree validation tests
-17. Add timeout/hang recovery tests
-18. Add ko false-positive regression tests
+1. Add 9x9/13x13 fixtures and tests
+
+1. Add deep tree validation tests
+
+1. Add timeout/hang recovery tests
+
+1. Add ko false-positive regression tests
 
 ---
 

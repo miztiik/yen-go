@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Architecture: Frontend Overview](../../architecture/frontend/overview.md) — Technology stack
+>
 > - [Architecture: Testing](../../architecture/frontend/testing.md) — Test architecture
+>
 > - [Getting Started: Development](../../getting-started/develop.md) — Initial setup
 
 **Last Updated**: 2026-02-01
@@ -15,6 +17,7 @@ How to run the frontend locally for development.
 ## Prerequisites
 
 - Node.js 18+
+
 - npm 9+
 
 ---
@@ -47,8 +50,11 @@ npm run dev
 Features:
 
 - Hot Module Replacement (HMR)
+
 - Fast refresh on code changes
+
 - Error overlay
+
 - Source maps
 
 ### Watch Mode Options
@@ -110,13 +116,16 @@ npm run test:visual -- --headed
 #### Principles
 
 1. **Test Rendered Appearance**: Screenshots verify actual rendering, not just DOM presence
-2. **Component Isolation**: Each component has its own visual test file
-3. **State Coverage**: Test default, hover, focus, disabled, loading, and error states
-4. **Responsive Testing**: Verify at mobile (375px), tablet (768px), and desktop (1280px)
+
+1. **Component Isolation**: Each component has its own visual test file
+
+1. **State Coverage**: Test default, hover, focus, disabled, loading, and error states
+
+1. **Responsive Testing**: Verify at mobile (375px), tablet (768px), and desktop (1280px)
 
 #### Test File Structure
 
-```
+```text
 tests/visual/
 ├── baselines/       # Golden screenshots (committed to git)
 ├── fixtures/        # Test data
@@ -139,7 +148,7 @@ tests/visual/
       tests/visual/specs/my-component.visual.spec.ts
    ```
 
-2. Add fixture in `src/visual-tests.tsx`:
+1. Add fixture in `src/visual-tests.tsx`:
 
    ```tsx
    <div id="my-component-default">
@@ -147,39 +156,46 @@ tests/visual/
    </div>
    ```
 
-3. Update test selectors to match your fixtures
+1. Update test selectors to match your fixtures
 
-4. Generate initial baselines:
+1. Generate initial baselines:
+
    ```bash
    npx playwright test tests/visual/specs/my-component.visual.spec.ts --update-snapshots
    ```
 
 #### Required States Per Component
 
-| State        | Purpose                  | Required             |
+| State | Purpose | Required |
 | ------------ | ------------------------ | -------------------- |
-| Default      | Initial render           | ✅ Yes               |
-| Hover        | Mouse interaction        | If interactive       |
-| Focus        | Keyboard focus indicator | ✅ For accessibility |
-| Disabled     | Disabled appearance      | If applicable        |
-| Loading      | Skeleton/spinner         | If async             |
-| Error        | Error state              | If fail mode exists  |
-| With Content | Populated state          | If data-driven       |
+| Default | Initial render | ✅ Yes |
+| Hover | Mouse interaction | If interactive |
+| Focus | Keyboard focus indicator | ✅ For accessibility |
+| Disabled | Disabled appearance | If applicable |
+| Loading | Skeleton/spinner | If async |
+| Error | Error state | If fail mode exists |
+| With Content | Populated state | If data-driven |
 
 #### Best Practices
 
 **Do:**
 
 - Test one visual state per screenshot
+
 - Use meaningful fixture IDs (`#board-with-stones`, not `#test-1`)
+
 - Wait for animations to complete before capturing
+
 - Include viewport size tests for responsive components
 
 **Don't:**
 
 - Test logic in visual tests (use unit tests)
+
 - Capture unstable elements (animations, times, random IDs)
+
 - Create overly large screenshots
+
 - Skip the default state test
 
 #### Troubleshooting Visual Tests
@@ -225,7 +241,7 @@ open tests/visual/test-results/
 
 ## Project Structure
 
-```
+```text
 frontend/
 ├── src/
 │   ├── app.tsx           # Entry point, routing
@@ -352,8 +368,10 @@ describe("puzzle validation", () => {
 ### Browser DevTools
 
 1. Open DevTools (F12)
-2. Sources tab shows mapped TypeScript
-3. Add breakpoints in `.ts`/`.tsx` files
+
+1. Sources tab shows mapped TypeScript
+
+1. Add breakpoints in `.ts`/`.tsx` files
 
 ### VS Code Debugging
 

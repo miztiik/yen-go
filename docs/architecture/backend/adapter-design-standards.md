@@ -10,7 +10,7 @@
 ## 1. Core Principles
 
 | Principle | Description |
-|-----------|-------------|
+| ----------- | ------------- |
 | Single Responsibility | Each adapter handles exactly one puzzle source |
 | Protocol Compliance | All adapters implement `BaseAdapter` protocol |
 | Deterministic Output | Same input → identical output (content-hash filenames) |
@@ -23,7 +23,7 @@
 
 All adapters live in subdirectories: `backend/puzzle_manager/adapters/{name}/`
 
-```
+```text
 backend/puzzle_manager/adapters/
 ├── __init__.py       # Exports registry, base
 ├── _base.py          # BaseAdapter + ResumableAdapter protocols (underscore = non-adapter)
@@ -51,7 +51,7 @@ backend/puzzle_manager/adapters/
 ### Naming Convention
 
 | File Pattern | Meaning |
-|--------------|--------|
+| -------------- | -------- |
 | `_base.py`, `_registry.py` | Internal modules (underscore prefix) - NOT adapters |
 | `{name}/adapter.py` | Adapter implementation |
 | `{name}/converter.py` | Source-to-SGF conversion |
@@ -60,7 +60,7 @@ backend/puzzle_manager/adapters/
 ### Subdirectory Criteria
 
 | Condition | Structure |
-|-----------|----------|
+| ----------- | ---------- |
 | Adapter has **≥2 auxiliary modules** (converter, models, etc.) | Subdirectory required |
 | Adapter is **single file** | Subdirectory still required (consistency) |
 
@@ -96,7 +96,7 @@ class ResumableAdapter(BaseAdapter, Protocol):
 ```
 
 | Adapter | Protocol | Rationale |
-|---------|----------|----------|
+| --------- | ---------- | ---------- |
 | local, yengo-source, yengo-source | `BaseAdapter` | File-based, no checkpoint needed |
 | yengo-source, yengo-source | `ResumableAdapter` | API-based, large datasets |
 
@@ -158,13 +158,13 @@ All adapter configuration lives in `backend/puzzle_manager/config/sources.json`:
 ```
 
 > **Design Decision**: `active_adapter` is **singular by design** (not an array). The pipeline processes one adapter per run. Use `--source` CLI flag to override.
-
+>
 > **No `config/adapters/` directory**: All adapter config is embedded in sources.json entries.
 
 ### 5.2 Configuration Fields
 
 | Field | Type | Required | Description |
-|-------|------|----------|-------------|
+| ------- | ------ | ---------- | ------------- |
 | `active_adapter` | string | Yes | Default adapter ID for pipeline runs |
 | `id` | string | Yes | Unique source identifier (used in CLI `--source`) |
 | `name` | string | Yes | Human-readable display name |
@@ -176,7 +176,7 @@ All adapter configuration lives in `backend/puzzle_manager/config/sources.json`:
 Adapters MUST read these from global config—never hardcode:
 
 | File | Purpose |
-|------|---------|
+| ------ | --------- |
 | `config/puzzle-levels.json` | 9-level difficulty system (DDK30 to Pro) |
 | `config/tags.json` | Tag taxonomy |
 | `config/source-quality.json` | Source credibility ratings |
@@ -188,7 +188,7 @@ Adapters MUST read these from global config—never hardcode:
 ### 6.1 Required Properties
 
 | Property | Required | Value | Example |
-|----------|----------|-------|---------|
+| ---------- | ---------- | ------- | --------- |
 | `FF` | Yes | `4` | `FF[4]` |
 | `GM` | Yes | `1` (Go) | `GM[1]` |
 | `CA` | Yes | `UTF-8` | `CA[UTF-8]` |
@@ -201,17 +201,17 @@ Adapters MUST read these from global config—never hardcode:
 ### 6.2 YenGo Extension Properties
 
 | Property | Required | Format | Example |
-|----------|----------|--------|---------|
+| ---------- | ---------- | -------- | --------- |
 | `YV` | Yes | Schema version | `YV[7]` |
 | `YG` | Yes | Level slug from `puzzle-levels.json` | `YG[intermediate]` |
 | `YT` | Yes | Comma-separated tags | `YT[life-and-death,tesuji]` |
-| `YH` | No | Pipe-separated hints | `YH[hint1\|hint2\|hint3]` |
+| `YH` | No | Pipe-separated hints | `YH[hint1\ | hint2\ | hint3]` |
 | `YQ` | No | Quality metrics | `YQ[depth:5,unique:true]` |
 
 ### 6.3 Forbidden Properties
 
 | Property | Rule |
-|----------|------|
+| ---------- | ------ |
 | `SO` | **MUST be EMPTY** — Do not include source URLs |
 
 ### 6.4 Level Mapping
@@ -233,7 +233,7 @@ level_config = loader.load_puzzle_levels()
 ## 7. Filename Convention
 
 | Aspect | Standard |
-|--------|----------|
+| -------- | ---------- |
 | Format | `YENGO-{16-char-hash}.sgf` |
 | Hash | SHA-256 of SGF content, truncated to 16 chars |
 | Case | Lowercase hexadecimal |
@@ -246,7 +246,7 @@ Example: `YENGO-765f38a5196edb79.sgf` → `GN[YENGO-765f38a5196edb79]`
 ## 8. Error Handling
 
 | Error Type | Behavior |
-|------------|----------|
+| ------------ | ---------- |
 | Config Error | Abort run, exit with error |
 | Network Error | Retry with exponential backoff, then `FetchResult.failed()` |
 | Parse Error | `FetchResult.failed()`, log error, continue |
@@ -259,8 +259,10 @@ Example: `YENGO-765f38a5196edb79.sgf` → `GN[YENGO-765f38a5196edb79]`
 All adapters MUST log:
 
 1. **Start**: Source ID, config summary
-2. **Per-puzzle**: ID, result status
-3. **Complete**: Total counts (success/failed/skipped), duration
+
+1. **Per-puzzle**: ID, result status
+
+1. **Complete**: Total counts (success/failed/skipped), duration
 
 ```python
 logger.info("Puzzle processed", extra={
@@ -277,9 +279,13 @@ logger.info("Puzzle processed", extra={
 Every adapter MUST have tests for:
 
 - [ ] SGF output validity
+
 - [ ] Required properties present
+
 - [ ] Deterministic output (same input → same hash)
+
 - [ ] Error handling (malformed input → `FetchResult.failed()`)
+
 - [ ] No hardcoded level mappings
 
 Test location: `backend/puzzle_manager/tests/adapters/test_{source_id}.py`
@@ -291,13 +297,21 @@ Test location: `backend/puzzle_manager/tests/adapters/test_{source_id}.py`
 Before merging adapter changes:
 
 - [ ] Implements `BaseAdapter` protocol
+
 - [ ] Uses `@register_adapter` decorator
+
 - [ ] Configured in `sources.json`
+
 - [ ] No hardcoded level mappings (uses `puzzle-levels.json`)
+
 - [ ] No `SO` property in output
+
 - [ ] `GN` equals filename
+
 - [ ] `YG` uses valid level slug
+
 - [ ] Errors logged with context
+
 - [ ] Unit tests pass
 
 ---
@@ -305,5 +319,7 @@ Before merging adapter changes:
 ## Related Documents
 
 - [CLI Reference](../../reference/puzzle-manager-cli.md) — Pipeline commands
+
 - [SGF Properties Schema](../../../config/schemas/sgf-properties.schema.json) — Schema definition
+
 - [Puzzle Levels](../../../config/puzzle-levels.json) — Level definitions

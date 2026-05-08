@@ -3,6 +3,7 @@
 > **See also**:
 >
 > - [Architecture: Board State & Coordinate System Design (Deprecated)](./board-state-design.md) — Historical pre-goban reference only
+>
 > - [Architecture: Go Rules Engine](./go-rules-engine.md) — Move validation and rules behavior
 
 **Last Updated:** 2026-03-09  
@@ -19,11 +20,17 @@ YenGo uses the [OGS goban library](https://github.com/online-go/goban) (v8.3.147
 ## Why goban?
 
 - **Battle-tested**: Powers yengo-source, handling millions of games
+
 - **Full SGF support**: Native parsing, validation, and rendering
+
 - **Puzzle mode**: Built-in move validation with correct/wrong feedback
+
 - **Variation trees**: Native support for solution branches
+
 - **Accessibility**: Keyboard navigation, screen reader support
+
 - **Performance**: Canvas rendering with lazy updates
+
 - **License**: MIT license
 
 ## Architecture
@@ -51,9 +58,12 @@ YenGo uses the [OGS goban library](https://github.com/online-go/goban) (v8.3.147
 ## Design Decisions (Non-Negotiable)
 
 1. **No modifications to goban NPM package** — Zero changes to `node_modules/goban/`. All customization via callbacks, config, CSS, events, and the adapter layer.
-2. **Structured puzzle data** — SGF is converted to a structured `PuzzleObject` (`initial_state` + `move_tree`) via `sgfToPuzzle()`, then passed to goban via `buildPuzzleConfig()`. No `original_sgf` field is used. Metadata extracted separately via `parseSgfToTree()` (proper tree parser, no regex) for sidebar display. This replaced the older raw-SGF/branch-hoisting path, which duplicated parsing and created autoplay/solver drift.
-3. **yengo-source alignment** — Deviate only with documented justification. Deviations: 3-tier hints, hook-based events, rotation buttons, dirty text comments, SGF preprocessing.
-4. **Goban is drop-in replaceable** — Swapping the goban library affects only 5 files: `sgf-to-puzzle.ts`, `puzzle-config.ts`, `useGoban.ts`, `goban-init.ts`, `types/goban.ts`. The rest of the app uses `GobanInstance` and `GobanContainer` as opaque handles.
+
+1. **Structured puzzle data** — SGF is converted to a structured `PuzzleObject` (`initial_state` + `move_tree`) via `sgfToPuzzle()`, then passed to goban via `buildPuzzleConfig()`. No `original_sgf` field is used. Metadata extracted separately via `parseSgfToTree()` (proper tree parser, no regex) for sidebar display. This replaced the older raw-SGF/branch-hoisting path, which duplicated parsing and created autoplay/solver drift.
+
+1. **yengo-source alignment** — Deviate only with documented justification. Deviations: 3-tier hints, hook-based events, rotation buttons, dirty text comments, SGF preprocessing.
+
+1. **Goban is drop-in replaceable** — Swapping the goban library affects only 5 files: `sgf-to-puzzle.ts`, `puzzle-config.ts`, `useGoban.ts`, `goban-init.ts`, `types/goban.ts`. The rest of the app uses `GobanInstance` and `GobanContainer` as opaque handles.
 
 ## Core Components
 
@@ -86,9 +96,13 @@ const { gobanRef, isReady, boardMessage, gobanDiv } = useGoban(
 Key responsibilities:
 
 - Extract metadata via `preprocessSgf()`, pass raw SGF to goban via `buildPuzzleConfig()`
+
 - Create goban instance with correct puzzle mode config
+
 - Return `gobanDiv` for GobanContainer to mount
+
 - Handle cleanup on unmount
+
 - Apply label positions via `setLabelPosition()` API
 
 ### usePuzzleState Hook
@@ -133,13 +147,17 @@ const {
 YenGo defaults to `SVGRenderer` from the goban library (with Shadow DOM). Users can switch to `GobanCanvas` via `localStorage` key `"yengo-renderer-preference"` (`"svg"` | `"canvas"` | `"auto"`).
 
 - `"svg"` (default) — SVG-based rendering. Flat stone appearance (no Phong shading).
+
 - `"canvas"` — Canvas rendering with Phong-shaded stones (Shell/Slate themes, specular highlights, drop shadows).
+
 - `"auto"` — Tries SVG first, falls back to Canvas on failure.
 
 Both renderers support:
 
 - **Custom board color** — Flat kaya wood color via `customBoardColor` callback (no CDN texture)
+
 - **Custom line color** — Darker, more visible grid lines via `customBoardLineColor` callback
+
 - Native ghost stone hover preview on empty intersections
 
 The renderer preference constant is `RENDERER_PREFERENCE_KEY` in `types/goban.ts`.
@@ -197,7 +215,9 @@ This enables real-time board theme switching without page reload or goban instan
 Stone placement sounds are handled entirely by the goban library's sound events — `usePuzzleState` does NOT play stone sounds. It only plays:
 
 - `audioService.play('correct')` on correct answer
+
 - `audioService.play('wrong')` on wrong answer
+
 - `audioService.play('complete')` on puzzle completion
 
 ## Puzzle Mode
@@ -205,25 +225,30 @@ Stone placement sounds are handled entirely by the goban library's sound events 
 goban's puzzle mode validates moves against the solution tree:
 
 1. User plays a move
-2. goban checks if move exists in solution tree
-3. Events fired:
+
+1. goban checks if move exists in solution tree
+
+1. Events fired:
+
    - `puzzle-correct-answer`: Move is on the correct path
+
    - `puzzle-wrong-answer`: Move is not in solution tree
+
    - `puzzle-correct-answer-is-end`: Puzzle completed successfully
 
 ## Transforms
 
 Transforms modify the SGF before passing to goban:
 
-| Transform      | Effect                                       |
+| Transform | Effect |
 | -------------- | -------------------------------------------- |
-| `flipH`        | Mirror board horizontally                    |
-| `flipV`        | Mirror board vertically                      |
+| `flipH` | Mirror board horizontally |
+| `flipV` | Mirror board vertically |
 | `flipDiagonal` | Transpose coordinates (matrix transposition) |
-| `rotateCCW`    | Rotate board 90° counter-clockwise           |
-| `rotateCW`     | Rotate board 90° clockwise                   |
-| `swapColors`   | Swap black/white stones + text               |
-| `zoom`         | Auto-detect minimal bounds                   |
+| `rotateCCW` | Rotate board 90° counter-clockwise |
+| `rotateCW` | Rotate board 90° clockwise |
+| `swapColors` | Swap black/white stones + text |
+| `zoom` | Auto-detect minimal bounds |
 
 Rotation safety: Transforms physically rewrite ALL coordinates in the SGF (setup stones, moves, variations, labels) before passing to goban. The goban receives a self-consistent SGF.
 
@@ -265,23 +290,31 @@ frontend/src/
 ### Goban Not Rendering
 
 1. **Check refs**: Ensure the container element is visible and has non-zero width/height
-2. **Check SGF**: Validate the SGF string is not empty and parseable
-3. **Check container size**: goban needs a non-zero-dimension parent
+
+1. **Check SGF**: Validate the SGF string is not empty and parseable
+
+1. **Check container size**: goban needs a non-zero-dimension parent
 
 ### Puzzle State Not Updating
 
 1. **Check onGobanReady**: Ensure it's called after `isReady` is true
-2. **Check goban instance**: Ensure `gobanRef.current` is not null
+
+1. **Check goban instance**: Ensure `gobanRef.current` is not null
 
 ### Transform Issues
 
 1. **Key changes**: If transforms don't apply, ensure the component re-mounts (key prop)
-2. **Zoom bounds**: Call `getZoomBounds()` after transforms are applied
+
+1. **Zoom bounds**: Call `getZoomBounds()` after transforms are applied
 
 ## See Also
 
 - [Puzzle Solving Architecture](./puzzle-solving.md) — Solving lifecycle
+
 - [Board Rendering Architecture](./svg-board.md) — Canvas vs SVG decision
+
 - [Concepts: Dark Mode](../../concepts/dark-mode.md) — Dark mode theming strategy
+
 - [State Management](./state-management.md) — Frontend state patterns
+
 - [Testing](./testing.md) — E2E and visual testing

@@ -11,32 +11,32 @@
 
 ## Key Changes from v1
 
-| v1 Decision                      | v2 Revision                             | Rationale                                                                                     |
+| v1 Decision | v2 Revision | Rationale |
 | -------------------------------- | --------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `--allow-ai-solve` separate flag | Removed. AI enrichment is always-on     | Every puzzle goes through AI checking. If solution exists, validate+extend. If not, build it. |
-| `ac:0/1/2` (3 values)            | `ac:0/1/2/3` (4 values)                 | Need to distinguish untouched, enriched-only, solved+enriched, and human-verified             |
-| Find single correct first move   | Build full solution tree with branching | Deep branching is not a future extension — it's the core deliverable                          |
-| Hardcoded thresholds             | Config-driven, conflict-tested          | Everything tunable, measurable, and replaceable                                               |
-| Expert panel: Cho Chikun only    | 4 Go professionals + 2 Staff Engineers  | Conflict-driven design — disagreement surfaces better decisions                               |
+| `--allow-ai-solve` separate flag | Removed. AI enrichment is always-on | Every puzzle goes through AI checking. If solution exists, validate+extend. If not, build it. |
+| `ac:0/1/2` (3 values) | `ac:0/1/2/3` (4 values) | Need to distinguish untouched, enriched-only, solved+enriched, and human-verified |
+| Find single correct first move | Build full solution tree with branching | Deep branching is not a future extension — it's the core deliverable |
+| Hardcoded thresholds | Config-driven, conflict-tested | Everything tunable, measurable, and replaceable |
+| Expert panel: Cho Chikun only | 4 Go professionals + 2 Staff Engineers | Conflict-driven design — disagreement surfaces better decisions |
 
 ### Key Changes from v2 → v2.1 (Review Panel Amendments)
 
-| v2 Decision                               | v2.1 Amendment                                                                    | Rationale                                                               |
+| v2 Decision | v2.1 Amendment | Rationale |
 | ----------------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------- |
-| `pre_winrate_floor=0.90` as validity gate | Downgraded to confidence metric (ALG-3/STR-2)                                     | Many valid puzzles have root wr < 0.90. Delta classification dominates. |
-| `miai_detected` boolean                   | Renamed to `co_correct_detected`, multi-signal (ALG-5/STR-3)                      | Winrate gap alone isn't Go-theoretic miai. Added score gap check.       |
-| `query_budget` optional (`                | None`)                                                                            | Required parameter (MIN-2)                                              | Optional budget defeats hard cap purpose. |
-| No truncation consequence                 | Budget exhaustion before min_depth → confidence downgrade (ALG-4)                 | Partial solutions shouldn't claim ac:2.                                 |
-| No batch-level observability              | `BatchSummary` + `DisagreementSink` (LOG-1/LOG-2)                                 | Per-puzzle logs insufficient for quality monitoring.                    |
-| No seki stopping condition                | `seki_detection` config section (EDGE-2)                                          | Tree builder could oscillate indefinitely in seki positions.            |
-| Sequential alternative tree building      | Parallel via `asyncio.gather()` (STR-4)                                           | Wall time reduction ~40-60%.                                            |
-| No model-version sensitivity              | Calibration with `model_profiles` (ALG-8/CAL-3)                                   | Thresholds shift between KataGo versions.                               |
-| No human solution confidence metadata     | `human_solution_confidence` field (ALG-6)                                         | Frontend needs signal when human solution is suboptimal.                |
-| No pass-move handling                     | Explicit rejection path (EDGE-4)                                                  | Pass as correct first move = trivial/malformed puzzle.                  |
-| No inject/extract roundtrip test          | Defensive assertion + integration test (STR-5)                                    | Fragile coupling must be tested explicitly.                             |
-| 10 confirmation queries unconditionally   | `confirmation_min_policy=0.03` pre-filter (STR-1)                                 | Reduces classification from 10 to ~3-5 queries (50-70% savings).        |
-| Ownership-only goal inference             | Multi-signal: score delta primary, ownership secondary with variance gate (ALG-7) | Ownership alone is brittle in ko/seki/small fights.                     |
-| No collection-level disagreement tracking | Per-collection summary with WARNING threshold (ALG-9)                             | Silent drift accumulates without aggregate monitoring.                  |
+| `pre_winrate_floor=0.90` as validity gate | Downgraded to confidence metric (ALG-3/STR-2) | Many valid puzzles have root wr < 0.90. Delta classification dominates. |
+| `miai_detected` boolean | Renamed to `co_correct_detected`, multi-signal (ALG-5/STR-3) | Winrate gap alone isn't Go-theoretic miai. Added score gap check. |
+| `query_budget` optional (`None`) | Required parameter (MIN-2) | Optional budget defeats hard cap purpose. |
+| No truncation consequence | Budget exhaustion before min_depth → confidence downgrade (ALG-4) | Partial solutions shouldn't claim ac:2. |
+| No batch-level observability | `BatchSummary` + `DisagreementSink` (LOG-1/LOG-2) | Per-puzzle logs insufficient for quality monitoring. |
+| No seki stopping condition | `seki_detection` config section (EDGE-2) | Tree builder could oscillate indefinitely in seki positions. |
+| Sequential alternative tree building | Parallel via `asyncio.gather()` (STR-4) | Wall time reduction ~40-60%. |
+| No model-version sensitivity | Calibration with `model_profiles` (ALG-8/CAL-3) | Thresholds shift between KataGo versions. |
+| No human solution confidence metadata | `human_solution_confidence` field (ALG-6) | Frontend needs signal when human solution is suboptimal. |
+| No pass-move handling | Explicit rejection path (EDGE-4) | Pass as correct first move = trivial/malformed puzzle. |
+| No inject/extract roundtrip test | Defensive assertion + integration test (STR-5) | Fragile coupling must be tested explicitly. |
+| 10 confirmation queries unconditionally | `confirmation_min_policy=0.03` pre-filter (STR-1) | Reduces classification from 10 to ~3-5 queries (50-70% savings). |
+| Ownership-only goal inference | Multi-signal: score delta primary, ownership secondary with variance gate (ALG-7) | Ownership alone is brittle in ko/seki/small fights. |
+| No collection-level disagreement tracking | Per-collection summary with WARNING threshold (ALG-9) | Silent drift accumulates without aggregate monitoring. |
 
 ---
 
@@ -58,8 +58,10 @@ This means 900+ position-only puzzles (tasuki/cho-chikun-elementary) and any fut
 ### Why This Matters
 
 1. **Not just textbooks.** Many puzzle collections exist as position-only files. There is no solution to look up.
-2. **Two correct answers is fine.** If KataGo finds two winning first moves, that's a learning opportunity. We are not reproducing a book answer; we are helping people learn and have fun.
-3. **All puzzles get AI enrichment.** Even puzzles WITH existing solutions benefit from AI-discovered alternative correct paths, deeper solution trees, and validated refutations. AI enrichment is universal, not opt-in.
+
+1. **Two correct answers is fine.** If KataGo finds two winning first moves, that's a learning opportunity. We are not reproducing a book answer; we are helping people learn and have fun.
+
+1. **All puzzles get AI enrichment.** Even puzzles WITH existing solutions benefit from AI-discovered alternative correct paths, deeper solution trees, and validated refutations. AI enrichment is universal, not opt-in.
 
 ---
 
@@ -67,34 +69,34 @@ This means 900+ position-only puzzles (tasuki/cho-chikun-elementary) and any fut
 
 ### Panel Composition
 
-| Expert                         | Role                        | Bias / Perspective                                                                    |
+| Expert | Role | Bias / Perspective |
 | ------------------------------ | --------------------------- | ------------------------------------------------------------------------------------- |
-| **Cho Chikun** (9p, Meijin)    | Classical tsumego authority | Favors clean, deterministic solutions. Values single-correct-answer pedagogy.         |
-| **Lee Sedol** (9p)             | Intuitive fighter           | Values creative alternative solutions. Comfortable with ambiguity and multiple paths. |
-| **Shin Jinseo** (9p)           | AI-era professional         | Deeply familiar with KataGo's strengths/weaknesses. Trusts AI for tactical reading.   |
-| **Ke Jie** (9p)                | Strategic thinker           | Focuses on practical learning value over theoretical purity.                          |
-| **Principal Staff Engineer A** | Systems architect           | Reliability, testability, config-driven thresholds, backward compatibility            |
-| **Principal Staff Engineer B** | Data pipeline engineer      | Performance, batch processing, calibration methodology, observability                 |
+| **Cho Chikun** (9p, Meijin) | Classical tsumego authority | Favors clean, deterministic solutions. Values single-correct-answer pedagogy. |
+| **Lee Sedol** (9p) | Intuitive fighter | Values creative alternative solutions. Comfortable with ambiguity and multiple paths. |
+| **Shin Jinseo** (9p) | AI-era professional | Deeply familiar with KataGo's strengths/weaknesses. Trusts AI for tactical reading. |
+| **Ke Jie** (9p) | Strategic thinker | Focuses on practical learning value over theoretical purity. |
+| **Principal Staff Engineer A** | Systems architect | Reliability, testability, config-driven thresholds, backward compatibility |
+| **Principal Staff Engineer B** | Data pipeline engineer | Performance, batch processing, calibration methodology, observability |
 
 ### Topic 1: How Many Moves Deep Should the Solution Tree Go?
 
 **Question:** When building an AI solution tree, at what depth do we stop? Is there a natural stopping condition, or do we impose a fixed cap?
 
 > **Cho Chikun:** "In elementary tsumego (30k-15k), the answer is typically 3-5 moves. The correct first move leads to an opponent response, then one follow-up that makes the status clear. For intermediate problems (15k-5k), 5-9 moves. Advanced (dan-level), 7-15 moves. But the key is not move count — it's **status clarity**. You stop when the group is unconditionally alive, unconditionally dead, or the ko fight has stabilized. A natural end, not an artificial cap."
-
+>
 > **Lee Sedol:** "I agree with Cho sensei on natural endings, but I want to add: for learning, you sometimes want to show one or two moves PAST the decisive point. If the killing move is move 5, showing moves 6-7 (the cleanup) helps beginners understand WHY move 5 was decisive. So I'd say: stop at status clarity + 1-2 confirmation moves."
-
+>
 > **Shin Jinseo:** "KataGo gives you a natural signal for this. When the winrate stabilizes — stops oscillating and settles to >0.95 or <0.05 — that's the engine telling you the position is decided. You can track `|Δwr_consecutive| < ε` for 2 consecutive moves. With 1000 visits, this is reliable for problems up to low-dan. For high-dan, increase to 2000-5000 visits. I'd also track ownership convergence — when key stones' ownership values stabilize (change < 0.05 between consecutive positions), the position is settled."
-
+>
 > **Ke Jie:** "For a learning platform, I'd argue for a hybrid approach: natural stopping condition (winrate stability) with a configurable hard cap as a safety net. The cap prevents runaway computation on positions that never fully resolve (complex ko fights, seki oscillations). Set the cap generously — say 20 moves — but rely on the natural signal 95% of the time."
-
+>
 > **Principal Staff Engineer A:** "I strongly endorse configuration-driven stopping. Three config parameters: `solution_min_depth` (don't stop before this, even if winrate stabilizes early — ensures non-trivial solutions), `solution_max_depth` (hard cap, never exceed), `winrate_stability_epsilon` (threshold for declaring convergence). Plus an `ownership_stability_epsilon`. All config-driven. Default: min=3, max=20, wr_epsilon=0.02, own_epsilon=0.05."
-
+>
 > **Principal Staff Engineer B:** "Performance implication: each depth level costs one engine query (~50-200ms). At max_depth=20, that's 2-4 seconds per puzzle worst case. In batch mode processing 1000 puzzles, that's 30-60 minutes. Acceptable for lab enrichment. For production, we'd want early termination to average 5-8 queries per puzzle. The natural stopping condition achieves this — most elementary puzzles resolve in 3-5 moves."
 
 **Resolution:** Natural stopping with configurable bounds.
 
-```
+```text
 Stopping conditions (ANY triggers stop):
   1. Winrate stability: |Δwr| < wr_epsilon for 2 consecutive moves
   2. Ownership convergence: key stones' ownership change < own_epsilon
@@ -125,26 +127,32 @@ Config defaults:
 ```
 
 > **Lee Sedol:** "For finding the correct move, winrate is the primary signal, not policy. Policy tells you what the neural network's first instinct is — but tsumego is about reading, not instinct. The correct move might have low policy (looks weird at first glance) but high winrate after search. Sort by winrate, not policy. Use policy as a secondary signal for difficulty estimation only."
-
+>
 > **Cho Chikun:** "Lee Sedol is right about winrate being primary. But I want to stress: for the WRONG moves, policy IS the right primary signal, because policy measures how tempting a move is to a student. A wrong move with high policy (looks natural, obvious) is a better trap than a wrong move with low policy (looks bizarre). For correct moves: winrate primary. For wrong moves: policy primary. The existing refutation logic has the wrong-move ranking correct."
-
+>
 > **Shin Jinseo:** "The pseudo-algorithm in the brief has the right shape. Let me formalize:
 >
 > 1. Analyze position P → get `pre_metrics` (root winrate, top moves, policy distribution)
-> 2. The correct move is `pre_metrics.top_move` (highest winrate after search, NOT highest policy)
-> 3. For each candidate move m in top-K (say K=10):
+>
+> 1. The correct move is `pre_metrics.top_move` (highest winrate after search, NOT highest policy)
+>
+> 1. For each candidate move m in top-K (say K=10):
+>
 >    - Analyze P+m → `post_metrics` (from same player's perspective)
+>
 >    - Compute `delta = pre_winrate - post_winrate`
+>
 >    - Classify: if delta < T_good → correct move. If delta > T_bad → wrong move. Otherwise → neutral.
-> 4. A puzzle is valid when: at least one move has delta < T_good, AND at least one move has delta > T_bad (otherwise it's not really a puzzle — either everything works or nothing does).
+>
+> 1. A puzzle is valid when: at least one move has delta < T_good, AND at least one move has delta > T_bad (otherwise it's not really a puzzle — either everything works or nothing does).
 >
 > For thresholds, I'd start with T_good=0.02, T_bad=0.08, T_hotspot=0.25 — but these MUST be calibrated, not set by feel."
-
+>
 > **Ke Jie:** "I want to add a uniqueness check that the brief mentions. If two moves both have delta < T_good (both are 'correct'), that's either miai (both genuinely work, learning opportunity) or a sign that the position isn't a clean puzzle. You need `min_winrate_gap` between the best correct move and the next-best move to ensure the puzzle has a distinctive answer. But for miai positions, allow up to `max_correct_moves=2`. Gap check: if move #1 winrate - move #2 winrate < min_gap AND both are 'correct' by T_good → flag as miai, include both."
-
+>
 > **Principal Staff Engineer A:** "The algorithm then is:
 >
-> ```
+> ```text
 > For position P:
 >   Analyze(P) → pre (root_winrate, top_moves sorted by winrate desc)
 >   good_move = pre.top_move  (highest winrate = best move for side-to-move)
@@ -167,15 +175,15 @@ Config defaults:
 >     policy_surprise = 1.0 - correct_move.policy_prior
 >     refutation_clarity = max(delta) among BM moves
 >     calculation_depth = solution tree depth (from Topic 1)
-> ```
+> ```text
 >
 > All thresholds config-driven. Calibration pass required on real data: adjust T_good/T_bad by precision/recall trade-off, not by intuition."
-
+>
 > **Principal Staff Engineer B:** "On the `top_K` bound: analyzing every legal move is computationally prohibitive (361 moves on 19×19). The refutation pipeline already uses policy as a pre-filter (`candidate_min_policy`). For the solve pipeline, I'd recommend the same pattern: take the top K moves by policy from the initial analysis (these are the moves KataGo's neural net considers plausible at ALL). K=10 is reasonable — it covers all candidates that a human might reasonably consider. Below K=10, moves typically have policy < 0.001 (totally implausible)."
 
 **Resolution:** Winrate-primary ranking for correct moves, policy-primary for wrong moves.
 
-```
+```text
 Algorithm: analyze_position(P, config)
   1. pre = KataGo.analyze(P, visits=config.solve_visits)
   2. candidates = pre.top_moves[:config.candidate_count]  # top K by policy
@@ -199,16 +207,16 @@ Algorithm: analyze_position(P, config)
 **Question:** v1 proposed building a single mainline PV (correct move → opponent → continuation). But real tsumego has branching: the opponent can respond differently, and each response needs its own correct continuation. How do we build a proper tree?
 
 > **Cho Chikun:** "This is fundamental. A real tsumego solution is a tree, not a line. After Black's correct first move, White has perhaps 2-3 plausible responses. For EACH response, Black must have a correct follow-up. This branching is what makes tsumego tsumego. A single mainline is not a solution — it's a hint."
-
+>
 > **Lee Sedol:** "Cho sensei is absolutely right. But for a learning platform, you need to be practical about branching. At depth 1 (opponent's responses), include all moves where the opponent has a plausible alternative (policy > some threshold). At depth 2+, include the opponent's top 1-2 responses only. The tree explodes combinatorially otherwise. My guideline: at each opponent move, consider top 2-3 responses by policy. At each player move, there's usually only 1 correct follow-up (or the puzzle is over). So branching factor is ~2-3 at opponent nodes, ~1 at player nodes."
-
+>
 > **Shin Jinseo:** "The KataGo PV already gives you the mainline. For branching, you need to re-query at each opponent decision point. After playing the correct first move, analyze the resulting position. KataGo's top 2-3 moves for the opponent are the branches. For each branch, continue building the tree recursively until the stopping condition from Topic 1 triggers. Bound the total tree size: max_total_nodes or max_branching_width per opponent node."
-
+>
 > **Ke Jie:** "For beginners' puzzles, the solution tree is small — typically 1 mainline + 1-2 branches. For dan-level puzzles, it can be large. I'd suggest adaptive branching: at each opponent node, include responses where `policy > config.branch_min_policy`. For elementary puzzles this might be 1-2 branches; for advanced, 3-5. The policy threshold naturally adapts to difficulty."
-
+>
 > **Principal Staff Engineer A:** "Implementation design:
 >
-> ```
+> ```text
 > build_solution_tree(engine, position, correct_move, depth=0, config):
 >   if depth >= config.solution_max_depth: return leaf
 >   if stopping_condition_met(position): return leaf
@@ -236,15 +244,15 @@ Algorithm: analyze_position(P, config)
 >     children.append((opp_move, player_best, subtree))
 >
 >   return TreeNode(correct_move, children)
-> ```
+> ```text
 >
 > Key config params: `branch_min_policy` (min opponent move policy to include as branch), `max_branch_width` (max branches per opponent node), `tree_visits` (visits per tree query, lower than solve_visits since these are follow-ups). Default: branch_min_policy=0.05, max_branch_width=3, tree_visits=500."
-
+>
 > **Principal Staff Engineer B:** "Performance: for a depth-10 tree with branching factor 2, that's ~2^5 = 32 leaf nodes, each requiring a query. At 200ms/query, that's ~6.4 seconds per puzzle. With max_branch_width=3 and depth=10, worst case is 3^5 = 243 queries = ~49 seconds. We MUST bound this. Proposal: `max_total_tree_queries` config parameter (default: 50). If the tree builder exceeds this, truncate remaining branches and mark them as `truncated` in the output. This caps worst-case at ~10 seconds per puzzle."
 
 **Resolution:** Recursive tree building with configurable branching bounds.
 
-```
+```text
 Config defaults:
   branch_min_policy: 0.05      # Opponent moves below this policy are ignored
   max_branch_width: 3          # Max opponent responses per node
@@ -259,11 +267,11 @@ Config defaults:
 **Question:** v1 proposed `ac:0` (not AI-solved), `ac:1` (AI-solved), `ac:2` (human-verified). But now that ALL puzzles go through AI enrichment, what do the levels mean?
 
 > **Lee Sedol:** "If every puzzle gets AI processing, then ac:0 means 'AI touched this puzzle but did not modify the solution.' ac:1 means 'AI built or extended the solution.' That's a meaningful distinction for quality control."
-
+>
 > **Cho Chikun:** "I would want four levels. Zero means untouched by AI entirely (legacy data or errors). One means AI enriched the puzzle metadata (difficulty, tags, hints) but did NOT change the solution tree. Two means AI built or extended the solution tree. Three means a human expert verified the AI's work. This progression matters for trust."
-
+>
 > **Ke Jie:** "I agree with Cho sensei's four levels. The key distinction is between 'AI looked at it and the existing solution was fine' versus 'AI had to create or modify the solution.' Users and quality reviewers need to know which puzzles have AI-generated solutions versus verified human solutions."
-
+>
 > **Principal Staff Engineer A:** "Four values. Clean semantics:
 >
 > | Value  | Label       | Meaning                                                                                               |
@@ -274,12 +282,12 @@ Config defaults:
 > | `ac:3` | `verified`  | AI-solved puzzle reviewed and confirmed by human expert                                               |
 >
 > Default for all newly-processed puzzles: `ac:1` (enriched) if solution existed, `ac:2` (ai_solved) if solution was built. `ac:0` for puzzles never run through the pipeline. `ac:3` set only through explicit human review."
-
+>
 > **Principal Staff Engineer B:** "This also gives us a quality filter in the frontend. We could show 'AI-verified' badges for ac:3, flag ac:2 puzzles as 'AI-generated solution' for transparency, and allow filtering by quality tier. It's also useful for monitoring: track the ratio of ac:1 vs ac:2 in each collection."
 
 **Resolution:** Four-level AC system.
 
-```
+```text
 ac:0 — untouched     — AI pipeline has NOT processed this puzzle
 ac:1 — enriched      — AI enriched metadata but existing solution used as-is
 ac:2 — ai_solved     — AI built or extended the solution tree
@@ -295,11 +303,15 @@ Default:     ac:1 (existing solution) or ac:2 (AI-built solution)
 
 > **Shin Jinseo:** "The unifying principle is: every puzzle gets the same pipeline. The only branch is whether we need to BUILD the solution tree (position-only) or VALIDATE and EXTEND the existing one (has solution). Here's my proposal:
 >
-> ```
+> ```text
 > For each puzzle:
+>
 >   1. Parse SGF → extract position, metadata
->   2. pre = Analyze(position)         # Initial analysis
->   3. IF solution tree exists:
+>
+>   1. pre = Analyze(position)         # Initial analysis
+>
+>   1. IF solution tree exists:
+>
 >        a. Validate existing correct move against pre.top_move
 >        b. IF KataGo disagrees: flag for review, but keep human solution
 >        c. Discover AI alternatives: moves with delta < T_good that aren't
@@ -311,21 +323,26 @@ Default:     ac:1 (existing solution) or ac:2 (AI-built solution)
 >        c. Build full solution tree (Topic 1 + Topic 3 algorithm)
 >        d. Inject solution tree into SGF
 >        e. Set ac = 2
->   4. Build/extend refutation branches for wrong moves (delta > T_bad)
->   5. Estimate difficulty from signals
->   6. Generate teaching comments, hints, technique tags
->   7. Output enriched result
-> ```
+>
+>   1. Build/extend refutation branches for wrong moves (delta > T_bad)
+>
+>   1. Estimate difficulty from signals
+>
+>   1. Generate teaching comments, hints, technique tags
+>
+>   1. Output enriched result
+>
+> ```text
 >
 > The key insight: step 3c means even puzzles WITH existing solutions can get new correct branches appended. We never delete or replace human solutions — we only add.
-
+>
 > **Lee Sedol:** "I like Shin Jinseo's approach, but I want to emphasize step 3b. When KataGo disagrees with the human solution, DO NOT silently replace it. The human solution might reflect a specific teaching intent that KataGo doesn't understand (e.g., 'find the move that makes two eyes' versus 'find the move with highest winrate' — sometimes these differ because ko is better but the teacher wants the clean solution). Flag it, log it, but preserve the human solution. Only add alternatives, never delete."
-
+>
 > **Cho Chikun:** "Lee Sedol makes an excellent point. In classical tsumego pedagogy, the 'correct' answer sometimes excludes ko solutions intentionally, because the problem is testing whether the student can find the clean kill. KataGo might rank the ko as slightly better (higher winrate by 0.01) but that doesn't mean the clean kill is wrong. The pipeline should log disagreements but preserve the human author's intent."
-
+>
 > **Principal Staff Engineer A:** "Implementation: when KataGo's top move differs from the existing solution's correct move, we log a structured disagreement record:
 >
-> ```
+> ```text
 > {
 >   'type': 'solution_disagreement',
 >   'puzzle_id': ...,
@@ -336,13 +353,13 @@ Default:     ac:1 (existing solution) or ac:2 (AI-built solution)
 >   'delta': 0.02,
 >   'action': 'preserved_human_added_ai_alternative'
 > }
-> ```
+> ```text
 >
 > If the delta is small (< T_disagreement, configurable), we keep the human solution and add KataGo's move as an alternative. If the delta is large (human move is actually LOSING), we flag for human review and set a flag in the result."
 
 **Resolution:** Unified pipeline, additive-only for existing solutions.
 
-```
+```text
 Core algorithm:
   1. Analyze(position) → pre_metrics
   2. Classify candidate moves (correct/wrong/neutral)
@@ -365,25 +382,32 @@ Rules:
 > **Shin Jinseo:** "Start with theoretical values based on what a winrate swing means in practice:
 >
 > - T_good = 0.02 (2% winrate loss): in professional Go, a 2% winrate loss is already significant. In tsumego specifically, the correct move should lose essentially nothing — the position should remain won. 2% allows for some engine noise.
+>
 > - T_bad = 0.08 (8% winrate loss): a move that costs 8% winrate is decisively bad. The opponent can punish it. This aligns with the existing `refutations.delta_threshold = 0.08`.
+>
 > - T_hotspot = 0.25 (25% winrate loss): a catastrophic blunder. The group dies or a huge territory is lost.
 >
 > But these are starting points. They MUST be calibrated."
-
+>
 > **Ke Jie:** "For calibration, use a labeled dataset: take 100 puzzles where a human expert has marked the correct and wrong first moves. Run the classifier with various thresholds and measure precision/recall:
 >
 > - Precision: of moves classified as 'correct' (TE), what % are actually correct?
+>
 > - Recall: of actual correct moves, what % did we classify as TE?
 >
 > Sweep T_good from 0.01 to 0.10 in steps of 0.005. Pick the value that maximizes F1 score (harmonic mean of precision and recall). Do the same for T_bad with wrong moves. This is data-driven, not intuition-driven."
-
+>
 > **Principal Staff Engineer B:** "Calibration implementation:
 >
 > 1. Create a calibration fixture set: `tests/fixtures/calibration/labeled_moves.json`
-> 2. Each entry: `{sgf, correct_moves: [...], wrong_moves: [...]}`
-> 3. Calibration test sweeps thresholds, outputs precision/recall/F1 table
-> 4. The test FAILS if F1 drops below a configured minimum (prevents regressions)
-> 5. Threshold values stored in config, not hardcoded
+>
+> 1. Each entry: `{sgf, correct_moves: [...], wrong_moves: [...]}`
+>
+> 1. Calibration test sweeps thresholds, outputs precision/recall/F1 table
+>
+> 1. The test FAILS if F1 drops below a configured minimum (prevents regressions)
+>
+> 1. Threshold values stored in config, not hardcoded
 >
 > ````python
 > @pytest.mark.calibration
@@ -400,7 +424,7 @@ Rules:
 
 **Resolution:** Calibration-driven thresholds.
 
-```
+```text
 Initial values (to be calibrated):
   T_good:    0.02  (correct move threshold)
   T_bad:     0.08  (bad move threshold, aligned with refutations.delta_threshold)
@@ -425,7 +449,7 @@ Starting thresholds for pre-move analysis (from the brief):
 
 **Current refutation selection** (`generate_refutations.py`):
 
-```
+```text
 1. identify_candidates():
    - Input: initial KataGo analysis of position
    - Filter: exclude correct move + pass, policy >= 0.0 (no floor)
@@ -453,7 +477,7 @@ Starting thresholds for pre-move analysis (from the brief):
 
 **Solution tree builder mirrors this inverted:**
 
-```
+```text
 1. identify_correct_candidates():
    - Input: initial KataGo analysis (same query, reused)
    - Filter: all moves with winrate above threshold
@@ -481,10 +505,11 @@ Starting thresholds for pre-move analysis (from the brief):
 > **Principal Staff Engineer A:** "In v1, we proposed `--allow-ai-solve` as an opt-in flag. But the user correctly identified that this creates a false dichotomy. Every puzzle goes through:
 >
 > 1. Check for correct first move → if missing, build it
-> 2. Validate existing correct move → if present, verify + extend
+>
+> 1. Validate existing correct move → if present, verify + extend
 >
 > This is not optional. It's the standard pipeline behavior. The 'AI-solve' path is just the else-branch of 'has solution tree.' No flag needed."
-
+>
 > **Principal Staff Engineer B:** "The config still has `ai_solve.enabled` as a feature gate during development/testing. But in production, this defaults to `true`. The flag's purpose is allowing rollback if we discover quality issues, not for day-to-day operation. Once calibrated and stable, it becomes a dead letter."
 
 **Resolution:** Remove `--allow-ai-solve` CLI flag. Feature gated via `config.ai_solve.enabled` during development (default: `false` initially, `true` after calibration passes). No separate CLI override.
@@ -495,7 +520,7 @@ Starting thresholds for pre-move analysis (from the brief):
 
 ### Unified Pipeline Flow
 
-```
+```text
 Step 1:  Parse SGF & extract metadata (UNCHANGED)
 Step 2:  Extract correct first move
          ├── v2.1 EDGE-4: Reject if pass is best move (trivial/malformed puzzle)
@@ -575,7 +600,6 @@ async def analyze_position_candidates(
     share. Run once, use for both paths.
     """
 
-
 async def build_solution_tree(
     engine: LocalEngine,
     position: Position,
@@ -608,7 +632,6 @@ async def build_solution_tree(
     perspective. Uses normalize_winrate() helper.
     """
 
-
 def normalize_winrate(
     winrate: float,
     reported_player: str,
@@ -620,7 +643,6 @@ def normalize_winrate(
     If reported_player != puzzle_player, invert: wr = 1.0 - wr.
     Convention: all winrates in this module are from PL[] perspective.
     """
-
 
 def classify_move_quality(
     pre_analysis: AnalysisResponse,
@@ -643,7 +665,6 @@ def classify_move_quality(
     Moves below this floor skip confirmation queries.
     "
 
-
 def inject_solution_into_sgf(
     root: SgfNode,
     solution_tree: SolutionNode,
@@ -657,7 +678,6 @@ def inject_solution_into_sgf(
 
     Never deletes existing children. New branches get AI-generated markers.
     """
-
 
 async def discover_alternatives(
     engine: LocalEngine,
@@ -688,7 +708,6 @@ class QueryBudget(BaseModel):
     def use(self) -> None:
         self.queries_used += 1
 
-
 class SolutionNode(BaseModel):
     """A node in the solution tree. Recursive structure."""
     move_sgf: str                        # SGF coordinate (e.g., "ac")
@@ -704,7 +723,6 @@ class SolutionNode(BaseModel):
     truncated: bool = False              # True if branch was cut by budget/depth
     tree_completeness: TreeCompletenessMetrics | None = None  # v2.1 ALG-4: completeness tracking (root only)
 
-
 class MoveClassification(BaseModel):
     """Quality classification for a candidate move."""
     move_gtp: str
@@ -715,7 +733,6 @@ class MoveClassification(BaseModel):
     policy_prior: float
     visits: int
     classification: str           # "TE" | "BM" | "BM_HO" | "neutral"
-
 
 class SolvedMove(BaseModel):
     """A correct first move discovered by KataGo."""
@@ -728,7 +745,6 @@ class SolvedMove(BaseModel):
     solution_tree: SolutionNode | None = None  # Full branching tree
     confidence: str               # "high" | "medium" | "low"
     is_alternative: bool = False  # True if discovered as alternative to existing solution
-
 
 class PositionAnalysis(BaseModel):
     """Complete analysis of a position with all moves classified."""
@@ -749,7 +765,6 @@ class PositionAnalysis(BaseModel):
     ladder_suspected: bool = False           # v2.1 EDGE-3: ladder detected in PV
     ai_solution_validated: bool = False      # v2.1 AC-1: AI checked existing solution
 
-
 class TreeCompletenessMetrics(BaseModel):
     """v2.1 ALG-4: Track solution tree completeness for confidence."""
     total_attempted_branches: int = 0
@@ -760,7 +775,6 @@ class TreeCompletenessMetrics(BaseModel):
 
     def is_complete(self) -> bool:
         return self.completeness_ratio >= 0.8 and not self.budget_exhausted
-
 
 class BatchSummary(BaseModel):
     """v2.1 LOG-1: Structured batch-level summary for observability."""
@@ -774,7 +788,6 @@ class BatchSummary(BaseModel):
     pass_move_rejected: int = 0  # v2.1 EDGE-4
     errors: int = 0
     collection_disagreement_summary: dict[str, dict] = {}  # v2.1 ALG-9
-
 
 class DisagreementRecord(BaseModel):
     """v2.1 LOG-2: Structured disagreement for JSONL sink."""
@@ -798,7 +811,7 @@ class DisagreementRecord(BaseModel):
 **Schema version bump:** `1.13` → `1.14`  
 **Changelog entry (v2.1 MIN-1 — expanded):**
 
-```
+```text
 "v1.14": {
   "summary": "AI-Solve: unified puzzle enrichment with full solution tree building.",
   "added": [
@@ -923,13 +936,11 @@ class AiSolveThresholds(BaseModel):
     T_hotspot: float = 0.25
     T_disagreement: float = 0.05
 
-
 class AiSolveConfidenceMetrics(BaseModel):
     """v2.1 ALG-3/STR-2: Absolute winrate thresholds as confidence annotations only."""
     pre_winrate_high: float = 0.90
     pre_winrate_medium: float = 0.70
     post_winrate_ceiling: float = 0.15
-
 
 class SolutionTreeConfig(BaseModel):
     solution_min_depth: int = 3
@@ -942,20 +953,17 @@ class SolutionTreeConfig(BaseModel):
     ownership_stability_epsilon: float = 0.05
     confirmation_moves_past_decisive: int = 2
 
-
 class SekiDetectionConfig(BaseModel):
     """v2.1 EDGE-2: Seki-specific stopping condition."""
     winrate_seki_band: tuple[float, float] = (0.45, 0.55)
     score_lead_seki_max: float = 2.0
     seki_consecutive_depth: int = 3
 
-
 class AiSolveAlternativesConfig(BaseModel):
     discover_alternatives: bool = True
     max_alternatives: int = 2
     flag_disagreement_delta: float = 0.10
     flag_losing_winrate: float = 0.30
-
 
 class AiSolveGoalInference(BaseModel):
     """v2.1 ALG-7: Multi-signal goal inference."""
@@ -964,13 +972,11 @@ class AiSolveGoalInference(BaseModel):
     ownership_dead_threshold: float = -0.7
     ownership_variance_threshold: float = 0.15  # v2.1 ALG-7
 
-
 class EdgeCaseBoosts(BaseModel):
     """v2.1 EDGE-1/EDGE-3: Visit boosts for known difficult cases."""
     corner_position_visit_boost: int = 500
     ladder_visit_boost: int = 500
     ladder_pv_length_threshold: int = 8
-
 
 class CalibrationConfig(BaseModel):
     """v2.1 ALG-8/CAL-1/CAL-2/CAL-3."""
@@ -981,13 +987,11 @@ class CalibrationConfig(BaseModel):
     calibration_visit_counts: list[int] = [500, 1000, 2000]
     model_profiles: dict[str, dict] = {}  # model_hash → threshold overrides
 
-
 class ObservabilityConfig(BaseModel):
     """v2.1 LOG-1/LOG-2/ALG-9."""
     disagreement_sink_path: str = ".pm-runtime/logs/disagreements/"
     collection_disagreement_warning_threshold: float = 0.20
     emit_batch_summary: bool = True
-
 
 class AiSolveConfig(BaseModel):
     """Unified AI enrichment configuration. v2.1 amendments integrated."""
@@ -1016,12 +1020,12 @@ class AiSolveConfig(BaseModel):
 
 ### YQ Extension
 
-| Value  | Label     | Meaning                                                                                      | When Set                                           |
+| Value | Label | Meaning | When Set |
 | ------ | --------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| `ac:0` | untouched | AI pipeline has NOT processed this puzzle                                                    | Legacy data, errors, skipped                       |
-| `ac:1` | enriched  | AI enriched metadata (difficulty, tags, hints, refutations) but existing solution used as-is | Puzzle with valid solution, KataGo agrees          |
-| `ac:2` | ai_solved | AI built or extended the solution tree (new correct moves or branches added)                 | Position-only puzzles, or AI alternatives appended |
-| `ac:3` | verified  | AI-solved puzzle confirmed correct by human expert                                           | Manual review process                              |
+| `ac:0` | untouched | AI pipeline has NOT processed this puzzle | Legacy data, errors, skipped |
+| `ac:1` | enriched | AI enriched metadata (difficulty, tags, hints, refutations) but existing solution used as-is | Puzzle with valid solution, KataGo agrees |
+| `ac:2` | ai_solved | AI built or extended the solution tree (new correct moves or branches added) | Position-only puzzles, or AI alternatives appended |
+| `ac:3` | verified | AI-solved puzzle confirmed correct by human expert | Manual review process |
 
 **Wire format:** `YQ[q:2;rc:0;hc:0;ac:1]`
 
@@ -1335,110 +1339,167 @@ Replace the hard rejection with unified processing:
 ### Config & Schema
 
 - [ ] `config/katago-enrichment.json` bumped to v1.14 with `ai_solve` section
+
 - [ ] `AiSolveConfig` Pydantic model validates against JSON
+
 - [ ] Config with NO `ai_solve` key → `None` → fully backward compatible
+
 - [ ] All thresholds read from config, zero hardcoded values
+
 - [ ] v2.1 ALG-3: `pre_winrate_floor` moved to `confidence_metrics`, NOT used as gate
+
 - [ ] v2.1 STR-1: `confirmation_min_policy` present in config, wired into candidate loop
+
 - [ ] v2.1 EDGE-2: `seki_detection` config section present and validated
+
 - [ ] v2.1 ALG-8: `calibration` section with model profiles and stratified sampling
+
 - [ ] v2.1 LOG-1/LOG-2: `observability` section with disagreement sink path
 
 ### Unified Pipeline
 
 - [ ] Position-only SGF + `ai_solve.enabled=true` → solution tree built → full enrichment succeeds
+
 - [ ] SGF with existing solution + `ai_solve.enabled=true` → existing solution preserved, alternatives discovered
+
 - [ ] SGF with existing solution + `ai_solve.enabled=false` → zero behavior change from today
+
 - [ ] Position-only SGF + `ai_solve.enabled=false` → hard rejection as today
+
 - [ ] v2.1 STR-5: `extract_correct_first_move(root)` succeeds after `inject_solution_into_sgf()`
+
 - [ ] v2.1 STR-4: Alternative tree building uses `asyncio.gather()` with split budgets
+
 - [ ] v2.1 EDGE-4: Pass as best move → rejected with clear error message
 
 ### Move Classification
 
 - [ ] Move with Δwr < T_good (0.02) → classified as TE (correct)
+
 - [ ] Move with Δwr > T_hotspot (0.25) → classified as BM+HO (blunder)
+
 - [ ] Move with T_bad < Δwr < T_hotspot → classified as BM (bad move)
+
 - [ ] Sign adjustment correct for Black-to-play and White-to-play
+
 - [ ] v2.1 MIN-4: `normalize_winrate()` used consistently; convention documented
+
 - [ ] All thresholds from config, not hardcoded
+
 - [ ] v2.1 ALG-3: Classification uses ONLY delta thresholds, no absolute winrate gates
+
 - [ ] v2.1 STR-1: Moves with policy < `confirmation_min_policy` skip confirmation queries
 
 ### Solution Tree Building
 
 - [ ] Tree branches at opponent decision points (policy > branch_min_policy)
+
 - [ ] Tree stops at winrate stability (|Δwr| < wr_epsilon for 2 moves)
+
 - [ ] Tree stops at ownership convergence (key stones change < own_epsilon)
+
 - [ ] v2.1 EDGE-2: Tree stops at seki (winrate in seki_band for consecutive depths)
+
 - [ ] Tree never exceeds solution_max_depth
+
 - [ ] Tree never uses more than max_total_tree_queries
+
 - [ ] Tree doesn't stop before solution_min_depth
+
 - [ ] Branching width capped at max_branch_width per opponent node
+
 - [ ] Truncated branches marked with `truncated=True`
+
 - [ ] v2.1 ALG-4: `tree_completeness` tracked; budget exhaustion before min_depth → confidence="low"
+
 - [ ] v2.1 MIN-2: `query_budget` is required parameter, not optional
+
 - [ ] v2.1 EDGE-1: Corner positions get `corner_position_visit_boost` extra visits
+
 - [ ] v2.1 EDGE-3: Suspected ladders (PV > 8 moves) get `ladder_visit_boost` extra visits
 
 ### Additive-Only Rules
 
 - [ ] Existing human solution NEVER deleted or modified
+
 - [ ] AI alternatives APPENDED as additional children of root
+
 - [ ] If KataGo disagrees with human solution: logged, flagged, NOT replaced
+
 - [ ] If human solution is losing (wr < flag_losing_winrate): flagged for review
+
 - [ ] v2.1 ALG-6: `human_solution_confidence` metadata set ("strong"/"weak"/"losing")
 
 ### Co-Correct Detection (v2.1 ALG-5 — renamed from Miai)
 
 - [ ] Three-signal check: winrate gap < min_gap AND both Δ < T_good AND score gap < score_gap
+
 - [ ] Field named `co_correct_detected`, NOT `miai_detected`
+
 - [ ] Code comments explain this is NOT Go-theoretic miai detection
 
 ### AC Quality Field
 
 - [ ] ac:0 for untouched puzzles (AI disabled or not processed)
+
 - [ ] ac:1 for enriched-only (existing solution used as-is)
+
 - [ ] ac:2 for AI-solved/extended (solution built or branches added)
+
 - [ ] v2.1 ALG-4: ac:2 NOT set if tree truncated before min_depth (downgrade to ac:1)
+
 - [ ] ac:3 never set by pipeline (human review only; v2.1 AC-2: workflow out of scope)
+
 - [ ] v2.1 AC-1: `ai_solution_validated: bool` set when AI checks existing solution
+
 - [ ] YQ wire format: `YQ[q:2;rc:0;hc:0;ac:1]`
+
 - [ ] YQ regex updated to accept `ac:[0123]`
 
 ### Logging & Observability (v2.1)
 
 - [ ] v2.1 LOG-1: `BatchSummary` emitted as structured JSON after each batch
+
 - [ ] v2.1 LOG-2: Disagreements written to `.pm-runtime/logs/disagreements/{run_id}.jsonl`
+
 - [ ] v2.1 ALG-9: Collection-level disagreement rates tracked; WARNING if > threshold
 
 ### Edge Cases
 
 - [ ] Seki position → v2.1 EDGE-2: seki-specific stopping, goal="seki"
+
 - [ ] Ko position → oscillating winrate, ko-specific stopping, goal="ko"
+
 - [ ] Multiple equally good moves → co-correct detection (v2.1 ALG-5), up to max_correct_moves
+
 - [ ] 9×9 and 13×13 boards → correct coordinate conversion
+
 - [ ] White-to-play puzzles (PL[W]) → sign adjustment via `normalize_winrate()`, W[] nodes injected
+
 - [ ] Position where all moves are bad → rejected gracefully
+
 - [ ] Budget exhausted mid-tree → truncate and mark, v2.1 ALG-4 confidence downgrade
+
 - [ ] v2.1 EDGE-4: Pass as correct first move → rejected with error
+
 - [ ] v2.1 EDGE-1: Bent-four in corner → visit boost, flag, don't reject
+
 - [ ] v2.1 EDGE-3: Ladder suspected → visit boost, flag
 
 ---
 
 ## Documentation Updates
 
-| Document                                       | Change                                            | Type         |
+| Document | Change | Type |
 | ---------------------------------------------- | ------------------------------------------------- | ------------ |
-| `config/katago-enrichment.json`                | Add `ai_solve` section, bump to v1.14             | Config       |
-| `CLAUDE.md` (root)                             | Add `ac:0-3` to YQ property table                 | Reference    |
-| `.github/copilot-instructions.md`              | Add `ac:0-3` to YQ property table                 | Reference    |
-| `docs/concepts/quality.md`                     | Add AC field definition, 4-level quality tiers    | Concepts     |
+| `config/katago-enrichment.json` | Add `ai_solve` section, bump to v1.14 | Config |
+| `CLAUDE.md` (root) | Add `ac:0-3` to YQ property table | Reference |
+| `.github/copilot-instructions.md` | Add `ac:0-3` to YQ property table | Reference |
+| `docs/concepts/quality.md` | Add AC field definition, 4-level quality tiers | Concepts |
 | `docs/architecture/tools/katago-enrichment.md` | Add AI-Solve architecture, expert panel decisions | Architecture |
-| `docs/how-to/backend/enrichment-lab.md`        | Add AI-Solve workflow, position-only processing   | How-To       |
-| `docs/reference/enrichment-config.md`          | Add `ai_solve` config reference table             | Reference    |
-| `CHANGELOG.md`                                 | Add AI-Solve feature entry                        | Changelog    |
+| `docs/how-to/backend/enrichment-lab.md` | Add AI-Solve workflow, position-only processing | How-To |
+| `docs/reference/enrichment-config.md` | Add `ai_solve` config reference table | Reference |
+| `CHANGELOG.md` | Add AI-Solve feature entry | Changelog |
 
 ---
 
@@ -1558,55 +1619,58 @@ class TestSolutionTreeCalibration:
 
 ## Implementation Order
 
-| Phase                         | Files                                                                                                                                                 | Effort | Dependencies |
+| Phase | Files | Effort | Dependencies |
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------------ |
-| **P1: Config**                | `config.py` (AiSolveConfig + v2.1 sub-models), `katago-enrichment.json` (v1.14)                                                                       | Small  | None         |
-| **P2: Models**                | `models/solve_result.py` (SolutionNode, MoveClassification, PositionAnalysis, QueryBudget, TreeCompletenessMetrics, BatchSummary, DisagreementRecord) | Medium | P1           |
-| **P3: Move classifier**       | `analyzers/solve_position.py` → `classify_move_quality()`, `analyze_position_candidates()`, `normalize_winrate()`                                     | Medium | P1, P2       |
-| **P4: Tree builder**          | `analyzers/solve_position.py` → `build_solution_tree()` with seki detection, completeness tracking                                                    | Medium | P3           |
-| **P5: SGF injection**         | `analyzers/solve_position.py` → `inject_solution_into_sgf()` + roundtrip assertion                                                                    | Medium | P4           |
-| **P6: Alternatives**          | `analyzers/solve_position.py` → `discover_alternatives()` + parallel tree building                                                                    | Small  | P3           |
-| **P7: Integration**           | `analyzers/enrich_single.py` (Step 2 modification + v2.1 amendments)                                                                                  | Medium | P3-P6        |
-| **P8: Quality tracking**      | `analyzers/sgf_enricher.py` (YQ ac field), `models/ai_analysis_result.py` (ac_level, ai_solution_validated, human_solution_confidence)                | Small  | P7           |
-| **P8.1: Observability**       | `DisagreementSink` class, `BatchSummary` emitter, collection monitoring (v2.1 LOG-1/LOG-2/ALG-9)                                                      | Medium | P7           |
-| **P9: Unit tests**            | `tests/test_solve_position.py` (expanded with v2.1 tests)                                                                                             | Medium | P3-P6        |
-| **P10: Integration tests**    | `tests/test_ai_solve_integration.py` (expanded with v2.1 tests)                                                                                       | Medium | P7-P8.1      |
-| **P11: Calibration fixtures** | `tests/fixtures/calibration/` + README (v2.1 CAL-1), `tests/test_ai_solve_calibration.py` (expanded)                                                  | Medium | P9           |
-| **P12: Documentation**        | See table above (~8 files) + v2.1 amendment docs                                                                                                      | Small  | P8           |
+| **P1: Config** | `config.py` (AiSolveConfig + v2.1 sub-models), `katago-enrichment.json` (v1.14) | Small | None |
+| **P2: Models** | `models/solve_result.py` (SolutionNode, MoveClassification, PositionAnalysis, QueryBudget, TreeCompletenessMetrics, BatchSummary, DisagreementRecord) | Medium | P1 |
+| **P3: Move classifier** | `analyzers/solve_position.py` → `classify_move_quality()`, `analyze_position_candidates()`, `normalize_winrate()` | Medium | P1, P2 |
+| **P4: Tree builder** | `analyzers/solve_position.py` → `build_solution_tree()` with seki detection, completeness tracking | Medium | P3 |
+| **P5: SGF injection** | `analyzers/solve_position.py` → `inject_solution_into_sgf()` + roundtrip assertion | Medium | P4 |
+| **P6: Alternatives** | `analyzers/solve_position.py` → `discover_alternatives()` + parallel tree building | Small | P3 |
+| **P7: Integration** | `analyzers/enrich_single.py` (Step 2 modification + v2.1 amendments) | Medium | P3-P6 |
+| **P8: Quality tracking** | `analyzers/sgf_enricher.py` (YQ ac field), `models/ai_analysis_result.py` (ac_level, ai_solution_validated, human_solution_confidence) | Small | P7 |
+| **P8.1: Observability** | `DisagreementSink` class, `BatchSummary` emitter, collection monitoring (v2.1 LOG-1/LOG-2/ALG-9) | Medium | P7 |
+| **P9: Unit tests** | `tests/test_solve_position.py` (expanded with v2.1 tests) | Medium | P3-P6 |
+| **P10: Integration tests** | `tests/test_ai_solve_integration.py` (expanded with v2.1 tests) | Medium | P7-P8.1 |
+| **P11: Calibration fixtures** | `tests/fixtures/calibration/` + README (v2.1 CAL-1), `tests/test_ai_solve_calibration.py` (expanded) | Medium | P9 |
+| **P12: Documentation** | See table above (~8 files) + v2.1 amendment docs | Small | P8 |
 
 **Total estimated scope (v2.1 revised):**
 
 - ~850 lines new code (1 new module + 1 new model file + observability classes, up from ~700)
+
 - ~100 lines modified code (enrich_single.py, sgf_enricher.py, config.py, cli.py, up from ~80)
+
 - ~800 lines tests (3 new test files, expanded, up from ~600)
+
 - ~9 documentation files updated (up from ~8)
 
 ---
 
 ## Risks and Mitigations
 
-| Risk                                                  | Severity | Mitigation                                                                                                                                                                                                         |
+| Risk | Severity | Mitigation |
 | ----------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| KataGo finds wrong correct move for complex positions | MEDIUM   | Confirmation queries, T_good threshold, ac:2 flag for transparency, calibration testing                                                                                                                            |
-| Solution tree too deep / too many queries             | MEDIUM   | QueryBudget hard cap (50 queries), solution_max_depth (20), truncation marking. v2.1 ALG-4: confidence downgrade if truncated before min_depth                                                                     |
-| Existing human solutions overwritten                  | **NONE** | Additive-only rule. Never delete. Disagreements logged, not acted on. v2.1 ALG-6: human_solution_confidence metadata                                                                                               |
-| Performance regression in batch mode                  | LOW      | max_total_tree_queries caps worst case. Early termination via natural stopping. v2.1 STR-1: confirmation_min_policy pre-filter reduces classification cost ~50-70%. v2.1 STR-4: parallel alternative tree building |
-| Threshold values wrong initially                      | MEDIUM   | Calibration-driven: sweep + F1 optimization. Config-driven: change without code deploy. v2.1 ALG-8: model-version profiles, stratified datasets                                                                    |
-| Breaking existing behavior                            | **NONE** | Feature gated `ai_solve.enabled=false`. Default OFF. All tests pass with old config.                                                                                                                               |
-| v2.1 EDGE-1: Bent-four / dead-shape false evaluation  | LOW      | Corner visit boost, flag, don't reject. Known KataGo limitation at low visits.                                                                                                                                     |
-| v2.1 EDGE-2: Seki tree oscillation                    | MEDIUM   | Seki-specific early-exit heuristic with configurable band/depth.                                                                                                                                                   |
-| v2.1 EDGE-3: Ladder dependency in position-only SGF   | LOW      | Ladder suspected flag + visit boost. KataGo handles ladders well at 1000+ visits.                                                                                                                                  |
-| v2.1 ALG-9: Silent quality drift across collections   | MEDIUM   | Collection-level disagreement monitoring with WARNING threshold.                                                                                                                                                   |
-| v2.1 LOG-2: Disagreements logged but never actioned   | MEDIUM   | JSONL disagreement sink for future review tooling.                                                                                                                                                                 |
+| KataGo finds wrong correct move for complex positions | MEDIUM | Confirmation queries, T_good threshold, ac:2 flag for transparency, calibration testing |
+| Solution tree too deep / too many queries | MEDIUM | QueryBudget hard cap (50 queries), solution_max_depth (20), truncation marking. v2.1 ALG-4: confidence downgrade if truncated before min_depth |
+| Existing human solutions overwritten | **NONE** | Additive-only rule. Never delete. Disagreements logged, not acted on. v2.1 ALG-6: human_solution_confidence metadata |
+| Performance regression in batch mode | LOW | max_total_tree_queries caps worst case. Early termination via natural stopping. v2.1 STR-1: confirmation_min_policy pre-filter reduces classification cost ~50-70%. v2.1 STR-4: parallel alternative tree building |
+| Threshold values wrong initially | MEDIUM | Calibration-driven: sweep + F1 optimization. Config-driven: change without code deploy. v2.1 ALG-8: model-version profiles, stratified datasets |
+| Breaking existing behavior | **NONE** | Feature gated `ai_solve.enabled=false`. Default OFF. All tests pass with old config. |
+| v2.1 EDGE-1: Bent-four / dead-shape false evaluation | LOW | Corner visit boost, flag, don't reject. Known KataGo limitation at low visits. |
+| v2.1 EDGE-2: Seki tree oscillation | MEDIUM | Seki-specific early-exit heuristic with configurable band/depth. |
+| v2.1 EDGE-3: Ladder dependency in position-only SGF | LOW | Ladder suspected flag + visit boost. KataGo handles ladders well at 1000+ visits. |
+| v2.1 ALG-9: Silent quality drift across collections | MEDIUM | Collection-level disagreement monitoring with WARNING threshold. |
+| v2.1 LOG-2: Disagreements logged but never actioned | MEDIUM | JSONL disagreement sink for future review tooling. |
 
 ### Expert Risk Assessments
 
 > **Cho Chikun:** "For elementary to upper-intermediate, KataGo's solution trees will be reliable. For dan-level puzzles with ko, seki, or deep reading: increase solve_visits to 2000+ and expect some false positives. The ac:2 flag is essential — it lets downstream quality control identify AI-generated solutions."
-
+>
 > **Lee Sedol:** "The biggest risk is not AI accuracy — it's the additive-only rule being violated accidentally through a bug. I would make `inject_solution_into_sgf` the ONLY function that mutates the SGF tree, and add an assertion that existing children are unchanged after the call. A property test: `count(root.children_before) <= count(root.children_after)` and `set(root.children_before) ⊆ set(root.children_after)`."
-
+>
 > **Shin Jinseo:** "Watch out for positions where KataGo's evaluation depends heavily on the ko threat environment. In isolation (position-only), KataGo may not have the full picture of available ko threats. For ko-tagged puzzles, use the ko-aware configuration from `ko_analysis` section (tromp-taylor rules, extended PV length)."
-
+>
 > **Principal Staff Engineer B:** "Observability is critical. Every enrichment run should produce a summary: puzzles processed, ac:0/1/2 distribution, disagreements logged, trees built, average tree depth, average queries per puzzle. This goes in the structured log and can be aggregated for monitoring."
 
 ---
@@ -1614,7 +1678,9 @@ class TestSolutionTreeCalibration:
 ## Non-Goals (Explicitly Out of Scope)
 
 - **Replacing human review.** ac:3 is only set by humans. The pipeline never claims human-level verification.
+
 - **Auto-enabling without calibration.** `ai_solve.enabled` stays `false` until calibration tests pass.
+
 - **Modifying existing refutation pipeline.** Refutations continue to use existing `generate_refutations.py`. AI-Solve COMPLEMENTS refutations, doesn't replace them.
 
 ---
@@ -1631,16 +1697,16 @@ AB[be][dc][cc][eb][fb][bc]AW[bb][ab][db][da][cb])
 
 **Step 2: Pre-analysis (solve_visits=1000):**
 
-| Move (GTP) | Winrate | Δwr  | Policy | Classification |
+| Move (GTP) | Winrate | Δwr | Policy | Classification |
 | ---------- | ------- | ---- | ------ | -------------- |
-| A3 (ac)    | 0.98    | 0.01 | 0.45   | TE ✓           |
-| B1 (ba)    | 0.62    | 0.35 | 0.12   | BM+HO ✗        |
-| C1 (ca)    | 0.55    | 0.42 | 0.08   | BM+HO ✗        |
-| A4 (ad)    | 0.71    | 0.26 | 0.05   | BM+HO ✗        |
+| A3 (ac) | 0.98 | 0.01 | 0.45 | TE ✓ |
+| B1 (ba) | 0.62 | 0.35 | 0.12 | BM+HO ✗ |
+| C1 (ca) | 0.55 | 0.42 | 0.08 | BM+HO ✗ |
+| A4 (ad) | 0.71 | 0.26 | 0.05 | BM+HO ✗ |
 
 **Step 2: Build solution tree for A3 (correct):**
 
-```
+```text
 B[ac] (wr=0.98)
 ├── W[ba] (wr=0.97, policy=0.40) → B[aa] (wr=0.99) → STOP (wr stable)
 ├── W[aa] (wr=0.96, policy=0.25) → B[ba] (wr=0.99) → STOP (wr stable)
@@ -1649,7 +1715,7 @@ B[ac] (wr=0.98)
 
 **Step 2: Build refutation branches for wrong moves:**
 
-```
+```text
 B[ba] (WRONG, wr=0.62, delta=0.35) → W[ac] → B[...] → PV (4 moves)
 B[ca] (WRONG, wr=0.55, delta=0.42) → W[ac] → B[...] → PV (4 moves)
 ```
@@ -1674,17 +1740,17 @@ AB[be][dc][cc][eb][fb][bc]AW[bb][ab][db][da][cb]
 
 ## Appendix B: Relationship to Existing Refutation Logic
 
-| Concept          | `generate_refutations.py` (existing)    | `solve_position.py` (new)                    |
+| Concept | `generate_refutations.py` (existing) | `solve_position.py` (new) |
 | ---------------- | --------------------------------------- | -------------------------------------------- |
-| Primary ranking  | Policy (most tempting wrong)            | Winrate (best correct move)                  |
-| Engine query     | `AnalysisRequest.with_puzzle_region()`  | Same                                         |
-| Move filtering   | Exclude correct, filter by policy       | Classify all by delta                        |
-| Core threshold   | `delta_threshold=0.08` → wrong enough   | `T_good=0.02` → correct enough               |
-| Per-move query   | Play wrong, get opponent punishment     | Play correct, get opponent responses         |
-| PV depth         | `max_pv_length=4` (flat)                | Recursive tree with stopping conditions      |
-| Escalation       | Higher visits, relaxed thresholds       | Not needed — initial solve_visits sufficient |
-| Coord conversion | `gtp_to_sgf()`, `sgf_to_gtp()`          | Same                                         |
-| Logging          | `log_with_context(stage="refutations")` | `log_with_context(stage="ai_solve")`         |
+| Primary ranking | Policy (most tempting wrong) | Winrate (best correct move) |
+| Engine query | `AnalysisRequest.with_puzzle_region()` | Same |
+| Move filtering | Exclude correct, filter by policy | Classify all by delta |
+| Core threshold | `delta_threshold=0.08` → wrong enough | `T_good=0.02` → correct enough |
+| Per-move query | Play wrong, get opponent punishment | Play correct, get opponent responses |
+| PV depth | `max_pv_length=4` (flat) | Recursive tree with stopping conditions |
+| Escalation | Higher visits, relaxed thresholds | Not needed — initial solve_visits sufficient |
+| Coord conversion | `gtp_to_sgf()`, `sgf_to_gtp()` | Same |
+| Logging | `log_with_context(stage="refutations")` | `log_with_context(stage="ai_solve")` |
 
 ---
 
@@ -1696,77 +1762,77 @@ AB[be][dc][cc][eb][fb][bc]AW[bb][ab][db][da][cb]
 
 ### C.1 Core Algorithm Issues
 
-| ID        | Issue Provided                                                                                                                                                                                                                                                                                                                                   | Review Panel Opinion                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Implementation Methodology                                                                                                                                                                                                                                                                                                                                                                                     | Decision                                                                            |
+| ID | Issue Provided | Review Panel Opinion | Implementation Methodology | Decision |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| **ALG-3** | **Pre/Post Winrate Floor Logic — Risk of False Puzzle Validation.** `pre_winrate_floor=0.90` and `post_winrate_ceiling=0.15` act as validity gates. Many real tsumego have root winrate < 0.90 (e.g., 0.82 in a slightly favorable position). Delta classification alone is sufficient. These should be confidence metrics, not rejection gates. | <ul><li>**Cho Chikun:** "Many classical tsumego start from positions that are only slightly favorable. A 0.90 floor would exclude positions where White has just enough compensation to make the fight interesting. The correct move's delta is what matters, not the absolute starting winrate."</li><li>**Ke Jie:** "For practical learning, a position at 0.82 winrate with a correct move that maintains 0.98 is a perfectly good puzzle. The 0.16 Δ in the wrong direction is the teaching signal."</li><li>**Principal Staff Engineer A:** "Downgrade from gate to confidence annotation. The classification logic should use delta thresholds exclusively. Pre/post absolutes become metadata attached to `PositionAnalysis` for downstream quality dashboards — not blocking conditions."</li></ul> | Refactor `classify_move_quality()`: remove pre/post floor/ceiling from classification logic. Keep values in config as `confidence_metrics` (renamed from `thresholds`). Attach `root_winrate_confidence: "high"\|"medium"\|"low"` to `PositionAnalysis` based on these thresholds. Never reject a puzzle solely on absolute winrate.                                                                           | 🟢 **Accept**                                                                       |
-| **ALG-4** | **Solution Tree Builder — Truncation without Confidence Downgrade.** If query budget exhausts mid-tree before `solution_min_depth`, tree is incomplete but still marked `ac:2`. This creates partial solutions labeled as solved.                                                                                                                | <ul><li>**Lee Sedol:** "A solution tree that stops at depth 2 when the problem requires depth 5 is not a solution — it's a hint. If the budget cuts you off before the position is resolved, you cannot claim you solved it."</li><li>**Shin Jinseo:** "Track `tree_completeness` as a ratio: `completed_branches / total_branches`. If < 0.8, downgrade. If truncated before min_depth, don't set ac:2."</li><li>**Principal Staff Engineer B:** "Add explicit logic: `if budget_exhausted and max_reached_depth < solution_min_depth: confidence = 'low'; ac_level = 1`. This preserves the partial tree for data but doesn't claim a solve."</li></ul>                                                                                                                                                   | Add `tree_completeness` field to `SolutionNode`. In `build_solution_tree()`, track `completed_branches` vs `total_attempted_branches`. After tree building: if `budget.queries_used >= budget.max_queries` AND root tree depth < `solution_min_depth` → set `confidence="low"`, prevent `ac:2`, set `ac:1` instead. Add `TreeCompletenessMetrics` model.                                                       | 🟢 **Accept**                                                                       |
-| **ALG-5** | **Miai Detection — Gap Rule Too Coarse.** `min_winrate_gap=0.15`: Move A at 0.97 vs Move B at 0.86 → gap 0.11 → classified as miai. But 0.86 vs 0.97 is not equivalent in tsumego. Need multi-signal: gap + absolute delta + score delta.                                                                                                        | <ul><li>**Cho Chikun:** "True miai means either move achieves the SAME result independently. Two moves both being 'correct' (Δ < T_good) is not miai — it's co-correct. Miai requires that after either move, the resulting positions are equivalent in outcome. Winrate proximity alone cannot confirm this."</li><li>**Lee Sedol:** "I agree with renaming to 'co-correct.' Real miai would require analyzing BOTH resulting positions and confirming they converge. That's expensive but worthwhile for accuracy."</li><li>**Principal Staff Engineer A:** "Three-signal check: `abs(wr1 - wr2) < min_gap AND both Δ < T_good AND abs(score1 - score2) < score_gap`. Rename field from `miai_detected` to `co_correct_detected`. Add `score_gap` config param."</li></ul>                                | Rename `miai_detected` → `co_correct_detected` in `PositionAnalysis`. Add `score_gap: float = 3.0` to config. Update detection logic to require all three conditions: winrate gap < min_gap, both moves classify as TE, AND score lead gap < score_gap. Document the distinction between "co-correct" (our detection) and "miai" (Go-theoretic concept) in code comments.                                      | 🟡 **Partial** — rename + multi-signal, defer true miai verification to future work |
-| **ALG-6** | **Existing Solution Preservation — Needs Ranking Freeze + Metadata.** Human solution preserved when AI disagrees (correct). But if human move wr=0.62 and AI move wr=0.91, frontend may display human first → confuses learners. Need ranking freeze + suboptimality metadata.                                                                   | <ul><li>**Lee Sedol:** "The preservation is correct — but transparency is essential. If the human solution is significantly worse, the learner deserves to know. A 'teacher's choice' badge versus 'AI-recommended' badge gives context without deleting the human answer."</li><li>**Ke Jie:** "Don't reorder root children — that breaks backward compatibility. But attach metadata so the frontend CAN make informed display decisions."</li><li>**Principal Staff Engineer A:** "Add `human_solution_confidence: 'strong'\|'weak'\|'losing'` to the puzzle result. Weak = AI has a notably better move but human move is still winning. Losing = human move is objectively losing. This metadata flows to the frontend for display decisions."</li></ul>                                               | Add `human_solution_confidence` field to `EnrichmentResult`. Classification: `strong` (AI agrees or gap < T_disagreement), `weak` (AI finds notably better move, gap ≥ T_disagreement but human still winning wr > 0.5), `losing` (human move wr < flag_losing_winrate). Never reorder SGF children. Inject confidence as SGF comment or separate metadata field.                                              | 🟢 **Accept**                                                                       |
-| **ALG-7** | **Goal Inference — Ownership Threshold Brittle.** `ownership_alive_threshold=0.7` fluctuates near edges, especially in ko/seki. Risk of false kill→seki or seki→alive classification. Should use multi-signal: score delta magnitude + ownership variance stability + territory swing.                                                           | <ul><li>**Shin Jinseo:** "Ownership is ONE signal, not THE signal. For life-and-death, score delta is more reliable: if correct move swings score by 15+ points, the group was at stake. For ko, ownership oscillates by design — don't use it as primary for ko-tagged positions."</li><li>**Ke Jie:** "Score delta + territory swing after correct move is the robust combination. Ownership confirms but shouldn't decide."</li><li>**Principal Staff Engineer B:** "Add `ownership_variance` metric — compute variance across top 3 moves' ownership maps. High variance = unstable → lower weight for ownership in goal inference. Combine: `score_delta_primary, ownership_secondary, variance_as_confidence`."</li></ul>                                                                             | Refactor `goal_inference` config to multi-signal: `score_delta_kill_threshold` (primary), `ownership_alive_threshold` (secondary), new `ownership_variance_threshold` (confidence gate). Goal inference algorithm: 1) Score delta → primary classification, 2) Ownership confirms if variance < threshold, 3) If variance high → flag as `goal_confidence="low"`. Add `goal_confidence` to `PositionAnalysis`. | 🟡 **Partial** — add multi-signal, keep ownership as secondary                      |
-| **ALG-8** | **Calibration Methodology — Missing class imbalance handling and model-version sensitivity.** Most moves are neutral → F1 inflates. Need balanced calibration set. Also thresholds differ across KataGo model versions (b6/b18/b28). Need `threshold_profile_by_model`.                                                                          | <ul><li>**Shin Jinseo:** "This is critical. I've seen thresholds shift by 0.01-0.03 between b18 and b28 models. What's T_good=0.02 on b18 might need to be T_good=0.025 on b28 because the stronger model's winrate estimates are sharper."</li><li>**Principal Staff Engineer B:** "Three additions: 1) Stratified sampling for calibration set — equal TE/BM/neutral representation. 2) `model_profile` in config mapping model hash → threshold overrides. 3) Calibration test parameterized by model version."</li><li>**Principal Staff Engineer A:** "Also specify the F1 target explicitly: macro-F1 across all three classes (TE/BM/neutral), not micro-F1 which would be dominated by the neutral class."</li></ul>                                                                                | Add `calibration` section to config: `min_te_samples`, `min_bm_samples`, `min_neutral_samples`, `target_macro_f1`. Add `model_profiles` dict in config keyed by model hash → threshold overrides. Calibration test must: 1) use stratified dataset, 2) compute macro-F1, 3) be parameterized by model version. Document visit-count dependency.                                                                | 🟢 **Accept**                                                                       |
-| **ALG-9** | **AC Levels — Clean but needs collection-level disagreement tracking.** `ac:1` when AI disagrees slightly (delta=0.03) but no alternative added — should stay ac:1. But silent drift accumulates without collection-level monitoring.                                                                                                            | <ul><li>**Principal Staff Engineer B:** "Per-collection disagreement counts are essential for quality monitoring. Add a `collection_disagreement_summary` to the batch log: `{collection_id: {total: N, disagreements: K, pct: K/N}}`."</li><li>**Cho Chikun:** "If a collection has >20% disagreement rate, that collection needs human review, not just individual puzzles."</li></ul>                                                                                                                                                                                                                                                                                                                                                                                                                    | Add `collection_disagreement_summary` to batch-level structured log. Track per-collection: total puzzles processed, disagreement count, disagreement percentage. If pct > configurable threshold (default 20%) → emit WARNING-level log. No change to AC semantics — stays `ac:1` for slight disagreements.                                                                                                    | 🟢 **Accept**                                                                       |
+| **ALG-3** | **Pre/Post Winrate Floor Logic — Risk of False Puzzle Validation.** `pre_winrate_floor=0.90` and `post_winrate_ceiling=0.15` act as validity gates. Many real tsumego have root winrate < 0.90 (e.g., 0.82 in a slightly favorable position). Delta classification alone is sufficient. These should be confidence metrics, not rejection gates. | Review panel: **Cho Chikun:** "Many classical tsumego start from positions that are only slightly favorable. A 0.90 floor would exclude positions where White has just enough compensation to make the fight interesting. The correct move's delta is what matters, not the absolute starting winrate."; **Ke Jie:** "For practical learning, a position at 0.82 winrate with a correct move that maintains 0.98 is a perfectly good puzzle. The 0.16 Δ in the wrong direction is the teaching signal."; **Principal Staff Engineer A:** "Downgrade from gate to confidence annotation. The classification logic should use delta thresholds exclusively. Pre/post absolutes become metadata attached to `PositionAnalysis` for downstream quality dashboards — not blocking conditions." | Refactor `classify_move_quality()`: remove pre/post floor/ceiling from classification logic. Keep values in config as `confidence_metrics` (renamed from `thresholds`). Attach `root_winrate_confidence` values `high`, `medium`, or `low` to `PositionAnalysis` based on these thresholds. Never reject a puzzle solely on absolute winrate. | 🟢 **Accept** |
+| **ALG-4** | **Solution Tree Builder — Truncation without Confidence Downgrade.** If query budget exhausts mid-tree before `solution_min_depth`, tree is incomplete but still marked `ac:2`. This creates partial solutions labeled as solved. | Review panel: **Lee Sedol:** "A solution tree that stops at depth 2 when the problem requires depth 5 is not a solution — it's a hint. If the budget cuts you off before the position is resolved, you cannot claim you solved it."; **Shin Jinseo:** "Track `tree_completeness` as a ratio: `completed_branches / total_branches`. If < 0.8, downgrade. If truncated before min_depth, don't set ac:2."; **Principal Staff Engineer B:** "Add explicit logic: `if budget_exhausted and max_reached_depth < solution_min_depth: confidence = 'low'; ac_level = 1`. This preserves the partial tree for data but doesn't claim a solve." | Add `tree_completeness` field to `SolutionNode`. In `build_solution_tree()`, track `completed_branches` vs `total_attempted_branches`. After tree building: if `budget.queries_used >= budget.max_queries` AND root tree depth < `solution_min_depth` → set `confidence="low"`, prevent `ac:2`, set `ac:1` instead. Add `TreeCompletenessMetrics` model. | 🟢 **Accept** |
+| **ALG-5** | **Miai Detection — Gap Rule Too Coarse.** `min_winrate_gap=0.15`: Move A at 0.97 vs Move B at 0.86 → gap 0.11 → classified as miai. But 0.86 vs 0.97 is not equivalent in tsumego. Need multi-signal: gap + absolute delta + score delta. | Review panel: **Cho Chikun:** "True miai means either move achieves the SAME result independently. Two moves both being 'correct' (Δ < T_good) is not miai — it's co-correct. Miai requires that after either move, the resulting positions are equivalent in outcome. Winrate proximity alone cannot confirm this."; **Lee Sedol:** "I agree with renaming to 'co-correct.' Real miai would require analyzing BOTH resulting positions and confirming they converge. That's expensive but worthwhile for accuracy."; **Principal Staff Engineer A:** "Three-signal check: `abs(wr1 - wr2) < min_gap AND both Δ < T_good AND abs(score1 - score2) < score_gap`. Rename field from `miai_detected` to `co_correct_detected`. Add `score_gap` config param." | Rename `miai_detected` → `co_correct_detected` in `PositionAnalysis`. Add `score_gap: float = 3.0` to config. Update detection logic to require all three conditions: winrate gap < min_gap, both moves classify as TE, AND score lead gap < score_gap. Document the distinction between "co-correct" (our detection) and "miai" (Go-theoretic concept) in code comments. | 🟡 **Partial** — rename + multi-signal, defer true miai verification to future work |
+| **ALG-6** | **Existing Solution Preservation — Needs Ranking Freeze + Metadata.** Human solution preserved when AI disagrees (correct). But if human move wr=0.62 and AI move wr=0.91, frontend may display human first → confuses learners. Need ranking freeze + suboptimality metadata. | Review panel: **Lee Sedol:** "The preservation is correct — but transparency is essential. If the human solution is significantly worse, the learner deserves to know. A 'teacher's choice' badge versus 'AI-recommended' badge gives context without deleting the human answer."; **Ke Jie:** "Don't reorder root children — that breaks backward compatibility. But attach metadata so the frontend CAN make informed display decisions."; **Principal Staff Engineer A:** "Add `human_solution_confidence` values `strong`, `weak`, or `losing` to the puzzle result. Weak = AI has a notably better move but human move is still winning. Losing = human move is objectively losing. This metadata flows to the frontend for display decisions." | Add `human_solution_confidence` field to `EnrichmentResult`. Classification: `strong` (AI agrees or gap < T_disagreement), `weak` (AI finds notably better move, gap ≥ T_disagreement but human still winning wr > 0.5), `losing` (human move wr < flag_losing_winrate). Never reorder SGF children. Inject confidence as SGF comment or separate metadata field. | 🟢 **Accept** |
+| **ALG-7** | **Goal Inference — Ownership Threshold Brittle.** `ownership_alive_threshold=0.7` fluctuates near edges, especially in ko/seki. Risk of false kill→seki or seki→alive classification. Should use multi-signal: score delta magnitude + ownership variance stability + territory swing. | Review panel: **Shin Jinseo:** "Ownership is ONE signal, not THE signal. For life-and-death, score delta is more reliable: if correct move swings score by 15+ points, the group was at stake. For ko, ownership oscillates by design — don't use it as primary for ko-tagged positions."; **Ke Jie:** "Score delta + territory swing after correct move is the robust combination. Ownership confirms but shouldn't decide."; **Principal Staff Engineer B:** "Add `ownership_variance` metric — compute variance across top 3 moves' ownership maps. High variance = unstable → lower weight for ownership in goal inference. Combine: `score_delta_primary, ownership_secondary, variance_as_confidence`." | Refactor `goal_inference` config to multi-signal: `score_delta_kill_threshold` (primary), `ownership_alive_threshold` (secondary), new `ownership_variance_threshold` (confidence gate). Goal inference algorithm: 1) Score delta → primary classification, 2) Ownership confirms if variance < threshold, 3) If variance high → flag as `goal_confidence="low"`. Add `goal_confidence` to `PositionAnalysis`. | 🟡 **Partial** — add multi-signal, keep ownership as secondary |
+| **ALG-8** | **Calibration Methodology — Missing class imbalance handling and model-version sensitivity.** Most moves are neutral → F1 inflates. Need balanced calibration set. Also thresholds differ across KataGo model versions (b6/b18/b28). Need `threshold_profile_by_model`. | Review panel: **Shin Jinseo:** "This is critical. I've seen thresholds shift by 0.01-0.03 between b18 and b28 models. What's T_good=0.02 on b18 might need to be T_good=0.025 on b28 because the stronger model's winrate estimates are sharper."; **Principal Staff Engineer B:** "Three additions: 1) Stratified sampling for calibration set — equal TE/BM/neutral representation. 2) `model_profile` in config mapping model hash → threshold overrides. 3) Calibration test parameterized by model version."; **Principal Staff Engineer A:** "Also specify the F1 target explicitly: macro-F1 across all three classes (TE/BM/neutral), not micro-F1 which would be dominated by the neutral class." | Add `calibration` section to config: `min_te_samples`, `min_bm_samples`, `min_neutral_samples`, `target_macro_f1`. Add `model_profiles` dict in config keyed by model hash → threshold overrides. Calibration test must: 1) use stratified dataset, 2) compute macro-F1, 3) be parameterized by model version. Document visit-count dependency. | 🟢 **Accept** |
+| **ALG-9** | **AC Levels — Clean but needs collection-level disagreement tracking.** `ac:1` when AI disagrees slightly (delta=0.03) but no alternative added — should stay ac:1. But silent drift accumulates without collection-level monitoring. | Review panel: **Principal Staff Engineer B:** "Per-collection disagreement counts are essential for quality monitoring. Add a `collection_disagreement_summary` to the batch log: `{collection_id: {total: N, disagreements: K, pct: K/N}}`."; **Cho Chikun:** "If a collection has >20% disagreement rate, that collection needs human review, not just individual puzzles." | Add `collection_disagreement_summary` to batch-level structured log. Track per-collection: total puzzles processed, disagreement count, disagreement percentage. If pct > configurable threshold (default 20%) → emit WARNING-level log. No change to AC semantics — stays `ac:1` for slight disagreements. | 🟢 **Accept** |
 
 ### C.2 Structural / Design Issues
 
-| ID        | Issue Provided                                                                                                                                                                                                                                                  | Review Panel Opinion                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Implementation Methodology                                                                                                                                                                                                                                                                                                     | Decision                          |
+| ID | Issue Provided | Review Panel Opinion | Implementation Methodology | Decision |
 | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------- |
-| **STR-1** | **confirm_visits reuse gap.** `analyze_position_candidates()` fires per-move confirmation queries at 500 visits each for K=10 candidates = 5,000 visits for classification alone, unacknowledged in performance analysis. Need fast pre-filter by policy floor. | <ul><li>**Principal Staff Engineer B:** "This is a real performance gap. 10 × 500 = 5,000 visits = ~2 seconds just for classification, BEFORE tree building. A policy pre-filter at e.g. 0.03 would reduce confirmations to typically 3-5 moves, cutting classification cost by 50-70%."</li><li>**Shin Jinseo:** "Moves with policy < 0.03 are almost never correct in tsumego. 0.03 is safe as a pre-filter floor — you're only excluding moves the neural net considers essentially impossible."</li></ul> | Add `confirmation_min_policy: float = 0.03` to `AiSolveConfig`. In `analyze_position_candidates()`: after initial analysis, filter candidates to only those with `policy >= confirmation_min_policy` before running confirmation queries. Update performance analysis section to document: typical 3-5 confirmations (not 10). | 🟢 **Accept**                     |
-| **STR-2** | **`pre_winrate_floor` / `post_winrate_ceiling` not wired into algorithm.** Appear in config and Topic 6 but never used in `classify_move_quality()`. Config bloat without enforcement.                                                                          | <ul><li>**Principal Staff Engineer A:** "This is resolved by ALG-3: they become confidence metrics, not classification gates. Move them from `thresholds` to a new `confidence_metrics` sub-section. Wire them into `PositionAnalysis.root_winrate_confidence` computation."</li></ul>                                                                                                                                                                                                                        | Combined with ALG-3. Rename config section. Wire into confidence annotation, not classification. Remove from `thresholds` section, add to `confidence_metrics` section.                                                                                                                                                        | 🟢 **Accept** — merged with ALG-3 |
-| **STR-3** | **Miai detection underspecified.** `min_winrate_gap=0.15` → gap between what? Winrates or deltas? Also "miai" has specific Go meaning that winrate proximity doesn't confirm.                                                                                   | <ul><li>**Cho Chikun:** "The Go community would object to calling two co-winning moves 'miai' based on winrate alone. Miai requires both moves to be interchangeable in effect. Please use 'co-correct' or 'dual solution' instead."</li></ul>                                                                                                                                                                                                                                                                | Combined with ALG-5. Rename to `co_correct_detected`. Explicitly specify: gap = `abs(correct_move_1.winrate - correct_move_2.winrate)`. Document in code that this is NOT Go-theoretic miai detection.                                                                                                                         | 🟢 **Accept** — merged with ALG-5 |
-| **STR-4** | **`discover_alternatives()` sequential when parallelizable.** `enrich_single.py` calls `discover_alternatives()` then `build_solution_tree()` for each alternative serially. With `max_alternatives=2`, this doubles wall time unnecessarily.                   | <ul><li>**Principal Staff Engineer B:** "Easy win. Use `asyncio.gather()` to build solution trees for all alternatives concurrently. The engine queries are already async. Estimated saving: 40-60% wall time for multi-alternative puzzles."</li><li>**Principal Staff Engineer A:** "Careful with query budget sharing across concurrent tree builders. Pass separate `QueryBudget` instances or use a shared atomic counter."</li></ul>                                                                    | In `enrich_single.py` Step 2 (alternatives path): replace sequential loop with `asyncio.gather()` for `build_solution_tree()` calls. Each alternative gets its own `QueryBudget` with `max_queries = config.max_total_tree_queries // len(alternatives)`. Document shared-budget approach.                                     | 🟢 **Accept**                     |
-| **STR-5** | **`inject_solution_into_sgf()` / `extract_correct_first_move()` coupling.** Injection must produce structure parseable by extract. This coupling is fragile and untested.                                                                                       | <ul><li>**Lee Sedol:** "This is exactly the kind of bug that silently breaks everything. After injecting, you MUST verify the roundtrip: `inject → extract → assert extract matches what was injected`."</li><li>**Principal Staff Engineer A:** "Add an explicit integration test: `test_inject_then_extract_roundtrip()`. Also add a defensive assertion in `enrich_single.py` after injection: `assert extract_correct_first_move(root) is not None`."</li></ul>                                           | Add `test_inject_then_extract_roundtrip()` to integration tests. Add defensive assertion in `enrich_single.py` immediately after `inject_solution_into_sgf()` call: `assert extract_correct_first_move(root) is not None, "Injection produced unparseable solution tree"`. Add to validation checklist.                        | 🟢 **Accept**                     |
+| **STR-1** | **confirm_visits reuse gap.** `analyze_position_candidates()` fires per-move confirmation queries at 500 visits each for K=10 candidates = 5,000 visits for classification alone, unacknowledged in performance analysis. Need fast pre-filter by policy floor. | Review panel: **Principal Staff Engineer B:** "This is a real performance gap. 10 × 500 = 5,000 visits = ~2 seconds just for classification, BEFORE tree building. A policy pre-filter at e.g. 0.03 would reduce confirmations to typically 3-5 moves, cutting classification cost by 50-70%."; **Shin Jinseo:** "Moves with policy < 0.03 are almost never correct in tsumego. 0.03 is safe as a pre-filter floor — you're only excluding moves the neural net considers essentially impossible." | Add `confirmation_min_policy: float = 0.03` to `AiSolveConfig`. In `analyze_position_candidates()`: after initial analysis, filter candidates to only those with `policy >= confirmation_min_policy` before running confirmation queries. Update performance analysis section to document: typical 3-5 confirmations (not 10). | 🟢 **Accept** |
+| **STR-2** | **`pre_winrate_floor` / `post_winrate_ceiling` not wired into algorithm.** Appear in config and Topic 6 but never used in `classify_move_quality()`. Config bloat without enforcement. | Review panel: **Principal Staff Engineer A:** "This is resolved by ALG-3: they become confidence metrics, not classification gates. Move them from `thresholds` to a new `confidence_metrics` sub-section. Wire them into `PositionAnalysis.root_winrate_confidence` computation." | Combined with ALG-3. Rename config section. Wire into confidence annotation, not classification. Remove from `thresholds` section, add to `confidence_metrics` section. | 🟢 **Accept** — merged with ALG-3 |
+| **STR-3** | **Miai detection underspecified.** `min_winrate_gap=0.15` → gap between what? Winrates or deltas? Also "miai" has specific Go meaning that winrate proximity doesn't confirm. | Review panel: **Cho Chikun:** "The Go community would object to calling two co-winning moves 'miai' based on winrate alone. Miai requires both moves to be interchangeable in effect. Please use 'co-correct' or 'dual solution' instead." | Combined with ALG-5. Rename to `co_correct_detected`. Explicitly specify: gap = `abs(correct_move_1.winrate - correct_move_2.winrate)`. Document in code that this is NOT Go-theoretic miai detection. | 🟢 **Accept** — merged with ALG-5 |
+| **STR-4** | **`discover_alternatives()` sequential when parallelizable.** `enrich_single.py` calls `discover_alternatives()` then `build_solution_tree()` for each alternative serially. With `max_alternatives=2`, this doubles wall time unnecessarily. | Review panel: **Principal Staff Engineer B:** "Easy win. Use `asyncio.gather()` to build solution trees for all alternatives concurrently. The engine queries are already async. Estimated saving: 40-60% wall time for multi-alternative puzzles."; **Principal Staff Engineer A:** "Careful with query budget sharing across concurrent tree builders. Pass separate `QueryBudget` instances or use a shared atomic counter." | In `enrich_single.py` Step 2 (alternatives path): replace sequential loop with `asyncio.gather()` for `build_solution_tree()` calls. Each alternative gets its own `QueryBudget` with `max_queries = config.max_total_tree_queries // len(alternatives)`. Document shared-budget approach. | 🟢 **Accept** |
+| **STR-5** | **`inject_solution_into_sgf()` / `extract_correct_first_move()` coupling.** Injection must produce structure parseable by extract. This coupling is fragile and untested. | Review panel: **Lee Sedol:** "This is exactly the kind of bug that silently breaks everything. After injecting, you MUST verify the roundtrip: `inject → extract → assert extract matches what was injected`."; **Principal Staff Engineer A:** "Add an explicit integration test: `test_inject_then_extract_roundtrip()`. Also add a defensive assertion in `enrich_single.py` after injection: `assert extract_correct_first_move(root) is not None`." | Add `test_inject_then_extract_roundtrip()` to integration tests. Add defensive assertion in `enrich_single.py` immediately after `inject_solution_into_sgf()` call: `assert extract_correct_first_move(root) is not None, "Injection produced unparseable solution tree"`. Add to validation checklist. | 🟢 **Accept** |
 
 ### C.3 Calibration Methodology Gaps
 
-| ID        | Issue Provided                                                                                                                                                                                                     | Review Panel Opinion                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Implementation Methodology                                                                                                                                                                                                                                                                                                   | Decision      |
+| ID | Issue Provided | Review Panel Opinion | Implementation Methodology | Decision |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| **CAL-1** | **Calibration fixture set undefined.** "100+ puzzles" — from where? Who labels them? If from the same collection being processed → label leakage. Must be held-out and independently labeled.                      | <ul><li>**Cho Chikun:** "Use puzzles from collections NOT in the pipeline: Graded Go Problems for Beginners, Tesuji by James Davies, or hand-curated positions. The labels must come from verified human solutions in published books, NOT from our pipeline output."</li><li>**Principal Staff Engineer A:** "Document provenance: `tests/fixtures/calibration/README.md` must specify source, labeler, date, and confirm no overlap with pipeline input collections."</li></ul>                                                                                             | Create `tests/fixtures/calibration/README.md` with: provenance requirements (held-out collections only), labeling protocol (human expert labels, not pipeline output), minimum sample sizes per class, overlap verification script. Source fixtures from published book positions with verified solutions.                   | 🟢 **Accept** |
-| **CAL-2** | **T_good and T_bad interact but calibrated independently.** A move can't be both TE and BM, yet the joint sweep optimizes a single F1 — unclear if it's for TE, BM, or combined. Specify loss function explicitly. | <ul><li>**Principal Staff Engineer B:** "The loss function must be explicit: macro-averaged F1 across {TE, BM, neutral} classes. Joint sweep is correct — the nested loop implicitly covers the interaction. But the constraint `T_good < T_bad` must be enforced in the sweep to prevent overlap. Add: `if T_good >= T_bad: skip`."</li></ul>                                                                                                                                                                                                                                | Update calibration test: 1) Explicit loss = macro-F1 across {TE, BM, neutral}. 2) Enforce constraint `T_good < T_bad` in sweep. 3) Report per-class precision/recall alongside overall F1. 4) Document that T_hotspot is derived (T_hotspot = T_bad × configurable multiplier, default 3.0).                                 | 🟢 **Accept** |
-| **CAL-3** | **Visit-count sensitivity undocumented.** Optimal thresholds at `solve_visits=1000` may differ from `confirmation_visits=500`. Lower visits = noisier winrate = T_good=0.02 may produce false positives.           | <ul><li>**Shin Jinseo:** "At 500 visits, the standard deviation of winrate estimates is roughly 0.01-0.015 for tactical positions. So T_good=0.02 is within 1-2 standard deviations of noise at 500 visits. Either increase confirmation_visits or widen T_good for confirmation queries."</li><li>**Principal Staff Engineer B:** "Add `visit_count` as a parameter in the calibration sweep. Report threshold sensitivity: 'At 500 visits, optimal T_good = X; at 1000 visits, optimal T_good = Y.' If they differ significantly, use visit-specific thresholds."</li></ul> | Add `calibration_visit_counts: list[int] = [500, 1000, 2000]` to calibration config. Sweep includes visit count as third dimension. Report threshold stability across visit counts. If unstable → use visit-specific thresholds (`thresholds_by_visits` dict in config). Document noise characteristics at each visit level. | 🟢 **Accept** |
+| **CAL-1** | **Calibration fixture set undefined.** "100+ puzzles" — from where? Who labels them? If from the same collection being processed → label leakage. Must be held-out and independently labeled. | Review panel: **Cho Chikun:** "Use puzzles from collections NOT in the pipeline: Graded Go Problems for Beginners, Tesuji by James Davies, or hand-curated positions. The labels must come from verified human solutions in published books, NOT from our pipeline output."; **Principal Staff Engineer A:** "Document provenance: `tests/fixtures/calibration/README.md` must specify source, labeler, date, and confirm no overlap with pipeline input collections." | Create `tests/fixtures/calibration/README.md` with: provenance requirements (held-out collections only), labeling protocol (human expert labels, not pipeline output), minimum sample sizes per class, overlap verification script. Source fixtures from published book positions with verified solutions. | 🟢 **Accept** |
+| **CAL-2** | **T_good and T_bad interact but calibrated independently.** A move can't be both TE and BM, yet the joint sweep optimizes a single F1 — unclear if it's for TE, BM, or combined. Specify loss function explicitly. | Review panel: **Principal Staff Engineer B:** "The loss function must be explicit: macro-averaged F1 across {TE, BM, neutral} classes. Joint sweep is correct — the nested loop implicitly covers the interaction. But the constraint `T_good < T_bad` must be enforced in the sweep to prevent overlap. Add: `if T_good >= T_bad: skip`." | Update calibration test: 1) Explicit loss = macro-F1 across {TE, BM, neutral}. 2) Enforce constraint `T_good < T_bad` in sweep. 3) Report per-class precision/recall alongside overall F1. 4) Document that T_hotspot is derived (T_hotspot = T_bad × configurable multiplier, default 3.0). | 🟢 **Accept** |
+| **CAL-3** | **Visit-count sensitivity undocumented.** Optimal thresholds at `solve_visits=1000` may differ from `confirmation_visits=500`. Lower visits = noisier winrate = T_good=0.02 may produce false positives. | Review panel: **Shin Jinseo:** "At 500 visits, the standard deviation of winrate estimates is roughly 0.01-0.015 for tactical positions. So T_good=0.02 is within 1-2 standard deviations of noise at 500 visits. Either increase confirmation_visits or widen T_good for confirmation queries."; **Principal Staff Engineer B:** "Add `visit_count` as a parameter in the calibration sweep. Report threshold sensitivity: 'At 500 visits, optimal T_good = X; at 1000 visits, optimal T_good = Y.' If they differ significantly, use visit-specific thresholds." | Add `calibration_visit_counts: list[int] = [500, 1000, 2000]` to calibration config. Sweep includes visit count as third dimension. Report threshold stability across visit counts. If unstable → use visit-specific thresholds (`thresholds_by_visits` dict in config). Document noise characteristics at each visit level. | 🟢 **Accept** |
 
 ### C.4 Missing Edge Case Handling
 
-| ID         | Issue Provided                                                                                                                                                                                                                 | Review Panel Opinion                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Implementation Methodology                                                                                                                                                                                                                                                                                                                                             | Decision                                                     |
+| ID | Issue Provided | Review Panel Opinion | Implementation Methodology | Decision |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| **EDGE-1** | **Bent-four / dead-shape in isolation.** Position-only puzzles without full board context → KataGo may not evaluate bent-four-in-the-corner as dead. Known KataGo limitation at low visits.                                    | <ul><li>**Shin Jinseo:** "This is a real limitation. KataGo with Japanese rules and low visits sometimes fails on bent-four. Mitigation: use `rules: tromp-taylor` (where bent-four is unconditionally dead) and increase visits for corner positions. But full coverage is impossible without ruleset-aware analysis."</li><li>**Cho Chikun:** "Bent-four is rare in elementary-intermediate collections. Flag it but don't let it block the pipeline."</li></ul>                                                                                                                                                       | Add `corner_position_visit_boost: int = 500` to config — when `YC` indicates corner position, add 500 visits to solve_visits. Add `known_limitations` section to documentation listing bent-four, superko, and similar edge cases. Log WARNING when position is in corner with low visit count. No hard rejection — accept KataGo's result with confidence annotation. | 🟡 **Partial** — mitigate, flag, document; can't fully solve |
-| **EDGE-2** | **Seki stopping condition underspecified.** `goal="seki"` listed as edge case but no detection or stopping heuristic. Winrate ~0.5 + low ownership is necessary but not sufficient. Tree builder could oscillate indefinitely. | <ul><li>**Lee Sedol:** "Seki positions have a distinctive signature: both players' best moves are pass or near-pass, territory is contested but stable. If two consecutive moves have winrate between 0.45-0.55 AND score lead < 2 points, that's seki territory."</li><li>**Principal Staff Engineer A:** "Add seki early-exit: if winrate stays in [0.45, 0.55] for 3 consecutive depth levels AND score lead oscillation < 2 points → stop, set goal='seki', confidence='medium'. The tree builder needs a seki-specific stopping condition alongside the existing winrate-stability and ownership checks."</li></ul> | Add `seki_detection` config section: `winrate_seki_band: [0.45, 0.55]`, `score_lead_seki_max: 2.0`, `seki_consecutive_depth: 3`. In `build_solution_tree()`: if last N moves' winrates all within seki_band AND score leads all within seki_max → early exit with `goal="seki"`. Mark tree as seki-terminated.                                                         | 🟢 **Accept**                                                |
-| **EDGE-3** | **Ladder dependency in position-only SGF.** Ladder correctness depends on off-board stones not encoded in puzzle. Source of false correct-move classifications.                                                                | <ul><li>**Shin Jinseo:** "KataGo reads ladders well at 1000+ visits. The real risk is when the puzzle is a fragment of a larger board and the ladder extends beyond the fragment. But for published puzzle collections (19×19 with stones placed), KataGo handles this correctly."</li><li>**Ke Jie:** "Flag positions where the top move involves a ladder (PV length > 8, mostly extending in one direction), but don't reject them. Ladder puzzles are valuable."</li></ul>                                                                                                                                           | Add ladder detection heuristic: if PV from KataGo is > 8 moves and mostly diagonal/linear → set `ladder_suspected=True` in `PositionAnalysis`. Log INFO. Increase visits by `ladder_visit_boost` (default 500) for suspected ladders. No rejection — ladders are valid puzzles.                                                                                        | 🟡 **Partial** — flag + boost visits, can't fully validate   |
-| **EDGE-4** | **Pass move handling.** Stopping condition mentions "pass detected in PV" but doesn't handle KataGo recommending pass as correct first move (group already alive, puzzle may be trivial/malformed).                            | <ul><li>**Cho Chikun:** "If the correct first move is pass, the puzzle is invalid. The position is already resolved — there is no problem to solve. This should be an explicit rejection."</li><li>**Principal Staff Engineer A:** "Add to classification: if `pre_analysis.top_move == 'pass'` → reject with error 'Position already resolved — no puzzle exists.' If pass appears as correct first move among candidates, exclude it from correct_moves list."</li></ul>                                                                                                                                               | In `analyze_position_candidates()`: if top move by winrate is pass → return error result: "AI-Solve: position already resolved (pass is best move)". Filter pass from candidate list before classification. Add to validation checklist. Add unit test `test_pass_as_correct_move_rejected`.                                                                           | 🟢 **Accept**                                                |
+| **EDGE-1** | **Bent-four / dead-shape in isolation.** Position-only puzzles without full board context → KataGo may not evaluate bent-four-in-the-corner as dead. Known KataGo limitation at low visits. | Review panel: **Shin Jinseo:** "This is a real limitation. KataGo with Japanese rules and low visits sometimes fails on bent-four. Mitigation: use `rules: tromp-taylor` (where bent-four is unconditionally dead) and increase visits for corner positions. But full coverage is impossible without ruleset-aware analysis."; **Cho Chikun:** "Bent-four is rare in elementary-intermediate collections. Flag it but don't let it block the pipeline." | Add `corner_position_visit_boost: int = 500` to config — when `YC` indicates corner position, add 500 visits to solve_visits. Add `known_limitations` section to documentation listing bent-four, superko, and similar edge cases. Log WARNING when position is in corner with low visit count. No hard rejection — accept KataGo's result with confidence annotation. | 🟡 **Partial** — mitigate, flag, document; can't fully solve |
+| **EDGE-2** | **Seki stopping condition underspecified.** `goal="seki"` listed as edge case but no detection or stopping heuristic. Winrate ~0.5 + low ownership is necessary but not sufficient. Tree builder could oscillate indefinitely. | Review panel: **Lee Sedol:** "Seki positions have a distinctive signature: both players' best moves are pass or near-pass, territory is contested but stable. If two consecutive moves have winrate between 0.45-0.55 AND score lead < 2 points, that's seki territory."; **Principal Staff Engineer A:** "Add seki early-exit: if winrate stays in [0.45, 0.55] for 3 consecutive depth levels AND score lead oscillation < 2 points → stop, set goal='seki', confidence='medium'. The tree builder needs a seki-specific stopping condition alongside the existing winrate-stability and ownership checks." | Add `seki_detection` config section: `winrate_seki_band: [0.45, 0.55]`, `score_lead_seki_max: 2.0`, `seki_consecutive_depth: 3`. In `build_solution_tree()`: if last N moves' winrates all within seki_band AND score leads all within seki_max → early exit with `goal="seki"`. Mark tree as seki-terminated. | 🟢 **Accept** |
+| **EDGE-3** | **Ladder dependency in position-only SGF.** Ladder correctness depends on off-board stones not encoded in puzzle. Source of false correct-move classifications. | Review panel: **Shin Jinseo:** "KataGo reads ladders well at 1000+ visits. The real risk is when the puzzle is a fragment of a larger board and the ladder extends beyond the fragment. But for published puzzle collections (19×19 with stones placed), KataGo handles this correctly."; **Ke Jie:** "Flag positions where the top move involves a ladder (PV length > 8, mostly extending in one direction), but don't reject them. Ladder puzzles are valuable." | Add ladder detection heuristic: if PV from KataGo is > 8 moves and mostly diagonal/linear → set `ladder_suspected=True` in `PositionAnalysis`. Log INFO. Increase visits by `ladder_visit_boost` (default 500) for suspected ladders. No rejection — ladders are valid puzzles. | 🟡 **Partial** — flag + boost visits, can't fully validate |
+| **EDGE-4** | **Pass move handling.** Stopping condition mentions "pass detected in PV" but doesn't handle KataGo recommending pass as correct first move (group already alive, puzzle may be trivial/malformed). | Review panel: **Cho Chikun:** "If the correct first move is pass, the puzzle is invalid. The position is already resolved — there is no problem to solve. This should be an explicit rejection."; **Principal Staff Engineer A:** "Add to classification: if `pre_analysis.top_move == 'pass'` → reject with error 'Position already resolved — no puzzle exists.' If pass appears as correct first move among candidates, exclude it from correct_moves list." | In `analyze_position_candidates()`: if top move by winrate is pass → return error result: "AI-Solve: position already resolved (pass is best move)". Filter pass from candidate list before classification. Add to validation checklist. Add unit test `test_pass_as_correct_move_rejected`. | 🟢 **Accept** |
 
 ### C.5 AC Field & Quality Tracking
 
-| ID       | Issue Provided                                                                                                                                                                                     | Review Panel Opinion                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Implementation Methodology                                                                                                                                                                                                                                                                                       | Decision                                             |
+| ID | Issue Provided | Review Panel Opinion | Implementation Methodology | Decision |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| **AC-1** | **`ac:1` conflates "AI agreed" with "AI not run on solution."** Reviewer can't distinguish "AI validated this solution" from "AI only enriched metadata." Consider sub-levels or separate boolean. | <ul><li>**Principal Staff Engineer A:** "Sub-levels (ac:1a/1b) break the integer format and complicate parsing. Better: add a separate boolean `ai_solution_validated: bool` to the result model. When ac:1 + ai_solution_validated=true → AI checked and agreed. When ac:1 + ai_solution_validated=false → AI enriched metadata only (shouldn't happen if ai_solve.enabled, but covers edge cases)."</li><li>**Ke Jie:** "Keep AC integer levels clean. Add the boolean as metadata, not as an AC sub-level."</li></ul> | Add `ai_solution_validated: bool = False` to `EnrichmentResult`. Set to `True` when ai_solve runs and existing solution's correct move matches AI's top move (within T_disagreement). Keep AC levels as integers. This boolean is metadata in the result, not in the SGF wire format (YQ stays `ac:0\|1\|2\|3`). | 🟡 **Partial** — boolean metadata, not AC sub-levels |
-| **AC-2** | **`ac:3` has no workflow defined.** Plan states "human review only" but no tool, queue, or interface exists. Dead tier without implementation.                                                     | <ul><li>**Principal Staff Engineer B:** "Honest assessment: ac:3 is aspirational for this plan's scope. It's correct to define the value (forward compatibility) but the workflow should be a separate spec. Include a stub section acknowledging this."</li><li>**Cho Chikun:** "The level should exist because eventually there WILL be human review. But don't pretend it's operational until the tooling exists."</li></ul>                                                                                          | Keep `ac:3` in the schema for forward compatibility. Add explicit note in AC section: "ac:3 workflow (review tool, queue, interface) is OUT OF SCOPE for this plan — tracked as future work." Remove from validation checklist items that imply it's functional. Add `TODO: ac:3 review workflow` reference.     | 🟡 **Partial** — keep definition, defer workflow     |
+| **AC-1** | **`ac:1` conflates "AI agreed" with "AI not run on solution."** Reviewer can't distinguish "AI validated this solution" from "AI only enriched metadata." Consider sub-levels or separate boolean. | Review panel: **Principal Staff Engineer A:** "Sub-levels (ac:1a/1b) break the integer format and complicate parsing. Better: add a separate boolean `ai_solution_validated: bool` to the result model. When ac:1 + ai_solution_validated=true → AI checked and agreed. When ac:1 + ai_solution_validated=false → AI enriched metadata only (shouldn't happen if ai_solve.enabled, but covers edge cases)."; **Ke Jie:** "Keep AC integer levels clean. Add the boolean as metadata, not as an AC sub-level." | Add `ai_solution_validated: bool = False` to `EnrichmentResult`. Set to `True` when ai_solve runs and existing solution's correct move matches AI's top move (within T_disagreement). Keep AC levels as integers. This boolean is metadata in the result, not in the SGF wire format (YQ keeps integer `ac` values 0, 1, 2, or 3). | 🟡 **Partial** — boolean metadata, not AC sub-levels |
+| **AC-2** | **`ac:3` has no workflow defined.** Plan states "human review only" but no tool, queue, or interface exists. Dead tier without implementation. | Review panel: **Principal Staff Engineer B:** "Honest assessment: ac:3 is aspirational for this plan's scope. It's correct to define the value (forward compatibility) but the workflow should be a separate spec. Include a stub section acknowledging this."; **Cho Chikun:** "The level should exist because eventually there WILL be human review. But don't pretend it's operational until the tooling exists." | Keep `ac:3` in the schema for forward compatibility. Add explicit note in AC section: "ac:3 workflow (review tool, queue, interface) is OUT OF SCOPE for this plan — tracked as future work." Remove from validation checklist items that imply it's functional. Add `TODO: ac:3 review workflow` reference. | 🟡 **Partial** — keep definition, defer workflow |
 
 ### C.6 Logging & Observability
 
-| ID        | Issue Provided                                                                                                                                                                               | Review Panel Opinion                                                                                                                                                                                                                                                                                                                                                                                                                                    | Implementation Methodology                                                                                                                                                                                                                                                                                                      | Decision      |
+| ID | Issue Provided | Review Panel Opinion | Implementation Methodology | Decision |
 | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| **LOG-1** | **No structured batch-level summary event.** Logging contract is all per-puzzle. Batch aggregate (ac distribution, avg tree depth, avg queries, disagreement count) mentioned but not wired. | <ul><li>**Principal Staff Engineer B:** "Non-negotiable for production. Every batch must emit a structured summary. This is the primary observability signal for quality monitoring. Without it, degradation is invisible."</li><li>**Principal Staff Engineer A:** "Add `BatchSummary` model and a `log_batch_summary()` call at the end of each enrichment batch."</li></ul>                                                                          | Add `BatchSummary` model: `total_puzzles`, `ac_distribution: dict[int, int]`, `avg_tree_depth`, `avg_queries_per_puzzle`, `disagreement_count`, `co_correct_count`, `truncation_count`, `errors`. Add `log_batch_summary()` to logging contract. Emit as structured JSON at INFO level after each batch.                        | 🟢 **Accept** |
-| **LOG-2** | **Disagreement records logged but not surfaced.** Log line is not sufficient for human action. Need a specified sink: file, database, review queue.                                          | <ul><li>**Principal Staff Engineer A:** "Disagreements should be written to a structured file: `.pm-runtime/logs/disagreements/{run_id}.jsonl`. Each line is a JSON record with puzzle_id, human_move, ai_move, deltas, action taken. This file is the input for future ac:3 review tooling."</li><li>**Principal Staff Engineer B:** "JSONL format — one record per line, append-only. Easy to grep, easy to load into pandas for analysis."</li></ul> | Add `DisagreementSink` class that writes to `.pm-runtime/logs/disagreements/{run_id}.jsonl`. Each record: `{puzzle_id, collection, human_move, ai_move, human_wr, ai_wr, delta, action, timestamp}`. Integrate into enrichment pipeline — call sink after every disagreement detection. Document file format in reference docs. | 🟢 **Accept** |
+| **LOG-1** | **No structured batch-level summary event.** Logging contract is all per-puzzle. Batch aggregate (ac distribution, avg tree depth, avg queries, disagreement count) mentioned but not wired. | Review panel: **Principal Staff Engineer B:** "Non-negotiable for production. Every batch must emit a structured summary. This is the primary observability signal for quality monitoring. Without it, degradation is invisible."; **Principal Staff Engineer A:** "Add `BatchSummary` model and a `log_batch_summary()` call at the end of each enrichment batch." | Add `BatchSummary` model: `total_puzzles`, `ac_distribution: dict[int, int]`, `avg_tree_depth`, `avg_queries_per_puzzle`, `disagreement_count`, `co_correct_count`, `truncation_count`, `errors`. Add `log_batch_summary()` to logging contract. Emit as structured JSON at INFO level after each batch. | 🟢 **Accept** |
+| **LOG-2** | **Disagreement records logged but not surfaced.** Log line is not sufficient for human action. Need a specified sink: file, database, review queue. | Review panel: **Principal Staff Engineer A:** "Disagreements should be written to a structured file: `.pm-runtime/logs/disagreements/{run_id}.jsonl`. Each line is a JSON record with puzzle_id, human_move, ai_move, deltas, action taken. This file is the input for future ac:3 review tooling."; **Principal Staff Engineer B:** "JSONL format — one record per line, append-only. Easy to grep, easy to load into pandas for analysis." | Add `DisagreementSink` class that writes to `.pm-runtime/logs/disagreements/{run_id}.jsonl`. Each record: `{puzzle_id, collection, human_move, ai_move, human_wr, ai_wr, delta, action, timestamp}`. Integrate into enrichment pipeline — call sink after every disagreement detection. Document file format in reference docs. | 🟢 **Accept** |
 
 ### C.7 Minor Issues
 
-| ID        | Issue Provided                                                                                                                                                                                                | Review Panel Opinion                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Implementation Methodology                                                                                                                                                                                                                                                                                                              | Decision                                                         |
+| ID | Issue Provided | Review Panel Opinion | Implementation Methodology | Decision |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| **MIN-1** | **Schema version bump changelog too terse.** v1.14 adds entire ai_solve section — entry not actionable for schema migration.                                                                                  | <ul><li>**Principal Staff Engineer A:** "Expand changelog to list: new fields added, new config sections, AC field in YQ, backward compatibility notes."</li></ul>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Expand v1.14 changelog to multi-line: list each new config section, note YQ ac field addition, specify backward compatibility (missing ai_solve → None → disabled), list migration steps (none required — additive only).                                                                                                               | 🟢 **Accept**                                                    |
-| **MIN-2** | **`query_budget` is optional (`\| None`) in `build_solution_tree()`.** If None → no budget enforcement. Defeats purpose of hard cap. Should default to config value at call site.                             | <ul><li>**Principal Staff Engineer A:** "Make it required. Default at call site: `QueryBudget(max_queries=config.solution_tree.max_total_tree_queries)`. Remove the `\| None` type."</li></ul>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Change `build_solution_tree()` signature: `query_budget: QueryBudget` (required, no None). At call site in `enrich_single.py`, always construct: `QueryBudget(max_queries=config.ai_solve.solution_tree.max_total_tree_queries)`. Remove optional handling.                                                                             | 🟢 **Accept**                                                    |
-| **MIN-3** | **Worked example (Appendix A) inconsistency.** W[ca] → B[aa] branch, but B[aa] also appears in W[aa] → B[ba] branch sequence. Same response move in sibling branches.                                         | <ul><li>**Cho Chikun:** "In the position given, after B[ac], if W[ca] then B[aa] is indeed the correct response. And if W[aa] then B[ba] is correct. These are different white moves leading to different black responses. The notation is correct — aa appears as a black response in two different branches because it IS the correct move in both cases against different white responses. However, in the first branch W[ba] → B[aa], and in the third branch W[ca] → B[aa] — the same black response to two different white moves is plausible if aa is the vital point."</li></ul>                                                                                                                                                                                                       | Review the specific position stones and verify each branch's moves are legal and don't overlap illegally. Update example if any moves conflict with already-placed stones. Add note that the same coordinate CAN appear across sibling branches (different opponent moves).                                                             | 🟡 **Partial** — verify, likely correct but add explanatory note |
-| **MIN-4** | **White-to-play sign adjustment in algorithm pseudocode.** `delta = pre.root_winrate - post_wr` — whose perspective? KataGo reports from side-to-move or Black depending on config. Needs explicit statement. | <ul><li>**Shin Jinseo:** "KataGo's default GTP output reports winrate from the perspective of the CURRENT side to move. So if Black plays and the position is analyzed, winrate is from Black's perspective. After Black's move, if we analyze for White, winrate is from White's perspective. The delta computation must normalize to a consistent perspective — always from the puzzle player's perspective."</li><li>**Principal Staff Engineer A:** "Add an explicit statement in the algorithm: 'All winrates are normalized to the puzzle player's perspective (the side with PL[] in the SGF root). If KataGo reports from opponent's perspective, invert: `wr = 1.0 - reported_wr`.' Add a helper function `normalize_winrate(wr, reported_player, puzzle_player) → float`."</li></ul> | Add `normalize_winrate()` helper to `solve_position.py`. Add explicit comment block in algorithm pseudocode: "Convention: all winrates normalized to puzzle player (PL[]) perspective. KataGo reports from side-to-move — invert when analyzing opponent's position." Add unit tests for Black-to-play and White-to-play normalization. | 🟢 **Accept**                                                    |
+| **MIN-1** | **Schema version bump changelog too terse.** v1.14 adds entire ai_solve section — entry not actionable for schema migration. | Review panel: **Principal Staff Engineer A:** "Expand changelog to list: new fields added, new config sections, AC field in YQ, backward compatibility notes." | Expand v1.14 changelog to multi-line: list each new config section, note YQ ac field addition, specify backward compatibility (missing ai_solve → None → disabled), list migration steps (none required — additive only). | 🟢 **Accept** |
+| **MIN-2** | **`query_budget` is optional (`None`) in `build_solution_tree()`.** If None → no budget enforcement. Defeats purpose of hard cap. Should default to config value at call site. | Review panel: **Principal Staff Engineer A:** "Make it required. Default at call site: `QueryBudget(max_queries=config.solution_tree.max_total_tree_queries)`. Remove the nullable type." | Change `build_solution_tree()` signature: `query_budget: QueryBudget` (required, no None). At call site in `enrich_single.py`, always construct: `QueryBudget(max_queries=config.ai_solve.solution_tree.max_total_tree_queries)`. Remove optional handling. | 🟢 **Accept** |
+| **MIN-3** | **Worked example (Appendix A) inconsistency.** W[ca] → B[aa] branch, but B[aa] also appears in W[aa] → B[ba] branch sequence. Same response move in sibling branches. | Review panel: **Cho Chikun:** "In the position given, after B[ac], if W[ca] then B[aa] is indeed the correct response. And if W[aa] then B[ba] is correct. These are different white moves leading to different black responses. The notation is correct — aa appears as a black response in two different branches because it IS the correct move in both cases against different white responses. However, in the first branch W[ba] → B[aa], and in the third branch W[ca] → B[aa] — the same black response to two different white moves is plausible if aa is the vital point." | Review the specific position stones and verify each branch's moves are legal and don't overlap illegally. Update example if any moves conflict with already-placed stones. Add note that the same coordinate CAN appear across sibling branches (different opponent moves). | 🟡 **Partial** — verify, likely correct but add explanatory note |
+| **MIN-4** | **White-to-play sign adjustment in algorithm pseudocode.** `delta = pre.root_winrate - post_wr` — whose perspective? KataGo reports from side-to-move or Black depending on config. Needs explicit statement. | Review panel: **Shin Jinseo:** "KataGo's default GTP output reports winrate from the perspective of the CURRENT side to move. So if Black plays and the position is analyzed, winrate is from Black's perspective. After Black's move, if we analyze for White, winrate is from White's perspective. The delta computation must normalize to a consistent perspective — always from the puzzle player's perspective."; **Principal Staff Engineer A:** "Add an explicit statement in the algorithm: 'All winrates are normalized to the puzzle player's perspective (the side with PL[] in the SGF root). If KataGo reports from opponent's perspective, invert: `wr = 1.0 - reported_wr`.' Add a helper function `normalize_winrate(wr, reported_player, puzzle_player) → float`." | Add `normalize_winrate()` helper to `solve_position.py`. Add explicit comment block in algorithm pseudocode: "Convention: all winrates normalized to puzzle player (PL[]) perspective. KataGo reports from side-to-move — invert when analyzing opponent's position." Add unit tests for Black-to-play and White-to-play normalization. | 🟢 **Accept** |
 
 ---
 
 ### C.8 Summary of Panel Decisions
 
-| Category             | 🟢 Accepted | 🟡 Partial | 🔴 Rejected | Total  |
+| Category | 🟢 Accepted | 🟡 Partial | 🔴 Rejected | Total |
 | -------------------- | ----------- | ---------- | ----------- | ------ |
-| Core Algorithm (ALG) | 5           | 2          | 0           | 7      |
-| Structural (STR)     | 5           | 0          | 0           | 5      |
-| Calibration (CAL)    | 3           | 0          | 0           | 3      |
-| Edge Cases (EDGE)    | 2           | 2          | 0           | 4      |
-| AC/Quality (AC)      | 0           | 2          | 0           | 2      |
-| Logging (LOG)        | 2           | 0          | 0           | 2      |
-| Minor (MIN)          | 2           | 2          | 0           | 4      |
-| **Total**            | **19**      | **8**      | **0**       | **27** |
+| Core Algorithm (ALG) | 5 | 2 | 0 | 7 |
+| Structural (STR) | 5 | 0 | 0 | 5 |
+| Calibration (CAL) | 3 | 0 | 0 | 3 |
+| Edge Cases (EDGE) | 2 | 2 | 0 | 4 |
+| AC/Quality (AC) | 0 | 2 | 0 | 2 |
+| Logging (LOG) | 2 | 0 | 0 | 2 |
+| Minor (MIN) | 2 | 2 | 0 | 4 |
+| **Total** | **19** | **8** | **0** | **27** |

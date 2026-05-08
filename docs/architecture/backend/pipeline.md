@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [How-To: Run Pipeline](../../how-to/backend/run-pipeline.md) — Operations guide
+>
 > - [How-To: CLI Reference](../../how-to/backend/cli-reference.md) — All commands
+>
 > - [Architecture: Adapters](./adapters.md) — Source adapters
 
 **Last Updated**: 2026-03-09
@@ -28,11 +30,11 @@ The pipeline transforms external puzzle sources into static browser-ready files:
 
 ## 3-Stage Pipeline
 
-| Stage       | Input               | Output                      | Purpose                  |
+| Stage | Input | Output | Purpose |
 | ----------- | ------------------- | --------------------------- | ------------------------ |
-| **INGEST**  | Sources             | `staging/ingest/`           | Fetch + Parse + Validate |
-| **ANALYZE** | `staging/ingest/`   | `staging/analyzed/`         | Classify + Tag + Enrich  |
-| **PUBLISH** | `staging/analyzed/` | `yengo-puzzle-collections/` | Index + Daily + Output   |
+| **INGEST** | Sources | `staging/ingest/` | Fetch + Parse + Validate |
+| **ANALYZE** | `staging/ingest/` | `staging/analyzed/` | Classify + Tag + Enrich |
+| **PUBLISH** | `staging/analyzed/` | `yengo-puzzle-collections/` | Index + Daily + Output |
 
 ```text
 INGEST ────────▶ ANALYZE ────────▶ PUBLISH
@@ -50,14 +52,19 @@ staging/ingest/   staging/analyzed/   yengo-puzzle-collections/
 ### Ingest Operations
 
 1. **Fetch** — Download or read SGF files via adapters
-2. **Parse** — Tokenize SGF, build game tree, extract properties
-3. **Validate** — Check board size, stones, solution exists
+
+1. **Parse** — Tokenize SGF, build game tree, extract properties
+
+1. **Validate** — Check board size, stones, solution exists
 
 ### Validation Checks
 
 - Valid board size (9, 13, 19)
+
 - Stones within bounds
+
 - Player to move specified
+
 - Solution exists (at least one move)
 
 ### Ingest Data Flow
@@ -83,22 +90,24 @@ external-sources/           adapters/
 ### Analyze Operations
 
 1. **Classify** — Assign difficulty level (9-level system)
-2. **Tag** — Detect techniques (ladder, ko, snapback, etc.)
-3. **Enrich** — Generate hints (`YH`), quality metrics (`YQ`, `YX`)
+
+1. **Tag** — Detect techniques (ladder, ko, snapback, etc.)
+
+1. **Enrich** — Generate hints (`YH`), quality metrics (`YQ`, `YX`)
 
 ### 9-Level System
 
-| Level | Name               | Rank Range |
+| Level | Name | Rank Range |
 | ----- | ------------------ | ---------- |
-| 1     | Novice             | 30k-26k    |
-| 2     | Beginner           | 25k-21k    |
-| 3     | Elementary         | 20k-16k    |
-| 4     | Intermediate       | 15k-11k    |
-| 5     | Upper Intermediate | 10k-6k     |
-| 6     | Advanced           | 5k-1k      |
-| 7     | Low Dan            | 1d-3d      |
-| 8     | High Dan           | 4d-6d      |
-| 9     | Expert             | 7d-9d      |
+| 1 | Novice | 30k-26k |
+| 2 | Beginner | 25k-21k |
+| 3 | Elementary | 20k-16k |
+| 4 | Intermediate | 15k-11k |
+| 5 | Upper Intermediate | 10k-6k |
+| 6 | Advanced | 5k-1k |
+| 7 | Low Dan | 1d-3d |
+| 8 | High Dan | 4d-6d |
+| 9 | Expert | 7d-9d |
 
 ### Hint Generation
 
@@ -106,11 +115,11 @@ Hints are pedagogically designed by professional Go players.
 
 **Format**: `YH[hint1|hint2|hint3]` (pipe-delimited, max 3)
 
-| Hint # | Content                            | Goal             |
+| Hint # | Content | Goal |
 | ------ | ---------------------------------- | ---------------- |
-| 1      | Technique identification           | Name the CONCEPT |
-| 2      | Reasoning + wrong approach warning | Explain WHY      |
-| 3      | Coordinate + technique outcome     | Show WHERE       |
+| 1 | Technique identification | Name the CONCEPT |
+| 2 | Reasoning + wrong approach warning | Explain WHY |
+| 3 | Coordinate + technique outcome | Show WHERE |
 
 ### Analyze Data Flow
 
@@ -163,9 +172,12 @@ rebuilt from disk via `inventory --reconcile`; lost SGF files cannot be recovere
 The publish stage uses **write-ahead logging** for crash safety:
 
 1. Each SGF file is written to disk
-2. Immediately after, a publish log entry is flushed to the JSONL log
-3. After all files are processed, the search databases are rebuilt from existing + new entries
-4. Inventory and audit logs are updated last
+
+1. Immediately after, a publish log entry is flushed to the JSONL log
+
+1. After all files are processed, the search databases are rebuilt from existing + new entries
+
+1. Inventory and audit logs are updated last
 
 If the process crashes mid-loop, the write-ahead publish log ensures every written SGF
 has a corresponding log entry. On the next run, **orphan recovery** detects any published
@@ -179,10 +191,14 @@ to reduce data loss window on crash. Configurable via `BatchConfig.flush_interva
 ### Publish Operations
 
 1. **Orphan Recovery** — Recover entries from crashed previous run (automatic, O(1) detect)
-2. **SGF Output** — Write enriched SGF files to batch directories (write-ahead logged)
-3. **Database Build** — Incrementally build SQLite databases: merge existing content DB entries with new entries to rebuild `yengo-search.db`, and append new SGF content to `yengo-content.db` via `db_builder` and `content_db`
-4. **Daily** — Create daily challenge sets
-5. **Inventory** — Update puzzle collection statistics (single-lock read-modify-write)
+
+1. **SGF Output** — Write enriched SGF files to batch directories (write-ahead logged)
+
+1. **Database Build** — Incrementally build SQLite databases: merge existing content DB entries with new entries to rebuild `yengo-search.db`, and append new SGF content to `yengo-content.db` via `db_builder` and `content_db`
+
+1. **Daily** — Create daily challenge sets
+
+1. **Inventory** — Update puzzle collection statistics (single-lock read-modify-write)
 
 ### Output Structure
 
@@ -213,9 +229,13 @@ yengo-puzzle-collections/
 > (`level_id` field), NOT in the directory path. This ensures:
 >
 > - Frontend path reconstruction: `content_hash` + `batch` → `sgf/{batch}/{content_hash}.sgf`
+>
 > - No path reconstruction ambiguity in database entries
+>
 > - Simpler rollback (single global batch counter, not per-level)
+>
 > - Uniform batching across all difficulty levels
+>
 > **Note**: Spec 107 separates content (sgf/, views/) from operational metadata
 > (.puzzle-inventory-state/) for cleaner CI/CD exclusion patterns.
 
@@ -283,9 +303,12 @@ Each pipeline run generates a unique `run_id` (format: `YYYYMMDD-xxxxxxxx`).
 Pipeline supports resume from checkpoints:
 
 1. State saved after each batch
-2. On `--resume`, restore from `config_snapshot`
-3. Skip completed batches
-4. Maintain original `run_id`
+
+1. On `--resume`, restore from `config_snapshot`
+
+1. Skip completed batches
+
+1. Maintain original `run_id`
 
 ---
 
@@ -331,7 +354,7 @@ PL[B]
 **SQLite Database** (search index, yengo-search.db schema):
 
 | Table | Purpose |
-|-------|---------|
+| ------- | --------- |
 | `puzzles` | Core metadata: content_hash, batch, level_id, quality, content_type, complexity |
 | `puzzle_tags` | Many-to-many: puzzle ↔ tags (all numeric IDs) |
 | `puzzle_collections` | Many-to-many: puzzle ↔ collections (with sequence_number) |
@@ -358,12 +381,18 @@ See [SQLite Index Architecture](../../concepts/sqlite-index-architecture.md) for
 ## Design Principles
 
 1. **SGF is source of truth** — All puzzle data stored as SGF with YenGo extensions
-2. **SQLite for indexes** — Fast browser lookups via sql.js WASM
-3. **localStorage for progress** — No server-side storage
-4. **Flat batching** — Max 2000 files per directory (`BatchConfig.max_files_per_dir`)
-5. **Config-driven** — Batch sizes and limits in `pipeline.json`, not hardcoded
-6. **Deterministic** — Same inputs → identical outputs
-7. **Resumable** — Checkpoints after each batch
+
+1. **SQLite for indexes** — Fast browser lookups via sql.js WASM
+
+1. **localStorage for progress** — No server-side storage
+
+1. **Flat batching** — Max 2000 files per directory (`BatchConfig.max_files_per_dir`)
+
+1. **Config-driven** — Batch sizes and limits in `pipeline.json`, not hardcoded
+
+1. **Deterministic** — Same inputs → identical outputs
+
+1. **Resumable** — Checkpoints after each batch
 
 ---
 
@@ -372,11 +401,11 @@ See [SQLite Index Architecture](../../concepts/sqlite-index-architecture.md) for
 The publish stage distributes SGF files across numbered batch directories to avoid
 filesystem performance degradation from large directories.
 
-| Setting                   | Location        | Default | Purpose                      |
+| Setting | Location | Default | Purpose |
 | ------------------------- | --------------- | ------- | ---------------------------- |
-| `batch.size`              | `pipeline.json` | 2000    | Max puzzles per pipeline run |
-| `batch.max_files_per_dir` | `pipeline.json` | 2000    | Max SGF files per batch dir  |
-| `pagination.page_size`    | `pipeline.json` | 500     | Entries per view index page  |
+| `batch.size` | `pipeline.json` | 2000 | Max puzzles per pipeline run |
+| `batch.max_files_per_dir` | `pipeline.json` | 2000 | Max SGF files per batch dir |
+| `pagination.page_size` | `pipeline.json` | 500 | Entries per view index page |
 
 **Source of truth**: `backend/puzzle_manager/config/pipeline.json`
 
@@ -401,6 +430,7 @@ sgf/
 ### Compact Entry Path Reconstruction
 
 - Backend `build_batch_ref()`: `sgf/0001/hash.sgf` → `"0001/hash"` (stored in view indexes)
+
 - Frontend `expandPath()`: `"0001/hash"` → `sgf/0001/hash.sgf` (URL for fetch)
 
 ---

@@ -9,7 +9,7 @@
 All puzzle indexes are served as a SQLite database (`yengo-search.db`) loaded into the browser via sql.js WASM. The backend produces two databases:
 
 | Database | Scope | Purpose |
-|----------|-------|---------|
+| ---------- | ------- | --------- |
 | `yengo-search.db` | Frontend (browser) | Search/metadata index, ~500 KB for 9K puzzles |
 | `yengo-content.db` | Backend only | SGF content + canonical position hash for dedup |
 
@@ -33,16 +33,16 @@ Version tracking is via `db-version.json`:
 Core puzzle metadata. One row per published puzzle.
 
 | Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
+| -------- | ------ | ------------- | ------------- |
 | `content_hash` | TEXT | PRIMARY KEY | 16-char hex (matches GN property and filename) |
 | `batch` | TEXT | NOT NULL | Batch directory (e.g., "0001") |
 | `level_id` | INTEGER | NOT NULL | Numeric level ID (110-230, from config/puzzle-levels.json) |
 | `quality` | INTEGER | NOT NULL DEFAULT 0 | Quality level (0-5) |
 | `content_type` | INTEGER | NOT NULL DEFAULT 1 | 1=curated, 2=practice, 3=training |
-| `cx_depth` | INTEGER | | Solution depth |
-| `cx_refutations` | INTEGER | | Total reading nodes |
-| `cx_solution_len` | INTEGER | | Solution length |
-| `cx_unique_resp` | INTEGER | | Unique first-move count |
+| `cx_depth` | INTEGER |  | Solution depth |
+| `cx_refutations` | INTEGER |  | Total reading nodes |
+| `cx_solution_len` | INTEGER |  | Solution length |
+| `cx_unique_resp` | INTEGER |  | Unique first-move count |
 | `ac` | INTEGER | NOT NULL DEFAULT 0 | Analysis completeness (0=untouched, 1=enriched, 2=ai_solved, 3=verified) |
 
 ### `puzzle_tags` Table
@@ -50,7 +50,7 @@ Core puzzle metadata. One row per published puzzle.
 Many-to-many relationship between puzzles and tags.
 
 | Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
+| -------- | ------ | ------------- | ------------- |
 | `content_hash` | TEXT | NOT NULL, FK → puzzles | Puzzle identifier |
 | `tag_id` | INTEGER | NOT NULL | Numeric tag ID (from config/tags.json) |
 
@@ -61,10 +61,10 @@ Many-to-many relationship between puzzles and tags.
 Many-to-many relationship between puzzles and collections, with ordering.
 
 | Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
+| -------- | ------ | ------------- | ------------- |
 | `content_hash` | TEXT | NOT NULL, FK → puzzles | Puzzle identifier |
 | `collection_id` | INTEGER | NOT NULL | Numeric collection ID (from config/collections.json) |
-| `sequence_number` | INTEGER | | 1-indexed position within collection |
+| `sequence_number` | INTEGER |  | 1-indexed position within collection |
 
 **Index**: `(content_hash, collection_id)` unique.
 
@@ -73,12 +73,12 @@ Many-to-many relationship between puzzles and collections, with ordering.
 Collection catalog mirrored from `config/collections.json`.
 
 | Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
+| -------- | ------ | ------------- | ------------- |
 | `id` | INTEGER | PRIMARY KEY | Numeric collection ID |
 | `slug` | TEXT | NOT NULL UNIQUE | Collection slug (kebab-case) |
 | `name` | TEXT | NOT NULL | Human-readable display name |
-| `category` | TEXT | | Collection type (author, technique, graded, etc.) |
-| `puzzle_count` | INTEGER | | Number of puzzles in this collection |
+| `category` | TEXT |  | Collection type (author, technique, graded, etc.) |
+| `puzzle_count` | INTEGER |  | Number of puzzles in this collection |
 
 ### `collections_fts` Table
 
@@ -95,7 +95,7 @@ CREATE VIRTUAL TABLE collections_fts USING fts5(slug, name, content=collections)
 The `ac` (analysis completeness) column influences quality scoring in the pipeline. Quality levels 4 ("high") and 5 ("premium") in `config/puzzle-quality.json` have a `min_ac` requirement:
 
 | Quality Level | `min_ac` | Meaning |
-|---------------|----------|----------|
+| --------------- | ---------- | ---------- |
 | 0–3 | — | No `min_ac` gate; ac does not affect quality |
 | 4 (high) | 1 | Requires at least `enriched` status |
 | 5 (premium) | 2 | Requires at least `ai_solved` status |
@@ -177,5 +177,7 @@ Example: `content_hash = "765f38a5196edb79"`, `batch = "0001"` → `sgf/0001/765
 > **See also**:
 >
 > - [Concepts: SQLite Index Architecture](../concepts/sqlite-index-architecture.md) — Terminology and architecture overview
+>
 > - [Concepts: Numeric ID Scheme](../concepts/numeric-id-scheme.md) — ID ranges for levels, tags, collections
+>
 > - [Concepts: Collections](../concepts/collections.md) — Collection taxonomy

@@ -8,9 +8,11 @@
 >
 > - [Concepts: Solution Trees](../../concepts/solution-trees.md) — SGF solution-tree semantics
 >
-> - [Archive: AI-Solve Enrichment Plan v3](../../archive/ai-solve-enrichment-plan-v3.md) — Historical review-panel plan and implementation narrative
+> - [Reference: KataGo Enrichment Status](../../reference/katago-enrichment-status.md) — current shipped vs experimental posture
+>
+> - [Reference: Consolidated Backlog](../../reference/consolidated-backlog.md) — remaining follow-through themes
 
-**Last Updated:** 2026-05-06
+**Last Updated:** 2026-05-08
 
 ---
 
@@ -28,6 +30,20 @@ KataGo-based enrichment adds AI-powered analysis to Yen-Go's ~194K puzzle corpus
 
 1. **Technique classification** (Phase B) — auto-tag YT from detected patterns
 
+1. **Progressive hints** (Phase B) — produce YH guidance from engine and structural signals
+
+---
+
+## Current Canonical Scope
+
+- Local KataGo via `tools/puzzle-enrichment-lab/` is the only production enrichment path.
+
+- AI-solve, teaching stages, and KM search logic are implemented. Hardening remains active, but the planned live calibration sweep was retired under current product scope; threshold defaults remain unvalidated by a live sweep.
+
+- Browser-side analysis remains experimental. Historical TF.js planning and a surviving WASM-oriented prototype do not change the production contract.
+
+- The retired enrichment planning bundle is superseded by this architecture doc, [Reference: KataGo Enrichment Status](../../reference/katago-enrichment-status.md), and [Reference: Consolidated Backlog](../../reference/consolidated-backlog.md).
+
 ---
 
 ## Design Decisions
@@ -36,13 +52,13 @@ KataGo-based enrichment adds AI-powered analysis to Yen-Go's ~194K puzzle corpus
 
 **Decision:** Use local KataGo binary (`katago analysis` mode) for all production enrichment.
 
-**Rationale:** The browser engine (TF.js) is an interactive lab convenience tool, not a production system. Local KataGo with GPU provides 10-100x faster analysis, supports larger models (b28c512), and runs in batch mode.
+**Rationale:** Browser-side analysis remains experimental. Historical planning explored both TF.js and WASM approaches, and a thin browser prototype still exists in the lab, but local KataGo with GPU is the only supported production path. It provides 10-100x faster analysis, supports larger models (b28c512), and runs in batch mode.
 
-**Consequence:** All pipeline-facing enrichment flows through the local engine. Browser engine is entirely optional.
+**Consequence:** All pipeline-facing enrichment flows through the local engine. Browser analysis remains optional experimental lab code.
 
 ### D2: Standalone Tool, Not Pipeline Sub-stage
 
-**Decision:** KataGo enrichment lives in `tools/katago-enrichment-bridge/` as a standalone tool that reads/writes SGF files. It does NOT import from `backend/puzzle_manager/`.
+**Decision:** KataGo enrichment lives in `tools/puzzle-enrichment-lab/` as a standalone tool that reads and writes SGF-oriented artifacts. It does NOT import from `backend/puzzle_manager/`.
 
 **Rationale:**
 
@@ -52,7 +68,7 @@ KataGo-based enrichment adds AI-powered analysis to Yen-Go's ~194K puzzle corpus
 
 - Decoupling allows enrichment to run independently, in parallel, or on a different machine
 
-**Interface:** Reads SGFs from `.pm-runtime/staging/analyzed/`, writes enrichment JSON, then patches SGFs back. Pipeline's publish stage reads the enriched SGFs.
+**Interface:** The lab accepts SGFs from direct user input, bridge requests, or pipeline staging outputs, then emits enriched SGF content and sidecar-style analysis data. Pipeline-facing integration happens through those outputs rather than through backend imports.
 
 ### D3: Tsumego Frame is Mandatory
 
@@ -389,9 +405,9 @@ Curated wrong branches extracted from SGF solution trees (e.g., Cho Chikun colle
 
 - **Priority order:** Process puzzles in descending quality score order — highest-quality puzzles first so early batches represent the best of the collection.
 
-**E1 — Level Mismatch Calibration (2026-03-04, updated 2026-03-10):** The `level_mismatch` config section was retired and removed from `config/katago-enrichment.json`. The threshold is now a code constant `_MISMATCH_THRESHOLD = 99` in `sgf_enricher.py`, effectively disabling the mismatch detector. This was a deliberate placeholder pending calibration data. After collecting enrichment results for ≥1000 puzzles across all 9 levels, the constant should be lowered (e.g., to `3`) and the threshold calibrated against the two-population test set (D27).
+**E1 — Level Mismatch Activation State (2026-03-04, updated 2026-05-08):** The `level_mismatch` config section was retired and removed from `config/katago-enrichment.json`. The threshold is now a code constant `_MISMATCH_THRESHOLD = 99` in `sgf_enricher.py`, effectively disabling the mismatch detector. This remains an intentional placeholder. The originally planned live calibration sweep for activating a tighter threshold was retired under current product scope, so the detector stays disabled unless a future scope change explicitly reopens threshold validation.
 
-**Proposed threshold:** `3` level IDs (≈ 30 kyu points). A suggested level more than 3 levels away from the collection's declared level should be flagged for human review. This ensures the classifier catches systematic errors (e.g., an advanced puzzle mis-filed as novice) without flagging legitimate edge cases. **Requires professional Go review before activation** — submit a sample of 50 near-boundary puzzles (level difference = 2–4) to a dan-level player for manual ground truth.
+**Implementation note:** `3` level IDs (≈ 30 kyu points) was the working proposal from the original plan, but it is not live-calibrated and must not be treated as validated behavior.
 
 ### D36: Phase S Gate — Threshold Tuning (2026-03-02)
 

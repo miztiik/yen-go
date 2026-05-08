@@ -3,12 +3,15 @@
 > ⚠️ **ARCHIVED** — This document is preserved for historical context.
 > Current canonical documentation: [docs/how-to/backend/monitor.md](../how-to/backend/monitor.md)
 > Archived: 2026-03-24
-
+>
 > **See also**:
 >
 > - [Architecture: Pipeline](../../architecture/backend/pipeline.md) — Pipeline design and stages
+>
 > - [How-To: Run Pipeline](./run-pipeline.md) — Running the pipeline
+>
 > - [How-To: Rollback](./rollback.md) — Rolling back puzzles
+>
 > - [Reference: Configuration](../../reference/configuration.md) — Config options
 
 **Last Updated**: 2026-03-24
@@ -23,7 +26,7 @@ The puzzle collection inventory (`puzzle-collection-inventory.json`) provides a 
 
 ### Location
 
-```
+```text
 yengo-puzzle-collections/puzzle-collection-inventory.json
 ```
 
@@ -85,8 +88,10 @@ The inventory file follows JSON Schema v1.1. See `config/schemas/puzzle-collecti
 The inventory is updated automatically:
 
 1. **On Publish**: Increments `total_puzzles`, `by_puzzle_level`, `by_tag`, and `stages.publish.new`
-2. **On Rollback**: Decrements counts and increments `audit.total_rollbacks`
-3. **On Stage Completion**: Updates `stages.ingest` and `stages.analyze` metrics
+
+1. **On Rollback**: Decrements counts and increments `audit.total_rollbacks`
+
+1. **On Stage Completion**: Updates `stages.ingest` and `stages.analyze` metrics
 
 ### Atomic Updates
 
@@ -113,7 +118,7 @@ python -m backend.puzzle_manager inventory --rebuild
 
 ### Sample Output
 
-```
+```text
 Puzzle Collection Inventory
 ===========================
 Total Puzzles: 15,000
@@ -164,14 +169,19 @@ Last Run ID:  20260130-abc12345
 The inventory file is protected from cleanup operations:
 
 1. **Log cleanup** (`cleanup_old_files`): Does not delete inventory
-2. **Staging cleanup** (`cleanup_target staging`): Does not affect inventory
-3. **Collection cleanup** (`cleanup_target puzzles-collection`): Preserves inventory
+
+1. **Staging cleanup** (`cleanup_target staging`): Does not affect inventory
+
+1. **Collection cleanup** (`cleanup_target puzzles-collection`): Preserves inventory
 
 ### Why Protected?
 
 The inventory provides historical data that cannot be reconstructed from SGF files alone:
+
 - Rollback counts and dates
+
 - Stage metrics over time
+
 - Error rate trends
 
 If inventory is lost, use `--rebuild` to reconstruct collection stats from publish logs.
@@ -181,7 +191,7 @@ If inventory is lost, use `--rebuild` to reconstruct collection stats from publi
 ### Ingest Stage
 
 | Metric | Description |
-|--------|-------------|
+| -------- | ------------- |
 | `attempted` | Total puzzles fetched from sources |
 | `passed` | Puzzles that passed validation |
 | `failed` | Puzzles that failed validation |
@@ -189,20 +199,20 @@ If inventory is lost, use `--rebuild` to reconstruct collection stats from publi
 ### Analyze Stage
 
 | Metric | Description |
-|--------|-------------|
+| -------- | ------------- |
 | `enriched` | Puzzles with hints/tags added |
 | `skipped` | Puzzles already enriched |
 
 ### Publish Stage
 
 | Metric | Description |
-|--------|-------------|
+| -------- | ------------- |
 | `new` | Puzzles published (new files created) |
 
 ### Computed Metrics
 
 | Metric | Formula |
-|--------|---------|
+| -------- | --------- |
 | `error_rate_ingest` | `failed / attempted` |
 | `error_rate_publish` | Errors during write / total writes |
 | `daily_publish_throughput` | Average puzzles published per day |
@@ -226,8 +236,11 @@ yengo_audit_rollbacks_total 3
 ### Alerting
 
 Set alerts for:
+
 - `error_rate_ingest > 0.10` (10% failure rate)
+
 - `total_rollbacks` increasing rapidly
+
 - `hint_coverage_pct < 0.50` (50% coverage)
 
 ## Troubleshooting
@@ -246,20 +259,23 @@ python -m backend.puzzle_manager inventory --rebuild
 If inventory file is deleted:
 
 1. The file will be auto-created on next publish
-2. Or rebuild manually: `inventory --rebuild`
+
+1. Or rebuild manually: `inventory --rebuild`
 
 ### Corrupted Inventory
 
 If JSON is malformed:
 
 1. Delete the corrupted file
-2. Rebuild: `inventory --rebuild`
+
+1. Rebuild: `inventory --rebuild`
 
 ### Counts Don't Match
 
 If `total_puzzles != sum(by_puzzle_level)`:
 
 - Some puzzles may not have level assigned
+
 - Rebuild will correct the counts
 
 ## API Reference
@@ -306,10 +322,12 @@ Quality level assignment is logged during the pipeline:
 ### Analyze Stage
 
 - **DEBUG level**: Per-puzzle quality assignment after enrichment
+
 - **INFO level**: Batch summary with quality distribution
 
 Example batch log:
-```
+
+```text
 Analyze complete: processed=100, failed=2, skipped=5, duration=12.5s
   quality_summary: "10×Premium, 25×High, 40×Standard, 20×Basic, 5×Unverified"
 ```
@@ -319,7 +337,8 @@ Analyze complete: processed=100, failed=2, skipped=5, duration=12.5s
 - **INFO level**: Batch summary with quality breakdown
 
 Example batch log:
-```
+
+```text
 Publish complete: processed=100, failed=0, skipped=0, duration=5.2s
   quality_summary: "10×Premium, 25×High, 40×Standard, 20×Basic, 5×Unverified"
 ```
@@ -337,5 +356,7 @@ python -m backend.puzzle_manager run --source yengo-source --stage analyze
 ## See Also
 
 - [How-To: Run Pipeline](./run-pipeline.md) - Running the pipeline
+
 - [How-To: Rollback](./rollback.md) - Rolling back puzzles
+
 - [Reference: Configuration](../../reference/configuration.md) - Config files

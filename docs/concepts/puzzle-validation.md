@@ -3,6 +3,7 @@
 > **See also**:
 >
 > - [Config: puzzle-validation.json](../../config/README.md#puzzle-validationjson-spec-108) — Configuration reference
+>
 > - [How-To: Create Adapter](../how-to/backend/create-adapter.md#5-use-puzzlevalidator-for-consistent-validation) — Usage in adapters
 
 **Last Updated**: 2026-02-19
@@ -16,27 +17,30 @@ Centralized puzzle validation rules ensure consistent quality filtering across a
 The `PuzzleValidator` class provides **build-time validation** for all puzzle imports. This means:
 
 1. **Validation happens at pipeline time** — during ingest/analyze stages, NOT at runtime
-2. **Invalid puzzles are rejected** — filtered out before entering the published collection
-3. **Consistent rules** — all adapters use the same validation logic
-4. **Configurable** — defaults can be overridden per-adapter
+
+1. **Invalid puzzles are rejected** — filtered out before entering the published collection
+
+1. **Consistent rules** — all adapters use the same validation logic
+
+1. **Configurable** — defaults can be overridden per-adapter
 
 ---
 
 ## Validation Rules
 
-| Rule                  | Default | Description                                                                   |
+| Rule | Default | Description |
 | --------------------- | ------- | ----------------------------------------------------------------------------- |
-| `min_board_dimension` | 5       | Minimum board width OR height                                                 |
-| `max_board_dimension` | 19      | Maximum board width OR height                                                 |
-| `min_solution_depth`  | 1       | Minimum solution tree depth (1 = solution required, 0 = no solution required) |
-| `min_stones`          | 2       | Minimum total stones (black + white)                                          |
-| `max_solution_depth`  | 30      | Maximum moves in solution tree                                                |
+| `min_board_dimension` | 5 | Minimum board width OR height |
+| `max_board_dimension` | 19 | Maximum board width OR height |
+| `min_solution_depth` | 1 | Minimum solution tree depth (1 = solution required, 0 = no solution required) |
+| `min_stones` | 2 | Minimum total stones (black + white) |
+| `max_solution_depth` | 30 | Maximum moves in solution tree |
 
 ### Non-Square Boards
 
 The validator **supports non-square boards** (e.g., 7×9). Each dimension is validated independently:
 
-```
+```text
 Board 7×9:
   - Width 7 >= 5 (min_board_dimension) ✓
   - Height 9 <= 19 (max_board_dimension) ✓
@@ -96,15 +100,15 @@ def configure(self, config: dict) -> None:
 
 When validation fails, a clear rejection reason is provided:
 
-| Rejection                             | Code | Cause                                                 |
+| Rejection | Code | Cause |
 | ------------------------------------- | ---- | ----------------------------------------------------- |
-| `Board width X is below minimum Y`    | 100  | Width below `min_board_dimension`                     |
-| `Board height X is above maximum Y`   | 200  | Height above `max_board_dimension`                    |
-| `Insufficient stones`                 | 300  | Total stones below `min_stones`                       |
-| `Puzzle has no solution`              | 400  | Solution depth below `min_solution_depth` (when >= 1) |
-| `Solution depth X is below minimum Y` | 450  | Solution exists but is too shallow                    |
-| `Solution depth X exceeds maximum Y`  | 500  | Solution depth exceeds `max_solution_depth`           |
-| `Invalid puzzle structure`            | 600  | Structural error (corrupted data)                     |
+| `Board width X is below minimum Y` | 100 | Width below `min_board_dimension` |
+| `Board height X is above maximum Y` | 200 | Height above `max_board_dimension` |
+| `Insufficient stones` | 300 | Total stones below `min_stones` |
+| `Puzzle has no solution` | 400 | Solution depth below `min_solution_depth` (when >= 1) |
+| `Solution depth X is below minimum Y` | 450 | Solution exists but is too shallow |
+| `Solution depth X exceeds maximum Y` | 500 | Solution depth exceeds `max_solution_depth` |
+| `Invalid puzzle structure` | 600 | Structural error (corrupted data) |
 
 ### Rejection Codes
 
@@ -206,7 +210,9 @@ print(stats.log_summary())
 Validation runs during pipeline execution (CI/CD), not in the browser. This:
 
 - Prevents invalid puzzles from entering the collection
+
 - Keeps the frontend static and fast
+
 - Avoids validation overhead at runtime
 
 ### 2. Single Responsibility
@@ -227,17 +233,17 @@ Rejection reasons are human-readable strings, not opaque error codes. This makes
 
 ### Core Classes
 
-| Class                      | Purpose                       |
+| Class | Purpose |
 | -------------------------- | ----------------------------- |
-| `PuzzleValidator`          | Main validator class          |
-| `ValidationConfig`         | Configuration dataclass       |
-| `PuzzleData`               | Input data structure          |
-| `ValidationResult`         | Output with is_valid + reason |
-| `ValidationStatsCollector` | Statistics aggregation        |
+| `PuzzleValidator` | Main validator class |
+| `ValidationConfig` | Configuration dataclass |
+| `PuzzleData` | Input data structure |
+| `ValidationResult` | Output with is_valid + reason |
+| `ValidationStatsCollector` | Statistics aggregation |
 
 ### Module Location
 
-```
+```text
 backend/puzzle_manager/core/
 ├── puzzle_validator.py      # PuzzleValidator, PuzzleData, ValidationConfig
 └── validation_stats.py      # ValidationStatsCollector

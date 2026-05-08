@@ -1,26 +1,34 @@
+# Go Board JavaScript Libraries — Comprehensive Analysis
+
 > ⚠️ **ARCHIVED** — This document is preserved for historical context.
 > Current canonical documentation: [Architecture: Goban Integration](../architecture/frontend/goban-integration.md)
 > Archived: 2026-05-06
 
-# Go Board JavaScript Libraries — Comprehensive Analysis
+---
 
 > **Last Updated**: 2026-01-28  
 > **Purpose**: Research analysis of how yengo-source.com renders Go boards and solution trees, plus a comparison of major Go board JS libraries.
-
+>
 > **See also**:
 >
+
 - [Architecture: Frontend Overview](../architecture/frontend/overview.md) — Yen-Go frontend design decisions
+>
 > - [Concepts: SGF Properties](../concepts/sgf-properties.md) — Custom SGF property definitions
+
 - [How-To: Frontend Local Development](../how-to/frontend/local-development.md) — Frontend development guide
 
 ---
 
 ## Table of Contents
 
-1. [yengo-source.com Deep Dive](#1-goproblemcom-deep-dive)
-2. [Library Comparison Matrix](#2-library-comparison-matrix)
-3. [Individual Library Profiles](#3-individual-library-profiles)
-4. [Relevance to Yen-Go](#4-relevance-to-yen-go)
+1. [yengo-source.com Deep Dive](#1-yengo-sourcecom-deep-dive)
+
+1. [Library Comparison Matrix](#2-library-comparison-matrix)
+
+1. [Individual Library Profiles](#3-individual-library-profiles)
+
+1. [Relevance to Yen-Go](#4-relevance-to-yen-go)
 
 ---
 
@@ -28,33 +36,33 @@
 
 ### 1.1 Technology Stack
 
-| Layer                | Technology                                    |
+| Layer | Technology |
 | -------------------- | --------------------------------------------- |
-| **Framework**        | React (SPA, `<div id="root">`)                |
-| **Bundler**          | Webpack (chunked builds, code-splitting)      |
-| **Board Rendering**  | **Custom Canvas 2D** (no external Go library) |
-| **UI Framework**     | Bootstrap (Offcanvas panels)                  |
-| **Animations**       | Framer Motion (`oc.P.div`), Lottie            |
-| **Charts**           | Chart.js (statistics pages)                   |
-| **AI Analysis**      | KataGo (model: `kata1-b6c96`, GTP protocol)   |
-| **State Management** | Redux-like (actions/dispatch pattern)         |
-| **i18n**             | Full translation JSON embedded in HTML        |
-| **Analytics**        | Google Analytics (G-QV80T4WCY8)               |
+| **Framework** | React (SPA, `<div id="root">`) |
+| **Bundler** | Webpack (chunked builds, code-splitting) |
+| **Board Rendering** | **Custom Canvas 2D** (no external Go library) |
+| **UI Framework** | Bootstrap (Offcanvas panels) |
+| **Animations** | Framer Motion (`oc.P.div`), Lottie |
+| **Charts** | Chart.js (statistics pages) |
+| **AI Analysis** | KataGo (model: `kata1-b6c96`, GTP protocol) |
+| **State Management** | Redux-like (actions/dispatch pattern) |
+| **i18n** | Full translation JSON embedded in HTML |
+| **Analytics** | Google Analytics (G-QV80T4WCY8) |
 
 ### 1.2 JavaScript Bundle Structure
 
 The site loads 8 JavaScript bundles from `/build/`:
 
-| Bundle                | Size    | Purpose                       |
+| Bundle | Size | Purpose |
 | --------------------- | ------- | ----------------------------- |
-| `runtime.f743a3dd.js` | ~2 KB   | Webpack runtime, chunk loader |
-| `83.c2af3394.js`      | ~35 KB  | Shared dependencies           |
-| `920.ed9fa994.js`     | ~199 KB | **Go board Canvas 2D engine** |
-| `915.3e67b715.js`     | ~214 KB | Chart.js (statistics)         |
-| `535.3654d95f.js`     | ~1.3 MB | General application code      |
-| `914.70966ff3.js`     | ~482 KB | Lottie animation library      |
-| `148.518c57f7.js`     | ~706 KB | Configuration, themes, KataGo |
-| `react.82c35494.js`   | ~804 KB | Main React application        |
+| `runtime.f743a3dd.js` | ~2 KB | Webpack runtime, chunk loader |
+| `83.c2af3394.js` | ~35 KB | Shared dependencies |
+| `920.ed9fa994.js` | ~199 KB | **Go board Canvas 2D engine** |
+| `915.3e67b715.js` | ~214 KB | Chart.js (statistics) |
+| `535.3654d95f.js` | ~1.3 MB | General application code |
+| `914.70966ff3.js` | ~482 KB | Lottie animation library |
+| `148.518c57f7.js` | ~706 KB | Configuration, themes, KataGo |
+| `react.82c35494.js` | ~804 KB | Main React application |
 
 **Key finding**: All known Go board libraries (WGo.js, Glift, EidoGo, BesoGo, Sabaki/Shudan, jGoBoard) were searched for across every bundle — **none were found**. yengo-source.com uses a completely **custom, proprietary implementation**.
 
@@ -62,22 +70,27 @@ The site loads 8 JavaScript bundles from `/build/`:
 
 The board engine lives in chunk `920.ed9fa994.js` and uses **HTML5 Canvas 2D** with a **multi-layer canvas architecture**:
 
-| Canvas Layer      | Purpose                                           |
+| Canvas Layer | Purpose |
 | ----------------- | ------------------------------------------------- |
-| `board`           | Board background, grid lines, star points, stones |
-| `cursorCanvas`    | Mouse hover / touch cursor indicator              |
-| `markupCanvas`    | Letters, numbers, triangles, circles, squares     |
-| `effectCanvas`    | Move animations (ban effect, placement)           |
-| `analysisCanvas`  | KataGo AI analysis overlays                       |
-| `ownershipCanvas` | Territory ownership display                       |
+| `board` | Board background, grid lines, star points, stones |
+| `cursorCanvas` | Mouse hover / touch cursor indicator |
+| `markupCanvas` | Letters, numbers, triangles, circles, squares |
+| `effectCanvas` | Move animations (ban effect, placement) |
+| `analysisCanvas` | KataGo AI analysis overlays |
+| `ownershipCanvas` | Territory ownership display |
 
 **Key rendering details:**
 
 - **28 `getContext("2d")` calls** in the board chunk alone
+
 - Star points drawn at coordinates `[3, 9, 15]`
+
 - `DOMMatrix` transforms for zoom/pan
+
 - `calcSpaceAndPadding()` for responsive sizing
+
 - `stoneRatio` parameter for stone-to-cell proportion
+
 - Stone rendering uses PNG textures (not pure Canvas drawing)
 
 ### 1.4 Board Configuration
@@ -99,19 +112,19 @@ The board engine lives in chunk `920.ed9fa994.js` and uses **HTML5 Canvas 2D** w
 
 11 board themes are available, each using PNG textures:
 
-| Theme             | Description                    |
+| Theme | Description |
 | ----------------- | ------------------------------ |
-| `BlackAndWhite`   | High contrast, no textures     |
-| `Subdued`         | Muted colors                   |
-| `ShellStone`      | Shell-textured stones          |
-| `SlateAndShell`   | Traditional Japanese materials |
-| `Walnut`          | Walnut wood board              |
-| `Photorealistic`  | Photo-quality textures         |
-| `Flat`            | Modern flat design             |
-| `Warm`            | Warm color palette             |
-| `Dark`            | Dark mode                      |
-| `HighContrast`    | Accessibility-focused          |
-| `YunziMonkeyDark` | Yunzi stones on dark board     |
+| `BlackAndWhite` | High contrast, no textures |
+| `Subdued` | Muted colors |
+| `ShellStone` | Shell-textured stones |
+| `SlateAndShell` | Traditional Japanese materials |
+| `Walnut` | Walnut wood board |
+| `Photorealistic` | Photo-quality textures |
+| `Flat` | Modern flat design |
+| `Warm` | Warm color palette |
+| `Dark` | Dark mode |
+| `HighContrast` | Accessibility-focused |
+| `YunziMonkeyDark` | Yunzi stones on dark board |
 
 Theme images are served as PNGs from `/build/images/theme/` with variants for board, black stone, and white stone.
 
@@ -119,15 +132,15 @@ Theme images are served as PNGs from `/build/images/theme/` with variants for bo
 
 The main Go logic module exposes these minified identifiers:
 
-| Identifier                              | Purpose                         |
+| Identifier | Purpose |
 | --------------------------------------- | ------------------------------- |
-| `Ct.Ki.Black` / `Ct.Ki.White`           | Stone colors                    |
-| `Ct.bs.BlackStone` / `Ct.bs.WhiteStone` | Cursor types                    |
-| `Ct.T2`                                 | SGF class (`.toSgf()`, `.root`) |
-| `Ct.r8(node, prop)`                     | Read SGF property from node     |
-| `Ct.kX(prop, value)`                    | Construct node annotation       |
-| `Ct.KC.Problem` / `Ct.KC.Default`       | Analysis point themes           |
-| `Ct.Zn`                                 | Coordinate converter            |
+| `Ct.Ki.Black` / `Ct.Ki.White` | Stone colors |
+| `Ct.bs.BlackStone` / `Ct.bs.WhiteStone` | Cursor types |
+| `Ct.T2` | SGF class (`.toSgf()`, `.root`) |
+| `Ct.r8(node, prop)` | Read SGF property from node |
+| `Ct.kX(prop, value)` | Construct node annotation |
+| `Ct.KC.Problem` / `Ct.KC.Default` | Analysis point themes |
+| `Ct.Zn` | Coordinate converter |
 
 ### 1.7 Solution Tree & Path Encoding
 
@@ -148,12 +161,12 @@ new Ct.T2(rootNode).toSgf();
 
 **Problem component** (`dc`) receives these compressed path sets:
 
-| Prop                      | Purpose                         |
+| Prop | Purpose |
 | ------------------------- | ------------------------------- |
-| `rightCompressedPaths`    | Correct solution paths          |
-| `wrongCompressedPaths`    | Incorrect paths (refutations)   |
-| `questionCompressedPaths` | Intermediate/question paths     |
-| `commentCompressedPaths`  | Paths with pedagogical comments |
+| `rightCompressedPaths` | Correct solution paths |
+| `wrongCompressedPaths` | Incorrect paths (refutations) |
+| `questionCompressedPaths` | Intermediate/question paths |
+| `commentCompressedPaths` | Paths with pedagogical comments |
 
 **Tree visualization component** (`p.bY`) is **lazy-loaded** via webpack code splitting — the actual rendering code is not in the initial page bundles. It receives `baseSgf` and all compressed path sets, plus `autoScrollToCurrentNode` and `options: { minHeight }`.
 
@@ -176,35 +189,41 @@ new Ct.T2(rootNode).toSgf();
 ### 1.9 Key Takeaways for yengo-source.com
 
 1. **Fully custom implementation** — No external Go board library dependency
-2. **Canvas 2D, not SVG** — Performance-oriented choice with layered canvases
-3. **PNG textures for stones** — Not procedurally drawn
-4. **KataGo integration** — Server-side AI analysis displayed as Canvas overlay
-5. **Compressed path encoding** — Compact representation of solution trees
-6. **Lazy-loaded tree visualization** — Tree component loaded on-demand
-7. **SGF C property** — Uses `RIGHT/FORCE/NOTTHIS/CHOICE` annotations in SGF `C[]` (Comment) property to mark solution correctness
+
+1. **Canvas 2D, not SVG** — Performance-oriented choice with layered canvases
+
+1. **PNG textures for stones** — Not procedurally drawn
+
+1. **KataGo integration** — Server-side AI analysis displayed as Canvas overlay
+
+1. **Compressed path encoding** — Compact representation of solution trees
+
+1. **Lazy-loaded tree visualization** — Tree component loaded on-demand
+
+1. **SGF C property** — Uses `RIGHT/FORCE/NOTTHIS/CHOICE` annotations in SGF `C[]` (Comment) property to mark solution correctness
 
 ---
 
 ## 2. Library Comparison Matrix
 
-| Feature            | yengo-source.com         | WGo.js          | Glift        | BesoGo            | Shudan               | EidoGo       | jGoBoard          | goban (yengo-source)        |
+| Feature | yengo-source.com | WGo.js | Glift | BesoGo | Shudan | EidoGo | jGoBoard | goban (yengo-source) |
 | ------------------ | ---------------------- | --------------- | ------------ | ----------------- | -------------------- | ------------ | ----------------- | ------------------ |
-| **Rendering**      | Canvas 2D (layered)    | Canvas 2D       | SVG          | SVG + CSS         | CSS (React)          | DOM/CSS      | Canvas 2D         | Canvas 2D + SVG    |
-| **SGF Parse**      | Custom                 | Yes             | Yes          | Yes (editor)      | No (use @sabaki/sgf) | Yes          | Yes               | Yes                |
-| **SGF Edit**       | Yes                    | No              | No           | Yes (full editor) | No                   | Yes          | Yes               | Yes                |
-| **Puzzle/Problem** | Yes (core feature)     | Yes (extension) | Yes          | No                | No                   | Yes          | No                | Yes (core feature) |
-| **Solution Tree**  | Yes (visual tree)      | No              | No           | Yes (tree panel)  | No                   | No           | No                | Yes                |
-| **Game Review**    | Yes (KataGo AI)        | No              | No           | No                | No                   | No           | No                | Yes                |
-| **Themes**         | 11 PNG-based           | Canvas textures | Configurable | CSS themes        | CSS                  | CSS          | PNG textures      | Canvas textures    |
-| **Board Sizes**    | Any                    | Any             | Any          | Any               | Any                  | 9, 13, 19    | Any               | Any                |
-| **Coordinates**    | Yes                    | Yes             | Yes          | Yes               | Yes                  | Yes          | Yes               | Yes                |
-| **Markup**         | Full (letters, shapes) | Yes             | Yes          | Full              | Partial              | Yes          | Yes               | Full               |
-| **TypeScript**     | N/A (compiled)         | No              | No           | No                | Yes (Preact)         | No           | Yes (v5)          | Yes                |
-| **Framework**      | React                  | Vanilla         | Vanilla      | Vanilla           | Preact/React         | Vanilla      | Vanilla           | Vanilla (DOM)      |
-| **License**        | Proprietary            | MIT (implied)   | Apache 2.0   | MIT               | MIT                  | AGPL         | CC-BY-NC-4.0      | Apache 2.0         |
-| **Stars**          | N/A                    | 334             | 120          | 131               | 103                  | 190          | —                 | —                  |
-| **Last Activity**  | Active (2025+)         | 5 years ago     | 7 years ago  | ~8 months ago     | 3 years ago          | 13 years ago | Active (days ago) | 5 months ago       |
-| **npm**            | N/A                    | No              | No           | No                | `@pichichi/shudan`   | No           | `jgoboard`        | `goban`            |
+| **Rendering** | Canvas 2D (layered) | Canvas 2D | SVG | SVG + CSS | CSS (React) | DOM/CSS | Canvas 2D | Canvas 2D + SVG |
+| **SGF Parse** | Custom | Yes | Yes | Yes (editor) | No (use @sabaki/sgf) | Yes | Yes | Yes |
+| **SGF Edit** | Yes | No | No | Yes (full editor) | No | Yes | Yes | Yes |
+| **Puzzle/Problem** | Yes (core feature) | Yes (extension) | Yes | No | No | Yes | No | Yes (core feature) |
+| **Solution Tree** | Yes (visual tree) | No | No | Yes (tree panel) | No | No | No | Yes |
+| **Game Review** | Yes (KataGo AI) | No | No | No | No | No | No | Yes |
+| **Themes** | 11 PNG-based | Canvas textures | Configurable | CSS themes | CSS | CSS | PNG textures | Canvas textures |
+| **Board Sizes** | Any | Any | Any | Any | Any | 9, 13, 19 | Any | Any |
+| **Coordinates** | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| **Markup** | Full (letters, shapes) | Yes | Yes | Full | Partial | Yes | Yes | Full |
+| **TypeScript** | N/A (compiled) | No | No | No | Yes (Preact) | No | Yes (v5) | Yes |
+| **Framework** | React | Vanilla | Vanilla | Vanilla | Preact/React | Vanilla | Vanilla | Vanilla (DOM) |
+| **License** | Proprietary | MIT (implied) | Apache 2.0 | MIT | MIT | AGPL | CC-BY-NC-4.0 | Apache 2.0 |
+| **Stars** | N/A | 334 | 120 | 131 | 103 | 190 | — | — |
+| **Last Activity** | Active (2025+) | 5 years ago | 7 years ago | ~8 months ago | 3 years ago | 13 years ago | Active (days ago) | 5 months ago |
+| **npm** | N/A | No | No | No | `@pichichi/shudan` | No | `jgoboard` | `goban` |
 
 ---
 
@@ -229,16 +248,23 @@ new Ct.T2(rootNode).toSgf();
 **Strengths**:
 
 - Most-starred Go board library (334 stars)
+
 - Canvas-based rendering (fast)
+
 - Complete SGF player included
+
 - Tsumego extension built-in
+
 - Extensive customization API
 
 **Weaknesses**:
 
 - No TypeScript types
+
 - No npm package
+
 - Last meaningful update ~5 years ago
+
 - No active maintainer response
 
 ### 3.2 Glift
@@ -259,15 +285,21 @@ new Ct.T2(rootNode).toSgf();
 **Strengths**:
 
 - SVG rendering scales cleanly
+
 - Built-in problem-solving support
+
 - Widget-based architecture for embedding
+
 - Apache 2.0 license
 
 **Weaknesses**:
 
 - Abandoned (7 years, no activity)
+
 - No TypeScript
+
 - No npm package
+
 - Documentation gaps
 
 ### 3.3 BesoGo
@@ -283,9 +315,13 @@ new Ct.T2(rootNode).toSgf();
 **SGF Support**: **Comprehensive** — full SGF editor with:
 
 - Load/save/export SGF
+
 - Node-by-node editing
+
 - Comment editing
+
 - Markup tools (labels, shapes)
+
 - Multi-game support
 
 **Puzzle Support**: No dedicated puzzle mode, but the tree navigation panel shows the full game/variation tree visually.
@@ -295,16 +331,23 @@ new Ct.T2(rootNode).toSgf();
 **Strengths**:
 
 - Full SGF editor (richest feature set for editing)
+
 - Visual tree panel navigation
+
 - Most recently active among "classic" libraries
+
 - MIT license
+
 - Lightweight, no dependencies
 
 **Weaknesses**:
 
 - No TypeScript
+
 - No npm package
+
 - No puzzle-solving mode
+
 - Single maintainer
 
 ### 3.4 Shudan (@pichichi/shudan)
@@ -324,21 +367,29 @@ new Ct.T2(rootNode).toSgf();
 **Strengths**:
 
 - Modern Preact/React component architecture
+
 - TypeScript-ready
+
 - Simplest API (just pass board state as props)
+
 - MIT license
+
 - Part of well-designed Sabaki ecosystem
 
 **Weaknesses**:
 
 - Board display ONLY — no game logic, no SGF, no navigation
+
 - Requires additional @sabaki/\* packages for any real functionality
+
 - CSS-only rendering has limitations vs Canvas/SVG
+
 - Sabaki ecosystem is dormant (last SGF parser release: 2019)
 
 **Sabaki SGF Ecosystem**:
+
 | Package | Purpose | Stars | Last Release |
-|---------|---------|-------|-------------|
+| --------- | --------- | ------- | ------------- |
 | `@sabaki/sgf` | SGF parser/serializer | 55 | v3.4.0 (Jun 2019) |
 | `@sabaki/immutable-gametree` | Tree data structure | — | — |
 | `@sabaki/go-board` | Game rules/logic | — | — |
@@ -362,16 +413,23 @@ new Ct.T2(rootNode).toSgf();
 **Strengths**:
 
 - Pioneering implementation (historical significance)
+
 - Problem-solving mode
+
 - Full SGF editor
+
 - Large community recognition
 
 **Weaknesses**:
 
 - **Completely abandoned** (13 years without updates)
+
 - AGPL license (viral copyleft, incompatible with many projects)
+
 - DOM-based rendering (slowest approach)
+
 - No TypeScript, no npm, no modern tooling
+
 - IE6-era code quality
 
 ### 3.6 jGoBoard
@@ -404,16 +462,23 @@ import { createPlayer } from "jgoboard/player";
 **Strengths**:
 
 - **Most actively maintained** (published days ago)
+
 - Modern TypeScript + Vite tooling
+
 - Modular architecture (import only what you need)
+
 - Framework integration docs (React, Vue, Svelte)
+
 - CDN-ready (ESM and UMD builds)
+
 - Comprehensive docs
 
 **Weaknesses**:
 
 - **CC-BY-NC-4.0 license** — NonCommercial restriction makes it **unusable for many projects**
+
 - Relatively young v5 rewrite
+
 - Small user base (477 weekly npm downloads)
 
 ### 3.7 goban (yengo-source)
@@ -436,18 +501,27 @@ import { createPlayer } from "jgoboard/player";
 **Strengths**:
 
 - **Production-proven** at scale (online-go.com)
+
 - Apache 2.0 license
+
 - TypeScript
+
 - Active development (252 npm versions)
+
 - Complete game engine (rules, scoring, timing)
+
 - Puzzle mode built-in
 
 **Weaknesses**:
 
 - Heavy (11.2 MB unpacked)
+
 - Tightly coupled to yengo-source architecture
+
 - Creates its own DOM element (not a React/Preact component)
+
 - API documentation is sparse
+
 - Required `GobanContainer` pattern for mounting
 
 ---
@@ -460,37 +534,48 @@ Yen-Go already uses the **goban** (OGS) library with the `GobanContainer` mounti
 
 ### 4.2 What yengo-source.com Does Differently
 
-| Aspect                  | yengo-source.com                      | Yen-Go                                           |
+| Aspect | yengo-source.com | Yen-Go |
 | ----------------------- | ----------------------------------- | ------------------------------------------------ |
-| **Board Library**       | Custom Canvas 2D                    | goban (yengo-source)                                      |
-| **Solution Encoding**   | Compressed paths (string tokens)    | SGF move tree (yengo-source native)                       |
-| **Correctness Markers** | `C[RIGHT]` / `C[WRONG]` in SGF      | Pre-computed solution trees                      |
-| **Tree Visualization**  | Visual tree component (lazy-loaded) | Solution tree gating (hidden until wrong/review) |
-| **Themes**              | 11 PNG-based themes                 | yengo-source theme system                                 |
+| **Board Library** | Custom Canvas 2D | goban (yengo-source) |
+| **Solution Encoding** | Compressed paths (string tokens) | SGF move tree (yengo-source native) |
+| **Correctness Markers** | `C[RIGHT]` / `C[WRONG]` in SGF | Pre-computed solution trees |
+| **Tree Visualization** | Visual tree component (lazy-loaded) | Solution tree gating (hidden until wrong/review) |
+| **Themes** | 11 PNG-based themes | yengo-source theme system |
 
 ### 4.3 Lessons from yengo-source.com
 
 1. **Multi-layer Canvas** — Separating board, cursor, markup, and effects into distinct canvas layers improves rendering performance and enables independent updates
-2. **Compressed path encoding** — Efficient representation of solution paths as string tokens rather than full tree objects could reduce payload size
-3. **Lazy-loaded tree** — The solution tree visualization is code-split and only loaded when the user navigates to the tree view
-4. **RIGHT/WRONG annotations** — Using SGF Comment property for solution correctness is a well-established pattern (also used by Glift)
+
+1. **Compressed path encoding** — Efficient representation of solution paths as string tokens rather than full tree objects could reduce payload size
+
+1. **Lazy-loaded tree** — The solution tree visualization is code-split and only loaded when the user navigates to the tree view
+
+1. **RIGHT/WRONG annotations** — Using SGF Comment property for solution correctness is a well-established pattern (also used by Glift)
 
 ### 4.4 Library Recommendations for Yen-Go
 
 **Keep using goban (yengo-source)** — It is the best fit for Yen-Go's requirements:
 
 1. **Apache 2.0 license** — permissive, compatible with open source
-2. **Puzzle mode built-in** — core yengo-source feature, battle-tested
-3. **Active maintenance** — 252 npm releases
-4. **TypeScript** — matches Yen-Go's strict TypeScript requirement
-5. **Already integrated** — switching would be a massive refactor with zero benefit
+
+1. **Puzzle mode built-in** — core yengo-source feature, battle-tested
+
+1. **Active maintenance** — 252 npm releases
+
+1. **TypeScript** — matches Yen-Go's strict TypeScript requirement
+
+1. **Already integrated** — switching would be a massive refactor with zero benefit
 
 **Avoid**:
 
 - **jGoBoard** — CC-BY-NC-4.0 license is incompatible with open source distribution
+
 - **EidoGo** — AGPL license + completely abandoned
+
 - **WGo.js / Glift** — Abandoned, no TypeScript, no npm
+
 - **Shudan** — Board display only; would need 3+ packages to match goban's functionality
+
 - **BesoGo** — No npm, no TypeScript, no puzzle mode
 
 ---

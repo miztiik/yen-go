@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Architecture: Integrity](../../architecture/backend/integrity.md) — Cleanup design decisions
+>
 > - [How-To: Run Pipeline](./run-pipeline.md) — Pipeline execution
+>
 > - [How-To: CLI Reference](./cli-reference.md) — Full command reference
 
 **Last Updated**: 2026-02-01
@@ -17,7 +19,9 @@ How to clean up staging directories and runtime artifacts.
 The cleanup utility removes intermediate files from pipeline runs:
 
 - Staging directories (ingest, analyze)
+
 - Log files
+
 - State files (optional)
 
 ---
@@ -45,12 +49,15 @@ python -m backend.puzzle_manager clean --target staging
 Removes:
 
 - `.pm-runtime/staging/ingest/`
+
 - `.pm-runtime/staging/analyzed/`
 
 Preserves:
 
 - Published output (`yengo-puzzle-collections/`)
+
 - Logs
+
 - State files
 
 Use case: Prepare for fresh pipeline run while keeping logs for debugging.
@@ -64,12 +71,15 @@ python -m backend.puzzle_manager clean --target all
 Removes:
 
 - `.pm-runtime/staging/`
+
 - `.pm-runtime/logs/`
+
 - `.pm-runtime/state/` (run history only)
 
 Preserves:
 
 - Published output (`yengo-puzzle-collections/`)
+
 - Current publish logs (for rollback capability)
 
 Use case: Full reset between major pipeline runs.
@@ -100,7 +110,7 @@ python -m backend.puzzle_manager clean --target staging --dry-run
 
 Output:
 
-```
+```text
 Would remove: .pm-runtime/staging/ingest/
 Would remove: .pm-runtime/staging/analyzed/
 Dry run complete. No files removed.
@@ -128,7 +138,7 @@ python -m backend.puzzle_manager clean --target staging --verbose
 
 ## Runtime Directory Structure
 
-```
+```text
 .pm-runtime/                          # Default: $PROJECT_ROOT/.pm-runtime
 ├── staging/
 │   ├── ingest/                       # Fetched SGF files
@@ -190,13 +200,13 @@ CMD ["sh", "-c", "python -m backend.puzzle_manager run --source yengo-source && 
 
 ## When to Clean
 
-| Scenario                      | Recommended Target                       |
+| Scenario | Recommended Target |
 | ----------------------------- | ---------------------------------------- |
-| After successful pipeline run | `staging`                                |
-| After failed pipeline run     | `logs` only (keep staging for debugging) |
-| Before release                | `all`                                    |
-| Disk space issues             | `staging` then `logs`                    |
-| Fresh development start       | `all`                                    |
+| After successful pipeline run | `staging` |
+| After failed pipeline run | `logs` only (keep staging for debugging) |
+| Before release | `all` |
+| Disk space issues | `staging` then `logs` |
+| Fresh development start | `all` |
 
 ---
 
@@ -204,12 +214,12 @@ CMD ["sh", "-c", "python -m backend.puzzle_manager run --source yengo-source && 
 
 The cleanup utility **never** removes:
 
-| Directory                         | Reason                                  |
+| Directory | Reason |
 | --------------------------------- | --------------------------------------- |
-| `yengo-puzzle-collections/`       | Published output - use rollback instead |
-| `.pm-runtime/state/publish-logs/` | Required for rollback capability        |
-| `config/`                         | Configuration files                     |
-| `backend/`                        | Source code                             |
+| `yengo-puzzle-collections/` | Published output - use rollback instead |
+| `.pm-runtime/state/publish-logs/` | Required for rollback capability |
+| `config/` | Configuration files |
+| `backend/` | Source code |
 
 ---
 
@@ -229,7 +239,7 @@ python -m backend.puzzle_manager clean --target staging
 
 ### Directory Not Found
 
-```
+```text
 Warning: .pm-runtime/staging does not exist. Nothing to clean.
 ```
 
@@ -249,7 +259,11 @@ python -m backend.puzzle_manager clean --target staging --force
 ## Safety Features
 
 1. **Confirmation Prompt**: Default behavior asks for confirmation
-2. **Dry Run**: Preview deletions before executing
-3. **Protected Directories**: Never removes published output or source code
-4. **Publish Logs Preserved**: Rollback capability maintained
-5. **Verbose Mode**: See exactly what's being removed
+
+1. **Dry Run**: Preview deletions before executing
+
+1. **Protected Directories**: Never removes published output or source code
+
+1. **Publish Logs Preserved**: Rollback capability maintained
+
+1. **Verbose Mode**: See exactly what's being removed

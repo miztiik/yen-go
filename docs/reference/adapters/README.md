@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [How-To: Create Adapter](../../how-to/backend/create-adapter.md) — Step-by-step guide
+>
 > - [Architecture: Adapters](../../architecture/backend/adapters.md) — Design patterns
+>
 > - [Concepts: Puzzle Validation](../../concepts/puzzle-validation.md) — Centralized validation rules
 
 **Last Updated**: 2026-04-12
@@ -28,17 +30,20 @@ if not result.is_valid:
 Validation rules (configurable per-source):
 
 - Board dimensions: 5-19 (non-square allowed)
+
 - Solution required
+
 - Minimum 2 stones
+
 - Maximum 30 solution depth
 
 ---
 
 ## Available Adapters
 
-| Adapter                     | Type        | Resume | Validation | Status | Config Docs                |
+| Adapter | Type | Resume | Validation | Status | Config Docs |
 | --------------------------- | ----------- | ------ | ---------- | ------ | -------------------------- |
-| [local](local.md)           | File System | ✓      | ✓          | Active | [Reference](local.md)      |
+| [local](local.md) | File System | ✓ | ✓ | Active | [Reference](local.md) |
 
 ---
 
@@ -72,11 +77,15 @@ backend/puzzle_manager/config/sources.json
 ### API-Based (With Resume)
 
 - API-backed source adapters
+
 - Scraper-backed source adapters
 
 ### File-Based (No Resume)
 
 - Repository/file-fetch adapters
+
 - Local file-system adapters
+
 - Generic local/file adapters
+
 - Generic HTTP adapters

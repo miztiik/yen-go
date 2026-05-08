@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Architecture: Goban Integration](./goban-integration.md) - Canonical frontend board architecture (current standard)
+>
 > - [Architecture: Go Rules Engine](./go-rules-engine.md) - Move validation and rules behavior
+>
 > - [Architecture: SVG Board](./svg-board.md) - Rendering details for non-goban board layers
 
 **Last Updated**: 2026-03-09
@@ -16,7 +18,9 @@
 This document is deprecated and retained only as a historical record.
 
 - Active authority: `docs/architecture/frontend/goban-integration.md`
+
 - Do not use this file as implementation guidance for new frontend work
+
 - Legacy coordinate/state decisions previously documented here are superseded by the goban-based architecture
 
 ---
@@ -30,6 +34,7 @@ Those details are intentionally removed to avoid conflict with the current archi
 For any active implementation or refactor decision, follow:
 
 - `docs/architecture/frontend/goban-integration.md`
+
 - `docs/architecture/frontend/go-rules-engine.md`
 
 ---

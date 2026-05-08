@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Architecture: State Management](./state-management.md) — How state flows
+>
 > - [Concepts: SGF Properties](../../concepts/sgf-properties.md) — SGF format reference
+>
 > - [How-To: Frontend Development](../../how-to/frontend/) — Implementation guides
 
 **Last Updated**: 2026-03-24
@@ -24,7 +26,7 @@ The backend pipeline pre-computes complete solution trees with all correct/incor
 
 SGF encodes the full solution tree:
 
-```
+```text
 (;FF[4]GM[1]SZ[9]...
   ;B[cc]C[Correct! This threatens the corner.]
     (;W[dd]
@@ -52,7 +54,7 @@ interface SolutionNode {
 
 ## Validation Flow
 
-```
+```text
 User clicks → solutionVerifier.verifyMove() → VerificationResult
                     │
                     ├── isCorrect: true  → Apply move, auto-play opponent response
@@ -82,9 +84,12 @@ function lookupMove(tree: MoveNode, move: Move): LookupResult {
 How we know if a move is correct:
 
 1. **Comment prefix** — `Correct!`, `Good`, `Right` indicates correct
-2. **Solution path** — Moves in main line are correct
-3. **Variation depth** — First-level variations typically incorrect
-4. **YenGo convention** — Solution tree structure encodes correctness
+
+1. **Solution path** — Moves in main line are correct
+
+1. **Variation depth** — First-level variations typically incorrect
+
+1. **YenGo convention** — Solution tree structure encodes correctness
 
 ---
 
@@ -183,7 +188,8 @@ function parseCoordinateHint(hint: string): Coord | null {
 A puzzle is complete when:
 
 1. User reaches a terminal node (no children)
-2. All required moves in solution played
+
+1. All required moves in solution played
 
 ```typescript
 function isPuzzleComplete(node: MoveNode): boolean {

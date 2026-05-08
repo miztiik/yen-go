@@ -1,23 +1,24 @@
+# KataGo Integration & Solution Enhancement
+
 > ⚠️ **DEPRECATED** - This document describes KataGo integration which was removed in v3.2 (Spec 013).
 > Curated sources are pre-validated, so runtime solving is no longer needed.
 > Kept for historical reference only.
 
 ---
 
-# KataGo Integration & Solution Enhancement
-
 ## Overview
 
 The Solve stage (Stage 5) has been upgraded to use a unified solver framework that supports:
 
 - **KataGo** (primary) - High-accuracy neural network solver
+
 - **yengo-source** (fallback) - Python MCTS solver
 
 Key change: Instead of rejecting puzzles when solvers disagree, the system now **enhances** solution trees by adding solver-discovered moves.
 
 ## Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Solve Stage v2.0                          │
 ├─────────────────────────────────────────────────────────────────┤
@@ -57,8 +58,11 @@ Key change: Instead of rejecting puzzles when solvers disagree, the system now *
 ## KataGo Setup (Historical)
 
 1. Download KataGo from releases
-2. Download model file
-3. Set environment variables:
+
+1. Download model file
+
+1. Set environment variables:
+
    ```bash
    export KATAGO_PATH=/path/to/katago
    export KATAGO_MODEL=/path/to/model.bin.gz

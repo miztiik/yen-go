@@ -12,11 +12,11 @@ The frontend uses a v4.0 compact entry system for all view index data (level, ta
 
 The schema defines these document types:
 
-| Document Type  | Purpose                            | TypeScript Type                                                 |
+| Document Type | Purpose | TypeScript Type |
 | -------------- | ---------------------------------- | --------------------------------------------------------------- |
-| PageDocument   | Single page of compact entries     | `PageDocument<T extends ViewEntry>`                             |
-| DirectoryIndex | Pagination directory/metadata      | `DirectoryIndex`                                                |
-| MasterIndex    | Top-level index with distributions | `LevelMasterIndex`, `TagMasterIndex`, `CollectionMasterIndexV2` |
+| PageDocument | Single page of compact entries | `PageDocument<T extends ViewEntry>` |
+| DirectoryIndex | Pagination directory/metadata | `DirectoryIndex` |
+| MasterIndex | Top-level index with distributions | `LevelMasterIndex`, `TagMasterIndex`, `CollectionMasterIndexV2` |
 
 ## Compact Entry Format (Wire)
 
@@ -37,26 +37,29 @@ interface CompactEntry {
 
 `entryDecoder.ts` and `configService.ts` form the decode boundary between wire format and domain types:
 
-| Wire Format    | Decode Function           | Domain Type       | Fields             |
+| Wire Format | Decode Function | Domain Type | Fields |
 | -------------- | ------------------------- | ----------------- | ------------------ |
-| `CompactEntry` | `decodeLevelEntry()`      | `LevelEntry`      | `{path, tags}`     |
-| `CompactEntry` | `decodeTagEntry()`        | `TagEntry`        | `{path, level}`    |
+| `CompactEntry` | `decodeLevelEntry()` | `LevelEntry` | `{path, tags}` |
+| `CompactEntry` | `decodeTagEntry()` | `TagEntry` | `{path, level}` |
 | `CompactEntry` | `decodeCollectionEntry()` | `CollectionEntry` | `{path, level, n}` |
 
 `configService.ts` provides the ID resolution (delegates to config modules via Vite JSON imports):
 
 - `levelIdToSlug(id)`: 120 → "beginner"
+
 - `tagIdToSlug(id)`: 36 → "net"
 
 `entryDecoder.ts` provides the decode functions and utilities:
 
 - `expandPath(p)`: "0001/hash" → "sgf/0001/hash.sgf"
+
 - `isCompactEntry(entry)`: type guard detecting compact vs legacy format
+
 - `decodeEntry(raw)`: unified decoder returning `DecodedEntry` with complexity
 
 ## Data Flow
 
-```
+```text
 JSON Schema (config/schemas/view-index.schema.json)
     ↓ validates
 Compact Entries (wire: {p, l, t, c, x})
@@ -105,12 +108,12 @@ interface CollectionMasterEntry extends MasterIndexEntry {
 
 Runtime type checking:
 
-| Guard                             | Checks                                                                        |
+| Guard | Checks |
 | --------------------------------- | ----------------------------------------------------------------------------- |
-| `isCompactEntry(entry)`           | Has `p` string property (compact vs legacy) — exported from `entryDecoder.ts` |
-| `isDirectoryIndex(data)`          | `total_count` + `page_size` + `pages`                                         |
-| `isPageDocument(data)`            | `page` + `entries`                                                            |
-| `isCollectionMasterIndexV3(data)` | `collections` array (checks `CollectionMasterIndexV2` type)                   |
+| `isCompactEntry(entry)` | Has `p` string property (compact vs legacy) — exported from `entryDecoder.ts` |
+| `isDirectoryIndex(data)` | `total_count` + `page_size` + `pages` |
+| `isPageDocument(data)` | `page` + `entries` |
+| `isCollectionMasterIndexV3(data)` | `collections` array (checks `CollectionMasterIndexV2` type) |
 
 ## Contract Test
 
@@ -119,5 +122,7 @@ Runtime type checking:
 > **See also**:
 >
 > - [Concepts: SGF Properties](../../concepts/sgf-properties.md) — SGF custom properties and schema version
+>
 > - [Concepts: Numeric ID Scheme](../../concepts/numeric-id-scheme.md) — ID ranges and category bands
+>
 > - [Reference: View Index Schema](../../reference/view-index-schema.md) — Full schema reference

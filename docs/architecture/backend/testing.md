@@ -6,30 +6,30 @@ This document describes the testing strategy for `backend/puzzle_manager/`.
 
 ## Test Suite Overview
 
-| Category              | Tests  | Time  | Markers                        |
+| Category | Tests | Time | Markers |
 | --------------------- | ------ | ----- | ------------------------------ |
-| **Total**             | ~1,250 | ~3min | -                              |
-| **Unit (isolated)**   | ~365   | ~20s  | `unit`                         |
-| **Quick (local dev)** | ~1,000 | ~30s  | `not (cli or slow or adapter)` |
-| **Adapters**          | ~160   | ~10s  | `adapter`                      |
-| **CLI (slowest)**     | ~36    | ~40s  | `cli`                          |
-| **Benchmarks**        | ~11    | ~30s  | `slow`                         |
+| **Total** | ~1,250 | ~3min | - |
+| **Unit (isolated)** | ~365 | ~20s | `unit` |
+| **Quick (local dev)** | ~1,000 | ~30s | `not (cli or slow or adapter)` |
+| **Adapters** | ~160 | ~10s | `adapter` |
+| **CLI (slowest)** | ~36 | ~40s | `cli` |
+| **Benchmarks** | ~11 | ~30s | `slow` |
 
 ## Test Markers
 
 Markers are defined in [pyproject.toml](../../../backend/puzzle_manager/pyproject.toml).
 
-| Marker        | Purpose                                           | Skip Command           |
+| Marker | Purpose | Skip Command |
 | ------------- | ------------------------------------------------- | ---------------------- |
-| `unit`        | Fast isolated tests (auto-applied in tests/unit/) | -                      |
-| `cli`         | CLI subprocess tests (slowest)                    | `-m "not cli"`         |
-| `slow`        | Benchmarks, large data tests                      | `-m "not slow"`        |
-| `adapter`     | Adapter-specific tests                            | `-m "not adapter"`     |
-| `inventory`   | Inventory management                              | `-m "not inventory"`   |
-| `pagination`  | Pagination/views                                  | `-m "not pagination"`  |
-| `posix`       | POSIX path compatibility                          | `-m "not posix"`       |
-| `e2e`         | End-to-end pipeline                               | `-m "not e2e"`         |
-| `integration` | Multi-component tests                             | `-m "not integration"` |
+| `unit` | Fast isolated tests (auto-applied in tests/unit/) | - |
+| `cli` | CLI subprocess tests (slowest) | `-m "not cli"` |
+| `slow` | Benchmarks, large data tests | `-m "not slow"` |
+| `adapter` | Adapter-specific tests | `-m "not adapter"` |
+| `inventory` | Inventory management | `-m "not inventory"` |
+| `pagination` | Pagination/views | `-m "not pagination"` |
+| `posix` | POSIX path compatibility | `-m "not posix"` |
+| `e2e` | End-to-end pipeline | `-m "not e2e"` |
+| `integration` | Multi-component tests | `-m "not integration"` |
 
 ## Recommended Test Commands
 
@@ -54,19 +54,19 @@ cd backend/puzzle_manager && pytest
 
 ### Developer Workflow
 
-| Scenario       | Command                                    | Tests  | Time  |
+| Scenario | Command | Tests | Time |
 | -------------- | ------------------------------------------ | ------ | ----- |
-| Unit only      | `pytest -m unit`                           | ~365   | ~20s  |
-| Quick feedback | `pytest -m "not (cli or slow or adapter)"` | ~1,000 | ~30s  |
-| Pre-commit     | `pytest -m "not slow"`                     | ~1,240 | ~90s  |
-| Full CI        | `pytest`                                   | ~1,250 | ~3min |
-| Parallel CI    | `pytest -n auto`                           | ~1,250 | ~60s  |
-| Adapter focus  | `pytest -m adapter`                        | ~160   | ~10s  |
-| Single file    | `pytest tests/unit/test_sgf_parser.py`     | varies | <5s   |
+| Unit only | `pytest -m unit` | ~365 | ~20s |
+| Quick feedback | `pytest -m "not (cli or slow or adapter)"` | ~1,000 | ~30s |
+| Pre-commit | `pytest -m "not slow"` | ~1,240 | ~90s |
+| Full CI | `pytest` | ~1,250 | ~3min |
+| Parallel CI | `pytest -n auto` | ~1,250 | ~60s |
+| Adapter focus | `pytest -m adapter` | ~160 | ~10s |
+| Single file | `pytest tests/unit/test_sgf_parser.py` | varies | <5s |
 
 ## Test Organization
 
-```
+```text
 tests/
 ├── conftest.py         # Shared fixtures (tmp_path patterns)
 ├── fixtures/           # Test SGF files
@@ -115,13 +115,13 @@ pytest -n auto -m unit      # Parallel unit tests only
 
 ### Where to Put New Tests
 
-| Test Type           | Location             | Auto-marker                            |
+| Test Type | Location | Auto-marker |
 | ------------------- | -------------------- | -------------------------------------- |
-| Pure function tests | `tests/unit/`        | `@pytest.mark.unit` (auto)             |
-| Adapter-specific    | `tests/adapters/`    | Add `pytestmark = pytest.mark.adapter` |
-| Multi-component     | `tests/integration/` | None (add manually if needed)          |
-| CLI subprocess      | `tests/integration/` | Add `pytestmark = pytest.mark.cli`     |
-| Benchmarks          | `tests/integration/` | Add `pytestmark = pytest.mark.slow`    |
+| Pure function tests | `tests/unit/` | `@pytest.mark.unit` (auto) |
+| Adapter-specific | `tests/adapters/` | Add `pytestmark = pytest.mark.adapter` |
+| Multi-component | `tests/integration/` | None (add manually if needed) |
+| CLI subprocess | `tests/integration/` | Add `pytestmark = pytest.mark.cli` |
+| Benchmarks | `tests/integration/` | Add `pytestmark = pytest.mark.slow` |
 
 ### Marking New Test Files
 
@@ -139,15 +139,15 @@ pytestmark = pytest.mark.adapter  # or: [pytest.mark.cli, pytest.mark.slow]
 
 ### When to Apply Markers
 
-| If your test...            | Apply marker  |
+| If your test... | Apply marker |
 | -------------------------- | ------------- |
-| Uses `subprocess.run()`    | `cli`         |
-| Takes >5 seconds           | `slow`        |
-| Tests adapter code         | `adapter`     |
-| Tests inventory code       | `inventory`   |
-| Tests pagination code      | `pagination`  |
-| Tests POSIX path handling  | `posix`       |
-| Runs full pipeline         | `e2e`         |
+| Uses `subprocess.run()` | `cli` |
+| Takes >5 seconds | `slow` |
+| Tests adapter code | `adapter` |
+| Tests inventory code | `inventory` |
+| Tests pagination code | `pagination` |
+| Tests POSIX path handling | `posix` |
+| Runs full pipeline | `e2e` |
 | Touches filesystem heavily | `integration` |
 
 ## CI Configuration
@@ -173,5 +173,7 @@ jobs:
 ## See Also
 
 - [tests/README.md](../../../backend/puzzle_manager/tests/README.md) — Test directory documentation
+
 - [pyproject.toml](../../../backend/puzzle_manager/pyproject.toml) — Marker definitions
+
 - [.github/copilot-instructions.md](../../../.github/copilot-instructions.md) — AI agent guidelines

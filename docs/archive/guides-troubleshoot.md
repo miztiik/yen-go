@@ -17,21 +17,25 @@ This guide covers solutions to common problems in the Yen-Go project.
 **Solutions**:
 
 1. Check current state:
+
    ```bash
    python -m backend.puzzle_manager status
    ```
 
-2. Reset state only (keeps staging files):
+1. Reset state only (keeps staging files):
+
    ```bash
    python -m backend.puzzle_manager clean --target state
    ```
 
-3. Manually remove state file:
+1. Manually remove state file:
+
    ```bash
    rm state/pipeline_state.json
    ```
 
-4. Resume from specific stage:
+1. Resume from specific stage:
+
    ```bash
    python -m backend.puzzle_manager run --stage analyze
    ```
@@ -43,16 +47,19 @@ This guide covers solutions to common problems in the Yen-Go project.
 **Solutions**:
 
 1. Check for failures:
+
    ```bash
    cat .pm-runtime/state/failures/*.json
    ```
 
-2. Resume from last checkpoint:
+1. Resume from last checkpoint:
+
    ```bash
    python -m backend.puzzle_manager run --resume
    ```
 
-3. Review logs for errors:
+1. Review logs for errors:
+
    ```bash
    grep -r "ERROR" .pm-runtime/logs/
    ```
@@ -85,6 +92,7 @@ npm run dev
 ```
 
 If port 5173 is busy:
+
 ```bash
 npm run dev -- --port 5174
 ```
@@ -92,16 +100,19 @@ npm run dev -- --port 5174
 ### Tests Failing
 
 1. Run Vitest for unit tests:
+
    ```bash
    cd frontend && npm test
    ```
 
-2. Run Playwright for e2e tests:
+1. Run Playwright for e2e tests:
+
    ```bash
    npx playwright test
    ```
 
-3. Update snapshots if needed:
+1. Update snapshots if needed:
+
    ```bash
    npx playwright test --update-snapshots
    ```
@@ -109,12 +120,14 @@ npm run dev -- --port 5174
 ### Build Errors
 
 1. Clear cache:
+
    ```bash
    rm -rf node_modules/.vite
    npm run build
    ```
 
-2. Check TypeScript errors:
+1. Check TypeScript errors:
+
    ```bash
    npx tsc --noEmit
    ```
@@ -126,7 +139,7 @@ npm run dev -- --port 5174
 **Why This Happens**: The production build uses absolute paths (`/yen-go/assets/...`) that only work when served via HTTP, not from the filesystem.
 
 | Method | Protocol | Works? |
-|--------|----------|--------|
+| -------- | ---------- | -------- |
 | Double-click index.html | `file://` | ❌ No |
 | `npm run preview` | `http://localhost:4173` | ✅ Yes |
 | GitHub Pages | `https://...github.io/yen-go/` | ✅ Yes |
@@ -141,6 +154,7 @@ npm run preview
 ```
 
 Or use the combined command:
+
 ```bash
 npm run build:preview
 ```
@@ -164,25 +178,33 @@ For GitHub Actions troubleshooting, see the dedicated [GitHub Actions Reference]
 **Solutions**:
 
 1. Validate JSON syntax:
+
    ```bash
    python -m json.tool config/tags.json
    ```
 
-2. Check required fields:
+1. Check required fields:
+
    - `tags` array must exist
+
    - `aliases` map tags to canonical names
 
 ### Invalid puzzle-levels.json
 
 1. Verify 9-level system (novice → expert)
-2. Check level IDs are sequential 1-9
-3. Verify rank ranges don't overlap
+
+1. Check level IDs are sequential 1-9
+
+1. Verify rank ranges don't overlap
 
 ### Logging Not Working
 
 1. Check `config/logging.json` exists
-2. Verify log directory is writable
-3. Set log level explicitly:
+
+1. Verify log directory is writable
+
+1. Set log level explicitly:
+
    ```bash
    export YENGO_LOG_LEVEL=DEBUG
    ```
@@ -194,36 +216,43 @@ For GitHub Actions troubleshooting, see the dedicated [GitHub Actions Reference]
 ### SGF Files Won't Parse
 
 1. Validate SGF syntax:
+
    ```bash
    yengo-pm puzzle validate --file puzzle.sgf
    ```
 
-2. Check for encoding issues (should be UTF-8)
+1. Check for encoding issues (should be UTF-8)
 
-3. Verify SGF properties:
+1. Verify SGF properties:
+
    - Must have `SZ[]` (board size)
+
    - Must have `AB[]` or `AW[]` (stones)
+
    - Must have solution tree
 
 ### Source Connection Failures
 
 1. Test source connection:
+
    ```bash
    yengo-pm sources test my-source
    ```
 
-2. Check rate limits - some sources need 60s+ delays
+1. Check rate limits - some sources need 60s+ delays
 
-3. Verify API endpoints are accessible
+1. Verify API endpoints are accessible
 
 ### Batch Processing Stops Mid-way
 
 1. Use `--resume` to continue:
+
    ```bash
    yengo-pm ingest --source my-source --resume
    ```
 
-2. Check checkpoint file:
+1. Check checkpoint file:
+
    ```bash
    cat state/adapters/my-source_checkpoint.json
    ```
@@ -235,6 +264,7 @@ For GitHub Actions troubleshooting, see the dedicated [GitHub Actions Reference]
 ### Python Version Mismatch
 
 Requires Python 3.11+:
+
 ```bash
 python --version
 ```
@@ -249,6 +279,7 @@ pip install -e .
 ### Node.js Version Issues
 
 Frontend requires Node.js 18+:
+
 ```bash
 node --version
 ```
@@ -260,7 +291,9 @@ node --version
 ### Rollback Not Finding Puzzles
 
 1. Verify run ID format (e.g., `2026-01-25T120000`)
-2. Check publish logs exist:
+
+1. Check publish logs exist:
+
    ```bash
    yengo-pm publish-log list
    ```
@@ -268,6 +301,7 @@ node --version
 ### Indexes Not Regenerating
 
 After rollback, manually trigger:
+
 ```bash
 yengo-pm pipeline run --stage index
 ```
@@ -303,7 +337,7 @@ yengo-pm cleanup --help
 ### Environment Variables
 
 | Variable | Description | Default |
-|----------|-------------|---------|
+| ---------- | ------------- | --------- |
 | `YENGO_CONFIG` | Config file path | `config/pipeline.json` |
 | `YENGO_LOG_LEVEL` | Log level | `INFO` |
 | `YENGO_MOCK_SOLVER` | Use mock solver | `0` |
@@ -314,6 +348,9 @@ yengo-pm cleanup --help
 ## See Also
 
 - [guides/rollback.md](rollback.md) - Rollback published puzzles
+
 - [reference/puzzle-manager-cli.md](../reference/puzzle-manager-cli.md) - CLI reference
+
 - [architecture/backend/testing.md](../architecture/backend/testing.md) - Test patterns
+
 - [getting-started/develop.md](../getting-started/develop.md) - Developer setup

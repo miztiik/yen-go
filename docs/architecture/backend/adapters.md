@@ -3,6 +3,7 @@
 > **See also**:
 >
 > - [How-To: Create Adapter](../../how-to/backend/create-adapter.md) — Step-by-step guide
+>
 > - [Reference: Adapter Configs](../../reference/adapters/) — Per-adapter configuration
 
 **Last Updated**: 2026-04-12
@@ -16,20 +17,22 @@ Adapters fetch puzzles from various sources into the pipeline.
 Adapters are the bridge between external puzzle sources and the YenGo pipeline. Each adapter:
 
 - Connects to a specific puzzle source (file system, API, web scraper)
+
 - Fetches puzzles in batches
+
 - Returns normalized `FetchResult` objects for pipeline processing
 
 ---
 
 ## Core Principles
 
-| Principle                 | Description                                                |
+| Principle | Description |
 | ------------------------- | ---------------------------------------------------------- |
-| **Single Responsibility** | One adapter per source type                                |
-| **Protocol Compliance**   | All adapters implement `BaseAdapter` or `ResumableAdapter` |
-| **Deterministic Output**  | Same input → identical output (no random elements)         |
-| **Config via JSON**       | No hardcoded level mappings or source URLs                 |
-| **Graceful Failure**      | Never raise from `fetch()`; yield `FetchResult.failed()`   |
+| **Single Responsibility** | One adapter per source type |
+| **Protocol Compliance** | All adapters implement `BaseAdapter` or `ResumableAdapter` |
+| **Deterministic Output** | Same input → identical output (no random elements) |
+| **Config via JSON** | No hardcoded level mappings or source URLs |
+| **Graceful Failure** | Never raise from `fetch()`; yield `FetchResult.failed()` |
 
 ---
 
@@ -37,7 +40,7 @@ Adapters are the bridge between external puzzle sources and the YenGo pipeline. 
 
 All adapters live in subdirectories under `backend/puzzle_manager/adapters/`:
 
-```
+```text
 backend/puzzle_manager/adapters/
 ├── __init__.py
 ├── _base.py            # BaseAdapter / ResumableAdapter protocols
@@ -166,24 +169,24 @@ Adapters are configured in `backend/puzzle_manager/config/sources.json`:
 
 ## Built-in Adapter Patterns
 
-| Pattern                            | Type        | Resume      | Typical Input                 |
+| Pattern | Type | Resume | Typical Input |
 | ---------------------------------- | ----------- | ----------- | ----------------------------- |
-| `local`                            | File system | No          | Local SGF directories         |
-| `url`                              | HTTP fetch  | No          | Remote SGF URLs               |
-| Source-specific API adapter        | API         | Usually Yes | Paginated source APIs         |
-| Source-specific scraper adapter    | Scraper     | Varies      | Structured HTML or JSON pages |
-| Source-specific repository adapter | File fetch  | No          | Versioned SGF bundles         |
+| `local` | File system | No | Local SGF directories |
+| `url` | HTTP fetch | No | Remote SGF URLs |
+| Source-specific API adapter | API | Usually Yes | Paginated source APIs |
+| Source-specific scraper adapter | Scraper | Varies | Structured HTML or JSON pages |
+| Source-specific repository adapter | File fetch | No | Versioned SGF bundles |
 
 ---
 
 ## Error Handling
 
-| Error Type       | Behavior                                                    |
+| Error Type | Behavior |
 | ---------------- | ----------------------------------------------------------- |
-| Config Error     | Abort run, exit with error                                  |
-| Network Error    | Retry with exponential backoff, then `FetchResult.failed()` |
-| Parse Error      | `FetchResult.failed()`, log error, continue                 |
-| Validation Error | `FetchResult.skipped()`, log reason, continue               |
+| Config Error | Abort run, exit with error |
+| Network Error | Retry with exponential backoff, then `FetchResult.failed()` |
+| Parse Error | `FetchResult.failed()`, log error, continue |
+| Validation Error | `FetchResult.skipped()`, log reason, continue |
 
 ---
 
@@ -193,7 +196,7 @@ Understanding how puzzle IDs flow through the pipeline is critical for adapter d
 
 ### Pipeline Flow Diagram
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ INGEST STAGE (Adapter)                                                       │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -230,7 +233,7 @@ Understanding how puzzle IDs flow through the pipeline is critical for adapter d
 
 **The publish stage ensures `GN` always matches the filename:**
 
-```
+```text
 Filename: 765f38a5196edb79.sgf
 GN:       GN[YENGO-765f38a5196edb79]
 ```
@@ -238,7 +241,9 @@ GN:       GN[YENGO-765f38a5196edb79]
 This is critical for:
 
 - **Rollback**: Can locate file by GN property
+
 - **Publish identity**: Content hash maps GN and filename
+
 - **Frontend**: Can construct URL from GN value
 
 Ingest duplicate detection is separate and position-hash based (`SZ`, `AB`, `AW`, `PL`) with source-aware bypass for cross-source matches.
@@ -248,10 +253,13 @@ Ingest duplicate detection is separate and position-hash based (`SZ`, `AB`, `AW`
 Adapters only need to:
 
 1. Generate a **unique puzzle_id** for the batch (any format)
-2. Return valid SGF content
+
+1. Return valid SGF content
 
 Adapters do **NOT** need to:
 
 - Generate YENGO-format IDs (publish stage handles this)
+
 - Set GN property correctly (publish stage overwrites it)
+
 - Worry about final filename (determined by content hash)

@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Architecture: Adapters](../../architecture/backend/adapters.md) — Adapter design
+>
 > - [Reference: Adapter Configs](../../reference/adapters/) — Per-adapter configuration
+>
 > - [CLI Reference](./cli-reference.md) — Pipeline commands
 
 **Last Updated**: 2026-02-01
@@ -17,7 +19,9 @@ Step-by-step guide for creating custom adapters to import puzzles from new sourc
 Adapters are the bridge between external puzzle sources and the YenGo pipeline. Each adapter:
 
 - Connects to a specific puzzle source (file system, API, web scraper)
+
 - Fetches puzzles in batches
+
 - Returns normalized puzzle data for pipeline processing
 
 ---
@@ -25,10 +29,14 @@ Adapters are the bridge between external puzzle sources and the YenGo pipeline. 
 ## Quick Start
 
 1. Create a new adapter directory in `backend/puzzle_manager/adapters/`
-2. Implement the `BaseAdapter` protocol
-3. Register with `@register_adapter` decorator
-4. Add source configuration in `config/sources.json`
-5. Test with `python -m backend.puzzle_manager run --source my-source --batch-size 5`
+
+1. Implement the `BaseAdapter` protocol
+
+1. Register with `@register_adapter` decorator
+
+1. Add source configuration in `config/sources.json`
+
+1. Test with `python -m backend.puzzle_manager run --source my-source --batch-size 5`
 
 ---
 
@@ -36,7 +44,7 @@ Adapters are the bridge between external puzzle sources and the YenGo pipeline. 
 
 All adapters live in subdirectories:
 
-```
+```text
 backend/puzzle_manager/adapters/
 ├── __init__.py
 ├── _base.py            # BaseAdapter protocol
@@ -61,7 +69,6 @@ from backend.puzzle_manager.core.http import HttpClient
 import logging
 
 logger = logging.getLogger("puzzle_manager.adapters.my_source")
-
 
 @register_adapter("my-source")
 class MySourceAdapter(BaseAdapter):
@@ -227,18 +234,22 @@ FetchResult.failed(puzzle_id="puz-003", error="Invalid SGF format")
 ### What Adapters Must Do
 
 1. Generate a **unique `puzzle_id`** for each puzzle (any format works)
-2. Return valid SGF content with basic properties (`FF`, `GM`, `SZ`)
-3. Return `FetchResult.success(puzzle_id=..., sgf_content=...)`
+
+1. Return valid SGF content with basic properties (`FF`, `GM`, `SZ`)
+
+1. Return `FetchResult.success(puzzle_id=..., sgf_content=...)`
 
 ### What Adapters Should NOT Do
 
 - ❌ Generate YENGO-format IDs (publish stage handles this)
+
 - ❌ Set `GN` property to match any specific format (will be overwritten)
+
 - ❌ Worry about final filename (determined by content hash)
 
 ### How the Pipeline Handles GN
 
-```
+```text
 INGEST:  Adapter returns puzzle_id="my-adapter-123"
          → File saved as: staging/ingest/my-adapter-123.sgf
          → GN property: doesn't matter (can be anything or missing)
@@ -386,11 +397,11 @@ class MySourceAdapter(BaseAdapter):
 
 ## Existing Adapters (Reference)
 
-| Adapter       | Type          | Resume | Notes                    |
+| Adapter | Type | Resume | Notes |
 | ------------- | ------------- | ------ | ------------------------ |
-| `local`       | File system   | No     | Reference implementation |
-| `yengo-source`  | File (GitHub) | No     | yengo-source collection    |
-| `yengo-source` | API           | Yes    | yengo-source          |
+| `local` | File system | No | Reference implementation |
+| `yengo-source` | File (GitHub) | No | yengo-source collection |
+| `yengo-source` | API | Yes | yengo-source |
 
 See [Reference: Adapters](../../reference/adapters/) for configuration details.
 
@@ -400,15 +411,18 @@ See [Reference: Adapters](../../reference/adapters/) for configuration details.
 
 ### Adapter Not Found
 
-```
+```text
 AdapterNotFoundError: Unknown adapter: my-source
 ```
 
 - Ensure `@register_adapter("my-source")` decorator is applied
+
 - Check adapter module is imported in `adapters/__init__.py`
+
 - Verify directory structure matches convention
 
 ### Configuration Errors
 
 - Check `sources.json` has all required fields
+
 - Environment variables (e.g., `${MY_API_KEY}`) must be set

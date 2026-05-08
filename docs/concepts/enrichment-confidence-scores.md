@@ -3,8 +3,11 @@
 > **See also**:
 >
 > - [Concepts: Quality](./quality.md) — YQ property format and quality levels
+>
 > - [Concepts: Technique Detection](./technique-detection.md) — Detector architecture and thresholds
+>
 > - [Architecture: KataGo Enrichment](../architecture/tools/katago-enrichment.md) — Design decisions
+>
 > - [Reference: KataGo Enrichment Config](../reference/katago-enrichment-config.md) — All thresholds
 
 **Last Updated**: 2026-03-22
@@ -16,7 +19,7 @@ The KataGo enrichment pipeline produces confidence scores at **6 different level
 ## Confidence Taxonomy
 
 | # | Enrichment | Confidence Field | Type | Source Model |
-|---|------------|-----------------|------|--------------|
+| --- | ------------ | ----------------- | ------ | -------------- |
 | 1 | Move validation | `ACCEPTED` / `FLAGGED` / `REJECTED` | 3-state enum | `ValidationStatus` |
 | 2 | Difficulty estimation | `"high"` / `"medium"` / `"low"` | String | `DifficultyEstimate.confidence` |
 | 3 | Technique detection | `0.0`–`1.0` per detector | Float | `DetectionResult.confidence` |
@@ -31,7 +34,7 @@ The KataGo enrichment pipeline produces confidence scores at **6 different level
 KataGo analysis is compared against the SGF's correct first move. The result is a three-state enum.
 
 | Status | Meaning | Pipeline effect |
-|--------|---------|-----------------|
+| -------- | --------- | ----------------- |
 | `ACCEPTED` | KataGo agrees the correct move is best | Full enrichment (Tier 3) |
 | `FLAGGED` | Uncertain — KataGo disagrees or low confidence | Partial enrichment (Tier 2), no solution tree |
 | `REJECTED` | KataGo strongly disagrees | Puzzle skipped or marked for review |
@@ -47,7 +50,7 @@ KataGo analysis is compared against the SGF's correct first move. The result is 
 The difficulty estimator assigns a confidence string based on signal availability and agreement.
 
 | Value | Meaning |
-|-------|---------|
+| ------- | --------- |
 | `"high"` | Multiple KataGo signals agree (policy, visits, winrate) |
 | `"medium"` | Partial signal agreement or moderate visit budget |
 | `"low"` | Few signals available or conflicting indicators |
@@ -63,7 +66,7 @@ The difficulty estimator assigns a confidence string based on signal availabilit
 Each of the 28 technique detectors independently outputs a float confidence score.
 
 | Range | Interpretation |
-|-------|----------------|
+| ------- | ---------------- |
 | 0.9–1.0 | Strong board-state evidence + KataGo confirmation |
 | 0.7–0.9 | Board-state pattern detected |
 | 0.5–0.7 | Analysis signals suggest technique |
@@ -81,7 +84,7 @@ Only detections with `detected=True` contribute tags to the final puzzle. The co
 Instinct classification identifies the tactical shape of the first move (push, hane, cut, descent, extend).
 
 | Range | Interpretation |
-|-------|----------------|
+| ------- | ---------------- |
 | 0.7–1.0 | High-confidence shape match |
 | 0.4–0.7 | Moderate confidence |
 | 0.0–0.4 | Low confidence — may not be used |
@@ -97,7 +100,7 @@ Instinct classification identifies the tactical shape of the first move (push, h
 During AI-Solve, each candidate move is classified by its winrate delta (Δwr) from the root position. This uses **delta-based thresholds only** — no absolute winrate gates (DD-6).
 
 | Classification | Condition | Default Threshold | Meaning |
-|---------------|-----------|-------------------|---------|
+| --------------- | ----------- | ------------------- | --------- |
 | `TE` (Tesuji) | Δwr < `t_good` | < 0.05 | Correct move — KataGo confirms |
 | `NEUTRAL` | `t_good` ≤ Δwr < `t_bad` | 0.05–0.15 | Acceptable but not best |
 | `BM` (Bad Move) | `t_bad` ≤ Δwr < `t_hotspot` | 0.15–0.30 | Wrong move — significant loss |
@@ -116,7 +119,7 @@ During AI-Solve, each candidate move is classified by its winrate delta (Δwr) f
 A composite integer score (0–5) summarizing the overall enrichment quality of a puzzle. Computed from refutation count, comment quality, and AI correctness level.
 
 | Score | Name | Criteria |
-|-------|------|----------|
+| ------- | ------ | ---------- |
 | 5 | Premium | ≥3 refutations + teaching comments |
 | 4 | High | ≥2 refutations + teaching comments |
 | 3 | Standard | ≥1 refutation |
@@ -135,7 +138,7 @@ A composite integer score (0–5) summarizing the overall enrichment quality of 
 The pipeline uses three distinct confidence representations:
 
 | Format | Used by | Rationale |
-|--------|---------|-----------|
+| -------- | --------- | ----------- |
 | **Categorical enum** | Move validation, Move quality | Discrete decision boundaries (accept/reject, correct/wrong) |
 | **Ternary string** | Difficulty estimation | Coarse signal reliability indicator |
 | **Float 0.0–1.0** | Technique detection, Instinct classification | Continuous per-detector/per-instinct scoring |

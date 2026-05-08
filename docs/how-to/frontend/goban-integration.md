@@ -8,7 +8,9 @@ This guide explains how to integrate the OGS goban library into a new puzzle pag
 ## Prerequisites
 
 - Node.js 18+
+
 - Frontend dependencies installed (`npm install`)
+
 - Familiarity with Preact hooks
 
 ## Step 1: Create Your Page Component
@@ -91,8 +93,8 @@ const { gobanRef, isReady } = useGoban(
 ### Return Values
 
 | Property | Type | Description |
-|----------|------|-------------|
-| `gobanRef` | `MutableRef<Goban \| null>` | Reference to goban instance |
+| ---------- | ------ | ------------- |
+| `gobanRef` | `MutableRef<Goban or null>` | Reference to goban instance |
 | `isReady` | `boolean` | Whether goban is mounted and ready |
 
 ## Step 3: Use the usePuzzleState Hook
@@ -210,21 +212,27 @@ test('puzzle page matches snapshot', async ({ page }) => {
 ### Goban Not Rendering
 
 1. **Check refs**: Ensure `boardRef` is attached to a visible DOM element
-2. **Check SGF**: Validate SGF string is not empty and parseable
-3. **Check container size**: goban needs non-zero width/height
+
+1. **Check SGF**: Validate SGF string is not empty and parseable
+
+1. **Check container size**: goban needs non-zero width/height
 
 ### Puzzle State Not Updating
 
 1. **Check onGobanReady**: Ensure it's called after `isReady` is true
-2. **Check goban instance**: Ensure `gobanRef.current` is not null
+
+1. **Check goban instance**: Ensure `gobanRef.current` is not null
 
 ### Transform Issues
 
 1. **Key changes**: If transforms don't apply, ensure component re-mounts
-2. **Zoom bounds**: Call `getZoomBounds()` after transforms are applied
+
+1. **Zoom bounds**: Call `getZoomBounds()` after transforms are applied
 
 ## See Also
 
 - [Architecture: Goban Integration](../../architecture/frontend/goban-integration.md) — Design decisions
+
 - [Testing Guide](../../architecture/frontend/testing.md) — Test patterns
+
 - [Puzzle Solving Architecture](../../architecture/frontend/puzzle-solving.md) — Solving lifecycle

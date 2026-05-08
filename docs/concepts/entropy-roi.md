@@ -15,25 +15,32 @@ where $p = \frac{\text{ownership} + 1}{2}$ maps KataGo ownership $[-1, 1]$ to $[
 ## How It Works
 
 1. KataGo returns per-intersection ownership values after analysis
-2. Each value is mapped to a probability and its binary entropy computed
-3. Intersections with entropy above a threshold (default 0.5) are "contested"
-4. The bounding box of contested intersections defines the ROI
-5. ROI coordinates are used as `allowMoves` for focused queries
+
+1. Each value is mapped to a probability and its binary entropy computed
+
+1. Intersections with entropy above a threshold (default 0.5) are "contested"
+
+1. The bounding box of contested intersections defines the ROI
+
+1. ROI coordinates are used as `allowMoves` for focused queries
 
 ## Fallback Chain
 
 1. **Frame + ROI** — primary: tsumego frame applied, ROI restricts queries
-2. **ROI only** — if frame fails, use ROI from ownership analysis
-3. **Bounding box** — if no ownership data, use `Position.get_puzzle_region_moves()`
+
+1. **ROI only** — if frame fails, use ROI from ownership analysis
+
+1. **Bounding box** — if no ownership data, use `Position.get_puzzle_region_moves()`
 
 ## Configuration
 
 | Key | Default | Description |
-|-----|---------|-------------|
+| ----- | --------- | ------------- |
 | `frame.entropy_quality_check.enabled` | `true` | Enable ownership-based frame validation |
 | `frame.entropy_quality_check.variance_threshold` | `0.15` | Max acceptable ownership variance |
 
 > **See also**:
 >
 > - [How-To: KataGo Enrichment Lab](../how-to/tools/katago-enrichment-lab.md) — Pipeline stage changes
+>
 > - [Reference: KataGo Enrichment Config](../reference/katago-enrichment-config.md) — Full config reference

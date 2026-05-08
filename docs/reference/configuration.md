@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Architecture: Backend Overview](../architecture/backend/README.md) — Config consumers and boundaries
+>
 > - [How-To: Configure Sources](../how-to/backend/configure-sources.md) — Operator workflow
+>
 > - [Concepts: Tags](../concepts/tags.md) — Shared taxonomy definitions
 
 **Last Updated**: 2026-05-06
@@ -21,14 +23,14 @@ Complete reference for Yen-Go configuration files.
 Configuration follows a **global vs local** split to maintain Single Source of Truth:
 
 | Scope | Location | Purpose |
-|-------|----------|--------|
+| ------- | ---------- | -------- |
 | **Global** | `config/` (repository root) | Shared across all components (frontend, backend, tools) |
 | **Local** | `backend/puzzle_manager/config/` | Puzzle manager specific settings |
 
 ### Global Configuration Files (`config/`)
 
 | File | Purpose |
-|------|---------|
+| ------ | --------- |
 | `puzzle-levels.json` | 9-level difficulty system (shared) |
 | **`tags.json`** | **Technique tags and aliases (Single Source of Truth)** |
 | `logging.json` | Centralized logging configuration |
@@ -37,7 +39,7 @@ Configuration follows a **global vs local** split to maintain Single Source of T
 ### Local Configuration Files (`backend/puzzle_manager/config/`)
 
 | File | Purpose |
-|------|---------|
+| ------ | --------- |
 | `pipeline.json` | Pipeline settings (batch size, retention) |
 | `sources.json` | Puzzle source definitions |
 | `puzzle-levels.json` | Local copy of level definitions |
@@ -73,7 +75,7 @@ Defines the 9-level difficulty system.
 ### Level Mapping
 
 | ID | Name | Display | Rank Range |
-|----|------|---------|------------|
+| ---- | ------ | --------- | ------------ |
 | 1 | novice | Novice | DDK30-DDK25 |
 | 2 | beginner | Beginner | DDK25-DDK20 |
 | 3 | basic | Basic | DDK20-DDK15 |
@@ -147,7 +149,7 @@ Centralized logging configuration.
 ### Log Levels
 
 | Level | Usage |
-|-------|-------|
+| ------- | ------- |
 | DEBUG | Detailed diagnostic info |
 | INFO | Normal operation events |
 | WARNING | Unexpected but handled |
@@ -156,7 +158,7 @@ Centralized logging configuration.
 
 ### Log Directories
 
-```
+```text
 logs/
 ├── puzzle_manager/
 │   ├── puzzle_manager.log
@@ -199,7 +201,7 @@ Tracks puzzle collection statistics and metrics.
 ### Update Triggers
 
 | Operation | Action |
-|-----------|--------|
+| ----------- | -------- |
 | `publish` | Increments collection counts |
 | `rollback` | Decrements counts, increments `audit.total_rollbacks` |
 | `--rebuild` | Reconstructs from publish logs |
@@ -236,7 +238,7 @@ Puzzle manager local configuration:
 ### Solve Options
 
 | Option | Default | Description |
-|--------|---------|-------------|
+| -------- | --------- | ------------- |
 | `solver` | "katago" | Primary solver |
 | `fallback_solver` | "yengo-source" | Fallback solver |
 | `skip_on_unavailable` | true | Skip if no solver |
@@ -271,7 +273,7 @@ Puzzle source definitions:
 ### Source Fields
 
 | Field | Required | Description |
-|-------|----------|-------------|
+| ------- | ---------- | ------------- |
 | `name` | Yes | Display name |
 | `adapter` | Yes | Ingester type |
 | `path` | Varies | Path to files |
@@ -306,7 +308,7 @@ Configuration for importing from yengo-source:
 #### Source Configuration Options
 
 | Option | Default | Description |
-|--------|---------|-------------|
+| -------- | --------- | ------------- |
 | `base_url` | `https://example.com/api/v1` | Source API base URL |
 | `puzzles_endpoint` | `/puzzles/` | Puzzles endpoint path |
 | `batch_size` | 50 | Puzzles per page request |
@@ -322,7 +324,7 @@ Configuration for importing from yengo-source:
 #### yengo-source Runtime Options (CLI)
 
 | Option | Type | Description |
-|--------|------|-------------|
+| -------- | ------ | ------------- |
 | `puzzle_id` | int | Single puzzle ID to import |
 | `puzzle_type` | str | Filter: life_and_death, tesuji, fuseki, joseki, endgame, best_move |
 | `collection_id` | int | Filter by collection ID |
@@ -334,7 +336,7 @@ Configuration for importing from yengo-source:
 #### yengo-source Type to YenGo Tag Mapping
 
 | yengo-source Type | YenGo Tag |
-|----------|-----------|
+| ---------- | ----------- |
 | life_and_death | life-and-death |
 | tesuji | tesuji |
 | fuseki | opening |
@@ -355,11 +357,15 @@ python -m backend.puzzle_manager run --source yengo-source --transform-only
 ```
 
 **Checkpoint Files**:
+
 - `.pm-runtime/state/ogs_fetch_checkpoint.json` - Tracks fetched pages/puzzles
+
 - `.pm-runtime/state/ogs_transform_checkpoint.json` - Tracks transformed files
 
 **Runtime Directories**:
+
 - `.pm-runtime/raw/yengo-source/` - Raw JSON puzzle data
+
 - `.pm-runtime/staging/yengo-source/{level}/` - Generated SGF files
 
 ---
@@ -369,7 +375,7 @@ python -m backend.puzzle_manager run --source yengo-source --transform-only
 Override configuration via environment:
 
 | Variable | Description | Default |
-|----------|-------------|---------|
+| ---------- | ------------- | --------- |
 | `YENGO_CONFIG` | Config file path | `config/pipeline.json` |
 | `YENGO_LOG_LEVEL` | Log level override | `INFO` |
 | `YENGO_MOCK_SOLVER` | Use mock solver | `0` |
@@ -406,7 +412,7 @@ Located in `config/schemas/sgf-properties.schema.json`:
 ### Y* Properties
 
 | Property | Example | Description |
-|----------|---------|-------------|
+| ---------- | --------- | ------------- |
 | `YV[1]` | Version | Format version |
 | `YG[beginner:2]` | Level | Difficulty level |
 | `YT[ko,snapback]` | Tags | Technique tags |
@@ -456,5 +462,7 @@ python -m json.tool config/tags.json
 ## See Also
 
 - [architecture/backend/sgf.md](../architecture/backend/sgf.md) - SGF design decisions
+
 - [reference/technique-tags.md](technique-tags.md) - Tag reference
+
 - [reference/puzzle-manager-cli.md](puzzle-manager-cli.md) - CLI reference

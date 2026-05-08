@@ -3,8 +3,11 @@
 > **See also**:
 >
 > - [Architecture: Frontend Overview](./overview.md) — Technology stack
+>
 > - [Architecture: Frontend Structure](./structure.md) — Directory layout
+>
 > - [How-To: SolverView Usage](../../how-to/frontend/solver-view.md) — Integration guide
+>
 > - [Concepts: Go Tips](../../concepts/go-tips.md) — Tip system schema
 
 **Last Updated**: 2026-02-11
@@ -13,7 +16,7 @@
 
 ## Component Hierarchy
 
-```
+```text
 App
 ├── AppHeader (scrolls with content, flex-shrink-0)
 │   ├── YenGoLogo
@@ -40,7 +43,7 @@ App
 
 ## Boot Sequence
 
-```
+```text
 main.tsx
   ↓
 boot() — parallel fetch of 3 configs:
@@ -58,12 +61,12 @@ App renders with <BootScreens> wrapper
 
 ### Boot State Machine
 
-| State     | UI                                | Transition                   |
+| State | UI | Transition |
 | --------- | --------------------------------- | ---------------------------- |
-| `idle`    | Nothing                           | → `loading` on `boot()` call |
-| `loading` | `GoTipDisplay` + `SkeletonLayout` | → `ready` or `error`         |
-| `ready`   | Full app                          | Terminal                     |
-| `error`   | `BootError` with retry            | → `loading` on retry         |
+| `idle` | Nothing | → `loading` on `boot()` call |
+| `loading` | `GoTipDisplay` + `SkeletonLayout` | → `ready` or `error` |
+| `ready` | Full app | Terminal |
+| `error` | `BootError` with retry | → `loading` on retry |
 
 ---
 
@@ -98,9 +101,9 @@ App renders with <BootScreens> wrapper
 
 ### Responsive Behavior
 
-| Viewport          | Layout                      | Sidebar        |
+| Viewport | Layout | Sidebar |
 | ----------------- | --------------------------- | -------------- |
-| < 768px (mobile)  | Single column, stacked      | Below board    |
+| < 768px (mobile) | Single column, stacked | Below board |
 | ≥ 768px (desktop) | Two-column grid (65fr/35fr) | Right of board |
 
 ---
@@ -109,7 +112,7 @@ App renders with <BootScreens> wrapper
 
 `SolverView` is the central puzzle-solving component:
 
-```
+```text
 SolverView (props: sgf, level, onComplete, onNext, onSkip)
   ├── useGoban()         → goban library integration
   ├── usePuzzleState()   → move validation, solution tracking
@@ -124,13 +127,13 @@ SolverView (props: sgf, level, onComplete, onNext, onSkip)
 
 ### Data Attributes
 
-| Attribute                          | Element          | Values                                    |
+| Attribute | Element | Values |
 | ---------------------------------- | ---------------- | ----------------------------------------- |
-| `data-component="solver-view"`     | Root div         | —                                         |
-| `data-status`                      | Root div         | `waiting`, `correct`, `wrong`, `complete` |
-| `data-component="hint-overlay"`    | Hint section     | —                                         |
-| `data-component="solution-reveal"` | Solution section | —                                         |
-| `data-component="move-explorer"`   | Explorer section | —                                         |
+| `data-component="solver-view"` | Root div | — |
+| `data-status` | Root div | `waiting`, `correct`, `wrong`, `complete` |
+| `data-component="hint-overlay"` | Hint section | — |
+| `data-component="solution-reveal"` | Solution section | — |
+| `data-component="move-explorer"` | Explorer section | — |
 
 ---
 
@@ -138,11 +141,11 @@ SolverView (props: sgf, level, onComplete, onNext, onSkip)
 
 The progressive hint system follows a **vague → precise** pedagogical funnel:
 
-| Level | Source                                | Visual                       | Pedagogical Purpose                                  |
+| Level | Source | Visual | Pedagogical Purpose |
 | ----- | ------------------------------------- | ---------------------------- | ---------------------------------------------------- |
-| 1     | `YH` property text (1st pipe segment) | `💡 {text}` overlay          | Guides **thinking** — describes technique or concept |
-| 2     | Computed from correct move coordinate | "Look at the {quadrant}"     | Narrows **spatial search** (361 → ~90 intersections) |
-| 3     | Exact correct move coordinate         | Green circle marker on board | **Last resort** — reveals precise location           |
+| 1 | `YH` property text (1st pipe segment) | `💡 {text}` overlay | Guides **thinking** — describes technique or concept |
+| 2 | Computed from correct move coordinate | "Look at the {quadrant}" | Narrows **spatial search** (361 → ~90 intersections) |
+| 3 | Exact correct move coordinate | Green circle marker on board | **Last resort** — reveals precise location |
 
 **Fallback behavior**: If a puzzle has no `YH` data, the system skips directly to coordinate marker (Level 3) as the sole hint. If `YH` has only 1 entry, levels compress proportionally.
 
@@ -155,35 +158,39 @@ The progressive hint system follows a **vague → precise** pedagogical funnel:
 **Tailwind CSS v4** is the sole styling approach:
 
 - All component styles use Tailwind utility classes
+
 - CSS custom properties defined in `app.css` `@theme` block for token values
+
 - Board/SVG styles merged into `app.css` (formerly separate CSS files)
+
 - No inline `style={}` except for dynamic values (e.g., `fontSize` from props)
+
 - Color tokens: `--color-accent`, `--color-bg-primary`, `--color-text-muted`, etc.
 
 ### Token Reference
 
-| Token                  | Usage                                 |
+| Token | Usage |
 | ---------------------- | ------------------------------------- |
-| `--color-accent`       | Primary action color (buttons, links) |
-| `--color-bg-primary`   | Main background                       |
-| `--color-bg-secondary` | Card/section background               |
-| `--color-text-primary` | Headings, important text              |
-| `--color-text-muted`   | Secondary text, labels                |
-| `--color-success`      | Correct answers, positive             |
-| `--color-error`        | Wrong answers, errors                 |
-| `--color-warning`      | Caution states                        |
+| `--color-accent` | Primary action color (buttons, links) |
+| `--color-bg-primary` | Main background |
+| `--color-bg-secondary` | Card/section background |
+| `--color-text-primary` | Headings, important text |
+| `--color-text-muted` | Secondary text, labels |
+| `--color-success` | Correct answers, positive |
+| `--color-error` | Wrong answers, errors |
+| `--color-warning` | Caution states |
 
 ---
 
 ## State Management
 
-| Concern      | Mechanism                                | Persistence                   |
+| Concern | Mechanism | Persistence |
 | ------------ | ---------------------------------------- | ----------------------------- |
-| Settings     | `useSettings()` hook + `@preact/signals` | `localStorage:yengo:settings` |
-| Boot configs | `getBootConfigs()` singleton             | Memory (re-fetched on boot)   |
-| Route        | `useState` + `history.pushState`         | URL                           |
-| Puzzle state | `usePuzzleState()` per-puzzle            | Memory                        |
-| Progress     | `localStorage` direct                    | `localStorage`                |
+| Settings | `useSettings()` hook + `@preact/signals` | `localStorage:yengo:settings` |
+| Boot configs | `getBootConfigs()` singleton | Memory (re-fetched on boot) |
+| Route | `useState` + `history.pushState` | URL |
+| Puzzle state | `usePuzzleState()` per-puzzle | Memory |
+| Progress | `localStorage` direct | `localStorage` |
 
 ---
 

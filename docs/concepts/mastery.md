@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Concepts: Levels](./levels.md) — Difficulty level system
+>
 > - [Concepts: Quality](./quality.md) — Puzzle quality metrics
+>
 > - [Source Code: lib/mastery.ts](../../frontend/src/lib/mastery.ts) — Implementation
 
 **Last Updated**: 2026-02-24
@@ -18,7 +20,7 @@ YenGo uses an **accuracy-based mastery system** to track user skill progression 
 
 Mastery is based on **accuracy** (how well you solve puzzles), not just **completion** (how many you've seen).
 
-```
+```text
 accuracy = (correct / attempted) × 100
 ```
 
@@ -28,14 +30,14 @@ This ensures users who rush through puzzles incorrectly don't appear "mastered" 
 
 ## Mastery Levels
 
-| Level | Slug         | Display Label | Criteria                         |
+| Level | Slug | Display Label | Criteria |
 | ----- | ------------ | ------------- | -------------------------------- |
-| 1     | `new`        | Begin         | 0 attempts                       |
-| 2     | `started`    | Continue      | 1-4 attempts (insufficient data) |
-| 3     | `learning`   | Learning      | <50% accuracy                    |
-| 4     | `practiced`  | Practiced     | 50-69% accuracy                  |
-| 5     | `proficient` | Proficient    | 70-84% accuracy                  |
-| 6     | `mastered`   | Mastered      | ≥85% accuracy + volume threshold |
+| 1 | `new` | Begin | 0 attempts |
+| 2 | `started` | Continue | 1-4 attempts (insufficient data) |
+| 3 | `learning` | Learning | <50% accuracy |
+| 4 | `practiced` | Practiced | 50-69% accuracy |
+| 5 | `proficient` | Proficient | 70-84% accuracy |
+| 6 | `mastered` | Mastered | ≥85% accuracy + volume threshold |
 
 ---
 
@@ -66,14 +68,16 @@ VOLUME_THRESHOLDS = {
 **Mastery volume rule**: `min(10, ceil(total × 0.5))`
 
 - If 20 puzzles available → need ≥10 solved
+
 - If 6 puzzles available → need ≥3 solved (50%)
+
 - If 100 puzzles available → need ≥10 solved (capped)
 
 ---
 
 ## Algorithm
 
-```
+```text
 getMasteryFromAccuracy(accuracy, attempted, total):
   if attempted == 0         → 'new'
   if attempted < 5          → 'started'
@@ -126,11 +130,11 @@ Legacy completion-based calculation. Use `getMasteryFromAccuracy` instead.
 
 ## Usage by Page
 
-| Page            | Data Source                      | How Accuracy Is Computed             |
+| Page | Data Source | How Accuracy Is Computed |
 | --------------- | -------------------------------- | ------------------------------------ |
-| **Training**    | `TrainingProgress.byLevel[slug]` | `levelProgress.accuracy` (stored)    |
-| **Collections** | `CollectionProgressSummary`      | Default 100% (no accuracy field yet) |
-| **Technique**   | `TechniqueStats`                 | `(correct / attempted) × 100`        |
+| **Training** | `TrainingProgress.byLevel[slug]` | `levelProgress.accuracy` (stored) |
+| **Collections** | `CollectionProgressSummary` | Default 100% (no accuracy field yet) |
+| **Technique** | `TechniqueStats` | `(correct / attempted) × 100` |
 
 ### Training Example
 
@@ -167,14 +171,14 @@ const masteryLevel = getMasteryFromAccuracy(
 
 Each mastery level has distinct styling via `getMasteryStyle()` in the consuming components:
 
-| Level        | Background              | Text Color                  |
+| Level | Background | Text Color |
 | ------------ | ----------------------- | --------------------------- |
-| `new`        | var(--color-bg-soft)    | var(--color-text-secondary) |
-| `started`    | Semi-transparent accent | var(--color-accent-text)    |
-| `learning`   | Red tint                | Dark red                    |
-| `practiced`  | Yellow tint             | Dark yellow                 |
-| `proficient` | Green tint              | Dark green                  |
-| `mastered`   | Accent gradient         | White                       |
+| `new` | var(--color-bg-soft) | var(--color-text-secondary) |
+| `started` | Semi-transparent accent | var(--color-accent-text) |
+| `learning` | Red tint | Dark red |
+| `practiced` | Yellow tint | Dark yellow |
+| `proficient` | Green tint | Dark green |
+| `mastered` | Accent gradient | White |
 
 ---
 
@@ -183,19 +187,25 @@ Each mastery level has distinct styling via `getMasteryStyle()` in the consuming
 ### Why Accuracy-Based?
 
 1. **Skill matters more than volume** — Solving 100 puzzles at 40% accuracy shouldn't outrank 20 at 90%
-2. **Prevents rushing** — Users can't just click through to "complete" a level
-3. **Meaningful feedback** — "Learning" vs "Mastered" tells users their actual skill level
+
+1. **Prevents rushing** — Users can't just click through to "complete" a level
+
+1. **Meaningful feedback** — "Learning" vs "Mastered" tells users their actual skill level
 
 ### Why Volume Thresholds?
 
 1. **Statistical significance** — 2 correct out of 2 (100%) shouldn't mean "mastered"
-2. **Prevents gaming** — Can't cherry-pick easy puzzles to inflate mastery
-3. **Fair comparison** — Mastery means "demonstrated competence over meaningful sample"
+
+1. **Prevents gaming** — Can't cherry-pick easy puzzles to inflate mastery
+
+1. **Fair comparison** — Mastery means "demonstrated competence over meaningful sample"
 
 ### Why 5/10 as Minimums?
 
 - **5 minimum for judgment**: Enough attempts to distinguish skill from luck
+
 - **10 minimum for mastery**: Standard "order of magnitude" for confidence
+
 - **50% of total fallback**: For small pools (e.g., 6 ko puzzles), require half coverage
 
 ---
@@ -203,5 +213,7 @@ Each mastery level has distinct styling via `getMasteryStyle()` in the consuming
 ## Future Enhancements
 
 - [ ] Add accuracy tracking to Collections (`CollectionProgressSummary.accuracy`)
+
 - [ ] Decay mastery over time (spaced repetition)
+
 - [ ] Per-technique accuracy in Training (currently aggregated by level)

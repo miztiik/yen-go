@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Concepts: SGF Properties](./sgf-properties.md) — YG property format
+>
 > - [Concepts: Mastery](./mastery.md) — User progress tracking per level
+>
 > - [Reference: Levels Config](../../config/puzzle-levels.json) — Canonical definitions
 
 **Last Updated**: 2026-02-10
@@ -16,17 +18,17 @@ YenGo uses a 9-level difficulty system mapping to Go ranks.
 
 ## Level System
 
-| Level | Slug                 | Display Name       | Rank Range | Description                   |
+| Level | Slug | Display Name | Rank Range | Description |
 | ----- | -------------------- | ------------------ | ---------- | ----------------------------- |
-| 1     | `novice`             | Novice             | 30k-26k    | First puzzles, basic captures |
-| 2     | `beginner`           | Beginner           | 25k-21k    | Simple tactics                |
-| 3     | `elementary`         | Elementary         | 20k-16k    | Common patterns               |
-| 4     | `intermediate`       | Intermediate       | 15k-11k    | Multi-step sequences          |
-| 5     | `upper-intermediate` | Upper Intermediate | 10k-6k     | Complex reading               |
-| 6     | `advanced`           | Advanced           | 5k-1k      | Deep calculations             |
-| 7     | `low-dan`            | Low Dan            | 1d-3d      | Professional patterns         |
-| 8     | `high-dan`           | High Dan           | 4d-6d      | Master techniques             |
-| 9     | `expert`             | Expert             | 7d-9d      | Professional level            |
+| 1 | `novice` | Novice | 30k-26k | First puzzles, basic captures |
+| 2 | `beginner` | Beginner | 25k-21k | Simple tactics |
+| 3 | `elementary` | Elementary | 20k-16k | Common patterns |
+| 4 | `intermediate` | Intermediate | 15k-11k | Multi-step sequences |
+| 5 | `upper-intermediate` | Upper Intermediate | 10k-6k | Complex reading |
+| 6 | `advanced` | Advanced | 5k-1k | Deep calculations |
+| 7 | `low-dan` | Low Dan | 1d-3d | Professional patterns |
+| 8 | `high-dan` | High Dan | 4d-6d | Master techniques |
+| 9 | `expert` | Expert | 7d-9d | Professional level |
 
 ---
 
@@ -74,9 +76,12 @@ else:
 When no source level is available, the enricher computes level from:
 
 1. **Solution depth** (YX.d) — longer = harder
-2. **Reading count** (YX.r) — more variations = harder
-3. **Stone count** (YX.s) — context for depth
-4. **Uniqueness** (YX.u) — miai = slightly easier
+
+1. **Reading count** (YX.r) — more variations = harder
+
+1. **Stone count** (YX.s) — context for depth
+
+1. **Uniqueness** (YX.u) — miai = slightly easier
 
 ### Rank-to-Level Mapping
 
@@ -127,12 +132,12 @@ def rank_to_level(rank: str) -> str:
 
 ### Key Fields
 
-| Field      | Description           |
+| Field | Description |
 | ---------- | --------------------- |
-| `id`       | Numeric level (1-9)   |
-| `slug`     | URL-safe identifier   |
-| `name`     | Display name          |
-| `rank_min` | Lowest rank in range  |
+| `id` | Numeric level (1-9) |
+| `slug` | URL-safe identifier |
+| `name` | Display name |
+| `rank_min` | Lowest rank in range |
 | `rank_max` | Highest rank in range |
 
 ---
@@ -190,13 +195,17 @@ The pipeline automatically migrates old format during enrichment.
 ### Why Slugs Over Numbers?
 
 1. **Readable**: `YG[beginner]` is self-documenting
-2. **Stable**: Adding levels doesn't shift existing values
-3. **Meaningful**: Ranks are subjective; slugs are consistent
+
+1. **Stable**: Adding levels doesn't shift existing values
+
+1. **Meaningful**: Ranks are subjective; slugs are consistent
 
 ### Why 9 Levels?
 
 - Maps cleanly to 30k → 9d rank spectrum
+
 - Enough granularity without overwhelming
+
 - Matches traditional Go rank groupings
 
 ### Why Sublevels?
@@ -214,25 +223,37 @@ The 9-level difficulty system is **permanently frozen**. The level slugs are sta
 ### What "Frozen" Means
 
 - **Level slugs** are permanent identifiers used in SGF paths (`sgf/{level}/batch-{NNNN}/`), YG properties, view indexes, and frontend routing.
+
 - **Display names** (`name`, `shortName`) may be updated for localization without a schema bump.
+
 - **Rank ranges** may be refined if Go ranking conventions change, but slug identifiers remain stable.
+
 - **No levels may be added, removed, or reordered** without a major schema version bump (e.g., v10 → v11).
 
 ### Why Frozen
 
 1. **SGF metadata**: SGF files contain `YG[{slug}]` level property. Changing level slugs requires re-processing all published files.
-2. **Database index integrity**: The SQLite search index (`yengo-search.db`) uses numeric level IDs (e.g., `120`). Adding/removing levels changes the query surface.
-3. **Frontend routing**: Routes like `/contexts/training/{slug}` depend on stable slugs.
-4. **User progress**: Player progress in `localStorage` references level slugs. Changing them would invalidate progress data.
-5. **External references**: GitHub Pages URLs contain level slugs. Changing them would break external links.
+
+1. **Database index integrity**: The SQLite search index (`yengo-search.db`) uses numeric level IDs (e.g., `120`). Adding/removing levels changes the query surface.
+
+1. **Frontend routing**: Routes like `/contexts/training/{slug}` depend on stable slugs.
+
+1. **User progress**: Player progress in `localStorage` references level slugs. Changing them would invalidate progress data.
+
+1. **External references**: GitHub Pages URLs contain level slugs. Changing them would break external links.
 
 ### Changing the Level System
 
 If a future spec requires modifying levels:
 
 1. Create a new spec with explicit migration plan
-2. Bump SGF schema to next major version
-3. Write a migration script
-4. Rebuild database indexes
-5. Provide frontend migration for localStorage data
-6. Document the change in CHANGELOG.md
+
+1. Bump SGF schema to next major version
+
+1. Write a migration script
+
+1. Rebuild database indexes
+
+1. Provide frontend migration for localStorage data
+
+1. Document the change in CHANGELOG.md

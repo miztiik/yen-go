@@ -17,14 +17,16 @@ View Index Segmentation is the backend strategy for generating scalable, paginat
 Segments (page files) are **immutable** once full. New puzzles are only appended to the **last segment**. This provides:
 
 - **Predictable memory usage**: Only one page (500 puzzles) in memory at a time
+
 - **CDN-friendly**: Full segments can be cached indefinitely
+
 - **Crash resilience**: Partial writes only affect the last segment
 
 ### 2. Progressive Structure
 
 Collections start as single files and **automatically migrate** to segmented directories when they exceed the threshold:
 
-```
+```text
 Small collection (≤500):        Large collection (>500):
 views/by-level/beginner.json    views/by-level/intermediate/
                                 ├── index.json
@@ -51,17 +53,23 @@ Segment metadata is persisted to avoid scanning files on every run:
 ```
 
 > **Why not `.pm-runtime/state/`?**
+>
 > - `.pm-runtime/state/` is cleaned up periodically (45-day retention)
+>
 > - Segment state must persist as long as collections exist
+>
 > - Colocated with the views it describes
+>
 > - Git-tracked for recovery and auditability
-```
+
+```text
 
 ---
 
 ## Architecture Diagram
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                           PUBLISH STAGE                                      │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -83,7 +91,8 @@ Segment metadata is persisted to avoid scanning files on every run:
 │                     └─────────────────┘                                      │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
-```
+
+```text
 
 ---
 
@@ -92,6 +101,7 @@ Segment metadata is persisted to avoid scanning files on every run:
 ### Append Flow (Normal Operation)
 
 ```
+
 New Puzzles (100)
        │
        ▼
@@ -136,13 +146,15 @@ New Puzzles (100)
          │ Update master │
          │ index         │
          └───────────────┘
-```
+
+```text
 
 ### Structure Transition (Single → Segmented)
 
 When a level exceeds the threshold, the system transitions from single-file to segmented structure:
 
 ```
+
 Single File (480 puzzles)
          │
          ▼
@@ -173,7 +185,8 @@ Add 100 puzzles → Total 580 > Threshold (500)
 │ 4. Delete single file       │
 │ 5. Update state             │
 └─────────────────────────────┘
-```
+
+```text
 
 > **Note**: No complex migration logic needed. Pipeline is single-threaded, so no race conditions. Existing flat indexes will simply be replaced when this feature is deployed.
 
@@ -183,7 +196,8 @@ Add 100 puzzles → Total 580 > Threshold (500)
 
 ### Master Index (`views/by-level/index.json`)
 
-```json
+```
+
 {
   "version": "1.0",
   "generated_at": "2026-02-01T10:30:00Z",
@@ -201,22 +215,26 @@ Add 100 puzzles → Total 580 > Threshold (500)
     }
   ]
 }
-```
+
+```text
 
 ### Segment Metadata (`views/by-level/intermediate/index.json`)
 
-```json
+```
+
 {
   "level": "intermediate",
   "total_count": 1250,
   "page_size": 500,
   "pages": 3
 }
-```
+
+```text
 
 ### Segment Page (`views/by-level/intermediate/page-001.json`)
 
-```json
+```
+
 {
   "level": "intermediate",
   "page": 1,
@@ -227,11 +245,13 @@ Add 100 puzzles → Total 580 > Threshold (500)
     {"id": "def456", "path": "sgf/intermediate/2026/02/batch-001/def456.sgf"}
   ]
 }
-```
+
+```text
 
 ### State File (`yengo-puzzle-collections/views/.segment-state.json`)
 
-```json
+```
+
 {
   "version": "1.0",
   "updated_at": "2026-02-01T10:30:00Z",
@@ -257,7 +277,8 @@ Add 100 puzzles → Total 580 > Threshold (500)
     }
   }
 }
-```
+
+```text
 
 ---
 
@@ -266,7 +287,7 @@ Add 100 puzzles → Total 580 > Threshold (500)
 ### Why 500 Puzzles Per Page?
 
 | Page Size | File Size | Tradeoffs |
-|-----------|-----------|-----------|
+| ----------- | ----------- | ----------- |
 | 100 | ~5KB | Too many HTTP requests |
 | 500 | ~25KB | Good balance: fast load, reasonable requests |
 | 1000 | ~50KB | Slower on mobile, larger memory footprint |
@@ -277,7 +298,7 @@ Add 100 puzzles → Total 580 > Threshold (500)
 ### Why Append-Only Instead of Update-in-Place?
 
 | Approach | Pros | Cons |
-|----------|------|------|
+| ---------- | ------ | ------ |
 | **Update-in-place** | Simple logic | Must load entire file, O(N) memory |
 | **Append-only** | O(1) append, O(page_size) memory | More complex rollback |
 
@@ -286,7 +307,7 @@ Add 100 puzzles → Total 580 > Threshold (500)
 ### Why Full Rebuild on Rollback?
 
 | Approach | Pros | Cons |
-|----------|------|------|
+| ---------- | ------ | ------ |
 | **Targeted page update** | Faster rollback | Complex logic, error-prone |
 | **Full level rebuild** | Simple, reliable | Slower for large collections |
 
@@ -295,7 +316,7 @@ Add 100 puzzles → Total 580 > Threshold (500)
 ### Why State File Instead of Directory Scan?
 
 | Approach | Pros | Cons |
-|----------|------|------|
+| ---------- | ------ | ------ |
 | **Scan directories** | No state to manage | O(N) on every run |
 | **State file** | O(1) lookup | Must keep in sync |
 
@@ -313,34 +334,41 @@ If pipeline crashes mid-write:
 2. **Last segment may be partial** → Accept partial (puzzles are valid)
 3. **Migration temp dir may exist** → Delete and retry
 
-```python
+```
+
 def _recover_state(self) -> None:
     """Recover from crash by scanning actual files."""
     for level_dir in (self.views_dir / "by-level").iterdir():
         if level_dir.is_dir() and not level_dir.name.startswith('.'):
+
             # Segmented level - count actual pages
+
             pages = list(level_dir.glob("page-*.json"))
+
             # ... update state from actual files
-```
+
+```text
 
 ### Atomic Operations
 
 All writes use temp-then-rename pattern:
 
-```python
+```
+
 def _atomic_write(self, path: Path, content: str) -> None:
     """Write atomically using temp file."""
     temp = path.with_suffix('.tmp')
     temp.write_text(content, encoding='utf-8')
     temp.replace(path)  # Atomic on POSIX
-```
+
+```text
 
 ---
 
 ## Performance Characteristics
 
 | Operation | Complexity | Notes |
-|-----------|------------|-------|
+| ----------- | ------------ | ------- |
 | Append N puzzles | O(N + page_size) | Load last page, write new pages |
 | Read state | O(1) | Single JSON file |
 | Full rebuild | O(total_puzzles) | Scan all SGF files |
@@ -349,7 +377,7 @@ def _atomic_write(self, path: Path, content: str) -> None:
 ### Memory Usage
 
 | Collection Size | Current (O(N)) | New (O(page_size)) |
-|-----------------|----------------|-------------------|
+| ----------------- | ---------------- | ------------------- |
 | 1K puzzles | ~200KB | ~100KB |
 | 10K puzzles | ~2MB | ~100KB |
 | 100K puzzles | ~20MB | ~100KB |
@@ -361,8 +389,10 @@ def _atomic_write(self, path: Path, content: str) -> None:
 
 ### Publish Stage
 
-```python
+```
+
 # stages/publish.py
+
 class PublishStage:
     def _update_indexes(self, puzzles_by_level, puzzles_by_tag, context):
         writer = SegmentWriter(
@@ -378,7 +408,8 @@ class PublishStage:
             writer.append_to_tag(tag, puzzles)
         
         writer.update_master_indexes()
-```
+
+```text
 
 ### Rollback
 
@@ -388,34 +419,46 @@ The current `_update_indexes()` in `rollback.py` only handles flat JSON files. W
 2. For segmented levels, rebuild ALL segments after removal
 3. Update `.segment-state.json`
 
-```python
+```
+
 # rollback.py - UPDATED for segmented indexes
+
 class RollbackManager:
     def _update_indexes(self, entries):
+
         # Identify affected levels/tags
+
         affected_levels = {extract_level(e.path) for e in entries}
         
         writer = SegmentWriter(views_dir=self.output_dir / "views")
         
         for level in affected_levels:
+
             # Get remaining puzzles for this level from SGF files
+
             remaining_puzzles = self._scan_level_sgf_files(level)
+
             # Rebuild the level (handles both flat and segmented)
+
             writer.rebuild_level(level, remaining_puzzles)
         
+
         # State is automatically updated by SegmentWriter
-```
+
+```text
 
 ### Frontend
 
 No changes required. Output matches existing types:
 
-```typescript
+```
+
 // Already implemented in frontend/src/types/indexes.ts
 interface LevelMasterIndex { ... }
 interface PaginatedLevelIndex { ... }
 interface LevelPage { ... }
-```
+
+```text
 
 **Important**: Frontend must ignore dotfiles when listing indexes. The `.segment-state.json` file should not be loaded as an index.
 
@@ -435,13 +478,16 @@ interface LevelPage { ... }
 
 The `PROTECTED_FILES` constant in `cleanup.py` must be updated:
 
-```python
+```
+
 # cleanup.py
+
 PROTECTED_FILES: frozenset[str] = frozenset([
     "puzzle-collection-inventory.json",
     ".segment-state.json",  # NEW: Protect segment state
 ])
-```
+
+```text
 
 ### Git Tracking Decision
 

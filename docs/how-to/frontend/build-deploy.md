@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Architecture: Frontend Overview](../../architecture/frontend/overview.md) — PWA, tech stack
+>
 > - [How-To: Local Development](./local-development.md) — Development setup
+>
 > - [Reference: GitHub Actions](../../reference/github-actions.md) — Deployment workflow reference
 
 **Last Updated**: 2026-02-01
@@ -15,7 +17,9 @@ How to build the frontend for production and deploy to GitHub Pages.
 ## Prerequisites
 
 - Node.js 18+
+
 - npm 9+
+
 - Write access to repository (for deployment)
 
 ---
@@ -31,7 +35,7 @@ npm run build
 
 Output goes to `frontend/dist/`:
 
-```
+```text
 dist/
 ├── index.html
 ├── assets/
@@ -157,12 +161,12 @@ npm run build
 
 ### Performance Targets
 
-| Metric         | Target         | How to Check              |
+| Metric | Target | How to Check |
 | -------------- | -------------- | ------------------------- |
 | Initial bundle | <100KB gzipped | `ls -la dist/assets/*.js` |
-| LCP            | <2.5s          | Lighthouse                |
-| FCP            | <1.8s          | Lighthouse                |
-| TTI            | <3.5s          | Lighthouse                |
+| LCP | <2.5s | Lighthouse |
+| FCP | <1.8s | Lighthouse |
+| TTI | <3.5s | Lighthouse |
 
 ### Reducing Bundle Size
 
@@ -232,7 +236,7 @@ VITE_DATA_BASE_URL=https://raw.githubusercontent.com/miztiik/yen-go/main/yengo-p
 ```
 
 | Variable | Purpose | Default |
-|----------|---------|---------|
+| ---------- | --------- | --------- |
 | `VITE_DATA_BASE_URL` | External data base URL for puzzle assets (DB, SGF). When set, the frontend fetches puzzle data from this URL instead of the same-origin Pages path. | Unset (falls back to `${BASE_URL}/yengo-puzzle-collections`) |
 
 Access in code:
@@ -268,7 +272,7 @@ In local development, when `VITE_DATA_BASE_URL` is not set, the Vite dev server 
 
 Vite adds content hashes to filenames for cache busting:
 
-```
+```text
 # Long-term caching safe
 assets/index-a1b2c3d4.js
 assets/index-e5f6g7h8.css
@@ -277,13 +281,14 @@ assets/index-e5f6g7h8.css
 Configure CDN/hosting for:
 
 - `index.html` → no-cache or short TTL
+
 - `assets/*` → long TTL (1 year)
 
 ### Puzzle Data
 
 Puzzle data is fetched at runtime from `VITE_DATA_BASE_URL` (production) or local filesystem (development). The data is NOT bundled into the Pages artifact.
 
-```
+```text
 # Content-addressed SGF files (immutable, cacheable)
 sgf/0001/abc123def456.sgf
 # SQLite search index
@@ -332,19 +337,29 @@ navigator.serviceWorker.getRegistrations().then(regs => {
 ### Large Bundle Size
 
 1. Run bundle analyzer (see above)
-2. Check for duplicate dependencies: `npm ls`
-3. Use dynamic imports for routes
-4. Remove unused dependencies
+
+1. Check for duplicate dependencies: `npm ls`
+
+1. Use dynamic imports for routes
+
+1. Remove unused dependencies
 
 ---
 
 ## Deployment Checklist
 
 - [ ] All tests pass (`npm test -- --run`)
+
 - [ ] Visual tests pass (`npm run test:visual`)
+
 - [ ] TypeScript compiles (`npx tsc --noEmit`)
+
 - [ ] Production build succeeds (`npm run build`)
+
 - [ ] Preview works correctly (`npm run preview`)
+
 - [ ] Bundle size within targets
+
 - [ ] PWA manifest valid
+
 - [ ] Environment variables correct

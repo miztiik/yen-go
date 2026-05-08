@@ -5,6 +5,7 @@
 > **See also**:
 >
 > - [Architecture: Puzzle Solving](./puzzle-solving.md) — How rules integrate with puzzles
+>
 > - [Architecture: Board State Design](./board-state-design.md) — Coordinate system
 
 ## Overview
@@ -16,8 +17,10 @@ The Go rules engine (`services/rulesEngine.ts`) validates moves, calculates capt
 ## Design Principles
 
 1. **Pure Functions**: All rules functions are pure with no side effects
-2. **Immutable State**: Board state is never mutated; new state is computed
-3. **No External Dependencies**: Standard library only
+
+1. **Immutable State**: Board state is never mutated; new state is computed
+
+1. **No External Dependencies**: Standard library only
 
 ## Core Data Structures
 
@@ -42,7 +45,9 @@ interface Coordinate { x: number; y: number; }
 ### Supporting Types (from `models/board.ts`)
 
 - `StoneGroup` — Connected stones with liberties list
+
 - `KoState` — Tracks ko position for simple ko enforcement
+
 - `PlaceStoneResult` — Result of placing a stone (captures, new board, ko)
 
 ## Key Functions
@@ -58,23 +63,31 @@ After placing a stone, checks all four neighbors for opponent chains with zero l
 ### `placeStone(board, coord, color, boardSize, koState)`
 
 Full move validation pipeline:
+
 1. Check bounds and occupation
-2. Place stone on board copy
-3. Find and remove opponent captures
-4. Check for ko violation
-5. Check for suicide (if no captures)
-6. Return `PlaceStoneResult` with new board state
+
+1. Place stone on board copy
+
+1. Find and remove opponent captures
+
+1. Check for ko violation
+
+1. Check for suicide (if no captures)
+
+1. Return `PlaceStoneResult` with new board state
 
 ## Integration
 
 - `services/solutionVerifier.ts` uses the rules engine for legality checks
+
 - `services/puzzleGameState.ts` manages the solving state machine
+
 - Board rendering is handled by the `goban` library (untouched external dependency)
 
 ## Performance Characteristics
 
 | Operation | Complexity | Notes |
-|-----------|-----------|-------|
+| ----------- | ----------- | ------- |
 | Place stone | O(1) | Array write |
 | Find group (flood fill) | O(n) | n = board cells (max 361) |
 | Find captures | O(4n) | Check 4 neighbors |
@@ -83,4 +96,5 @@ Full move validation pipeline:
 ## See Also
 
 - [Puzzle Solving Flow](./puzzle-solving.md) - How rules integrate with puzzles
+
 - [Board State Design](./board-state-design.md) - Coordinate system

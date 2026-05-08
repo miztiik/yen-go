@@ -13,14 +13,19 @@
 ## Executive Summary
 
 This document provides a comprehensive analysis of YenGo's custom SGF properties, comparing them against:
+
 1. The official SGF FF[4] specification
-2. Common industry practices from major Go platforms
-3. Best practices for tsumego/puzzle applications
+
+1. Common industry practices from major Go platforms
+
+1. Best practices for tsumego/puzzle applications
 
 **Key Finding**: YenGo's approach is **well-designed** but has some areas requiring standardization and documentation. The custom `Y*` prefix convention is appropriate and follows industry best practices for private properties.
 
 **Related Documents**:
+
 - [SGF Architecture Design](sgf-architecture-design.md) - Design rationale for all Y* properties
+
 - [config/sgf-properties.schema.json](../../config/sgf-properties.schema.json) - JSON Schema definition
 
 ---
@@ -30,7 +35,7 @@ This document provides a comprehensive analysis of YenGo's custom SGF properties
 ### 1.1 Properties in Use
 
 | Property | Name | Description | Example | Status |
-|----------|------|-------------|---------|--------|
+| ---------- | ------ | ------------- | --------- | -------- |
 | `YV` | Yengo Version | Schema version | `YV[4.0]` | ✅ Good |
 | `YG` | Yengo Grade/Level | Difficulty with sub-level | `YG[intermediate:2]` | ✅ Fixed (9-level) |
 | `YT` | Yengo Tags | Technique tags | `YT[snapback,ko]` | ✅ Good |
@@ -48,6 +53,7 @@ This document provides a comprehensive analysis of YenGo's custom SGF properties
 ### 1.2 Actual Usage in Published SGFs
 
 From `yengo-puzzle-collections/sgf/`:
+
 ```sgf
 (;FF[4]GM[1]SZ[19]CA[UTF-8]GN[3ba001edab9a42b0]PL[B]
 AB[eb][fb][bc][cc][dc][be]AW[da][ab][bb][cb][db]
@@ -65,10 +71,15 @@ YH1[Focus on the top-left area]YH2[The first move is at ba]
 ### 2.1 Standard SGF FF[4] Properties (Official)
 
 The official FF[4] specification provides NO standard properties for:
+
 - ❌ Puzzle difficulty rating
+
 - ❌ Technique/tag classification
+
 - ❌ Progressive hints
+
 - ❌ Quality metrics
+
 - ❌ Board region focus
 
 **This is a gap in the standard** that every puzzle platform addresses differently.
@@ -76,6 +87,7 @@ The official FF[4] specification provides NO standard properties for:
 ### 2.2 How Major Platforms Handle This
 
 #### yengo-source
+
 ```sgf
 ; Historical approach - uses comments and implicit conventions
 C[Black to play and live.]  ; Problem instruction in comment
@@ -84,36 +96,49 @@ DI[7k]                      ; Difficulty level (non-standard)
 ```
 
 From the Sensei's Library data:
+
 - `GE` - Problem type ("joseki", "life and death", "tesuji", "endgame")
+
 - `DI` - Difficulty (e.g., "7k", "1d")
+
 - `CO`, `DP` - Unknown purpose (internal metadata)
 
 #### SmartGo (Anders Kierulf - SGF inventor)
+
 Uses extensive private properties with no prefix:
+
 - `TY`, `TZ`, `TC` - Territory analysis
+
 - `TU` - Time used to solve problem
+
 - `NN` - Nodes examined during search
+
 - `DE` - Search depth
 
 #### KGS/yengo-source Online Servers
+
 ```sgf
 KGSDE[...] ; Dead stones
 KGSSB[...] ; Black score
 KGSSW[...] ; White score
 ```
+
 - Uses `KGS` prefix for private properties (best practice)
 
 #### GoGoD (Professional Database)
+
 - `OH` - Old Handicap system (accepted into spec)
+
 - `KK` - Key/label for problem collections
 
 #### Dragon Go Server
+
 - `XM` - Next move number indicator
 
 ### 2.3 Industry Patterns Summary
 
 | Feature | yengo-source | SmartGo | KGS | GoGoD | YenGo |
-|---------|------------|---------|-----|-------|-------|
+| --------- | ------------ | --------- | ----- | ------- | ------- |
 | Prefix Convention | ❌ None | ❌ None | ✅ `KGS*` | ❌ None | ✅ `Y*` |
 | Difficulty | `DI[]` | ❌ | ❌ | ❌ | `YG[]` |
 | Problem Type | `GE[]` | ❌ | ❌ | ❌ | `YT[]` |
@@ -130,21 +155,31 @@ KGSSW[...] ; White score
 **Current Format**: `YG[intermediate:2]`
 
 **Problem**: 
+
 - The 5-level system in `SgfBuilder` (`beginner, basic, intermediate, advanced, expert`) conflicts with the 9-level system in `config/levels.json` (`novice` through `expert`)
+
 - Sub-level (1-3) adds complexity
 
 **Industry Comparison**:
+
 - yengo-source uses `DI[7k]` - direct rank format
+
 - SmartGo doesn't standardize difficulty
 
 **Recommendation**: 
+
 1. **Use rank-based format**: `YG[15k-11k]` or `YG[intermediate]` (no sub-level)
-2. **Or use numeric level**: `YG[4]` mapping to config/levels.json
-3. Remove sub-level - it adds complexity without clear value
+
+1. **Or use numeric level**: `YG[4]` mapping to config/levels.json
+
+1. Remove sub-level - it adds complexity without clear value
 
 **Impact Assessment**:
+
 - Frontend parser needs update
+
 - 5 adapters need update (`yengo-source`, `books101`, `yengo-source`, `yengo-source`, `yengo-source`)
+
 - All existing SGFs need migration
 
 ### 3.2 `YT` - Tags
@@ -152,24 +187,33 @@ KGSSW[...] ; White score
 **Current Format**: `YT[snapback,ko,life-death]`
 
 **Assessment**: ✅ **Well designed**
+
 - Comma-separated is standard
+
 - Maps to `config/tags.json` (single source of truth)
+
 - 18 canonical tags is reasonable
 
 **Industry Comparison**:
+
 - Similar to yengo-source' `GE[]` but more comprehensive
+
 - Better: supports multiple tags
 
 **Recommendation**: Keep as-is. Consider adding category prefix option:
-```
+
+```text
 YT[tesuji:snapback,objective:ko]  ; Optional category prefix
 ```
 
 ### 3.3 `YH1/YH2/YH3` - Progressive Hints
 
 **Current Format**: 
+
 - `YH1[cb]` - Coordinate
+
 - `YH2[snapback]` - Technique  
+
 - `YH3[Look for the throw-in]` - Text
 
 **Assessment**: ✅ **Unique value proposition**
@@ -177,7 +221,8 @@ YT[tesuji:snapback,objective:ko]  ; Optional category prefix
 No other platform provides structured progressive hints. This is YenGo's competitive advantage.
 
 **Observation**: In actual SGFs, `YH1` contains text, not coordinates:
-```
+
+```text
 YH1[Focus on the top-left area]
 YH2[The first move is at ba]
 ```
@@ -185,9 +230,12 @@ YH2[The first move is at ba]
 **Problem**: Spec says `YH1` should be coordinates, but implementation uses text.
 
 **Recommendation**:
+
 1. Either fix implementation to match spec
-2. Or revise spec to match current behavior
-3. Consider: `YH1` = region text, `YH2` = coordinate, `YH3` = technique/solution text
+
+1. Or revise spec to match current behavior
+
+1. Consider: `YH1` = region text, `YH2` = coordinate, `YH3` = technique/solution text
 
 ### 3.4 `YQ` - Quality Metrics
 
@@ -196,7 +244,7 @@ YH2[The first move is at ba]
 **Assessment**: ⚠️ **Overly complex for SGF**
 
 | Key | Meaning | Useful? |
-|-----|---------|---------|
+| ----- | --------- | --------- |
 | `d` | Depth (solution length) | ✅ Yes |
 | `u` | Uniqueness (single answer?) | ✅ Yes |
 | `m` | Misdirection | ⚠️ Subjective |
@@ -205,14 +253,20 @@ YH2[The first move is at ba]
 | `f` | Forcing ratio | ⚠️ Complex |
 
 **Industry Comparison**: 
+
 - No platform embeds this in SGF
+
 - SmartGo stores separate analysis files
+
 - GoGoD uses database metadata
 
 **Recommendation**:
+
 1. **Move to index file** (JSON), not SGF
-2. Keep in SGF only: `YQ[d:3;u:1;r:5]` (objective metrics)
-3. Subjective metrics belong in view indexes
+
+1. Keep in SGF only: `YQ[d:3;u:1;r:5]` (objective metrics)
+
+1. Subjective metrics belong in view indexes
 
 ### 3.5 `YM` - Move Count
 
@@ -221,6 +275,7 @@ YH2[The first move is at ba]
 **Assessment**: ⚠️ **Redundant**
 
 - Can be computed from solution tree
+
 - Duplicates `YQ[d:N]`
 
 **Recommendation**: Deprecate. Use `YQ[d:N]` if needed.
@@ -232,8 +287,11 @@ YH2[The first move is at ba]
 **Assessment**: ✅ **Unique value**
 
 No other platform provides this. Enables:
+
 - Region-based filtering
+
 - Focused practice (corners vs sides)
+
 - Adaptive board display
 
 **Recommendation**: Keep as-is. Document well.
@@ -267,7 +325,9 @@ Marks common wrong moves for educational feedback.
 Most puzzles have strict order. This adds complexity for edge cases.
 
 **Recommendation**: 
+
 - Keep but document as optional
+
 - Default assumption: strict order (no `YO` property = strict)
 
 ### 3.10 `YV` - Version
@@ -277,8 +337,11 @@ Most puzzles have strict order. This adds complexity for edge cases.
 **Assessment**: ⚠️ **Inconsistent**
 
 **Recommendation**: 
+
 - Standardize on `YV[3]` (simpler)
+
 - Use semantic versioning only for breaking changes
+
 - Document migration path
 
 ---
@@ -288,7 +351,7 @@ Most puzzles have strict order. This adds complexity for edge cases.
 ### 4.1 Standard Properties YenGo Should Use
 
 | Property | Current Usage | Recommendation |
-|----------|--------------|----------------|
+| ---------- | -------------- | ---------------- |
 | `GN` | ✅ Used for puzzle ID | Good |
 | `PL` | ✅ Side to move | Good |
 | `SZ` | ✅ Board size | Good |
@@ -301,14 +364,19 @@ Most puzzles have strict order. This adds complexity for edge cases.
 ### 4.2 Standard Properties for Move Annotation
 
 The FF[4] spec provides these move annotation properties:
+
 - `TE[1]` - Tesuji (good move) 
+
 - `BM[1]` - Bad move
+
 - `DO` - Doubtful move
+
 - `IT` - Interesting move
 
 **Current YenGo approach**: Uses comment markers like `C[Correct]`
 
 **Recommendation**: Use standard `TE[1]` and `BM[1]` in solution tree:
+
 ```sgf
 ;B[cb]TE[1]C[Correct - threatens snapback]
   (;W[bb]BM[1]C[This fails...]
@@ -323,7 +391,7 @@ This improves compatibility with standard SGF viewers.
 ### 5.1 Where to Document
 
 | Document | Purpose | Location |
-|----------|---------|----------|
+| ---------- | --------- | ---------- |
 | SGF Schema Spec | Technical reference for all properties | `config/sgf-schema.md` (new) |
 | Property Registry | Quick reference table | `config/README.md` (extend) |
 | Levels Definition | Level system | `config/levels.json` ✅ exists |
@@ -367,9 +435,12 @@ YenGo extends SGF FF[4] with custom properties prefixed with `Y`.
 ### 5.3 Benefits of Centralized Schema
 
 1. **Frontend consistency** - TypeScript types generated from schema
-2. **Backend validation** - Python validators reference same source
-3. **Adapter compliance** - All ingestors follow same rules
-4. **Tool compatibility** - External tools can validate
+
+1. **Backend validation** - Python validators reference same source
+
+1. **Adapter compliance** - All ingestors follow same rules
+
+1. **Tool compatibility** - External tools can validate
 
 ---
 
@@ -381,7 +452,7 @@ YenGo extends SGF FF[4] with custom properties prefixed with `Y`.
 **To**: `YG[intermediate]`
 
 | Component | Impact | Effort |
-|-----------|--------|--------|
+| ----------- | -------- | -------- |
 | Frontend `puzzleLoader.ts` | Parse change | 2hr |
 | `SgfBuilder` | Remove sub-level | 1hr |
 | `yengo-source/converter.py` | Update call | 30min |
@@ -389,11 +460,14 @@ YenGo extends SGF FF[4] with custom properties prefixed with `Y`.
 | `yengo-source/enricher.py` | Update call | 30min |
 | Existing SGFs | Migration script | 2hr |
 | Tests | Update expectations | 2hr |
-| **Total** | | **~8hr** |
+| **Total** |  | **~8hr** |
 
 **Benefits**:
+
 - Simpler format
+
 - Aligns with config/levels.json
+
 - Easier to explain to users
 
 ### 6.2 If We Move `YQ` to Index Files
@@ -402,28 +476,33 @@ YenGo extends SGF FF[4] with custom properties prefixed with `Y`.
 **To**: JSON index file
 
 | Component | Impact | Effort |
-|-----------|--------|--------|
+| ----------- | -------- | -------- |
 | Publish stage | Add to JSON index | 2hr |
 | Frontend | Read from index | 1hr |
 | `SgfBuilder` | Remove YQ methods | 1hr |
 | Adapters | No change (don't set YQ) | 0hr |
-| **Total** | | **~4hr** |
+| **Total** |  | **~4hr** |
 
 **Benefits**:
+
 - SGFs remain compatible with standard viewers
+
 - Quality can be recalculated without regenerating SGFs
+
 - Separates content (SGF) from metadata (JSON)
 
 ### 6.3 If We Fix `YH1/YH2/YH3` Semantics
 
 **Current** (inconsistent):
+
 - Spec: `YH1` = coordinate
+
 - Actual: `YH1` = region text
 
 **Options**:
 
 | Option | Change | Impact |
-|--------|--------|--------|
+| -------- | -------- | -------- |
 | A: Fix to match spec | `YH1[cb]` coordinate | High - all SGFs wrong |
 | B: Update spec | `YH1` = region text | Low - document reality |
 | C: Reorder | `YH1`=text, `YH2`=coord, `YH3`=technique | Medium |
@@ -437,21 +516,28 @@ YenGo extends SGF FF[4] with custom properties prefixed with `Y`.
 ### 7.1 Immediate Actions (No Breaking Changes)
 
 1. **Create `config/sgf-schema.md`** - Document all Y* properties
-2. **Fix `YV` consistency** - Use `YV[3]` everywhere
-3. **Update spec for `YH1/YH2/YH3`** - Match actual behavior
-4. **Add `TE[1]`/`BM[1]`** to solution tree - Standard compliance
+
+1. **Fix `YV` consistency** - Use `YV[3]` everywhere
+
+1. **Update spec for `YH1/YH2/YH3`** - Match actual behavior
+
+1. **Add `TE[1]`/`BM[1]`** to solution tree - Standard compliance
 
 ### 7.2 Short-term Improvements
 
 1. **Simplify `YG`** - Remove sub-level (`:N`)
-2. **Move subjective metrics from `YQ`** to index files
-3. **Deprecate `YM`** - Redundant with depth in `YQ`
+
+1. **Move subjective metrics from `YQ`** to index files
+
+1. **Deprecate `YM`** - Redundant with depth in `YQ`
 
 ### 7.3 Long-term Considerations
 
 1. **Submit proposal to SGF standards** - `DI` for difficulty is common need
-2. **Create JSON Schema** for `config/sgf-schema.json` - Machine validation
-3. **TypeScript types** auto-generated from schema
+
+1. **Create JSON Schema** for `config/sgf-schema.json` - Machine validation
+
+1. **TypeScript types** auto-generated from schema
 
 ---
 
@@ -459,7 +545,7 @@ YenGo extends SGF FF[4] with custom properties prefixed with `Y`.
 
 ### A. YenGo Custom Properties
 
-```
+```text
 YV[version]           ; Schema version (required)
 YG[level]             ; Difficulty level (required)
 YT[tag1,tag2,...]     ; Technique tags (required)
@@ -475,7 +561,7 @@ YO[order]             ; Move order flexibility (optional)
 
 ### B. Standard Properties Used
 
-```
+```text
 GM[1]                 ; Game type (Go)
 FF[4]                 ; File format version
 CA[UTF-8]             ; Character encoding
@@ -492,7 +578,7 @@ BM[1]                 ; Bad move marker
 
 ### C. Properties NOT to Use
 
-```
+```text
 DI[]    ; Non-standard, conflicts with our YG
 GE[]    ; Non-standard, use YT instead
 KK[]    ; GoGoD-specific
@@ -503,7 +589,7 @@ KK[]    ; GoGoD-specific
 ## 9. Decision Matrix
 
 | Property | Keep? | Change? | Action |
-|----------|-------|---------|--------|
+| ---------- | ------- | --------- | -------- |
 | `YV` | ✅ | Format | Standardize to `YV[3]` |
 | `YG` | ✅ | Simplify | Remove sub-level |
 | `YT` | ✅ | No | Document well |

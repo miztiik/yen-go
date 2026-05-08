@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Architecture: Backend Stages](../architecture/backend/stages.md) — Pipeline structure
+>
 > - [How-To: Run Pipeline](../how-to/backend/run-pipeline.md) — Operational walkthrough
+>
 > - [Concepts: SGF Properties](../concepts/sgf-properties.md) — Property semantics used by commands
 
 **Last Updated**: 2026-01-31
@@ -19,7 +21,7 @@ Complete reference for the puzzle manager command-line interface.
 
 The puzzle manager runs a **3-stage pipeline**:
 
-```
+```text
 INGEST → ANALYZE → PUBLISH
    ↓         ↓         ↓
  Fetch    Enrich    Write to
@@ -27,7 +29,7 @@ INGEST → ANALYZE → PUBLISH
 ```
 
 | Stage | Input | Output | What It Does |
-|-------|-------|--------|--------------|
+| ------- | ------- | -------- | -------------- |
 | **ingest** | External source | `.pm-runtime/staging/ingest/` | Fetches puzzles from source, validates SGF |
 | **analyze** | `staging/ingest/` | `.pm-runtime/staging/analyzed/` | Classifies difficulty, adds tags, enriches hints |
 | **publish** | `staging/analyzed/` | `yengo-puzzle-collections/` | Writes to collection, updates indexes |
@@ -51,7 +53,7 @@ python -m backend.puzzle_manager run --source yengo-source --stage analyze --sta
 
 All staging and state files are in `.pm-runtime/` at project root:
 
-```
+```text
 .pm-runtime/
 ├── staging/
 │   ├── ingest/      # Raw SGF files after ingest
@@ -84,7 +86,7 @@ python -m backend.puzzle_manager [OPTIONS] COMMAND [ARGS]
 ```
 
 | Option | Description |
-|--------|-------------|
+| -------- | ------------- |
 | `--version` | Show version and exit |
 | `-v, --verbose` | Increase verbosity (use -vv for debug) |
 | `--config PATH` | Path to config directory |
@@ -133,7 +135,7 @@ python -m backend.puzzle_manager run --source yengo-source --skip-cleanup
 ```
 
 | Option | Description |
-|--------|-------------|
+| -------- | ------------- |
 | `--source SOURCE_ID` | **REQUIRED**: Source adapter to run. Examples: yengo-source, yengo-source, yengo-source, yengo-source. Must be specified for ingest stage. |
 | `--stage STAGE` | Run specific stage(s) only. Can be repeated. |
 | `--batch-size N` | Override batch size (default: 100) |
@@ -144,7 +146,7 @@ python -m backend.puzzle_manager run --source yengo-source --skip-cleanup
 **Source-Specific Options** (for adapters that support them):
 
 | Option | Adapters | Description |
-|--------|----------|-------------|
+| -------- | ---------- | ------------- |
 | `--puzzle-id ID` | yengo-source | Import single puzzle by ID |
 | `--type TYPE` | yengo-source | Filter by puzzle type (life_and_death, tesuji, fuseki, joseki, endgame, best_move) |
 | `--collection ID` | yengo-source | Filter by collection ID |
@@ -153,6 +155,7 @@ python -m backend.puzzle_manager run --source yengo-source --skip-cleanup
 | `--strict-translation` | yengo-source | Skip puzzles that can't be cleanly translated |
 
 **Example: yengo-source Adapter Usage**:
+
 ```bash
 # Import single puzzle
 python -m backend.puzzle_manager run --source yengo-source --puzzle-id 12345
@@ -172,8 +175,9 @@ python -m backend.puzzle_manager run --source yengo-source --type tesuji --colle
 ```
 
 **Pipeline Stages**:
+
 | Stage | Sub-stages | Description |
-|-------|------------|-------------|
+| ------- | ------------ | ------------- |
 | `ingest` | fetch → parse → validate | Download, parse SGF, verify structure |
 | `analyze` | classify → tag → enrich | Assign difficulty, detect techniques, add hints |
 | `publish` | index → daily → output | Build indexes, generate daily challenges, write output |
@@ -219,13 +223,17 @@ python -m backend.puzzle_manager status --json
 ```
 
 | Option | Description |
-|--------|-------------|
+| -------- | ------------- |
 | `--json` | Output as JSON |
 
 **Output includes**:
+
 - Current run ID and status
+
 - Stage completion status
+
 - Processed/failed/skipped counts
+
 - Last run timestamp
 
 ---
@@ -246,7 +254,7 @@ python -m backend.puzzle_manager validate --config-only
 ```
 
 | Option | Description |
-|--------|-------------|
+| -------- | ------------- |
 | `--file PATH` | Validate specific SGF file |
 | `--config-only` | Only validate configuration files |
 
@@ -305,7 +313,7 @@ python -m backend.puzzle_manager run  # Uses active_adapter
 ```
 
 | Option | Description |
-|--------|-------------|
+| -------- | ------------- |
 | `--check` | Test source connectivity |
 | `--json` | Output as JSON |
 
@@ -362,7 +370,7 @@ python -m backend.puzzle_manager run --source yengo-source --source-override
 ```
 
 | Scenario | Behavior |
-|----------|----------|
+| ---------- | ---------- |
 | No `--source` | Uses `active_adapter` from sources.json |
 | `--source` matches `active_adapter` | Proceeds normally |
 | `--source` differs, no `--source-override` | Error, exit(1) |
@@ -386,12 +394,13 @@ python -m backend.puzzle_manager inventory --rebuild
 ```
 
 | Option | Description |
-|--------|-------------|
+| -------- | ------------- |
 | `--json` | Output as JSON instead of human-readable |
 | `--rebuild` | Rebuild inventory from publish logs |
 
 **Sample Output**:
-```
+
+```text
 Puzzle Collection Inventory
 ===========================
 Total Puzzles: 15,000
@@ -442,14 +451,18 @@ python -m backend.puzzle_manager clean --retention-days 30
 ```
 
 | Option | Description |
-|--------|-------------|
+| -------- | ------------- |
 | `--retention-days N` | Days to retain (default: 45) |
 | `--dry-run` | Preview what would be deleted |
 
 **What gets cleaned**:
+
 - `.pm-runtime/staging/ingest/` - Raw SGF files older than retention
+
 - `.pm-runtime/staging/analyzed/` - Analyzed SGF files older than retention
+
 - `.pm-runtime/logs/` - Log files older than retention
+
 - `.pm-runtime/state/` - Old state files (keeps current)
 
 ---
@@ -473,7 +486,7 @@ python -m backend.puzzle_manager daily --dry-run
 ```
 
 | Option | Description |
-|--------|-------------|
+| -------- | ------------- |
 | `--date YYYY-MM-DD` | Generate for specific date |
 | `--start YYYY-MM-DD` | Start date for range |
 | `--end YYYY-MM-DD` | End date for range |
@@ -484,7 +497,7 @@ python -m backend.puzzle_manager daily --dry-run
 ## Environment Variables
 
 | Variable | Description | Default |
-|----------|-------------|---------|
+| ---------- | ------------- | --------- |
 | `YENGO_ROOT` | Override project root detection | Auto-detect via `.git` |
 | `YENGO_LOG_LEVEL` | Log level (DEBUG, INFO, WARNING, ERROR) | `INFO` |
 
@@ -493,7 +506,7 @@ python -m backend.puzzle_manager daily --dry-run
 ## Exit Codes
 
 | Code | Meaning |
-|------|---------|
+| ------ | --------- |
 | 0 | Success |
 | 1 | General error |
 | 2 | Configuration error |
@@ -558,7 +571,9 @@ python -m backend.puzzle_manager sources --json | jq '.[] | select(.enabled)'
 ## See Also
 
 - [Architecture](../architecture/backend/puzzle-manager.md) - Puzzle manager architecture
-- [Configuration](configuration.md) - Configuration reference
-- [Adapter Development](../architecture/backend/adapter-design-standards.md) - Creating adapters
-- [Troubleshooting](../how-to/backend/troubleshoot.md) - Common issues and solutions
 
+- [Configuration](configuration.md) - Configuration reference
+
+- [Adapter Development](../architecture/backend/adapter-design-standards.md) - Creating adapters
+
+- [Troubleshooting](../how-to/backend/troubleshoot.md) - Common issues and solutions

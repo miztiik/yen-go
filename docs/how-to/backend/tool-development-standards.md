@@ -10,33 +10,33 @@ Normative standards for puzzle download tools in `tools/`. The yengo-source tool
 
 Each tool lives in `tools/{tool-name}/` with these required modules:
 
-| Module                            | Purpose                                                                        |
+| Module | Purpose |
 | --------------------------------- | ------------------------------------------------------------------------------ |
-| `__main__.py`                     | CLI entry point with argparse                                                  |
-| `orchestrator.py`                 | Core download loop with progress tracking                                      |
-| `client.py`                       | HTTP client with rate limiting                                                 |
-| `models.py`                       | Pydantic models or dataclasses for API responses                               |
-| `_local_level_tag_mapping.py`     | Source-specific level/tag/category mappings                                    |
-| `_local_level_mapping.json`       | Local rating/rank → YenGo level slug config                                    |
-| `storage.py`                      | SGF whitelist rebuild and file saving                                          |
-| `checkpoint.py`                   | Resume state persistence                                                       |
-| `batching.py`                     | Re-exports from `tools.core.batching`                                          |
-| `index.py`                        | Puzzle ID index management                                                     |
-| `logging_config.py`               | Subclass of `CoreStructuredLogger`                                             |
-| `config.py`                       | Centralized constants and path utilities                                       |
-| `_local_collections_mapping.py`   | Local collection name -> YenGo slug mapping                                    |
-| `_local_collections_mapping.json` | Local collections config file                                                  |
-| `_local_tag_mapping.py`           | Local source tag → YenGo tag mapping loader                                    |
-| `_local_tag_mapping.json`         | Local source tags → YenGo tag slug config                                      |
-| `_local_intent_mapping.py`        | Local category/type -> puzzle intent mapping                                   |
-| `_local_intent_mapping.json`      | Local intent derivation config (optional, for sources with structured signals) |
-| `README.md`                       | Tool-level documentation (see Section 16)                                      |
+| `__main__.py` | CLI entry point with argparse |
+| `orchestrator.py` | Core download loop with progress tracking |
+| `client.py` | HTTP client with rate limiting |
+| `models.py` | Pydantic models or dataclasses for API responses |
+| `_local_level_tag_mapping.py` | Source-specific level/tag/category mappings |
+| `_local_level_mapping.json` | Local rating/rank → YenGo level slug config |
+| `storage.py` | SGF whitelist rebuild and file saving |
+| `checkpoint.py` | Resume state persistence |
+| `batching.py` | Re-exports from `tools.core.batching` |
+| `index.py` | Puzzle ID index management |
+| `logging_config.py` | Subclass of `CoreStructuredLogger` |
+| `config.py` | Centralized constants and path utilities |
+| `_local_collections_mapping.py` | Local collection name -> YenGo slug mapping |
+| `_local_collections_mapping.json` | Local collections config file |
+| `_local_tag_mapping.py` | Local source tag → YenGo tag mapping loader |
+| `_local_tag_mapping.json` | Local source tags → YenGo tag slug config |
+| `_local_intent_mapping.py` | Local category/type -> puzzle intent mapping |
+| `_local_intent_mapping.json` | Local intent derivation config (optional, for sources with structured signals) |
+| `README.md` | Tool-level documentation (see Section 16) |
 
 ## 2. CLI Standards
 
 ### Required Flags
 
-```
+```text
 --max-puzzles N       Maximum puzzles to download (int)
 --batch-size N        Max files per batch directory (int, default 500 or 1000)
 --puzzle-delay F      Delay between puzzle requests in seconds (float)
@@ -175,13 +175,18 @@ class StructuredLogger(CoreStructuredLogger):
 ### Logging Rules
 
 - **URL at INFO**: Every HTTP request URL must be logged at INFO level (not DEBUG).
+
 - **Relative paths**: Use `tools.core.paths.rel_path()` for ALL path logging. Produces project-root-relative POSIX paths.
+
 - **Progress with timing**: Progress messages must include downloaded count, skipped, errors, elapsed time, and rate.
+
 - **Progress interval**: Log progress every **10 puzzles** (default; configurable).
+
 - **Rate field**: Include `rate` (puzzles per minute) in progress output.
+
 - **Rich two-line progress format (REQUIRED)**: Every progress log must produce a two-line output on the console. The first line is the `SAVE` line (from `puzzle_save()`). The second line is the rich progress summary. Pass `on_disk` and `max_target` to `logger.progress()` to activate the rich format:
 
-```
+```text
 22:56:41 [INFO ] SAVE 12489 -> 12489.sgf [saved=9998 skip=2073 err=195]
 22:56:41 [INFO ]   [9998/10000] saved | 9998 on disk | 1h33m elapsed | ~106.7 puzzles/min
 ```
@@ -203,8 +208,11 @@ logger.progress(
 **JSONL output is unaffected** — the structured JSON event always contains the full field set (`downloaded`, `skipped`, `errors`, `on_disk`, `max_target`, `rate`, `elapsed_sec`). Only the console message format changes.
 
 - **Enrichment logging**: Log `puzzle_enrich` after assigning YG/YT/YL/intent.
+
 - **Collection resolution logging**: Log `collection_match` when resolving source names to YL slugs.
+
 - **Intent resolution logging**: Log `intent_match` when resolving descriptions to C[] objective slugs.
+
 - **Log files**: JSON lines in `{output_dir}/logs/` with format `{YYYYMMDD-HHMMSS}-{tool}.jsonl`.
 
 ## 4. SGF Output Standards
@@ -235,24 +243,24 @@ def rebuild_sgf(sgf_text, level_slug, tags, source_id, **kwargs):
 
 ### Approved Root Properties
 
-| Property          | Source         | Notes  |
+| Property | Source | Notes |
 | ----------------- | -------------- | ------ |
-| `FF[4]`           | SGF header     | Always |
-| `GM[1]`           | SGF header     | Always |
-| `CA[UTF-8]`       | SGF header     | Always |
-| `SZ[N]`           | Board size     | Always |
-| `PL[B/W]`         | Player to move | Always |
+| `FF[4]` | SGF header | Always |
+| `GM[1]` | SGF header | Always |
+| `CA[UTF-8]` | SGF header | Always |
+| `SZ[N]` | Board size | Always |
+| `PL[B/W]` | Player to move | Always |
 | `AB[...] AW[...]` | Initial stones | Always |
 
 ### Optional YenGo Properties (at download time)
 
-| Property        | Description                                        | Example            |
+| Property | Description | Example |
 | --------------- | -------------------------------------------------- | ------------------ |
-| `YG[slug]`      | Level from `config/puzzle-levels.json`             | `YG[intermediate]` |
-| `YT[tag1,tag2]` | Tags sorted, deduplicated, from `config/tags.json` | `YT[ko,ladder]`    |
-| `YS[id]`        | Source adapter ID                                  | `YS[td]`, `YS[th]` |
+| `YG[slug]` | Level from `config/puzzle-levels.json` | `YG[intermediate]` |
+| `YT[tag1,tag2]` | Tags sorted, deduplicated, from `config/tags.json` | `YT[ko,ladder]` |
+| `YS[id]` | Source adapter ID | `YS[td]`, `YS[th]` |
 | `YL[slug1,slug2]` | Collections, sorted, comma-separated | `YL[cho-chikun-elementary]` |
-| `C[text]`         | Root comment for puzzle objective    | `C[black-to-kill]`          |
+| `C[text]` | Root comment for puzzle objective | `C[black-to-kill]` |
 
 ### Minimal-Edit Exception (Pre-Ingest Annotation Tools)
 
@@ -270,15 +278,15 @@ Pre-ingest annotation tools (such as `tools/core/collection_embedder.py`) may us
 
 YQ is computed by the pipeline enricher (`analyze` stage), not by download tools. The canonical format is:
 
-```
+```text
 YQ[q:{level};rc:{refutation_count};hc:{comment_level}]
 ```
 
-| Field | Meaning          | Values                                 |
+| Field | Meaning | Values |
 | ----- | ---------------- | -------------------------------------- |
-| `q`   | Quality level    | 1-5 (1=unverified, 5=premium)          |
-| `rc`  | Refutation count | 0+ (wrong-move branches)               |
-| `hc`  | Comment level    | 0 (none), 1 (markers), or 2 (teaching) |
+| `q` | Quality level | 1-5 (1=unverified, 5=premium) |
+| `rc` | Refutation count | 0+ (wrong-move branches) |
+| `hc` | Comment level | 0 (none), 1 (markers), or 2 (teaching) |
 
 Download tools should **not** set YQ at ingest. The enricher preserves existing YQ values (does not overwrite), so any value set at download time will persist through the pipeline unchanged. The enricher only computes YQ when the property is absent.
 
@@ -305,10 +313,14 @@ Each tool maintains a local JSON mapping source names to YenGo slugs in `_local_
 ### Workflow
 
 1. Local config maps source names/categories to YenGo collection slugs
-2. Slugs must exist in global `config/collections.json`
-3. `tools/collections_align.py` validates alignment
-4. `--match-collections` flag (default: enabled)
-5. YL[] values: sorted, deduplicated, comma-separated
+
+1. Slugs must exist in global `config/collections.json`
+
+1. `tools/collections_align.py` validates alignment
+
+1. `--match-collections` flag (default: enabled)
+
+1. YL[] values: sorted, deduplicated, comma-separated
 
 ### Collection Logging
 
@@ -327,8 +339,11 @@ logger.collection_match(
 ## 7. Intent Resolution Standard (C[])
 
 - `--resolve-intent` flag with `--intent-threshold` (default: 0.8)
+
 - Sources **with description text**: use `tools.puzzle_intent.resolve_intent(description)` with semantic fallback
+
 - Sources **without description**: use static category/type -> intent mapping in `_local_intent_mapping.py`
+
 - Write as root `C[objective-slug]` property
 
 Example static mapping in `_local_intent_mapping.py` (T-Dragon):
@@ -362,10 +377,15 @@ logger.intent_match(
 ## 8. Checkpoint and Resume Standards
 
 - Checkpoint file: `{output_dir}/.checkpoint.json` (hidden dotfile)
+
 - Use `tools.core.checkpoint.BatchTrackingMixin` for O(1) batch placement
+
 - Save after EVERY successful file save
+
 - `--resume` loads checkpoint and continues from last position
+
 - SIGINT graceful exit: catch signal, save checkpoint, exit cleanly
+
 - Tracked state: downloaded, skipped, errors, position-specific fields
 
 ## 9. Validation Standards
@@ -374,40 +394,50 @@ logger.intent_match(
 
 Validation rules are config-driven via `config/puzzle-validation.json` (schema version 2.0):
 
-| Field                 | Type | Default | Description                             |
+| Field | Type | Default | Description |
 | --------------------- | ---- | ------- | --------------------------------------- |
-| `min_board_dimension` | int  | 5       | Minimum board width/height              |
-| `max_board_dimension` | int  | 19      | Maximum board width/height              |
-| `min_stones`          | int  | 2       | Minimum stones on board (black + white) |
-| `min_solution_depth`  | int  | 1       | Minimum solution tree depth (moves)     |
-| `max_solution_depth`  | int  | 30      | Maximum solution tree depth             |
+| `min_board_dimension` | int | 5 | Minimum board width/height |
+| `max_board_dimension` | int | 19 | Maximum board width/height |
+| `min_stones` | int | 2 | Minimum stones on board (black + white) |
+| `min_solution_depth` | int | 1 | Minimum solution tree depth (moves) |
+| `max_solution_depth` | int | 30 | Maximum solution tree depth |
 
 ### Design Decisions (v2.0 Consolidation)
 
 1. **`min_solution_depth` replaces `require_solution`**: A single integer range `[min_solution_depth, max_solution_depth]` expresses both "solution must exist" (depth >= 1) and "solution not too deep" (depth <= 30). `min_solution_depth=0` allows puzzles without solutions (yengo-source use case). This eliminates the boolean `require_solution` flag.
 
-2. **`min_stones` replaces `require_initial_stones`**: An integer count is strictly more informative than a boolean presence check. `min_stones=2` is the Go-valid minimum (attacker + defender). Count also enables future quality filters (e.g., "reject trivially simple puzzles with < 5 stones").
+1. **`min_stones` replaces `require_initial_stones`**: An integer count is strictly more informative than a boolean presence check. `min_stones=2` is the Go-valid minimum (attacker + defender). Count also enables future quality filters (e.g., "reject trivially simple puzzles with < 5 stones").
 
-3. **Two validation tiers**:
+1. **Two validation tiers**:
+
    - **Pre-ingest structural** (`tools/core/validation.py`): Board size range, stone count, solution depth — executed at download time before SGF enrichment.
+
    - **Post-ingest schema** (`backend/puzzle_manager/core/puzzle_validator.py`): Same rules plus adapter-specific overrides — executed by pipeline adapters.
 
-4. **CLI override**: `--min-stones N` overrides the config default at download time. Uses `DownloadConfig.validation_config` property which builds a merged `PuzzleValidationConfig` from `DEFAULT_CONFIG.merge({"min_stones": N})`.
+1. **CLI override**: `--min-stones N` overrides the config default at download time. Uses `DownloadConfig.validation_config` property which builds a merged `PuzzleValidationConfig` from `DEFAULT_CONFIG.merge({"min_stones": N})`.
 
 ### Usage
 
 - Use `tools.core.validation.validate_sgf_puzzle()` for raw SGF validation
+
 - Use `tools.core.validation.validate_sgf_puzzle(sgf, config=custom_config)` for CLI overrides
+
 - Validate BEFORE enrichment and save (fail early)
+
 - Log skips via `logger.puzzle_skip(id, reason)`
+
 - Validation failures are **skips**, not errors
+
 - Backward compatibility: both validators accept v1.0 config fields (`require_solution`, `require_initial_stones`) via `from_dict()`
 
 ## 10. Rate Limiting Standards
 
 - Configurable delays via CLI flags or config defaults
+
 - Apply jitter to avoid thundering herd (typically +/-20-40%)
+
 - Exponential backoff for 429/5xx responses
+
 - Log wait times via `logger.api_wait(delay, reason)`
 
 ### Processing-Aware Rate Limiting (Required)
@@ -485,25 +515,29 @@ for puzzle_id in range(start_id, end_id + 1):
 
 **Key properties of this approach:**
 
-| Scenario                          | Flat sleep | Elapsed-aware sleep      |
+| Scenario | Flat sleep | Elapsed-aware sleep |
 | --------------------------------- | ---------- | ------------------------ |
-| Fast fetch (0.5s) + 8s target     | 8.5s gap   | 8s gap ✓                 |
-| Slow fetch (6s) + 8s target       | 14s gap    | 2s gap ✓                 |
-| Very slow fetch (10s) + 8s target | 18s gap    | 0s gap ✓ (no extra wait) |
+| Fast fetch (0.5s) + 8s target | 8.5s gap | 8s gap ✓ |
+| Slow fetch (6s) + 8s target | 14s gap | 2s gap ✓ |
+| Very slow fetch (10s) + 8s target | 18s gap | 0s gap ✓ (no extra wait) |
 
 If processing already exceeds the target window, `remaining` clamps to `0.0` and no additional sleep is added — the loop proceeds immediately without compounding the delay.
 
 ## 11. Index Standards
 
 - `sgf-index.txt` in output directory, one entry per line: `batch-NNN/filename.sgf`
+
 - `add_to_index()` after each file save for O(1) duplicate detection
+
 - `rebuild_index()` when file count > index count (stale detection)
+
 - `sort_index()` after download completes, sorts numerically by puzzle ID
+
 - `load_puzzle_ids()` returns `set` for O(1) dedup lookup
 
 ## 12. Output Directory Structure
 
-```
+```text
 external-sources/{source}/
 +-- sgf/
 |   +-- batch-001/
@@ -520,17 +554,17 @@ external-sources/{source}/
 
 All tools MUST use these modules (never re-implement):
 
-| Module                   | Key Exports                                                                |
+| Module | Key Exports |
 | ------------------------ | -------------------------------------------------------------------------- |
-| `tools.core.logging`     | `StructuredLogger`, `EventType`, `setup_logging()`                         |
-| `tools.core.paths`       | `rel_path()`, `get_project_root()`, `to_posix_path()`                      |
-| `tools.core.batching`    | `get_batch_for_file()`, `get_batch_for_file_fast()`, `count_total_files()` |
-| `tools.core.checkpoint`  | `BatchTrackingMixin`                                                       |
-| `tools.core.index`       | `add_entry()`, `sort_and_rewrite()`, `load_ids()`                          |
-| `tools.core.validation`  | `validate_sgf_puzzle()`                                                    |
-| `tools.core.sgf_parser`  | `parse_sgf()`, `SgfTree`, `SgfNode`                                        |
-| `tools.core.sgf_builder` | `SGFBuilder`, `publish_sgf()`                                              |
-| `tools.core.rate_limit`  | `RateLimiter`, `wait_with_jitter()`                                        |
+| `tools.core.logging` | `StructuredLogger`, `EventType`, `setup_logging()` |
+| `tools.core.paths` | `rel_path()`, `get_project_root()`, `to_posix_path()` |
+| `tools.core.batching` | `get_batch_for_file()`, `get_batch_for_file_fast()`, `count_total_files()` |
+| `tools.core.checkpoint` | `BatchTrackingMixin` |
+| `tools.core.index` | `add_entry()`, `sort_and_rewrite()`, `load_ids()` |
+| `tools.core.validation` | `validate_sgf_puzzle()` |
+| `tools.core.sgf_parser` | `parse_sgf()`, `SgfTree`, `SgfNode` |
+| `tools.core.sgf_builder` | `SGFBuilder`, `publish_sgf()` |
+| `tools.core.rate_limit` | `RateLimiter`, `wait_with_jitter()` |
 
 ## 14. Counter Pattern (MANDATORY)
 
@@ -557,7 +591,9 @@ if result_key == "downloaded":
 **Why this matters:**
 
 - `_process_puzzle()` is a single-item function — it has no access to aggregate stats
+
 - The JSONL log is used for post-run analysis (e.g., `analyze_logs.py`)
+
 - Zero counters make it impossible to track progress from log files
 
 **Anti-pattern (DO NOT DO THIS):**
@@ -574,9 +610,9 @@ def _process_puzzle(...) -> str:
 
 `tools/core/` modules are fully standalone — **zero imports from `backend/`**.
 
-| Codebase   | Responsibility                                   |
+| Codebase | Responsibility |
 | ---------- | ------------------------------------------------ |
-| `tools/`   | External source ingestors (download from web)    |
+| `tools/` | External source ingestors (download from web) |
 | `backend/` | Pipeline processing (ingest → analyze → publish) |
 
 `tools/core/sgf_*.py` mirror `backend/puzzle_manager/core/sgf_*.py` but are independent copies. If `tools.core` is missing functionality that exists in `backend.puzzle_manager.core`, **copy** the implementation — do not import across the boundary.
@@ -584,7 +620,9 @@ def _process_puzzle(...) -> str:
 This ensures:
 
 - Tools can be used standalone without backend dependencies
+
 - Clear separation of concerns
+
 - Independent testing and versioning
 
 ## 16. Tool README Standard
@@ -593,42 +631,47 @@ Every tool MUST have a `README.md` in its directory (`tools/{tool-name}/README.m
 
 ### Required Sections
 
-| Section                     | Content                                                                    |
+| Section | Content |
 | --------------------------- | -------------------------------------------------------------------------- |
-| **Title + Description**     | One-line summary of what the tool does and links to the source             |
-| **Features**                | Bullet list of key capabilities                                            |
-| **Usage**                   | CLI examples (download, resume, dry-run, type filtering)                   |
-| **Configuration**           | Table of all CLI flags with defaults and descriptions                      |
-| **Output Structure**        | Tree diagram of output directory layout                                    |
-| **API/Data Format**         | Source API endpoints, data format details, any proprietary encoding        |
-| **SGF Output**              | Table mapping source fields → SGF properties, included/excluded properties |
-| **Level Mapping**           | Rating/rank → YenGo level table with Go rank equivalents                   |
-| **Tag Mapping**             | Source tags → YenGo tags table with coverage stats                         |
-| **Collection Mapping (YL)** | Source categories → YenGo collection slugs                                 |
-| **Intent Resolution (C[])** | How puzzle objectives are derived                                          |
-| **Quality (YQ)**            | Explanation that YQ is pipeline-computed, signal preservation table        |
-| **Module Architecture**     | File tree with one-line descriptions of each module                        |
-| **Dependencies**            | Required and optional packages                                             |
-| **Known Limitations**       | Documented gaps, unmapped values, API quirks                               |
-| **See Also**                | Cross-references to tool-development-standards, other READMEs              |
+| **Title + Description** | One-line summary of what the tool does and links to the source |
+| **Features** | Bullet list of key capabilities |
+| **Usage** | CLI examples (download, resume, dry-run, type filtering) |
+| **Configuration** | Table of all CLI flags with defaults and descriptions |
+| **Output Structure** | Tree diagram of output directory layout |
+| **API/Data Format** | Source API endpoints, data format details, any proprietary encoding |
+| **SGF Output** | Table mapping source fields → SGF properties, included/excluded properties |
+| **Level Mapping** | Rating/rank → YenGo level table with Go rank equivalents |
+| **Tag Mapping** | Source tags → YenGo tags table with coverage stats |
+| **Collection Mapping (YL)** | Source categories → YenGo collection slugs |
+| **Intent Resolution (C[])** | How puzzle objectives are derived |
+| **Quality (YQ)** | Explanation that YQ is pipeline-computed, signal preservation table |
+| **Module Architecture** | File tree with one-line descriptions of each module |
+| **Dependencies** | Required and optional packages |
+| **Known Limitations** | Documented gaps, unmapped values, API quirks |
+| **See Also** | Cross-references to tool-development-standards, other READMEs |
 
 ### Optional Sections (when applicable)
 
-| Section                           | When to Include                                               |
+| Section | When to Include |
 | --------------------------------- | ------------------------------------------------------------- |
-| **Research & Verification**       | Tool required reverse-engineering or format analysis          |
+| **Research & Verification** | Tool required reverse-engineering or format analysis |
 | **Go Engine / Custom Components** | Tool includes non-standard components (e.g., legality engine) |
-| **Log Analysis**                  | Tool has a companion log analysis script                      |
-| **Bootstrap / Setup Scripts**     | Tool has one-time setup or data generation scripts            |
+| **Log Analysis** | Tool has a companion log analysis script |
+| **Bootstrap / Setup Scripts** | Tool has one-time setup or data generation scripts |
 
 ### Content Rules
 
 1. **Last Updated date** — Required at top, update with any README change
-2. **CLI examples first** — Users need to know how to run it before understanding internals
-3. **Source-specific details** — Document anything unique about the source (encoding, API quirks, rate limits)
-4. **Mapping coverage stats** — Report exact numbers (e.g., "69/99 mapped (70%)")
-5. **Known limitations** — Be explicit about gaps; don't hide unmapped values or API issues
-6. **Cross-references** — Link to tool-development-standards and other tool READMEs
+
+1. **CLI examples first** — Users need to know how to run it before understanding internals
+
+1. **Source-specific details** — Document anything unique about the source (encoding, API quirks, rate limits)
+
+1. **Mapping coverage stats** — Report exact numbers (e.g., "69/99 mapped (70%)")
+
+1. **Known limitations** — Be explicit about gaps; don't hide unmapped values or API issues
+
+1. **Cross-references** — Link to tool-development-standards and other tool READMEs
 
 ## 17. Atomicity and Progress Tracking (MANDATORY)
 
@@ -638,7 +681,7 @@ Every download tool MUST persist state **after each successful file save**. If t
 
 **Required sequence per puzzle:**
 
-```
+```text
 1. Fetch puzzle data from source
 2. Parse, validate, and enrich SGF
 3. Write SGF file to disk (atomic write)
@@ -681,14 +724,14 @@ All progress logging MUST include **running totals** that show `M of N` style pr
 **Required fields in every `puzzle_save()` call:**
 
 | Field | Description | Example |
-|-------|-------------|---------|
+| ------- | ------------- | --------- |
 | `downloaded` | Total puzzles saved so far | `42` |
 | `skipped` | Total puzzles skipped (dupes, validation) | `3` |
 | `errors` | Total puzzle errors encountered | `1` |
 
 **Console output shows:**
 
-```
+```text
 22:56:41 [INFO ] SAVE 12489 -> 12489.sgf [saved=42 skip=3 err=1]
 22:56:41 [INFO ]   [42/500] saved | 42 on disk | 2m13s elapsed | ~18.9 puzzles/min
 ```
@@ -709,11 +752,14 @@ def signal_handler(signum, frame):
 signal.signal(signal.SIGINT, signal_handler)
 ```
 
-### Anti-Patterns
+### Browser-Gated Anti-Patterns
 
 - ❌ Saving checkpoint only at end of batch/page (loses progress on interrupt)
+
 - ❌ Calling `puzzle_save()` without passing counter values (shows zeros in logs)
+
 - ❌ Updating counters inside `_process_puzzle()` instead of the main loop
+
 - ❌ No SIGINT handler (checkpoint lost on Ctrl+C)
 
 ## 18. Path Standards (MANDATORY)
@@ -771,7 +817,7 @@ OUTPUT_DIR = Path("C:/Users/dev/yen-go/external-sources/my-tool")
 All tool output MUST go under `external-sources/{tool-name}/`. This is the **single source of truth** for tool output location.
 
 | Artifact | Location | Notes |
-|----------|----------|-------|
+| ---------- | ---------- | ------- |
 | SGF files | `external-sources/{tool}/sgf/batch-NNN/` | Standard batch layout |
 | Logs | `external-sources/{tool}/logs/` | JSONL structured logs |
 | Checkpoint | `external-sources/{tool}/.checkpoint.json` | Hidden dotfile |
@@ -780,8 +826,11 @@ All tool output MUST go under `external-sources/{tool-name}/`. This is the **sin
 **Explicitly forbidden locations for output/logs/state:**
 
 - ❌ `tools/{tool}/downloads/` — tool directory is for code, not data
+
 - ❌ `tools/{tool}/logs/` — logs belong with the output
+
 - ❌ `tools/{tool}/state.json` — state belongs with the output
+
 - ❌ `logs/tools/{tool}/` — centralized log directory is deprecated
 
 ### Deprecated: Centralized Logging

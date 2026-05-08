@@ -1,10 +1,10 @@
+# Multi-Dimensional Puzzle Filtering — Research & Plan
+
 > ⚠️ **ARCHIVED** — This document records the pre-SQLite client-side filtering research.
 > The current canonical architecture is [Concepts: SQLite Index Architecture](../concepts/sqlite-index-architecture.md).
 > Kept for historical reference only.
 
 ---
-
-# Multi-Dimensional Puzzle Filtering — Research & Plan
 
 **Last Updated**: 2026-02-17  
 **Status**: Research Complete — Decisions Finalized → Ready for Implementation  
@@ -21,7 +21,7 @@
 The app has three primary entry points from the home page, each selecting puzzles along a **primary dimension**. Users need the ability to **slice and dice** along secondary dimensions:
 
 | Entry Point | Primary Dimension | Secondary Dimension(s) Needed | Status Today |
-|-------------|-------------------|-------------------------------|--------------|
+| ------------- | ------------------- | ------------------------------- | -------------- |
 | **Training** (by Level) | Level (e.g., Beginner: 30k–25k) | Technique/Tag filter | **No secondary filter** |
 | **Technique** (by Tag) | Tag (e.g., "ladder", "capture") | Level filter | **No secondary filter** |
 | **Collections** | Collection (e.g., "Cho Chikun Elementary") | Level **AND** Tag (two secondary dimensions) | **No secondary filter** |
@@ -31,7 +31,6 @@ The app has three primary entry points from the home page, each selecting puzzle
 ### Why This Matters (Cho Chikun / Go Expert Perspective)
 
 > *"A 25-kyu player studying net (geta) problems must see positions with 2–3 liberties, not the 6-liberty nets that challenge dan players. Showing all levels together is like giving a math student algebra and calculus mixed together."*
-
 > *"A collection like 'Cho Chikun's Elementary Life and Death' inherently spans levels. A student who finds it too hard should be able to filter down to just the novice/beginner puzzles."*
 
 ---
@@ -43,7 +42,7 @@ The app has three primary entry points from the home page, each selecting puzzle
 The current view indexes use **minimal, single-purpose entry shapes** per Spec 119, which deliberately removed cross-dimensional data to reduce payload:
 
 | View Type | Directory | Entry Shape | Cross-ref Data |
-|-----------|-----------|-------------|----------------|
+| ----------- | ----------- | ------------- | ---------------- |
 | **by-level** | `views/by-level/{level}.json` | `{path, tags}` | Has tags ✓, level implicit from filename |
 | **by-tag** | `views/by-tag/{tag}.json` | `{path, level}` | Has level ✓, tag implicit from filename |
 | **by-collection** | `views/by-collection/{slug}.json` | `{path, level, sequence_number}` | Has level ✓, **NO tags** ✗ |
@@ -74,15 +73,19 @@ Each collection in `config/collections.json` has: `slug`, `name`, `description`,
 ### 2.4 Pagination System
 
 - **Threshold**: 500 entries per file (configurable via `PaginationConfig`)
+
 - **Flat mode**: Single `{slug}.json` ViewEnvelope when count ≤ 500
+
 - **Paginated mode**: Directory with `index.json` (DirectoryIndex) + `page-NNN.json` (PageDocument) files
+
 - **State tracking**: `.pagination-state.json` tracks total/pages/last_page_count per entity
+
 - **PaginationWriter**: Handles flat→paginated transitions, dedup, append-only, atomic writes
 
 ### 2.5 Frontend Data Consumption
 
 | Component | Data Source | Filtering Capability |
-|-----------|-----------|---------------------|
+| ----------- | ----------- | --------------------- |
 | `TrainingPage` | `loadLevelIndex(level)` → by-level view | None — plays all puzzles at that level |
 | `TechniqueFocusPage` → `CollectionViewPage` | `loadTagIndex(tag)` → by-tag view | None — plays all levels for that tag |
 | `CollectionViewPage` | `loadCollection(id)` → by-collection view | None — plays all entries in order |
@@ -92,17 +95,23 @@ Each collection in `config/collections.json` has: `slug`, `name`, `description`,
 ### 2.6 Existing Cross-Filtering Code (Unused)
 
 **Backend (tag-loader.ts)**:
+
 - `filterPuzzlesByLevel(tag, level)` — loads tag index, filters `entries.filter(e => e.level === level)` — **exists but no UI calls it**
+
 - `filterPuzzlesByRank(tag, minRank, maxRank)` — exists, unused
 
 **Backend (collectionService.ts)**:
+
 - `loadFilteredPuzzles(level, tags)` — loads level indexes, filters by tag intersection — **only used by CreatePracticeSetModal, not by main navigation**
 
 ### 2.7 JSON Schema (`config/schemas/view-index.schema.json`)
 
 The schema is the source of truth. Currently:
+
 - `LevelEntry`: `{path: string, tags: string[]}` — `additionalProperties: false`
+
 - `TagEntry`: `{path: string, level: string}` — `additionalProperties: false`
+
 - `CollectionEntry`: `{path: string, level: string, sequence_number: integer}` — `additionalProperties: false`
 
 The `additionalProperties: false` constraint means adding new fields requires schema migration.
@@ -114,7 +123,7 @@ The `additionalProperties: false` constraint means adding new fields requires sc
 ### 3.1 Projected Data Volumes
 
 | Metric | Current | At 200k puzzles |
-|--------|---------|-----------------|
+| -------- | --------- | ----------------- |
 | Total SGF files | 57 | 200,000 |
 | Tags per puzzle (avg) | 2.5 | ~3 (more diversity) |
 | Total tag assignments | 144 | ~600,000 |
@@ -127,7 +136,7 @@ The `additionalProperties: false` constraint means adding new fields requires sc
 ### 3.2 Per-Entry Payload Sizes
 
 | Entry Type | Current Size | With Uniform Schema | Delta |
-|------------|-------------|--------------------:|------:|
+| ------------ | ------------- | --------------------: | ------: |
 | LevelEntry `{path, tags}` | ~164 B | ~180 B (+level field) | +16 B |
 | TagEntry `{path, level}` | ~110 B | ~180 B (+tags array) | +70 B |
 | CollectionEntry `{path, level, seq}` | ~130 B | ~210 B (+tags array) | +80 B |
@@ -137,7 +146,7 @@ The `additionalProperties: false` constraint means adding new fields requires sc
 **Important**: Gzip compression is NOT something we do. GitHub Pages' CDN automatically applies `Content-Encoding: gzip` during HTTP transport when the browser requests it. Files are stored as **raw uncompressed JSON** in the git repo and on GitHub Pages' storage. The "over the wire" column shows what the browser actually downloads; the "raw JSON" column is what matters for git repo size, browser memory, and `JSON.parse()` time.
 
 | Scenario | Entries | Entry Size | Raw JSON (on disk) | Over the wire (auto-gzip by GH Pages) |
-|----------|---------|-----------|----------|--------|
+| ---------- | --------- | ----------- | ---------- | -------- |
 | Largest level (22k puzzles) | 22,000 | 180 B | **3.9 MB** | **~600 KB** |
 | Single page (500 entries) | 500 | 180 B | **88 KB** | **~14 KB** |
 | Largest tag (21k puzzles) | 21,000 | 180 B | **3.7 MB** | **~560 KB** |
@@ -150,16 +159,23 @@ The `additionalProperties: false` constraint means adding new fields requires sc
 ### 3.4 Pagination Impact
 
 At the 500-entry threshold with 200k puzzles:
+
 - **by-level**: 9 levels × avg 44 pages each = ~400 page files
+
 - **by-tag**: 28 tags × avg 42 pages each = ~1,200 page files  
+
 - **by-collection**: 200 collections × avg 1-4 pages each = ~400 page files
+
 - **Total page files**: ~2,000 files (all ≤88 KB each, manageable for GitHub Pages)
 
 ### 3.5 Client-Side Filtering Performance
 
 Filtering 500 entries (one page) using `Array.filter()`:
+
 - **Time**: <1ms on any modern device
+
 - **Memory**: ~90 KB for the page + negligible filter overhead
+
 - **Verdict**: **Client-side filtering per page is the correct approach** — no need for pre-computed cross-dimensional indexes
 
 For the master indexes and filter preview (e.g., "12 beginner ladder puzzles"), loading a 500-entry page and counting is fast, but loading 44 pages to count across an entire tag would require 44 HTTP requests. **This is where enriched master indexes add value** — they provide counts without loading entry data.
@@ -197,10 +213,14 @@ interface CollectionEntry extends UnifiedViewEntry {
 #### Rationale
 
 1. **Eliminates all data gaps** — every view can be filtered by level AND tags without cross-loading
-2. **Simplifies frontend code** — one consistent entry shape, no type-specific handling
-3. **Client-side filtering is trivial** — `entries.filter(e => e.level === selectedLevel && e.tags.includes(selectedTag))`
-4. **Payload cost is acceptable** — +16 to +80 bytes per entry, offset by gzip compression
-5. **Big-bang migration** means no backward-compatibility wrapper code
+
+1. **Simplifies frontend code** — one consistent entry shape, no type-specific handling
+
+1. **Client-side filtering is trivial** — `entries.filter(e => e.level === selectedLevel && e.tags.includes(selectedTag))`
+
+1. **Payload cost is acceptable** — +16 to +80 bytes per entry, offset by gzip compression
+
+1. **Big-bang migration** means no backward-compatibility wrapper code
 
 #### Backend Changes (publish.py)
 
@@ -220,6 +240,7 @@ collection_entry = {**base_entry, "sequence_number": ...}
 ### 4.2 Enriched Master Indexes
 
 #### Current Shape
+
 ```json
 {"name": "beginner", "slug": "beginner", "paginated": false, "count": 6}
 ```
@@ -227,6 +248,7 @@ collection_entry = {**base_entry, "sequence_number": ...}
 #### Proposed Shape (with level and tag distribution)
 
 **Level Master Index** — add tag distribution:
+
 ```json
 {
   "name": "beginner",
@@ -244,6 +266,7 @@ collection_entry = {**base_entry, "sequence_number": ...}
 ```
 
 **Tag Master Index** — add level distribution:
+
 ```json
 {
   "name": "ladder",
@@ -266,6 +289,7 @@ collection_entry = {**base_entry, "sequence_number": ...}
 ```
 
 **Collection Master Index** — add level and tag distributions:
+
 ```json
 {
   "name": "cho-chikun-elementary",
@@ -289,7 +313,7 @@ collection_entry = {**base_entry, "sequence_number": ...}
 
 The master index does **not** contain SGF file paths. It is an **index of indexes** — it tells the frontend what entities exist, how many puzzles each has, and whether the entity is paginated. The actual puzzle file paths live inside the ViewEnvelope/PageDocument files.
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                        MASTER INDEX → SGF FLOW                             │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -376,17 +400,23 @@ The master index does **not** contain SGF file paths. It is an **index of indexe
 #### Why This Matters at Scale
 
 Without enriched master indexes, to show the Technique browse page with "ladder — 21,000 puzzles (2,800 at your level)" the frontend would need to:
+
 1. Load the master index (1 request) — gets total count
-2. Load the first page of the tag index (1 request) — 500 entries, count `level === 'beginner'`
-3. Load pages 2–42 (41 more requests!) — just to count
+
+1. Load the first page of the tag index (1 request) — 500 entries, count `level === 'beginner'`
+
+1. Load pages 2–42 (41 more requests!) — just to count
 
 With enriched master indexes:
+
 1. Load the master index (1 request) — gets total count AND `levels.beginner = 2800`
-2. **Done.** Zero additional fetches for count display.
+
+1. **Done.** Zero additional fetches for count display.
 
 The same applies to collection browse: showing puzzle count by level/tag per collection card requires zero fetches beyond the master index.
 
 **Daily Master Index** — add level and tag distributions:
+
 ```json
 {
   "name": "2026-02-17",
@@ -408,8 +438,11 @@ The same applies to collection browse: showing puzzle count by level/tag per col
 #### Payload Cost
 
 - **Level master** (9 entries): Adding ~28 tag counts per entry → 9 × 28 × ~20 B = **~5 KB** (negligible)
+
 - **Tag master** (28 entries): Adding ~9 level counts per entry → 28 × 9 × ~20 B = **~5 KB** (negligible)
+
 - **Collection master** (200 entries): Adding ~9 level + ~28 tag counts → 200 × 37 × ~20 B = **~148 KB** raw (acceptable)
+
 - **Daily master** (365 entries): Adding ~9 level + ~10 tag counts → 365 × 19 × ~20 B = **~139 KB** raw (acceptable)
 
 ### 4.3 Enriched Collection Catalog (`config/collections.json`)
@@ -561,29 +594,40 @@ interface MasterIndexEntry {
 When a user selects a technique (e.g., "ladder"), `CollectionViewPage` currently loads all entries. Add:
 
 1. **Load tag master index** → read `levels` distribution for this tag
-2. **Render FilterBar** with level options: `All (21k) | Novice (1.2k) | Beginner (2.8k) | ...`
-3. **Filter loaded page entries** client-side: `entries.filter(e => e.level === selectedLevel)`
-4. **Pass filtered entries** to `PuzzleSetPlayer`
+
+1. **Render FilterBar** with level options: `All (21k) | Novice (1.2k) | Beginner (2.8k) | ...`
+
+1. **Filter loaded page entries** client-side: `entries.filter(e => e.level === selectedLevel)`
+
+1. **Pass filtered entries** to `PuzzleSetPlayer`
 
 #### 5.2.2 Training Solve Page (Level → filter by Tag)
 
 When training at a level, `TrainingPage` loads all entries. Add:
 
 1. **Load level master index** → read `tags` distribution for this level
-2. **Render FilterBar** with tag options: `All (22k) | Life & Death (3.2k) | Ladder (1.8k) | ...`
-3. **Filter loaded page entries** client-side: `entries.filter(e => e.tags.includes(selectedTag))`
-4. **Pass filtered entries** to `PuzzleSetPlayer`
+
+1. **Render FilterBar** with tag options: `All (22k) | Life & Death (3.2k) | Ladder (1.8k) | ...`
+
+1. **Filter loaded page entries** client-side: `entries.filter(e => e.tags.includes(selectedTag))`
+
+1. **Pass filtered entries** to `PuzzleSetPlayer`
 
 #### 5.2.3 Collection Solve Page (Collection → filter by Level and/or Tag)
 
 When viewing a collection, `CollectionViewPage` loads all entries. Add:
 
 1. **Load collection master index** → read `levels` and `tags` distributions
-2. **Render two FilterBars**:
+
+1. **Render two FilterBars**:
+
    - Level: `All | Beginner (45) | Elementary (72) | ...`
+
    - Tag: `All | Life & Death (120) | Ko (35) | ...`
-3. **Filter loaded entries** client-side: compound filter with AND logic
-4. **Pass filtered entries** to `PuzzleSetPlayer`
+
+1. **Filter loaded entries** client-side: compound filter with AND logic
+
+1. **Pass filtered entries** to `PuzzleSetPlayer`
 
 ### 5.3 PuzzleSetPlayer / Loader Changes
 
@@ -600,10 +644,14 @@ Currently `PuzzleSetPlayer` receives a `PuzzleSetLoader` and plays through every
 With paginated views (500 entries per page), filtering happens **per loaded page**. The UI flow:
 
 1. Load page 1 of `views/by-tag/ladder/page-001.json` (500 entries, all have `{path, level, tags}`)
-2. Apply filter: `entries.filter(e => e.level === 'beginner')` → yields, say, 67 entries
-3. User solves those 67 puzzles
-4. Load page 2, filter again → yields 71 entries
-5. Continue until all pages exhausted
+
+1. Apply filter: `entries.filter(e => e.level === 'beginner')` → yields, say, 67 entries
+
+1. User solves those 67 puzzles
+
+1. Load page 2, filter again → yields 71 entries
+
+1. Continue until all pages exhausted
 
 The **enriched master index** provides the total count upfront ("2,800 beginner ladder puzzles") so the UI can show progress against the filtered total without loading all pages.
 
@@ -612,7 +660,7 @@ The **enriched master index** provides the total count upfront ("2,800 beginner 
 Since this is a big-bang migration, legacy code can be removed:
 
 | File | Code to Remove | Reason |
-|------|---------------|--------|
+| ------ | --------------- | -------- |
 | `tag-loader.ts` | `TagIndex` type with custom fields | Replace with v4.0 ViewEnvelope types |
 | `tag-loader.ts` | `filterPuzzlesByLevel()` | DECIDED: Remove. With uniform entries, filtering is `entries.filter(e => e.level === level)`. Legacy function returns `TagPuzzleEntry` (removed type). |
 | `tag-loader.ts` | `filterPuzzlesByRank()` | DECIDED: Remove. Unused and rank-based filtering is subsumed by level filtering |
@@ -649,8 +697,10 @@ collection_entry = {**base_entry, "sequence_number": ...}
 The `_generate_level_master_index()`, `_generate_tag_master_index()`, and `_generate_collection_master_index()` methods need to:
 
 1. Load all entries for each entity (or accumulate counts during append operations)
-2. Compute level/tag distribution counts
-3. Include `levels` and `tags` dicts in each master index entry
+
+1. Compute level/tag distribution counts
+
+1. Include `levels` and `tags` dicts in each master index entry
 
 **Implementation approach**: During `append_*_puzzles()`, maintain running distribution counters in `LevelPaginationState`. This avoids re-reading all pages during master index generation.
 
@@ -674,8 +724,11 @@ class LevelPaginationState(BaseModel):
 **File**: `config/schemas/view-index.schema.json`
 
 - Update `LevelEntry`, `TagEntry`, `CollectionEntry` to all require `path`, `level`, `tags`
+
 - Update `CollectionEntry` to also require `sequence_number`
+
 - Update `MasterIndexEntry` to allow optional `levels` and `tags` distribution objects
+
 - Consider bumping ViewEnvelope version to `"4.0"`
 
 ### 6.5 `_update_collection_indexes()` in `publish.py`
@@ -703,7 +756,7 @@ The view regeneration utility must also produce uniform entries. This is used du
 All tests asserting entry shapes need updating:
 
 | Test File | What to Update |
-|-----------|---------------|
+| ----------- | --------------- |
 | `tests/unit/test_pagination_contracts.py` | Entry shape assertions: add `level` to LevelEntry, `tags` to TagEntry/CollectionEntry |
 | `tests/unit/test_pagination_writer.py` | Entry construction in test helpers |
 | `tests/integration/test_publish_pagination.py` | Master index shape assertions |
@@ -719,7 +772,7 @@ All tests asserting entry shapes need updating:
 ### Phase 1: Backend — Uniform Schema + Enriched Master Indexes
 
 | Step | Task | Files | Tests |
-|------|------|-------|-------|
+| ------ | ------ | ------- | ------- |
 | 1.1 | Update JSON Schema (`view-index.schema.json`) | `config/schemas/view-index.schema.json` | Schema validation tests |
 | 1.2 | Update `LevelPaginationState` with distribution counters | `pagination_models.py` | `test_pagination_state.py` |
 | 1.3 | Update `publish.py` entry construction to uniform `{path, level, tags}` | `stages/publish.py` | `test_publish_*.py` |
@@ -736,7 +789,7 @@ All tests asserting entry shapes need updating:
 ### Phase 2: Frontend — Type Updates + Legacy Removal
 
 | Step | Task | Files |
-|------|------|-------|
+| ------ | ------ | ------- |
 | 2.1 | Update TypeScript types in `indexes.ts` — unified `ViewEntry` | `types/indexes.ts` |
 | 2.2 | Update `MasterIndexEntry` with distribution fields | `types/indexes.ts` |
 | 2.3 | Remove legacy format handling in `puzzleLoader.ts` | `services/puzzleLoader.ts` |
@@ -751,7 +804,7 @@ All tests asserting entry shapes need updating:
 ### Phase 3: Frontend — Filter Components + Integration
 
 | Step | Task | Files |
-|------|------|-------|
+| ------ | ------ | ------- |
 | 3.1 | Create `FilterDropdown` component (single-select dropdown for 10+ options) | `components/shared/FilterDropdown.tsx` |
 | 3.2 | Extend `FilterBar` with count badge support | `components/shared/FilterBar.tsx` |
 | 3.3 | Create `useFilterState()` hook for coordinated multi-dimension state | `hooks/useFilterState.ts` |
@@ -766,7 +819,7 @@ All tests asserting entry shapes need updating:
 ### Phase 4: Rush Play — Level + Tag Selection
 
 | Step | Task | Files |
-|------|------|-------|
+| ------ | ------ | ------- |
 | 4.1 | Add level selection to Rush setup screen | `RushBrowsePage.tsx` or `PuzzleRushPage.tsx` |
 | 4.2 | Add tag selection to Rush setup screen | Same |
 | 4.3 | Show "~N puzzles available" from master index distributions | Same |
@@ -778,7 +831,7 @@ All tests asserting entry shapes need updating:
 ### Phase 5: Republish + Validate
 
 | Step | Task |
-|------|------|
+| ------ | ------ |
 | 5.1 | Set `pagination_threshold: 0` (always-paginate) — PENDING DECISION |
 | 5.2 | Re-run the full publish pipeline to regenerate all views with new schema |
 | 5.3 | Validate all generated JSON against updated schema |
@@ -791,7 +844,7 @@ All tests asserting entry shapes need updating:
 ## 8. Decisions (All Resolved)
 
 | # | Decision | Choice | Rationale |
-|---|----------|--------|-----------|
+| --- | ---------- | -------- | ----------- |
 | D1 | Entry schema | Uniform `{path, level, tags}` everywhere | Simplicity > byte savings; client-side filtering needs both dimensions |
 | D2 | Migration strategy | Big-bang, no backward compatibility | Per user directive; eliminates legacy code |
 | D3 | Filtering approach | Client-side `Array.filter()` per loaded page | <1ms for 500 entries; avoids pre-computed cross-indexes |
@@ -882,9 +935,13 @@ Training progress is saved per level: `localStorage['yen-go-training-progress']`
 `tag-loader.ts` defines its own types (`TagListEntry`, `TagIndex`, `TagPuzzleEntry`) completely separate from `indexes.ts`. With the big-bang migration, these get removed and replaced with unified `ViewEntry`/`ViewEnvelope` types.
 
 **Ripple**: Every file that imports from `tag-loader.ts` must be updated:
+
 - `TechniqueFocusPage.tsx`
+
 - `TechniqueList.tsx`
+
 - `TechniqueCard.tsx`
+
 - `tests/unit/tag-index.test.ts`
 
 ### 9.9 Collection Browse Page — Better Cards for Free
@@ -894,10 +951,15 @@ With enriched master indexes, each collection card can display "180 puzzles — 
 ### 9.10 GitHub Pages Repository Size
 
 At 200k puzzles with uniform entries (~180 B/entry), total raw JSON across all views:
+
 - by-level: 200k × 180 B = **~36 MB**
+
 - by-tag: 200k × 2.5 tags/puzzle × 180 B = **~90 MB** (same puzzle in multiple tag indexes)
+
 - by-collection: ~400k collection assignments × 210 B = **~84 MB**
+
 - by-daily: ~3,650 daily entries × 180 B = **~0.7 MB** (negligible)
+
 - **Total**: ~211 MB of JSON view files in the git repo
 
 GitHub Pages has a **1 GB repository size soft limit** and a **100 MB file size limit**. With pagination at 500 entries (88 KB/page), no single file exceeds the limit. Total repo (~211 MB views + ~200k SGFs) approaches but doesn't hit 1 GB. **Worth monitoring** but not a blocker. Git's internal zlib compression reduces on-disk clone size further.
@@ -905,11 +967,15 @@ GitHub Pages has a **1 GB repository size soft limit** and a **100 MB file size 
 ### 9.11 Gzip Clarification — Not Our Concern
 
 **Gzip is NOT something we control.** The flow:
+
 1. Our pipeline writes **raw uncompressed JSON** → git push → GitHub Pages stores raw JSON
-2. Browser requests file → GitHub Pages CDN automatically applies `Content-Encoding: gzip` → browser decompresses transparently
+
+1. Browser requests file → GitHub Pages CDN automatically applies `Content-Encoding: gzip` → browser decompresses transparently
 
 We do **nothing** about gzip. It's a GitHub Pages CDN feature that compresses during HTTP transport. What we control and care about:
+
 - **Raw JSON size** → git repo size + browser memory + JSON.parse() time
+
 - **Page file size** → pagination threshold of 500 entries keeps files at ~88 KB raw
 
 ### 9.12 Spec Version Alignment
@@ -917,10 +983,15 @@ We do **nothing** about gzip. It's a GitHub Pages CDN feature that compresses du
 The codebase currently has a confusing mix: ViewEnvelope v3.0, Daily v2.2, Master Indexes v1.0, Pagination State v1.0, Collection Catalog v3.0.
 
 **Decision**: Only bump versions for schemas that actually change in this migration. Don't create scope creep aligning versions that aren't touched.
+
 - ViewEnvelope: `"3.0"` → `"4.0"` ✓
+
 - Master Index: `"1.0"` → `"2.0"` ✓
+
 - Daily schema: `"2.2"` → `"4.0"` (aligns with ViewEnvelope) ✓
+
 - Pagination State: `"1.0"` → keep (internal, not user-facing)
+
 - Collection Catalog: `"3.0"` → keep (no schema change)
 
 ### 9.13 Puzzle Rush — Deep Analysis
@@ -928,9 +999,13 @@ The codebase currently has a confusing mix: ViewEnvelope v3.0, Daily v2.2, Maste
 #### Current State
 
 Puzzle Rush is an **independent game mode** that does NOT use `PuzzleSetPlayer`. It has its own:
+
 - State machine in `PuzzleRushPage.tsx` (setup → countdown → playing → finished)
+
 - Session management via `useRushSession.ts` (timer, lives, score, streak)
+
 - Puzzle renderer `RushPuzzleRenderer` → `InlinePuzzleSolver` in `app.tsx`
+
 - HUD overlay via `RushOverlay.tsx`
 
 **Data flow**: `getNextPuzzle(level)` → `loadLevelIndex(level)` → picks random entry from `ViewEnvelope<LevelEntry>` → `fetchSGFContent(entry.path)` → parse SGF → render.
@@ -950,27 +1025,35 @@ With enriched master indexes and uniform entries, Rush can unlock a powerful UX:
 **Setup screen additions** (in `PuzzleRushPage` or `RushBrowsePage`):
 
 | Filter | Source | Default |
-|--------|--------|---------|
+| -------- | -------- | --------- |
 | Duration | Existing: 3/5/10 min | 3 min |
 | Level | Level master index → level names + counts | All |
 | Technique/Tag | Tag master index → tag names + counts | All |
 
 **Implementation approach**:
+
 1. `RushBrowsePage` loads level + tag master indexes
-2. User selects duration + optional level + optional tag
-3. `getNextPuzzle()` changes from single-level loader to:
+
+1. User selects duration + optional level + optional tag
+
+1. `getNextPuzzle()` changes from single-level loader to:
+
    - If level selected + no tag: load from `views/by-level/{level}`, filter by tag client-side
+
    - If tag selected + no level: load from `views/by-tag/{tag}`, random entry
+
    - If both selected: load from `views/by-level/{level}`, filter `entries.filter(e => e.tags.includes(tag))`
+
    - If neither: load from random level (use master index for weighted selection)
-4. Filtered entries are randomly sampled (existing `usedPuzzleIds` deduplication still works)
+
+1. Filtered entries are randomly sampled (existing `usedPuzzleIds` deduplication still works)
 
 **No PuzzleSetPlayer changes needed** — Rush has its own orchestration.
 
 #### Rush-Specific Risks
 
 | Risk | Severity | Mitigation |
-|------|----------|------------|
+| ------ | ---------- | ------------ |
 | Filtered set exhaustion (e.g., only 15 expert ko puzzles) | Medium | Show "X puzzles available" on setup screen using master index distributions; warn if < 20 |
 | `loadLevelIndex()` hardcodes flat URL | High | Must migrate to pagination-aware loading (same fix needed elsewhere) |
 | Level stuck at 'beginner' | Low (existing bug) | Fix as part of this feature — add level selection |
@@ -986,7 +1069,7 @@ With enriched master indexes and uniform entries, Rush can unlock a powerful UX:
 **Analysis**:
 
 | Factor | Always Paginate | Keep Dual Mode |
-|--------|----------------|----------------|
+| -------- | ---------------- | ---------------- |
 | Code paths | **1** (simpler) | 2 (flat + paginated) |
 | Backend complexity | Simpler — no `should_paginate()`, no `_transition_to_paginated()` | Current |
 | Frontend complexity | Simpler — always `index.json` → `page-001.json` | Must detect + handle both |
@@ -995,14 +1078,21 @@ With enriched master indexes and uniform entries, Rush can unlock a powerful UX:
 | Mental model | Uniform — every entity is a directory | "It depends on count" |
 
 **Breaking paths if always-paginated**:
+
 - `loadLevelIndex()` in `puzzleLoader.ts` — hardcodes `views/by-level/${level}.json` (would 404)
+
 - `loadTagIndex()` in `tag-loader.ts` — hardcodes `views/by-tag/${tag}.json` (would 404)
+
 - These already need migration to use the generic `createPaginationLoader()` path
 
 **Recommendation**: **Yes, always paginate.** The extra HTTP request for small entities (2 instead of 1) is negligible. The simplification value compounds:
+
 - Eliminates `should_paginate()`, `_transition_to_paginated()`, `_append_to_flat()` backend code
+
 - Frontend uses ONE loading path (`detectIndexType()` already tries paginated first)
+
 - New tags/collections/levels automatically work — no flat→paginated transition ever needed
+
 - Change: Set `pagination_threshold: 0` in `PaginationConfig` (or add `always_paginate: true`)
 
 **DECISION NEEDED**: This is a structural change. User must confirm.
@@ -1010,20 +1100,28 @@ With enriched master indexes and uniform entries, Rush can unlock a powerful UX:
 ### 10.2 New Tags (Fully Config-Driven — No Concern)
 
 Adding a new tag to `config/tags.json`:
+
 1. Pipeline auto-discovers → creates `views/by-tag/{new-tag}/index.json` + pages
-2. Master index auto-includes → `{name, slug, count, levels, tags}`
-3. Frontend `TechniqueFocusPage` loads from `getTagsConfig()` at runtime → **auto-adapts**
-4. FilterBar pills render the new tag → **no code change**
+
+1. Master index auto-includes → `{name, slug, count, levels, tags}`
+
+1. Frontend `TechniqueFocusPage` loads from `getTagsConfig()` at runtime → **auto-adapts**
+
+1. FilterBar pills render the new tag → **no code change**
 
 **One exception**: `TAG_DISPLAY_INFO` in `collectionService.ts` is a hardcoded map. New tags won't appear in collection practice set creation unless this map is updated. **Should be refactored to derive from tags.json** (separate cleanup task).
 
 ### 10.3 New Collections (Fully Config-Driven — No Concern)
 
 Adding a new collection to `config/collections.json`:
+
 1. Pipeline auto-discovers → creates `views/by-collection/{slug}/` with pages
-2. Collection master index auto-includes with distributions
-3. Frontend `CollectionsPage` loads from config at runtime → **auto-adapts**
-4. **No code change required**
+
+1. Collection master index auto-includes with distributions
+
+1. Frontend `CollectionsPage` loads from config at runtime → **auto-adapts**
+
+1. **No code change required**
 
 ### 10.4 Granular Levels (More Than 9)
 
@@ -1032,7 +1130,7 @@ Adding a new collection to `config/collections.json`:
 **If levels become more granular** (e.g., splitting "beginner" into sub-levels):
 
 | Impact Area | Severity | Details |
-|-------------|----------|---------|
+| ------------- | ---------- | --------- |
 | `config/puzzle-levels.json` | Low | Add entries, regenerate types |
 | Pipeline directory structure | Low | New `sgf/{sub-level}/` directories auto-created |
 | Backend pipeline | Low | Config-driven, auto-adapts |
@@ -1047,7 +1145,7 @@ Adding a new collection to `config/collections.json`:
 ### 10.5 Frontend Components Needed
 
 | Component | Exists? | Purpose | Design |
-|-----------|---------|---------|--------|
+| ----------- | --------- | --------- | -------- |
 | `FilterBar` | ✅ Yes | Single-select pill buttons | Works for ≤8 options (levels, categories) |
 | `FilterDropdown` | ❌ No | Single-select dropdown/combobox | Needed for 10+ options (tags, collections) |
 | `MultiSelectFilter` | ❌ No | Multi-select checkbox group | Needed for "tag1 AND tag2" compound filters |
@@ -1059,7 +1157,7 @@ Adding a new collection to `config/collections.json`:
 ### 10.6 Bake-In Summary (What to Build Now vs. Later)
 
 | Bake In NOW | Reason |
-|-------------|--------|
+| ------------- | -------- |
 | Uniform `{path, level, tags}` everywhere | Foundation for ALL filtering |
 | Enriched master indexes with distributions | Enables count badges, Rush setup, browse previews |
 | Always-paginated mode | Eliminates dual code paths before scale hits |
@@ -1068,7 +1166,7 @@ Adding a new collection to `config/collections.json`:
 | Count badges in filter options | Key UX differentiator — "2,800" tells users the filter is useful |
 
 | Build LATER | Reason |
-|-------------|--------|
+| ------------- | -------- |
 | `MultiSelectFilter` (tag1 AND tag2) | YAGNI — single-select covers 95% of use cases |
 | Filter URL persistence | YAGNI — decided "None for now" |
 | Level sub-splitting | Use `YX` complexity metrics first |
@@ -1083,54 +1181,83 @@ The following user flows MUST be enabled by this change. Each row describes a pa
 ### 11.1 Entry Point → Filter Matrix
 
 | Page | Primary Dimension | Filter 1 | Filter 2 | Data Source for Filters |
-|------|-------------------|----------|----------|-------------------------|
+| ------ | ------------------- | ---------- | ---------- | ------------------------- |
 | **Training** (solve at a level) | Level (e.g., Beginner) | Tag dropdown: "All / Life & Death / Ko / Ladder / ..." | — | Level master index → `tags` distribution for this level |
 | **Technique** (solve a technique) | Tag (e.g., Ladder) | Level pills: "All / Novice / Beginner / ..." | — | Tag master index → `levels` distribution for this tag |
 | **Collection** (solve a collection) | Collection (e.g., Cho Chikun Elementary) | Level pills: "All / Beginner / Elementary / ..." | Tag dropdown: "All / Life & Death / Ko / ..." | Collection master index → `levels` AND `tags` distributions |
 | **Rush** (timed challenge) | Duration (3/5/10 min) | Level pills: "All / Beginner / Intermediate / ..." | Tag dropdown: "All / Ladder / Ko / ..." | Level + Tag master indexes |
-| **Daily** (today's challenge) | Date (today) | _(none — curated fixed set)_ | _(none)_ | N/A |
+| **Daily** (today's challenge) | Date (today) | *(none — curated fixed set)* | *(none)* | N/A |
 
 ### 11.2 Detailed User Flows
 
-**Flow A: Training → Filter by Tag**
+### Flow A: Training → Filter by Tag
+
 1. User clicks Training → selects "Beginner" → lands on `TrainingPage`
-2. Page loads level master index → reads `tags` distribution for "beginner": `{"life-and-death": 320, "ko": 180, "ladder": 450, ...}`
-3. FilterBar/Dropdown shows: `All (6,000) | Life & Death (320) | Ko (180) | Ladder (450) | ...`
-4. User selects "Ladder" → page filters loaded entries: `entries.filter(e => e.tags.includes('ladder'))`
-5. PuzzleSetPlayer receives filtered entries → user solves ladder-only beginner puzzles
 
-**Flow B: Technique → Filter by Level**
+1. Page loads level master index → reads `tags` distribution for "beginner": `{"life-and-death": 320, "ko": 180, "ladder": 450, ...}`
+
+1. FilterBar/Dropdown shows: `All (6,000) | Life & Death (320) | Ko (180) | Ladder (450) | ...`
+
+1. User selects "Ladder" → page filters loaded entries: `entries.filter(e => e.tags.includes('ladder'))`
+
+1. PuzzleSetPlayer receives filtered entries → user solves ladder-only beginner puzzles
+
+### Flow B: Technique → Filter by Level
+
 1. User clicks Techniques → selects "Ladder" → lands on technique solve page
-2. Page loads tag master index → reads `levels` distribution for "ladder": `{"beginner": 2800, "intermediate": 4200, ...}`
-3. FilterBar shows: `All (21,000) | Beginner (2,800) | Intermediate (4,200) | ...`
-4. User selects "Intermediate" → page filters: `entries.filter(e => e.level === 'intermediate')`
-5. PuzzleSetPlayer receives filtered entries
 
-**Flow C: Collection → Filter by Level AND Tag**
+1. Page loads tag master index → reads `levels` distribution for "ladder": `{"beginner": 2800, "intermediate": 4200, ...}`
+
+1. FilterBar shows: `All (21,000) | Beginner (2,800) | Intermediate (4,200) | ...`
+
+1. User selects "Intermediate" → page filters: `entries.filter(e => e.level === 'intermediate')`
+
+1. PuzzleSetPlayer receives filtered entries
+
+### Flow C: Collection → Filter by Level AND Tag
+
 1. User clicks Collections → selects "Cho Chikun Elementary" → lands on `CollectionViewPage`
-2. Page loads collection master index → reads BOTH `levels` and `tags` distributions
-3. Two filter controls:
-   - Level pills: `All (180) | Beginner (45) | Elementary (72) | Intermediate (63)`
-   - Tag dropdown: `All (180) | Life & Death (120) | Ko (35) | Eye Shape (25)`
-4. User selects "Elementary" + "Life & Death" → compound filter: `entries.filter(e => e.level === 'elementary' && e.tags.includes('life-and-death'))`
-5. Count comes from **intersection** — not simply `Math.min(72, 120)`. Actual count requires client-side counting of filtered entries per loaded page. The master index gives an upper bound only.
 
-**Flow D: Rush → Level + Tag Selection**
+1. Page loads collection master index → reads BOTH `levels` and `tags` distributions
+
+1. Two filter controls:
+
+   - Level pills: `All (180) | Beginner (45) | Elementary (72) | Intermediate (63)`
+
+   - Tag dropdown: `All (180) | Life & Death (120) | Ko (35) | Eye Shape (25)`
+
+1. User selects "Elementary" + "Life & Death" → compound filter: `entries.filter(e => e.level === 'elementary' && e.tags.includes('life-and-death'))`
+
+1. Count comes from **intersection** — not simply `Math.min(72, 120)`. Actual count requires client-side counting of filtered entries per loaded page. The master index gives an upper bound only.
+
+### Flow D: Rush → Level + Tag Selection
+
 1. User clicks Rush → lands on `RushBrowsePage`
-2. Setup screen shows:
+
+1. Setup screen shows:
+
    - Duration: `3 min | 5 min | 10 min`
+
    - Level (optional): `All | Beginner | Intermediate | ...` (from level master index)
+
    - Technique (optional): `All | Ladder | Ko | ...` (from tag master index)
-3. Below filters: "~2,800 puzzles available" (from master index intersection estimate)
-4. User selects 5 min + Intermediate + Ladder → starts Rush
-5. `getNextPuzzle()` loads from `views/by-level/intermediate/page-{NNN}.json`, filters by `tags.includes('ladder')`, picks random entry
+
+1. Below filters: "~2,800 puzzles available" (from master index intersection estimate)
+
+1. User selects 5 min + Intermediate + Ladder → starts Rush
+
+1. `getNextPuzzle()` loads from `views/by-level/intermediate/page-{NNN}.json`, filters by `tags.includes('ladder')`, picks random entry
 
 ### 11.3 What This Change Does NOT Enable (Explicit Exclusions)
 
 - ❌ Multi-tag AND filtering ("ladder AND ko") — YAGNI, build later if needed
+
 - ❌ Cross-collection search ("find all puzzles tagged 'ko' across all collections") — use Technique page instead
+
 - ❌ Daily challenge filtering — curated fixed sets, filtering doesn't apply
+
 - ❌ Level range selection ("15k-10k") — use single level selection; ranges add complexity for minimal gain
+
 - ❌ Filter persistence in URL or localStorage — decided: YAGNI for now
 
 ---
@@ -1139,7 +1266,7 @@ The following user flows MUST be enabled by this change. Each row describes a pa
 
 `publish.py` is the **single source of truth** for how view index entries are constructed. Every entry shape, every field, every schema decision flows through this file. The data flow:
 
-```
+```text
 publish.py constructs entries:
   base_entry = {"path": rel_path, "level": level_name, "tags": sorted(tags)}
        ↓
@@ -1166,7 +1293,7 @@ This means: **get publish.py right, and everything downstream (PaginationWriter,
 ## 13. Risks and Mitigations
 
 | Risk | Severity | Mitigation |
-|------|----------|------------|
+| ------ | ---------- | ------------ |
 | Rollback distribution staleness | Medium | Recompute distributions during `_rebuild_index_structure()` — entries are already loaded |
 | `loadFilteredPuzzles()` makes 396 requests at scale | High | Use enriched master index for level/tag discovery; early termination once enough puzzles collected |
 | Filter change mid-session in PuzzleSetPlayer | Medium | Reset to beginning of filtered set; completion state saved by puzzle ID (no loss) |
@@ -1185,8 +1312,9 @@ This means: **get publish.py right, and everything downstream (PaginationWriter,
 ## 14. Files Inventory (All Changes)
 
 ### Backend
+
 | File | Change Type |
-|------|-------------|
+| ------ | ------------- |
 | `config/schemas/view-index.schema.json` | Schema migration |
 | `backend/puzzle_manager/stages/publish.py` | Entry construction |
 | `backend/puzzle_manager/core/pagination_writer.py` | Master index generation + distribution tracking |
@@ -1203,8 +1331,9 @@ This means: **get publish.py right, and everything downstream (PaginationWriter,
 | `backend/puzzle_manager/tests/stages/test_publish_trace.py` | Test updates |
 
 ### Frontend
+
 | File | Change Type |
-|------|-------------|
+| ------ | ------------- |
 | `frontend/src/types/indexes.ts` | Type unification |
 | `frontend/src/types/manifest.ts` | Legacy removal |
 | `frontend/src/lib/puzzle/tag-loader.ts` | Simplification |
@@ -1227,14 +1356,19 @@ This means: **get publish.py right, and everything downstream (PaginationWriter,
 | `specs/131-frontend-view-schema/contracts/view-types.ts` | Type updates |
 
 ### Config / Schema
+
 | File | Change Type |
-|------|-------------|
+| ------ | ------------- |
 | `config/schemas/view-index.schema.json` | Entry + master index schema updates |
 
 ---
 
 > **See also**:
+>
 > - [Spec 119](../specs/119-view-schema-simplification/spec.md) — Original schema simplification rationale
+>
 > - [Spec 131](../specs/131-frontend-view-schema/data-model.md) — Frontend view schema v3.0 data model
+>
 > - [Spec 130](../specs/130-view-schema-contract/) — View index JSON schema contract
+>
 > - [Spec 106](../specs/106-view-index-pagination/) — View index pagination

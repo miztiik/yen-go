@@ -15,8 +15,11 @@ A reusable tool for comparing two directories of SGF tsumego puzzle files. Ident
 > **See also:**
 >
 > - [How-To: Compare SGF Directories](../../how-to/backend/cli-reference.md) — CLI usage
+>
 > - [Concepts: SGF Properties](../../concepts/sgf-properties.md) — AB/AW/PL/SZ reference
+>
 > - [Tool Development Standards](../../how-to/backend/tool-development-standards.md) — Scaffolding conventions
+>
 > - [Local README](../../../tools/puzzle-manager-scripts/README-compare-dirs.md) — Quick-start & CLI flags
 
 ---
@@ -28,13 +31,17 @@ A reusable tool for comparing two directories of SGF tsumego puzzle files. Ident
 **Decision:** Split the tool into two files:
 
 - `tools/core/sgf_compare.py` — Reusable comparison library (position hashing, tree comparison, match classification)
+
 - `tools/puzzle-manager-scripts/compare_dirs.py` — CLI script (directory walking, output formatting, checkpointing)
 
 **Rationale:**
 
 - **SRP (Single Responsibility Principle):** The comparison logic (hashing, tree diffing, match levels) is independent of how directories are walked or output is formatted. The library is testable in isolation — pass two `SgfTree` objects, get a `MatchLevel`.
+
 - **Reusability:** Other tools or scripts may want to compare individual SGF files without directory scaffolding. The library exposes pure functions that work on parsed trees.
+
 - **Existing pattern:** This mirrors the project convention where `tools/core/validation.py` provides reusable logic and scripts in `tools/puzzle-manager-scripts/` consume it.
+
 - **Not three+ files:** There is no need for a separate output formatter, config loader, or abstract strategy. YAGNI.
 
 **Why not a single file?** Mixing CLI `argparse`, directory I/O, checkpointing, and comparison logic in one file violates SRP and makes the comparison functions untestable without filesystem fixtures.
@@ -50,7 +57,9 @@ A reusable tool for comparing two directories of SGF tsumego puzzle files. Ident
 **Rationale (confirmed by Tsumego Domain Expert):**
 
 - In tsumego, the initial stone configuration *is* the puzzle identity. Two files with identical stone placements on the same board size represent the same problem.
+
 - Classical tsumego collections never reuse a position for a different puzzle within the same collection.
+
 - Across different collections, position overlap indicates derivative or borrowed problems.
 
 **How it works:** Parse `SZ[]` (board size), `AB[]` (black stones), and `AW[]` (white stones) into sorted, deduplicated sets. These are parsed from the SGF tree — NOT compared as raw strings (SGF does not mandate coordinate ordering within `AB[aa][bb]` vs `AB[bb][aa]`, and stones may be split across multiple `AB[]` properties).
@@ -58,7 +67,9 @@ A reusable tool for comparing two directories of SGF tsumego puzzle files. Ident
 **Edge cases handled:**
 
 - Different `AB`/`AW` encoding order: Parsed to `frozenset`, order-independent.
+
 - Multiple `AB[]`/`AW[]` properties: Accumulated into a single set per color.
+
 - Empty stone sets: File is flagged as `"error": "no_stones"` and skipped.
 
 ---
@@ -70,7 +81,9 @@ A reusable tool for comparing two directories of SGF tsumego puzzle files. Ident
 **Rationale:**
 
 - Within the same collection (the primary use case), all files maintain their original orientation. The same problem number from two sources of the same compilation will have the same orientation.
+
 - Rotation normalization requires choosing a canonical orientation (e.g., "most stones in top-right quadrant"), which is a non-trivial heuristic with edge cases.
+
 - The user explicitly decided this is out of scope: "each rotation makes it a different kind of a problem."
 
 **Future extension point:** The library could accept an optional `normalize_orientation` flag in the future, but implementing the normalization heuristic is deferred.
@@ -84,8 +97,11 @@ A reusable tool for comparing two directories of SGF tsumego puzzle files. Ident
 **Rationale (confirmed by Tsumego Domain Expert):**
 
 - SGF coordinates are board-size-relative. `AB[aa]` means `(1,1)` regardless of board size, but the semantic meaning changes — corner vs center depends on the board.
+
 - Normalizing board sizes would require a "relevant area" detector (non-trivial Go engine feature involving liberty analysis). This is massive scope creep.
+
 - In practice, collections are internally consistent — a collection uses one board size throughout. Cross-collection comparison between a 19×19 source and a 9×9 crop is a deduplication problem, not a comparison problem.
+
 - `SZ` is already part of the hash in the backend's `canonical_position_hash()` algorithm.
 
 ---
@@ -97,21 +113,25 @@ A reusable tool for comparing two directories of SGF tsumego puzzle files. Ident
 **Rationale:**
 
 - The user's principle: "I want to look at actual facts, not do inference. If inference produces noise there is no way to validate it."
+
 - Missing `PL[]` is common in raw historical SGF collections (e.g., eidogo Xuanlan has zero PL properties). Skipping these entirely would make whole collections non-comparable.
+
 - Inferring PL from the first solution move works ~99.5% of the time, but introduces code paths, edge cases (empty solution trees, wrong-answer branches listed first), and silent failures — a design smell for a comparison tool.
+
 - The dual-hash approach avoids inference entirely while still enabling matching.
 
 **How it works:**
 
-| Hash              | Formula                                                    | When Computed                          |
+| Hash | Formula | When Computed |
 | ----------------- | ---------------------------------------------------------- | -------------------------------------- |
-| **Full hash**     | `SHA256("SZ{n}:B[sorted_ab]:W[sorted_aw]:PL[X]")[:16]`   | Only when `PL[]` is explicitly present |
-| **Position hash** | `SHA256("SZ{n}:B[sorted_ab]:W[sorted_aw]")[:16]`          | Always computed for every file         |
+| **Full hash** | `SHA256("SZ{n}:B[sorted_ab]:W[sorted_aw]:PL[X]")[:16]` | Only when `PL[]` is explicitly present |
+| **Position hash** | `SHA256("SZ{n}:B[sorted_ab]:W[sorted_aw]")[:16]` | Always computed for every file |
 
 **Matching logic:**
 
 1. Both files have PL → compare full hashes. If equal → high-confidence match (Level 3+). If full hashes differ but position hashes match → same stones, different PL → `pl_conflict` flag.
-2. One or both files lack PL → compare position hashes only → lower-confidence match (Level 2 max), flagged as `pl_absent`.
+
+1. One or both files lack PL → compare position hashes only → lower-confidence match (Level 2 max), flagged as `pl_absent`.
 
 **Why not default to Black?** SGF convention defaults to Black when PL is absent, but this creates false positives. Two files with the same position but genuinely different players to move would appear as "matching" when they represent fundamentally different puzzles. The Tsumego Expert confirmed: "Black-to-live vs White-to-kill is a fundamentally different puzzle — different difficulty, different solution tree, different technique."
 
@@ -128,7 +148,9 @@ A reusable tool for comparing two directories of SGF tsumego puzzle files. Ident
 **Rationale:**
 
 - The backend pipeline already uses this exact formula for deduplication in `content_db.py`. Replicating the algorithm (not importing it — architecture boundary) ensures cross-system consistency.
+
 - Python's `hash(frozenset(...))` is session-dependent (`PYTHONHASHSEED`), making it non-deterministic across runs. SHA-256 is deterministic.
+
 - 16 hex chars = 64 bits = astronomically low collision probability for puzzle-scale data.
 
 **Algorithm:**
@@ -157,12 +179,14 @@ position_hash = hashlib.sha256(pos_canonical.encode()).hexdigest()[:16]
 **Rationale:**
 
 - The user explicitly requested: "Can we not have it as numeric only instead of having alphabets?"
+
 - A linear numeric scale is sortable, filterable, and unambiguous. Higher number = closer match.
+
 - The scale is fine-grained enough to distinguish every meaningful comparison dimension without being so granular as to create confusion.
 
 #### Level Definitions
 
-| Level | Name              | Definition | Detection Method |
+| Level | Name | Definition | Detection Method |
 | ----- | ----------------- | ---------- | ---------------- |
 | **7** | Byte-Identical | The raw SGF file content is exactly the same, byte-for-byte. | `raw_sgf_a == raw_sgf_b` |
 | **6** | Tree-Identical | Board position matches AND every move sequence in the solution tree is identical. Only non-tree content differs (SGF header properties like `GM`, `FF`, `GN`, YenGo custom properties, comments, whitespace). | Extract all root-to-leaf move paths as sets; compare sorted path sets. |
@@ -194,10 +218,14 @@ position_hash = hashlib.sha256(pos_canonical.encode()).hexdigest()[:16]
 The term "tree isomorphism" from the initial design phase was replaced with a simpler concrete algorithm. For Level 6 comparison:
 
 1. Walk the solution tree from root to every leaf node.
-2. At each node, record the move as `"{color}[{coord}]"` (e.g., `"B[cd]"`).
-3. Concatenate each root-to-leaf path as a string: `"B[cd]→W[de]→B[ef]"`.
-4. Collect all such path strings into a Python `set`.
-5. Sort and compare the two sets.
+
+1. At each node, record the move as `"{color}[{coord}]"` (e.g., `"B[cd]"`).
+
+1. Concatenate each root-to-leaf path as a string: `"B[cd]→W[de]→B[ef]"`.
+
+1. Collect all such path strings into a Python `set`.
+
+1. Sort and compare the two sets.
 
 This is ~10 lines of code. No graph theory library is needed. The sorting of child tuples ensures that variation ordering in the SGF file (which is not semantically meaningful) does not affect comparison.
 
@@ -206,7 +234,9 @@ This is ~10 lines of code. No graph theory library is needed. The sorting of chi
 `SgfNode.is_correct` defaults to `True` when no correctness markers or comment signals are found. This means:
 
 - When **both** trees lack correctness markers entirely, **every branch appears "correct."**
+
 - In this scenario, Level 5 ("correct line match, target is superset") degenerates to Level 6 ("full tree match"), because there are no "wrong" branches to distinguish.
+
 - The tool documents this in the summary report when detected.
 
 ---
@@ -218,20 +248,22 @@ This is ~10 lines of code. No graph theory library is needed. The sorting of chi
 **Rationale:**
 
 - The user stated: "Even if the filename is different, the hash will find it. Even if the filename is the same, content might be different. Ultimately we need to check with the contents."
+
 - A file named `prob0047.sgf` in directory A might match `prob0052.sgf` in directory B (if one collection renumbered problems). Content-based matching catches this.
+
 - Conversely, `prob0047.sgf` might exist in both directories with completely different puzzles (different editions of a book). Filename matching would give a false positive.
 
 **Algorithm:**
 
-| Step | Action                                                      | Data Structure                                  |
+| Step | Action | Data Structure |
 | ---- | ----------------------------------------------------------- | ----------------------------------------------- |
-| 1    | Glob `source_dir/**/*.sgf`                                  | `list[Path]`                                    |
-| 2    | Parse each source file → compute both hashes                | `dict[position_hash → list[(path, tree, raw)]]` |
-| 3    | Glob `target_dir/**/*.sgf`                                  | `list[Path]`                                    |
-| 4    | Parse each target file → compute both hashes                | Same structure                                  |
-| 5    | For each source entry, look up position hash in target index | O(1) dict lookup                                |
-| 6    | If position hash matches, attempt full hash match           | Classify Level 2–7                              |
-| 7    | If no content match, check filename correlation             | Level 1 or Level 0                              |
+| 1 | Glob `source_dir/**/*.sgf` | `list[Path]` |
+| 2 | Parse each source file → compute both hashes | `dict[position_hash → list[(path, tree, raw)]]` |
+| 3 | Glob `target_dir/**/*.sgf` | `list[Path]` |
+| 4 | Parse each target file → compute both hashes | Same structure |
+| 5 | For each source entry, look up position hash in target index | O(1) dict lookup |
+| 6 | If position hash matches, attempt full hash match | Classify Level 2–7 |
+| 7 | If no content match, check filename correlation | Level 1 or Level 0 |
 
 **Time complexity:** O(N + M) where N = source files, M = target files. Hash-map join, not O(N × M) nested loop.
 
@@ -257,7 +289,7 @@ This is ~10 lines of code. No graph theory library is needed. The sorting of chi
 
 **Rationale (from Tsumego Expert):** Comments in tsumego SGF serve three distinct functions:
 
-| Comment Type          | Example                                       | What It Means                                  |
+| Comment Type | Example | What It Means |
 | --------------------- | --------------------------------------------- | ---------------------------------------------- |
 | Correctness label | `C[Correct]`, `C[Wrong]` | Functional — changes puzzle UX |
 | Teaching explanation | `C[This is a snapback]` | Pedagogical — adds value |
@@ -276,7 +308,9 @@ Correctness labels are already captured by the tree comparison (they map to `is_
 **Rationale:**
 
 - The user wants: "Every output is unique — date/timestamp prefix in a directory for every run."
+
 - Timestamped directories prevent overwriting previous results. Old comparisons are preserved for reference.
+
 - This follows the `tools/*/output/` convention which is `.gitignore`-protected (per Git Safety Rules, tools output directories are "Protected Directories" for runtime data).
 
 **Structure:**
@@ -301,7 +335,9 @@ tools/puzzle-manager-scripts/output/
 **Rationale:**
 
 - JSONL is streaming-friendly — can be processed with `jq`, loaded into pandas, or parsed line-by-line.
+
 - One record per source file means every source file appears exactly once in the output.
+
 - All dimensions (match level, hashes, depths, node counts, flags) are in a single record for easy filtering.
 
 **Schema:**
@@ -331,9 +367,9 @@ tools/puzzle-manager-scripts/output/
 
 **Field reference:**
 
-| Field                    | Type            | Description                                                                                      |
+| Field | Type | Description |
 | ------------------------ | --------------- | ------------------------------------------------------------------------------------------------ |
-| `source_file`            | string          | Relative path of source SGF file                                                                 |
+| `source_file` | string | Relative path of source SGF file |
 | `target_file` | string or null | Relative path of matched target file, or `null` if unmatched |
 | `match_level` | int (0–7) | Numeric match level per the scale defined in D7 |
 | `position_hash` | string | 16-char hex SHA-256 of position (without PL) |
@@ -451,7 +487,9 @@ tools/puzzle-manager-scripts/output/
 **Rationale:**
 
 - For small collections (< 500 files), comparison completes in seconds. Checkpointing is still useful for interrupted runs.
+
 - For large collections (10K+ files), checkpoint every 50 files balances disk I/O against progress loss.
+
 - The project already has a proven checkpoint pattern in `tools/core/checkpoint.py` with JSON serialization, versioning, and timestamp tracking.
 
 **Checkpoint schema:**
@@ -475,7 +513,7 @@ class CompareCheckpoint(ToolCheckpoint):
 
 **Decision:** Non-fatal for file-level errors, fatal only for infrastructure failures.
 
-| Scenario                      | Action                                                                          | Severity    |
+| Scenario | Action | Severity |
 | ----------------------------- | ------------------------------------------------------------------------------- | ----------- |
 | Permission denied on file | Skip file, log ERROR, emit Level 0 record with `error` field | Non-fatal |
 | Empty SGF file | Skip file, log WARN, emit Level 0 record with `error` field | Non-fatal |
@@ -496,13 +534,16 @@ class CompareCheckpoint(ToolCheckpoint):
 **Rationale:**
 
 - The project already has a proven recursive-descent SGF parser in `tools/core/sgf_parser.py` that returns `SgfTree` objects with all needed fields: `board_size`, `black_stones`, `white_stones`, `player_to_move`, `solution_tree`, `metadata`.
+
 - `tools.core.sgf_types.Point` is `@dataclass(frozen=True, slots=True)` — frozen and hashable, safe for `frozenset` operations.
+
 - `tools.core.sgf_analysis` provides `count_total_nodes()`, `compute_solution_depth()`, `get_all_paths()` for tree comparison metrics.
+
 - `tools.core.sgf_correctness` provides `infer_correctness()` — already used by the parser to annotate `SgfNode.is_correct`.
 
 **What we reuse:**
 
-| Module               | What We Use                                                       | For                                                  |
+| Module | What We Use | For |
 | -------------------- | ----------------------------------------------------------------- | ---------------------------------------------------- |
 | `sgf_parser.py` | `parse_sgf()` → `SgfTree` | Parsing every SGF file |
 | `sgf_types.py` | `Point`, `Color` | Position hashing (sorted `Point.to_sgf()` strings) |
@@ -524,8 +565,11 @@ class CompareCheckpoint(ToolCheckpoint):
 **Rationale:**
 
 - SGF parsing is ~1ms/file (pure Python recursive descent). 10,000 files ≈ 10 seconds.
+
 - Hash computation is negligible (SHA-256 of ~200-char strings).
+
 - The hash-map join (build index for one dir, look up from the other) is O(N + M), not O(N × M).
+
 - For the expected scale (hundreds to low thousands of files), this completes in seconds. No multiprocessing, no batching, no streaming optimization needed.
 
 **If scale increases beyond 50K files:** Consider adding `--parallel` flag with `concurrent.futures.ProcessPoolExecutor` for parsing. But this is YAGNI for now.
@@ -536,7 +580,7 @@ class CompareCheckpoint(ToolCheckpoint):
 
 Explicitly out of scope (to prevent scope creep):
 
-| Out of Scope                              | Reason                                                                           |
+| Out of Scope | Reason |
 | ----------------------------------------- | -------------------------------------------------------------------------------- |
 | Rotation/reflection normalization | Non-trivial heuristic; different orientation = different puzzle for this tool |
 | Board size normalization (19×19 ↔ 9×9) | Requires "relevant area" detector — Go engine feature |
@@ -554,7 +598,7 @@ This tool's design was reviewed by three specialized agents in two consultation 
 
 ### Round 1 — Initial Design
 
-| Agent                        | Role                              | Key Contributions                                                                                                                                                                              |
+| Agent | Role | Key Contributions |
 | ---------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **KataGo-Tsumego-Expert** | Tsumego domain expertise | Validated board position as primary key; recommended PL inclusion; proposed Level 3S/3D split; identified first-move as fast discriminator; stratified comments into correctness/teaching/metadata |
 | **Code-Reviewer-Alpha** | Charter alignment, correctness | Proposed 2-file architecture; defined position hash algorithm matching backend; designed tree serialization; identified `is_correct` default caveat; comprehensive JSONL schema |
@@ -562,7 +606,7 @@ This tool's design was reviewed by three specialized agents in two consultation 
 
 ### Round 2 — User Refinements
 
-| Refinement                        | Expert Consulted       | Outcome                                                                         |
+| Refinement | Expert Consulted | Outcome |
 | --------------------------------- | ---------------------- | ------------------------------------------------------------------------------- |
 | No PL inference | KataGo-Tsumego-Expert | Agreed. Dual-hash is correct middle ground. Full skip is too aggressive. |
 | Pure numeric levels (no 3S/3D) | KataGo-Tsumego-Expert | Agreed. Expanded to 0–7 scale. Levels 4 and 5 replace 3S/3D. |
@@ -577,26 +621,37 @@ This tool's design was reviewed by three specialized agents in two consultation 
 ### Adding a New Match Level
 
 1. Add the level constant to the `MatchLevel` enum in `tools/core/sgf_compare.py`.
-2. Add detection logic to `classify_match()` in the same file.
-3. Update the level table in this document (D7).
-4. Update the JSONL schema reference in this document (D12) if new fields are needed.
-5. Update the summary report template in `compare_dirs.py`.
+
+1. Add detection logic to `classify_match()` in the same file.
+
+1. Update the level table in this document (D7).
+
+1. Update the JSONL schema reference in this document (D12) if new fields are needed.
+
+1. Update the summary report template in `compare_dirs.py`.
 
 ### Changing the Hash Algorithm
 
 1. Modify `position_hash()` and/or `full_hash()` in `tools/core/sgf_compare.py`.
-2. Update the algorithm documentation in this document (D6).
-3. Note: Changing the hash invalidates all existing checkpoints. The tool should detect a hash algorithm change and warn.
+
+1. Update the algorithm documentation in this document (D6).
+
+1. Note: Changing the hash invalidates all existing checkpoints. The tool should detect a hash algorithm change and warn.
 
 ### Supporting Rotation Normalization (Future)
 
 1. Add a `normalize_orientation()` function to `tools/core/sgf_compare.py` that maps stone positions to a canonical corner.
-2. Add `--normalize-rotation` CLI flag to `compare_dirs.py`.
-3. Compute a third hash (normalized position hash) alongside the existing two.
-4. This does NOT change match levels — it changes how position hashes are computed.
+
+1. Add `--normalize-rotation` CLI flag to `compare_dirs.py`.
+
+1. Compute a third hash (normalized position hash) alongside the existing two.
+
+1. This does NOT change match levels — it changes how position hashes are computed.
 
 ### Adding New Output Formats
 
 1. The library (`sgf_compare.py`) returns `CompareResult` dataclasses. It is format-agnostic.
-2. Output formatting lives entirely in `compare_dirs.py`. Add new serializers there.
-3. Add a `--format` CLI flag if multiple formats become needed.
+
+1. Output formatting lives entirely in `compare_dirs.py`. Add new serializers there.
+
+1. Add a `--format` CLI flag if multiple formats become needed.

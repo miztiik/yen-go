@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Architecture: UI Layout](../../architecture/frontend/ui-layout.md) — Component hierarchy
+>
 > - [Architecture: Puzzle Solving](../../architecture/frontend/puzzle-solving.md) — Move validation
+>
 > - [Concepts: SGF Properties](../../concepts/sgf-properties.md) — YH, YG, YT properties
 
 **Last Updated**: 2026-02-15
@@ -36,25 +38,25 @@ function MyPuzzlePage() {
 
 ### Props
 
-| Prop         | Type               | Required | Description                                       |
+| Prop | Type | Required | Description |
 | ------------ | ------------------ | -------- | ------------------------------------------------- |
-| `sgf`        | `string`           | Yes      | Raw SGF string for the puzzle                     |
-| `level`      | `string`           | Yes      | Level slug (e.g., `'beginner'`, `'intermediate'`) |
-| `onComplete` | `(result) => void` | No       | Called when puzzle is solved                      |
-| `onNext`     | `() => void`       | No       | Handler for "Next puzzle" button                  |
-| `onSkip`     | `() => void`       | No       | Handler for "Skip" button                         |
+| `sgf` | `string` | Yes | Raw SGF string for the puzzle |
+| `level` | `string` | Yes | Level slug (e.g., `'beginner'`, `'intermediate'`) |
+| `onComplete` | `(result) => void` | No | Called when puzzle is solved |
+| `onNext` | `() => void` | No | Handler for "Next puzzle" button |
+| `onSkip` | `() => void` | No | Handler for "Skip" button |
 
 ---
 
 ## Data Attributes (for testing)
 
-| Attribute                          | Element          | Values                                    |
+| Attribute | Element | Values |
 | ---------------------------------- | ---------------- | ----------------------------------------- |
-| `data-component="solver-view"`     | Root             | —                                         |
-| `data-status`                      | Root             | `waiting`, `correct`, `wrong`, `complete` |
-| `data-component="hint-overlay"`    | Hints section    | —                                         |
-| `data-component="solution-reveal"` | Solution section | —                                         |
-| `data-component="move-explorer"`   | Explorer section | —                                         |
+| `data-component="solver-view"` | Root | — |
+| `data-status` | Root | `waiting`, `correct`, `wrong`, `complete` |
+| `data-component="hint-overlay"` | Hints section | — |
+| `data-component="solution-reveal"` | Solution section | — |
+| `data-component="move-explorer"` | Explorer section | — |
 
 ---
 
@@ -145,12 +147,12 @@ function MyComponent() {
 
 ### Available Settings
 
-| Key                | Type                | Default   | Description                 |
+| Key | Type | Default | Description |
 | ------------------ | ------------------- | --------- | --------------------------- |
-| `theme`            | `'light' \| 'dark'` | `'light'` | UI theme                    |
-| `coordinateLabels` | `boolean`           | `true`    | Show board coordinates      |
-| `soundEnabled`     | `boolean`           | `true`    | Play move sounds            |
-| `autoAdvance`      | `boolean`           | `false`   | Auto-advance to next puzzle |
+| `theme` | `'light' \ | 'dark'` | `'light'` | UI theme |
+| `coordinateLabels` | `boolean` | `true` | Show board coordinates |
+| `soundEnabled` | `boolean` | `true` | Play move sounds |
+| `autoAdvance` | `boolean` | `false` | Auto-advance to next puzzle |
 
 ---
 
@@ -158,15 +160,15 @@ function MyComponent() {
 
 All components use CSS custom properties from `app.css @theme`:
 
-| Token        | CSS Variable           | Usage                         |
+| Token | CSS Variable | Usage |
 | ------------ | ---------------------- | ----------------------------- |
-| Accent       | `--color-accent`       | Buttons, links, active states |
-| Background   | `--color-bg-primary`   | Page background               |
-| Secondary BG | `--color-bg-secondary` | Card backgrounds              |
-| Primary text | `--color-text-primary` | Headings                      |
-| Muted text   | `--color-text-muted`   | Labels, secondary text        |
-| Success      | `--color-success`      | Correct answer, positive      |
-| Error        | `--color-error`        | Wrong answer, negative        |
-| Warning      | `--color-warning`      | Caution states                |
+| Accent | `--color-accent` | Buttons, links, active states |
+| Background | `--color-bg-primary` | Page background |
+| Secondary BG | `--color-bg-secondary` | Card backgrounds |
+| Primary text | `--color-text-primary` | Headings |
+| Muted text | `--color-text-muted` | Labels, secondary text |
+| Success | `--color-success` | Correct answer, positive |
+| Error | `--color-error` | Wrong answer, negative |
+| Warning | `--color-warning` | Caution states |
 
 Use in Tailwind: `className="text-[--color-text-muted] bg-[--color-bg-secondary]"`

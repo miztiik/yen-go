@@ -4,13 +4,13 @@ The Puzzle Manager uses a **3-stage pipeline** (v3.2, Spec 013).
 
 ## Overview
 
-| Stage   | Input               | Output                      | Purpose                  |
+| Stage | Input | Output | Purpose |
 | ------- | ------------------- | --------------------------- | ------------------------ |
-| INGEST  | Sources             | `staging/ingest/`           | Fetch + Parse + Validate |
-| ANALYZE | `staging/ingest/`   | `staging/analyzed/`         | Classify + Tag + Enrich  |
-| PUBLISH | `staging/analyzed/` | `yengo-puzzle-collections/` | Index + Daily + Output   |
+| INGEST | Sources | `staging/ingest/` | Fetch + Parse + Validate |
+| ANALYZE | `staging/ingest/` | `staging/analyzed/` | Classify + Tag + Enrich |
+| PUBLISH | `staging/analyzed/` | `yengo-puzzle-collections/` | Index + Daily + Output |
 
-```
+```text
 INGEST ────────▶ ANALYZE ────────▶ PUBLISH
    │                │                  │
    ▼                ▼                  ▼
@@ -26,8 +26,10 @@ staging/ingest/   staging/analyzed/   yengo-puzzle-collections/
 **Operations**:
 
 1. **Fetch** — Download or read SGF files via adapters
-2. **Parse** — Tokenize SGF, build game tree, extract properties
-3. **Validate** — Check board size, stones, solution exists
+
+1. **Parse** — Tokenize SGF, build game tree, extract properties
+
+1. **Validate** — Check board size, stones, solution exists
 
 **CLI**:
 
@@ -39,8 +41,11 @@ python -m backend.puzzle_manager run --source <source_id> --stage ingest
 **Validation Checks**:
 
 - Valid board size (9, 13, 19)
+
 - Stones within bounds
+
 - Player to move specified
+
 - Solution exists (at least one move)
 
 ---
@@ -52,10 +57,14 @@ python -m backend.puzzle_manager run --source <source_id> --stage ingest
 **Operations**:
 
 1. **Classify** — Assign difficulty level (9-level system, with collection-based override)
-2. **Tag** — Detect techniques (ladder, ko, snapback, etc.)
-3. **Collection assign** — Match source metadata against `config/collections.json` aliases
-4. **Level override** — If any assigned collection has a `level_hint`, override the heuristic level (lowest wins on conflict)
-5. **Enrich** — Generate pedagogical hints (`YH[hint1|hint2|hint3]`) and quality metrics (YQ)
+
+1. **Tag** — Detect techniques (ladder, ko, snapback, etc.)
+
+1. **Collection assign** — Match source metadata against `config/collections.json` aliases
+
+1. **Level override** — If any assigned collection has a `level_hint`, override the heuristic level (lowest wins on conflict)
+
+1. **Enrich** — Generate pedagogical hints (`YH[hint1|hint2|hint3]`) and quality metrics (YQ)
 
 **CLI**:
 
@@ -69,19 +78,20 @@ The hint system generates **pedagogical hints** designed by a 1P professional Go
 
 **Format**: `YH[hint1|hint2|hint3]` (pipe-delimited, max 3 hints)
 
-| Hint # | Content                  | Pedagogical Goal                             |
+| Hint # | Content | Pedagogical Goal |
 | ------ | ------------------------ | -------------------------------------------- |
-| 1      | Area + Liberty Analysis  | Prompts player to COUNT liberties            |
-| 2      | Technique + Reasoning    | Explains WHY technique applies               |
-| 3      | Move hint or Consequence | Shows specific move or what happens if wrong |
+| 1 | Area + Liberty Analysis | Prompts player to COUNT liberties |
+| 2 | Technique + Reasoning | Explains WHY technique applies |
+| 3 | Move hint or Consequence | Shows specific move or what happens if wrong |
 
 **Example YH1:** "Focus on top-left. Black has 2 liberties, White has 3 - who needs to act first?"
 
 **See:** [Hint Concepts](../../concepts/hints.md) for full documentation.
 
 **9-Level System**:
+
 | Level | Name | Rank Range |
-|-------|------|------------|
+| ------- | ------ | ------------ |
 | 1 | Novice | 30k-26k |
 | 2 | Beginner | 25k-21k |
 | 3 | Elementary | 20k-16k |
@@ -101,9 +111,12 @@ The hint system generates **pedagogical hints** designed by a 1P professional Go
 **Operations**:
 
 1. **SGF Output** — Write enriched SGF files to flat batch directories
-2. **Database Build** — Build yengo-search.db and yengo-content.db via db_builder/content_db
-3. **Daily** — Create daily challenge sets
-4. **Inventory** — Update puzzle collection statistics
+
+1. **Database Build** — Build yengo-search.db and yengo-content.db via db_builder/content_db
+
+1. **Daily** — Create daily challenge sets
+
+1. **Inventory** — Update puzzle collection statistics
 
 **CLI**:
 
@@ -113,7 +126,7 @@ python -m backend.puzzle_manager run --stage publish
 
 **Output Structure**:
 
-```
+```text
 yengo-puzzle-collections/
 ├── sgf/{NNNN}/{content_hash}.sgf
 ├── yengo-search.db          # Search/metadata + daily schedule (~500 KB)

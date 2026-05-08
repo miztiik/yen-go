@@ -17,16 +17,21 @@ const { params, setParam, clearParams } = useBrowseParams({ cat: 'all', s: 'name
 ```
 
 **Behavior:**
+
 1. **Mount:** reads `URLSearchParams` from current URL, merges with defaults
-2. **`setParam(key, value)`:** updates state + writes to URL via `history.replaceState`
-3. **`clearParams()`:** resets managed keys to defaults, removes them from URL
-4. **`popstate`:** re-reads params when browser navigates (back/forward)
+
+1. **`setParam(key, value)`:** updates state + writes to URL via `history.replaceState`
+
+1. **`clearParams()`:** resets managed keys to defaults, removes them from URL
+
+1. **`popstate`:** re-reads params when browser navigates (back/forward)
 
 ### Read-Merge-Write Pattern
 
 Both `useBrowseParams` and `useCanonicalUrl` use a read-merge-write strategy when updating the URL. Each hook reads the current `URLSearchParams`, modifies only its own managed keys, and writes back the full set. This prevents one hook from overwriting parameters managed by the other.
 
 - `useBrowseParams` manages: keys defined in its `defaults` argument (e.g., `cat`, `s`, `q`)
+
 - `useCanonicalUrl` manages: `l`, `t`, `c`, `q`, `ct`, `offset`, `id`, `match`
 
 On pages where both hooks are active (TechniqueFocusPage, TrainingSelectionPage), neither hook clobbers the other's parameters.
@@ -40,7 +45,7 @@ The `popstate` listener only re-reads parameters when `window.location.pathname`
 ## Parameter Keys by Page
 
 | Page | Params | Example URL |
-|------|--------|-------------|
+| ------ | -------- | ------------- |
 | TechniqueFocusPage | `cat` (category), `s` (sort) | `/technique?cat=tesuji&s=difficulty` |
 | TrainingSelectionPage | `cat` (category filter) | `/training?cat=life-and-death` |
 | CollectionsPage | `q` (search query) | `/collections?q=cho+chikun` |
@@ -56,7 +61,7 @@ Keys are short, lowercase, and collision-free with canonical context params.
 Three shorthand URL patterns resolve to context routes for cleaner shareable links:
 
 | Shorthand | Canonical equivalent |
-|-----------|---------------------|
+| ----------- | --------------------- |
 | `/collection/{slug}` | `/contexts/collection/{slug}` |
 | `/training/{slug}` | `/contexts/training/{slug}` |
 | `/technique/{slug}` | `/contexts/technique/{slug}` |
@@ -68,5 +73,7 @@ Three shorthand URL patterns resolve to context routes for cleaner shareable lin
 > **See also**:
 >
 > - [Architecture: Frontend](../architecture/frontend/) — Frontend system design
+>
 > - [Concepts: Levels](./levels.md) — Level filter values
+>
 > - [Concepts: Tags](./tags.md) — Tag filter values

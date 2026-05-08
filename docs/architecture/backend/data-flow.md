@@ -4,7 +4,7 @@ How puzzles flow from external sources to the browser.
 
 ## Overview
 
-```
+```text
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
 │   External  │────▶│   Puzzle    │────▶│   GitHub    │────▶│   Browser   │
 │   Sources   │     │   Manager   │     │   Pages     │     │  (Frontend) │
@@ -16,7 +16,7 @@ How puzzles flow from external sources to the browser.
 
 ### 1. Sources → INGEST
 
-```
+```text
 external-sources/           adapters/
 ├── yengo-source/   ──▶ LocalSgfAdapter
 ├── yengo-source/            ──▶ UrlSgfAdapter
@@ -30,7 +30,7 @@ external-sources/           adapters/
 
 ### 2. INGEST → ANALYZE
 
-```
+```text
 staging/ingest/                  staging/analyzed/
 └── {source_id}/         ──▶  └── {level}/
     └── *.json                    └── *.json (with tags, hints)
@@ -38,7 +38,7 @@ staging/ingest/                  staging/analyzed/
 
 ### 3. ANALYZE → PUBLISH
 
-```
+```text
 staging/analyzed/             yengo-puzzle-collections/
 └── {level}/             ──▶  ├── sgf/
     └── *.json                │   └── {level}/{YYYY}/{MM}/batch_{NNN}/
@@ -54,7 +54,7 @@ staging/analyzed/             yengo-puzzle-collections/
 
 ### 4. GitHub Pages → Browser
 
-```
+```text
 yengo-puzzle-collections/     Browser
 ├── sgf/                 ──▶  fetch('/sgf/{level}/...')
 │   └── *.sgf                 │
@@ -69,7 +69,8 @@ yengo-puzzle-collections/     Browser
 ## File Formats
 
 ### SGF (Storage)
-```
+
+```text
 (;FF[4]GM[1]SZ[9]
 YV[1]YG[intermediate]YT[snapback,throw_in]
 AB[aa][ba][ca]AW[ab][bb]
@@ -78,6 +79,7 @@ PL[B]
 ```
 
 ### JSON Views (Index)
+
 ```json
 {
   "indexVersion": "1.0",
@@ -87,6 +89,7 @@ PL[B]
 ```
 
 ### localStorage (Progress)
+
 ```json
 {
   "version": 1,
@@ -99,6 +102,9 @@ PL[B]
 ## Key Principles
 
 1. **SGF is source of truth** — All puzzle data stored as SGF with YenGo extensions
-2. **JSON for indexes** — Fast browser lookups
-3. **localStorage for progress** — No server-side storage
-4. **Sharding** — Max 100 files per directory
+
+1. **JSON for indexes** — Fast browser lookups
+
+1. **localStorage for progress** — No server-side storage
+
+1. **Sharding** — Max 100 files per directory

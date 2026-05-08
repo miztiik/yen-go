@@ -3,8 +3,11 @@
 > **See also**:
 >
 > - [Architecture: Structure](./structure.md) — Component layout
+>
 > - [How-To: Frontend Development](../../how-to/frontend/) — Development guides
+>
 > - [Getting Started: Development](../../getting-started/develop.md) — Setup
+>
 > - [Concepts: Go Tips](../../concepts/go-tips.md) — GoTip schema and taxonomy
 
 **Last Updated**: 2026-03-24
@@ -15,15 +18,15 @@ The Yen-Go frontend is a **static-first PWA** built with Preact + TypeScript + V
 
 ## Technology Stack
 
-| Layer     | Technology                       | Why                                                 |
+| Layer | Technology | Why |
 | --------- | -------------------------------- | --------------------------------------------------- |
-| Framework | Preact                           | React-compatible, ~3KB                              |
-| Language  | TypeScript                       | Type safety, strict mode                            |
-| Build     | Vite                             | Fast HMR, optimized builds                          |
-| State     | `@preact/signals` + localStorage | Reactive settings, no backend                       |
-| Styling   | Tailwind CSS v4                  | Utility-first, JIT compiled via `@tailwindcss/vite` |
-| Go Board  | `goban` ^8.3.147                 | yengo-source Go library (untouched per FR-012)               |
-| Testing   | Vitest + Playwright              | Unit + visual regression tests                      |
+| Framework | Preact | React-compatible, ~3KB |
+| Language | TypeScript | Type safety, strict mode |
+| Build | Vite | Fast HMR, optimized builds |
+| State | `@preact/signals` + localStorage | Reactive settings, no backend |
+| Styling | Tailwind CSS v4 | Utility-first, JIT compiled via `@tailwindcss/vite` |
+| Go Board | `goban` ^8.3.147 | yengo-source Go library (untouched per FR-012) |
+| Testing | Vitest + Playwright | Unit + visual regression tests |
 
 ---
 
@@ -38,7 +41,7 @@ Vite's `resolveJsonModule` support. This gives us compile-time type safety and z
 runtime overhead — the JSON is inlined into the bundle.
 
 | Config File | Frontend Module | Provides |
-|---|---|---|
+| --- | --- | --- |
 | `config/puzzle-levels.json` | `lib/levels/config.ts` | `LEVELS`, `LevelSlug`, ID↔slug maps |
 | `config/tags.json` | `lib/tags/config.ts` | `TAGS`, `TagSlug`, ID↔slug maps |
 | `config/puzzle-quality.json` | `lib/quality/config.ts` | `QUALITIES`, `QualitySlug`, ID↔slug maps |
@@ -49,7 +52,7 @@ runtime overhead — the JSON is inlined into the bundle.
 
 The application uses a **boot-before-render** pattern:
 
-```
+```text
 1. boot() runs 5 steps:
    ├── fetchConfigs   → levels + tags + tips (parallel)
    ├── cacheConfigs   → module-level singleton
@@ -64,7 +67,9 @@ The application uses a **boot-before-render** pattern:
 Key modules:
 
 - `boot.ts` — 5-step boot sequence (fetchConfigs → cacheConfigs → cleanLegacy → initGoban → renderApp)
+
 - `main.tsx` — Entry point, boot orchestration
+
 - `services/configService.ts` — Numeric ID ↔ slug resolution facade
 
 ---
@@ -98,9 +103,10 @@ All pages use `PageLayout` for consistent structure:
 `SolverView` is the shared puzzle-solving component used by all modes:
 
 - Board div: `data-testid="goban-board"`, `role="application"`, `aria-label="Go puzzle board"`
+
 - Sidebar: puzzle counter, transforms, hints, actions, solution tree
 
-```
+```text
 SolverView
 ├── useGoban()        — Board rendering via goban library (Canvas default)
 ├── usePuzzleState()  — Move validation, status tracking, audio feedback
@@ -114,7 +120,7 @@ SolverView
 
 ### Component Diagram
 
-```
+```text
 App
 ├── BootScreens (loading state)
 │   └── GoTipDisplay
@@ -139,7 +145,7 @@ App
 
 ## Directory Structure
 
-```
+```text
 frontend/
 ├── src/
 │   ├── app.tsx               # App entry, routing
@@ -191,27 +197,30 @@ frontend/
 
 The app uses **path-based routing** in `app.tsx` via `parseRoute()`. No hash routing.
 
-| Route                     | Type                | Page Component                                          |
+| Route | Type | Page Component |
 | ------------------------- | ------------------- | ------------------------------------------------------- |
-| `/`                       | `home`              | `HomePageGrid`                                          |
-| `/collections`            | `collections`       | `CollectionsPage`                                       |
-| `/collections/:id`        | `collection`        | `CollectionsPage` (detail)                              |
+| `/` | `home` | `HomePageGrid` |
+| `/collections` | `collections` | `CollectionsPage` |
+| `/collections/:id` | `collection` | `CollectionsPage` (detail) |
 | `/collections/:id/:index` | `collection-puzzle` | `CollectionViewPage` → `PuzzleSetPlayer` → `SolverView` |
-| `/daily`                  | `daily`             | `DailyBrowsePage`                                       |
-| `/daily/:date`            | `daily-date`        | `DailyChallengePage`                                    |
-| `/puzzle-rush`            | `puzzle-rush`       | `RushBrowsePage` (setup) / `PuzzleRushPage` (playing)   |
-| `/technique/:tag`         | `technique`         | `TechniqueFocusPage`                                    |
-| `/training`               | `training`          | `TrainingBrowsePage`                                    |
-| `/training/:level`        | `training-level`    | `TrainingPage`                                          |
-| `/random`                 | `random`            | `RandomPage`                                            |
+| `/daily` | `daily` | `DailyBrowsePage` |
+| `/daily/:date` | `daily-date` | `DailyChallengePage` |
+| `/puzzle-rush` | `puzzle-rush` | `RushBrowsePage` (setup) / `PuzzleRushPage` (playing) |
+| `/technique/:tag` | `technique` | `TechniqueFocusPage` |
+| `/training` | `training` | `TrainingBrowsePage` |
+| `/training/:level` | `training-level` | `TrainingPage` |
+| `/random` | `random` | `RandomPage` |
 
 ### Collection ID Format
 
 Collection IDs use prefixes to route the `CollectionPuzzleLoader` to the correct SQL query via `puzzleQueryService`:
 
 - `curated-{slug}` → `getPuzzlesByCollection()` (curated collections)
+
 - `level-{slug}` → `getPuzzlesByLevel()` (level-based)
+
 - `tag-{slug}` → `getPuzzlesFiltered({ tagId })` (tag-based)
+
 - Bare slug (e.g., `beginner`) → tries level query, then `curated-` fallback
 
 The `CollectionsPage` always navigates with `curated-` prefix: `onNavigateToCollection('curated-' + slug)`.
@@ -222,12 +231,12 @@ The `CollectionsPage` always navigates with `curated-` prefix: `onNavigateToColl
 
 The Go board uses the `goban` library with Canvas rendering and themed visuals:
 
-| Theme Property | Light Mode           | Dark Mode         |
+| Theme Property | Light Mode | Dark Mode |
 | -------------- | -------------------- | ----------------- |
-| White stones   | Shell (Phong-shaded) | Shell             |
-| Black stones   | Slate (Phong-shaded) | Slate             |
-| Board surface  | Kaya (wood texture)  | Night Play (#444) |
-| Stone shadows  | Default              | Default           |
+| White stones | Shell (Phong-shaded) | Shell |
+| Black stones | Slate (Phong-shaded) | Slate |
+| Board surface | Kaya (wood texture) | Night Play (#444) |
+| Stone shadows | Default | Default |
 
 **Theme switching**: A `MutationObserver` on `<html data-theme>` triggers live updates via `watchSelectedThemes` — no page reload needed.
 
@@ -239,14 +248,14 @@ The Go board uses the `goban` library with Canvas rendering and themed visuals:
 
 Each page has a distinctive accent color set via `<PageLayout mode="...">`:
 
-| Page             | Mode          | Accent Family |
+| Page | Mode | Accent Family |
 | ---------------- | ------------- | ------------- |
-| Daily Challenge  | `daily`       | Amber         |
-| Puzzle Rush      | `rush`        | Rose          |
-| Collections      | `collections` | Emerald       |
-| Training         | `training`    | Blue          |
-| Technique Focus  | `technique`   | Teal          |
-| Random Challenge | `random`      | Indigo        |
+| Daily Challenge | `daily` | Amber |
+| Puzzle Rush | `rush` | Rose |
+| Collections | `collections` | Emerald |
+| Training | `training` | Blue |
+| Technique Focus | `technique` | Teal |
+| Random Challenge | `random` | Indigo |
 
 The `data-mode` attribute on the layout wrapper activates a CSS cascade that sets `--color-accent` to that mode's text color. Dark mode overrides reduce saturation for each mode.
 
@@ -260,20 +269,22 @@ The `data-mode` attribute on the layout wrapper activates a CSS cascade that set
 
 The `.puzzle-layout` CSS class uses aspect-ratio-aware media queries:
 
-| Viewport                 | Condition                          | Layout                             |
+| Viewport | Condition | Layout |
 | ------------------------ | ---------------------------------- | ---------------------------------- |
-| Mobile                   | `< 768px width`                    | Stacked (board top, sidebar below) |
-| Portrait tablet          | `>= 768px BUT aspect-ratio < 4/5`  | Stacked                            |
-| Landscape tablet/desktop | `>= 768px AND aspect-ratio >= 4/5` | Side-by-side (65/35)               |
-| Squashed landscape       | `height < 500px AND landscape`     | Board capped at 80vh               |
+| Mobile | `< 768px width` | Stacked (board top, sidebar below) |
+| Portrait tablet | `>= 768px BUT aspect-ratio < 4/5` | Stacked |
+| Landscape tablet/desktop | `>= 768px AND aspect-ratio >= 4/5` | Side-by-side (65/35) |
+| Squashed landscape | `height < 500px AND landscape` | Board capped at 80vh |
 
 ### Sidebar Architecture
 
 PuzzleSidebar is structured in three sections:
 
 1. **Identity**: Level (YG), collection link (YL), corner (YC), hints (YH), ko (YK), tags (YT)
-2. **Tools**: TransformBar (SVG icon buttons for flip/rotate/swap/zoom)
-3. **Content**: Solving mode shows comments + hints; review mode shows solution tree
+
+1. **Tools**: TransformBar (SVG icon buttons for flip/rotate/swap/zoom)
+
+1. **Content**: Solving mode shows comments + hints; review mode shows solution tree
 
 Constrained to `max-width: 400px` on desktop. Empty fields are omitted (no "N/A" placeholders).
 
@@ -288,24 +299,32 @@ Corner puzzles (YC property) auto-zoom to the relevant quadrant on load via `aut
 ### What the Frontend DOES
 
 - Fetch static SGF/JSON from `yengo-puzzle-collections/`
+
 - Parse SGF in browser (~5KB parser)
+
 - Render Go board on Canvas
+
 - Validate moves against solution trees
+
 - Track progress in localStorage
+
 - Work offline (PWA)
 
 ### What the Frontend DOES NOT
 
 - Call backend APIs
+
 - Calculate Go moves
+
 - Run AI inference
+
 - Store data on servers
 
 ---
 
 ## Data Flow
 
-```
+```text
 GitHub Pages              Browser
     │                        │
     │◀── GET /views/*.json ──┤ 1. Fetch puzzle index
@@ -359,7 +378,9 @@ export interface Puzzle {
 ### State Management
 
 - **No global state library** — Preact signals or prop drilling
+
 - **localStorage** — User progress, preferences, achievements
+
 - **Versioned schemas** — All localStorage data has version field
 
 ---
@@ -380,7 +401,9 @@ Single source of truth shared with backend.
 ## PWA Features
 
 - **Service Worker** — Offline puzzle solving
+
 - **Manifest** — Installable as app
+
 - **Cache Strategy** — Static assets cached, puzzles fetched on demand
 
 ---

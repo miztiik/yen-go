@@ -8,7 +8,7 @@ The Puzzle Manager is a CLI tool that processes Go puzzles through a 3-stage pip
 
 ## System Diagram
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                         CLI Entry Point                          │
 │              python -m backend.puzzle_manager [command]          │
@@ -43,7 +43,7 @@ The Puzzle Manager is a CLI tool that processes Go puzzles through a 3-stage pip
 
 ## Directory Structure
 
-```
+```text
 backend/puzzle_manager/
 ├── __init__.py          # Package version
 ├── __main__.py          # Entry point for python -m
@@ -126,39 +126,41 @@ backend/puzzle_manager/
 
 ## Key Design Decisions (Spec 035)
 
-| Aspect              | Decision                           | Rationale                                             |
+| Aspect | Decision | Rationale |
 | ------------------- | ---------------------------------- | ----------------------------------------------------- |
-| CLI Framework       | `argparse` (stdlib)                | Zero external CLI dependencies                        |
-| Dependencies        | 3 only (pydantic, httpx, tenacity) | Minimal footprint                                     |
-| Path Detection      | `.git` marker only                 | `pyproject.toml` exists in subpackages                |
-| Configuration       | Local + Global split               | Tags are Single Source of Truth in `config/tags.json` |
-| State Management    | Single `StateManager` class        | Avoids name collision from previous design            |
-| Exception Hierarchy | Single `exceptions.py`             | No duplication                                        |
-| Adapter Registry    | Plugin-based `@register_adapter`   | Open/Closed principle                                 |
+| CLI Framework | `argparse` (stdlib) | Zero external CLI dependencies |
+| Dependencies | 3 only (pydantic, httpx, tenacity) | Minimal footprint |
+| Path Detection | `.git` marker only | `pyproject.toml` exists in subpackages |
+| Configuration | Local + Global split | Tags are Single Source of Truth in `config/tags.json` |
+| State Management | Single `StateManager` class | Avoids name collision from previous design |
+| Exception Hierarchy | Single `exceptions.py` | No duplication |
+| Adapter Registry | Plugin-based `@register_adapter` | Open/Closed principle |
 
 ## Configuration
 
 ### Single Source of Truth Pattern
 
-| Config File          | Location                        | Scope                               |
+| Config File | Location | Scope |
 | -------------------- | ------------------------------- | ----------------------------------- |
 | `puzzle-levels.json` | **`config/`** (repository root) | **Global - Single Source of Truth** |
-| **`tags.json`**      | **`config/`** (repository root) | **Global - Single Source of Truth** |
+| **`tags.json`** | **`config/`** (repository root) | **Global - Single Source of Truth** |
 
 ### Config-Driven Daily Tag Rotation
 
 The daily tag challenge (`daily/by_tag.py`) is **fully driven by `config/tags.json`**. No tag slugs are hardcoded in the pipeline.
 
 - **Rotation order**: all tags from `config/tags.json`, sorted by their numeric `id` field (stable, deterministic).
+
 - **Related-tag fallback**: siblings are all other tags with the same `category` value in config.
+
 - **Adding a tag**: add it to `config/tags.json` — it is immediately included in the daily rotation and fallback logic.
 
 Internally, `daily/_helpers.py` provides two cached helpers:
 
-| Helper                     | Returns           | Purpose                             |
+| Helper | Returns | Purpose |
 | -------------------------- | ----------------- | ----------------------------------- |
-| `build_tag_rotation()`     | `tuple[str, ...]` | Full ordered rotation from config   |
-| `build_tag_category_map()` | `dict[str, str]`  | Slug → category mapping from config |
+| `build_tag_rotation()` | `tuple[str, ...]` | Full ordered rotation from config |
+| `build_tag_category_map()` | `dict[str, str]` | Slug → category mapping from config |
 
 ### Path Resolution
 
@@ -180,23 +182,29 @@ def get_global_config_dir() -> Path:
 State tracked in `.pm-runtime/state/manager_state.json`:
 
 - Current run ID and status
+
 - Stage completion status
+
 - Processed/failed/skipped counts
+
 - Timestamps
 
 Rules:
 
 - Skip already-completed batches
+
 - Write state after each batch
+
 - Re-running processes only incomplete items
+
 - Support `--resume` flag
 
 ## Error Handling
 
-| Scenario      | Behavior                 |
+| Scenario | Behavior |
 | ------------- | ------------------------ |
-| Config error  | Fail fast, abort         |
-| Puzzle error  | Log, record, continue    |
+| Config error | Fail fast, abort |
+| Puzzle error | Log, record, continue |
 | Batch failure | Checkpoint, resume later |
 
 All errors logged with structured context: puzzle_id, stage, batch, source.
@@ -208,6 +216,9 @@ Refer to config/puzzle-levels.json for definitions.
 ## See Also
 
 - [CLI Reference](../../reference/puzzle-manager-cli.md)
+
 - [Configuration Reference](../../reference/configuration.md)
+
 - [Adapter Design Standards](adapter-design-standards.md)
+
 - [Data Flow](data-flow.md)

@@ -23,7 +23,7 @@ It is deliberately **not** a second pipeline.
 
 ## Non-negotiable boundary (Principle #6)
 
-```
+```text
 tools/yengo_dashboard/   ←  presentation only
        │
        │ subprocess calls │ raw SQLite/JSON reads │ static UI
@@ -34,16 +34,23 @@ backend/puzzle_manager/   ←  every byte of domain logic lives here
 The cockpit may:
 
 - spawn `python -m backend.puzzle_manager` subprocesses
+
 - read JSON state files (run states, `inventory.json` snapshot) as raw data
+
 - tail log files
+
 - render results in a browser
 
 The cockpit may **not**:
 
 - open `yengo-search.db` (or any SQLite DB the pipeline writes) — even read-only
+
 - parse SGF
+
 - compute hashes or canonical positions
+
 - classify puzzles, assign difficulty, decide what status enums mean
+
 - duplicate any pipeline computation in JavaScript
 
 The "no SQLite handles" rule is what made the Windows file-lock crashes go
@@ -58,7 +65,7 @@ domain logic (project-level constraint, see root `CLAUDE.md`).
 
 ## Component layout
 
-```
+```text
 ┌────────────────────────────────────────────────────────────────────────────┐
 │  Browser (vanilla ES module + Tailwind CDN)                                │
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────────────┐ ┌──────────┐       │
@@ -125,7 +132,7 @@ mutations. Unix doesn't notice; Windows refuses.
 **Fix.** Pure read/write split. The pipeline owns the SQLite handle
 exclusively; the cockpit reads JSON only.
 
-```
+```text
 backend/puzzle_manager/inventory/snapshot.py
     write_inventory_snapshot(output_dir)
         ├─ opens yengo-search.db RO
@@ -177,24 +184,24 @@ isolated fixture without touching the real `yengo-puzzle-collections/` or
 The cockpit faithfully passes through the shapes the pipeline owns. It never
 renames a field or "improves" a label.
 
-| Endpoint                       | Source of truth                                                | Cockpit's transformation                              |
+| Endpoint | Source of truth | Cockpit's transformation |
 | ------------------------------ | -------------------------------------------------------------- | ----------------------------------------------------- |
-| `/api/health`                  | none (in-process)                                              | n/a                                                   |
-| `/api/adapters`                | `puzzle_manager source-status --json`                          | `model_validate` only                                 |
-| `/api/inventory`               | `inventory.json` snapshot (written by pipeline)                | JSON passthrough; zeros + `advice` if snapshot missing|
-| `/api/runs`                    | `.pm-runtime/state/runs/*.json`                                | strip `batches`/`file_results`/`config_snapshot`      |
-| `/api/run/active`              | `RunController` in-process state                               | `{active: snapshot|null}`                             |
-| `/api/run` (POST)              | spawns `python -u -m backend.puzzle_manager run …`             | 202 on accept, 409 if a run is active                 |
-| `/api/run/{handle}/cancel`     | SIGTERM → SIGKILL escalation                                   | 202 idempotent                                        |
-| `/api/run/{handle}/events`     | reader threads → asyncio queue                                 | SSE frames `line` / `status` / `end`                  |
-| `/api/lock`                    | `puzzle_manager config-lock status --json`                     | `{raw: …}` verbatim                                   |
-| `/api/lock/release` (POST)     | `puzzle_manager config-lock release [--force]`                 | 200 with `{ok, returncode, stdout, stderr}` (never 502)|
-| `/api/clean` (POST)            | RunController → `puzzle_manager clean …`                       | 202 `RunSnapshot`; 409 if any mutating run is active  |
-| `/api/rollback` (POST)         | RunController → `puzzle_manager rollback …`                    | 400 if neither/both id flags; 422 if reason empty     |
-| `/api/vacuum-db` (POST)        | RunController → `puzzle_manager vacuum-db …`                   | 202 `RunSnapshot`; 409 shared with other mutations    |
-| `/api/adapter/enable` (POST)   | `puzzle_manager enable-adapter ID [--force]`                   | 200 with `{ok, returncode, stdout, stderr}` (never 502)|
-| `/api/adapter/disable` (POST)  | `puzzle_manager disable-adapter [--force]`                     | same shape                                            |
-| `/api/publish-log/search`      | `puzzle_manager publish-log search --format json …`            | `{raw: …}` verbatim; 400 with hint if CLI rejects    |
+| `/api/health` | none (in-process) | n/a |
+| `/api/adapters` | `puzzle_manager source-status --json` | `model_validate` only |
+| `/api/inventory` | `inventory.json` snapshot (written by pipeline) | JSON passthrough; zeros + `advice` if snapshot missing |
+| `/api/runs` | `.pm-runtime/state/runs/*.json` | strip `batches`/`file_results`/`config_snapshot` |
+| `/api/run/active` | `RunController` in-process state | `{active: snapshot | null}` |
+| `/api/run` (POST) | spawns `python -u -m backend.puzzle_manager run …` | 202 on accept, 409 if a run is active |
+| `/api/run/{handle}/cancel` | SIGTERM → SIGKILL escalation | 202 idempotent |
+| `/api/run/{handle}/events` | reader threads → asyncio queue | SSE frames `line` / `status` / `end` |
+| `/api/lock` | `puzzle_manager config-lock status --json` | `{raw: …}` verbatim |
+| `/api/lock/release` (POST) | `puzzle_manager config-lock release [--force]` | 200 with `{ok, returncode, stdout, stderr}` (never 502) |
+| `/api/clean` (POST) | RunController → `puzzle_manager clean …` | 202 `RunSnapshot`; 409 if any mutating run is active |
+| `/api/rollback` (POST) | RunController → `puzzle_manager rollback …` | 400 if neither/both id flags; 422 if reason empty |
+| `/api/vacuum-db` (POST) | RunController → `puzzle_manager vacuum-db …` | 202 `RunSnapshot`; 409 shared with other mutations |
+| `/api/adapter/enable` (POST) | `puzzle_manager enable-adapter ID [--force]` | 200 with `{ok, returncode, stdout, stderr}` (never 502) |
+| `/api/adapter/disable` (POST) | `puzzle_manager disable-adapter [--force]` | same shape |
+| `/api/publish-log/search` | `puzzle_manager publish-log search --format json …` | `{raw: …}` verbatim; 400 with hint if CLI rejects |
 
 When the CLI's JSON contract changes, the cockpit response changes with it
 (intentionally). Pydantic schema mismatches surface as HTTP 500 — a loud
@@ -212,18 +219,21 @@ nothing about whether the wire contract still works.
 
 ## What lives where
 
-| Question                                          | Answer                                                |
+| Question | Answer |
 | ------------------------------------------------- | ----------------------------------------------------- |
-| Where do I add a new "show me X" view?            | New `StateReader` method (consume a pipeline-written JSON snapshot) or new `--json` CLI flag. **Never open a live pipeline DB from the cockpit.** |
-| Where do I add a new "do X" button?               | If long-running → extend `RunController` and route through `/api/run/*`. If short CLI call → add a method to `PipelineRunner` and a route module. |
-| Where does the difficulty enum get translated?    | Nowhere in `yengo_dashboard/`. In `puzzle_manager` only.   |
-| The CLI returned a new field — what changes here? | Add it to `models.py`; the route auto-validates it    |
-| Why isn't there caching?                          | Cold subprocess is fast enough; cache lies in the CLI |
+| Where do I add a new "show me X" view? | New `StateReader` method (consume a pipeline-written JSON snapshot) or new `--json` CLI flag. **Never open a live pipeline DB from the cockpit.** |
+| Where do I add a new "do X" button? | If long-running → extend `RunController` and route through `/api/run/*`. If short CLI call → add a method to `PipelineRunner` and a route module. |
+| Where does the difficulty enum get translated? | Nowhere in `yengo_dashboard/`. In `puzzle_manager` only. |
+| The CLI returned a new field — what changes here? | Add it to `models.py`; the route auto-validates it |
+| Why isn't there caching? | Cold subprocess is fast enough; cache lies in the CLI |
 | What happens to in-flight runs on server restart? | The cockpit forgets them. The pipeline's own state JSON survives — see `/api/runs`. The cockpit is presentation only; truth is on disk. |
 
 ## Out of scope
 
 - Authentication: loopback-only; do not bind to non-loopback.
+
 - Multi-user / cross-host: developer tool, not a service.
+
 - Persistent state in the cockpit: every byte of state is in the pipeline's
+
   files. Refresh the browser, get the truth.

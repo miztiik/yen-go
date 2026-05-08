@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Architecture: Integrity](../../architecture/backend/integrity.md) — Observability design
+>
 > - [Run Pipeline](./run-pipeline.md) — Operating the pipeline
+>
 > - [Rollback](./rollback.md) — Undoing bad imports
 
 **Last Updated**: 2026-02-02
@@ -25,13 +27,16 @@ Every puzzle processed through the pipeline gets a **trace_id** — a unique 16-
 ### What is a Trace ID?
 
 - **Format**: 16-character lowercase hex (e.g., `a1b2c3d4e5f67890`)
+
 - **Generation**: Created at ingest stage for each source file
+
 - **Persistence**: Embedded in SGF via `YM` property and recorded in publish log entries
+
 - **Purpose**: End-to-end debugging, audit trails, cross-run correlation
 
 ### Trace Status Flow
 
-```
+```text
 CREATED → INGESTED → ANALYZED → PUBLISHED
             │
             └─► FAILED (with reason)
@@ -126,7 +131,7 @@ python -m backend.puzzle_manager inventory --rebuild
 
 ### Sample Output
 
-```
+```text
 Puzzle Collection Inventory
 ===========================
 Total Puzzles: 15,000
@@ -224,7 +229,7 @@ Publish log entry format:
 
 ### Location
 
-```
+```text
 yengo-puzzle-collections/puzzle-collection-inventory.json
 ```
 
@@ -267,8 +272,10 @@ yengo-puzzle-collections/puzzle-collection-inventory.json
 The inventory is updated automatically:
 
 1. **On Publish**: Increments `total_puzzles`, `by_puzzle_level`, `by_tag`
-2. **On Rollback**: Decrements counts and increments `audit.total_rollbacks`
-3. **On Stage Completion**: Updates stage metrics
+
+1. **On Rollback**: Decrements counts and increments `audit.total_rollbacks`
+
+1. **On Stage Completion**: Updates stage metrics
 
 ---
 
@@ -282,8 +289,9 @@ python -m backend.puzzle_manager status --json
 ```
 
 Stage statuses:
+
 | Status | Meaning |
-|--------|---------|
+| -------- | --------- |
 | `completed` | Stage finished successfully |
 | `failed` | Stage encountered errors |
 | `in_progress` | Stage currently running |
@@ -296,7 +304,7 @@ Stage statuses:
 
 State is persisted in `.pm-runtime/state/`:
 
-```
+```text
 .pm-runtime/state/
 ├── current_run.json       # Active run state
 ├── archived/              # Completed run states

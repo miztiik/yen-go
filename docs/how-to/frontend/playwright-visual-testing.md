@@ -21,13 +21,16 @@ npx playwright test tests/visual/specs/board.visual.spec.ts
 ## Principles
 
 1. **Test Rendered Appearance**: Screenshots verify actual rendering, not just DOM presence
-2. **Component Isolation**: Each component has its own visual test file
-3. **State Coverage**: Test default, hover, focus, disabled, loading, and error states
-4. **Responsive Testing**: Verify at mobile (375px), tablet (768px), and desktop (1280px)
+
+1. **Component Isolation**: Each component has its own visual test file
+
+1. **State Coverage**: Test default, hover, focus, disabled, loading, and error states
+
+1. **Responsive Testing**: Verify at mobile (375px), tablet (768px), and desktop (1280px)
 
 ## Test File Structure
 
-```
+```text
 tests/visual/
 ├── baselines/       # Golden screenshots (committed to git)
 ├── fixtures/        # Test data
@@ -44,21 +47,24 @@ tests/visual/
 ## Creating New Visual Tests
 
 1. Copy the template:
+
    ```bash
    cp tests/visual/templates/component.visual.template.ts \
       tests/visual/specs/my-component.visual.spec.ts
    ```
 
-2. Add fixture in `src/visual-tests.tsx`:
+1. Add fixture in `src/visual-tests.tsx`:
+
    ```tsx
    <div id="my-component-default">
      <MyComponent />
    </div>
    ```
 
-3. Update test selectors to match your fixtures
+1. Update test selectors to match your fixtures
 
-4. Generate initial baselines:
+1. Generate initial baselines:
+
    ```bash
    npx playwright test tests/visual/specs/my-component.visual.spec.ts --update-snapshots
    ```
@@ -66,7 +72,7 @@ tests/visual/
 ## Required States Per Component
 
 | State | Purpose | Required |
-|-------|---------|----------|
+| ------- | --------- | ---------- |
 | Default | Initial render | ✅ Yes |
 | Hover | Mouse interaction | If interactive |
 | Focus | Keyboard focus indicator | ✅ For accessibility |
@@ -80,15 +86,21 @@ tests/visual/
 ### Do
 
 - Test one visual state per screenshot
+
 - Use meaningful fixture IDs (`#board-with-stones`, not `#test-1`)
+
 - Wait for animations to complete before capturing
+
 - Include viewport size tests for responsive components
 
 ### Don't
 
 - Test logic in visual tests (use unit tests)
+
 - Capture unstable elements (animations, times, random IDs)
+
 - Create overly large screenshots
+
 - Skip the default state test
 
 ## Troubleshooting
@@ -120,5 +132,7 @@ await page.locator('.timestamp').evaluate(el => el.style.visibility = 'hidden');
 ## See Also
 
 - [Architecture: Frontend Testing](../../architecture/frontend/testing.md) - Testing architecture and conventions
+
 - [How-To: Frontend Local Development](./local-development.md) - Current frontend test workflow
+
 - [Playwright Docs](https://playwright.dev/docs/test-snapshots) - Official snapshot testing docs

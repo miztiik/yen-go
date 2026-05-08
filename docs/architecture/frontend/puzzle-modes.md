@@ -1,12 +1,15 @@
 # Puzzle Modes Architecture
 
 > **⚠️ Partially superseded**: See [Playing Modes — Unified Architecture](./playing-modes.md) for the current PuzzleSetPlayer-based architecture. This document retains historical mode descriptions.
-
+>
 > **See also**:
 >
 > - [Architecture: Playing Modes](./playing-modes.md) — Current unified PuzzleSetPlayer architecture
+>
 > - [Architecture: Puzzle Solving](./puzzle-solving.md) — Core validation logic
+>
 > - [Architecture: State Management](./state-management.md) — Progress tracking
+>
 > - [Concepts: Levels](../../concepts/levels.md) — Difficulty system
 
 **Last Updated**: 2026-03-29
@@ -17,12 +20,12 @@ How different puzzle-solving modes are implemented.
 
 ## Mode Overview
 
-| Mode     | Description           | Time Limit | Progress Tracking |
+| Mode | Description | Time Limit | Progress Tracking |
 | -------- | --------------------- | ---------- | ----------------- |
-| Standard | Solve at your pace    | None       | Per-puzzle        |
-| Daily    | Daily challenge       | None       | Streak-based      |
-| Rush     | Solve many fast       | 3min/5min  | Best score        |
-| Review   | Post-solve review     | None       | N/A               |
+| Standard | Solve at your pace | None | Per-puzzle |
+| Daily | Daily challenge | None | Streak-based |
+| Rush | Solve many fast | 3min/5min | Best score |
+| Review | Post-solve review | None | N/A |
 
 ---
 
@@ -33,14 +36,18 @@ The default mode for learning.
 ### Behavior
 
 - Select puzzle by level, tag, or collection
+
 - Unlimited time
+
 - Hints available (0-3)
+
 - Can retry incorrect moves
+
 - Progress saved per puzzle
 
 ### State Machine
 
-```
+```text
 LOADING → READY → SOLVING → COMPLETE
                     │
                     ├── User move correct → (continue/complete)
@@ -83,8 +90,11 @@ One curated puzzle per day.
 ### Behavior
 
 - New puzzle at midnight UTC
+
 - Same puzzle for all users (deterministic selection)
+
 - Streak tracking (consecutive days)
+
 - Calendar view of past completions
 
 ### Puzzle Selection
@@ -92,6 +102,7 @@ One curated puzzle per day.
 Daily challenges are pre-generated and stored in SQLite tables inside `yengo-search.db`:
 
 - `daily_schedule` — One row per date (version, generated_at, technique_of_day, attrs)
+
 - `daily_puzzles` — Many-to-many: date ↔ puzzles (section, position)
 
 Sections: `standard`, `timed`, `by_tag`. The frontend queries these tables via sql.js WASM — no JSON files are used.
@@ -161,14 +172,19 @@ Solve as many puzzles as possible under time pressure.
 ### Variants
 
 - **3 Minute Rush**: 180 seconds
+
 - **5 Minute Rush**: 300 seconds
 
 ### Behavior
 
 - Random puzzles from lower difficulties
+
 - One attempt per puzzle (no hints)
+
 - Wrong answer = skip (no penalty)
+
 - Score = puzzles solved
+
 - Leaderboard (local best scores)
 
 ### State

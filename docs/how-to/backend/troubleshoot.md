@@ -3,8 +3,11 @@
 > **See also**:
 >
 > - [Architecture: Pipeline Design](../../architecture/backend/pipeline.md) — How the pipeline works
+>
 > - [Run Pipeline](./run-pipeline.md) — Operating the pipeline
+>
 > - [Rollback](./rollback.md) — Undoing bad imports
+>
 > - [Configure Sources](./configure-sources.md) — Source configuration
 
 **Last Updated**: 2026-03-10
@@ -15,19 +18,19 @@ This guide covers solutions to common problems in the Yen-Go puzzle pipeline.
 
 ## Quick Reference: Error → Solution
 
-| Error Message                          | Likely Cause                        | Quick Fix                                  |
+| Error Message | Likely Cause | Quick Fix |
 | -------------------------------------- | ----------------------------------- | ------------------------------------------ |
-| `Source 'xyz' not found`               | Typo or missing source              | `python -m backend.puzzle_manager sources` |
-| `--source is required`                 | Missing required flag               | Add `--source <name>` to command           |
-| `Source differs from active_adapter`   | Safety check                        | Use `--source-override` flag               |
-| `AdapterNotFoundError`                 | Adapter not registered              | Check `@register_adapter` decorator        |
-| `No puzzles found`                     | Empty source or filter too strict   | Check source config filters                |
-| `SGFParseError`                        | Invalid SGF format                  | Validate with `parse_sgf()`                |
-| `Checkpoint not found`                 | State reset                         | Remove `--resume` flag                     |
-| `Permission denied`                    | Write access issue                  | Check directory permissions                |
-| `Connection timeout`                   | Network/API issue                   | Check source URL, increase timeout         |
-| `Skipping corrupted publish log entry` | Crash left truncated JSONL line     | Automatic — self-healing on next read      |
-| `Failed to update inventory`           | Inventory write error after publish | `inventory --reconcile`                    |
+| `Source 'xyz' not found` | Typo or missing source | `python -m backend.puzzle_manager sources` |
+| `--source is required` | Missing required flag | Add `--source <name>` to command |
+| `Source differs from active_adapter` | Safety check | Use `--source-override` flag |
+| `AdapterNotFoundError` | Adapter not registered | Check `@register_adapter` decorator |
+| `No puzzles found` | Empty source or filter too strict | Check source config filters |
+| `SGFParseError` | Invalid SGF format | Validate with `parse_sgf()` |
+| `Checkpoint not found` | State reset | Remove `--resume` flag |
+| `Permission denied` | Write access issue | Check directory permissions |
+| `Connection timeout` | Network/API issue | Check source URL, increase timeout |
+| `Skipping corrupted publish log entry` | Crash left truncated JSONL line | Automatic — self-healing on next read |
+| `Failed to update inventory` | Inventory write error after publish | `inventory --reconcile` |
 
 ---
 
@@ -50,6 +53,7 @@ This guide covers solutions to common problems in the Yen-Go puzzle pipeline.
 **Fix**: **Self-healing** — the reader automatically skips malformed lines and processes all valid entries. The truncated line represents at most one puzzle. That puzzle's SGF file is either:
 
 - Still in `staging/analyzed/` (cleanup never ran) → re-processed on next run
+
 - Recovered via orphan recovery → included in next snapshot
 
 ### Inventory Shows Zero But Files Exist
@@ -90,19 +94,20 @@ inventory counts. See [Architecture: Inventory Operations](../../architecture/ba
    python -m backend.puzzle_manager status
    ```
 
-2. Reset state only (keeps staging files):
+1. Reset state only (keeps staging files):
 
    ```bash
    python -m backend.puzzle_manager clean --target state
    ```
 
-3. Manually remove state file:
+1. Manually remove state file:
 
    ```bash
    rm .pm-runtime/state/current_run.json
    ```
 
-4. Resume from specific stage:
+1. Resume from specific stage:
+
    ```bash
    python -m backend.puzzle_manager run --stage analyze
    ```
@@ -119,13 +124,14 @@ inventory counts. See [Architecture: Inventory Operations](../../architecture/ba
    cat .pm-runtime/state/failures/*.json
    ```
 
-2. Resume from last checkpoint:
+1. Resume from last checkpoint:
 
    ```bash
    python -m backend.puzzle_manager run --resume
    ```
 
-3. Review logs for errors:
+1. Review logs for errors:
+
    ```bash
    grep -r "ERROR" .pm-runtime/logs/
    ```
@@ -161,7 +167,7 @@ python -m backend.puzzle_manager run --source yengo-source
    python -m backend.puzzle_manager sources
    ```
 
-2. Check configuration in `backend/puzzle_manager/config/sources.json`
+1. Check configuration in `backend/puzzle_manager/config/sources.json`
 
 ### Source Connection Failures
 
@@ -171,9 +177,9 @@ python -m backend.puzzle_manager run --source yengo-source
    python -m backend.puzzle_manager sources --check
    ```
 
-2. Check rate limits - some sources need delays between requests
+1. Check rate limits - some sources need delays between requests
 
-3. Verify network access to source URLs
+1. Verify network access to source URLs
 
 ### Source Override Required
 
@@ -189,7 +195,8 @@ This safety check prevents accidental mixing of data from different sources.
    python -m backend.puzzle_manager run --source Y
    ```
 
-2. Or explicitly override:
+1. Or explicitly override:
+
    ```bash
    python -m backend.puzzle_manager run --source X --source-override
    ```
@@ -208,11 +215,14 @@ See [Configure Sources](./configure-sources.md) for details on `active_adapter` 
    python -c "from backend.puzzle_manager.core.sgf_parser import parse_sgf; parse_sgf(open('puzzle.sgf').read())"
    ```
 
-2. Check for encoding issues (should be UTF-8)
+1. Check for encoding issues (should be UTF-8)
 
-3. Verify SGF properties:
+1. Verify SGF properties:
+
    - Must have `SZ[]` (board size)
+
    - Must have `AB[]` or `AW[]` (stones)
+
    - Must have solution tree
 
 ### Batch Processing Stops Mid-way
@@ -223,7 +233,8 @@ See [Configure Sources](./configure-sources.md) for details on `active_adapter` 
    python -m backend.puzzle_manager run --resume
    ```
 
-2. Check checkpoint file:
+1. Check checkpoint file:
+
    ```bash
    cat .pm-runtime/state/current_run.json
    ```
@@ -244,21 +255,28 @@ See [Configure Sources](./configure-sources.md) for details on `active_adapter` 
    python -m json.tool config/tags.json
    ```
 
-2. Check required fields:
+1. Check required fields:
+
    - `tags` array must exist
+
    - `aliases` map tags to canonical names
 
 ### Invalid puzzle-levels.json
 
 1. Verify 9-level system (novice → expert)
-2. Check level IDs are sequential 1-9
-3. Verify rank ranges don't overlap
+
+1. Check level IDs are sequential 1-9
+
+1. Verify rank ranges don't overlap
 
 ### Logging Not Working
 
 1. Check `config/logging.json` exists
-2. Verify log directory is writable
-3. Set log level explicitly:
+
+1. Verify log directory is writable
+
+1. Set log level explicitly:
+
    ```bash
    export YENGO_LOG_LEVEL=DEBUG
    ```
@@ -300,7 +318,9 @@ python -m backend.puzzle_manager run --source yengo-source
 ### Rollback Not Finding Puzzles
 
 1. Verify run ID format (e.g., `20260130-abc12345`)
-2. Check publish logs exist:
+
+1. Check publish logs exist:
+
    ```bash
    python -m backend.puzzle_manager publish-log list
    ```
@@ -337,8 +357,8 @@ python -m backend.puzzle_manager clean --help
 
 ### Environment Variables
 
-| Variable            | Purpose           | Default                          |
+| Variable | Purpose | Default |
 | ------------------- | ----------------- | -------------------------------- |
-| `YENGO_RUNTIME_DIR` | Runtime directory | `.pm-runtime/`                   |
-| `YENGO_LOG_LEVEL`   | Log verbosity     | `INFO`                           |
-| `YENGO_CONFIG_DIR`  | Config directory  | `backend/puzzle_manager/config/` |
+| `YENGO_RUNTIME_DIR` | Runtime directory | `.pm-runtime/` |
+| `YENGO_LOG_LEVEL` | Log verbosity | `INFO` |
+| `YENGO_CONFIG_DIR` | Config directory | `backend/puzzle_manager/config/` |

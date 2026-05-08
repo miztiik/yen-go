@@ -3,7 +3,9 @@
 > **See also**:
 >
 > - [Architecture: Frontend Overview](./overview.md) — Technology stack
+>
 > - [Architecture: Puzzle Solving](./puzzle-solving.md) — Validation flow
+>
 > - [How-To: Frontend Development](../../how-to/frontend/) — Implementation guides
 
 **Last Updated**: 2026-02-01
@@ -19,14 +21,19 @@ How user state is persisted without a backend.
 Benefits:
 
 - Works offline
+
 - No backend infrastructure
+
 - Instant state access
+
 - Privacy-friendly
 
 Tradeoffs:
 
 - Device-bound (no sync)
+
 - Browser storage limits (~5MB)
+
 - Data loss on clear
 
 ---

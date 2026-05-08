@@ -3,8 +3,11 @@
 > **See also**:
 >
 > - [Architecture: Pipeline Design](../../architecture/backend/pipeline.md) — Why this flow
+>
 > - [Concepts: Batching and Checkpoints](../../concepts/batching-and-checkpoints.md) — Per-file checkpoint design, failure resilience, multi-run workflows
+>
 > - [CLI Reference](./cli-reference.md) — Complete command reference
+>
 > - [Troubleshooting](./troubleshoot.md) — Common errors & fixes
 
 **Last Updated**: 2026-02-24
@@ -17,7 +20,7 @@ Guide for operating and monitoring the puzzle manager pipeline.
 
 The puzzle manager pipeline processes Go tsumego puzzles through three stages:
 
-```
+```text
 INGEST → ANALYZE → PUBLISH
 ```
 
@@ -52,16 +55,16 @@ python -m backend.puzzle_manager run --source yengo-source --dry-run
 
 The `--batch-size` flag controls how many files each stage processes per run:
 
-| Command               | Default batch size | Notes                   |
+| Command | Default batch size | Notes |
 | --------------------- | ------------------ | ----------------------- |
-| `run`                 | 2000               | From `BatchConfig.size` |
-| `ingest` (standalone) | 100                | Separate default        |
+| `run` | 2000 | From `BatchConfig.size` |
+| `ingest` (standalone) | 100 | Separate default |
 
 Use `--drain` to process **all** pending files regardless of batch size. This is useful after accumulating many files across multiple ingest runs.
 
 When the batch size is smaller than the total pending files, the pipeline processes **one batch and exits**. A per-file checkpoint is saved so the next run with `--resume` continues from exactly where it stopped. The CLI output shows how many remain:
 
-```
+```text
 [OK] Pipeline completed successfully for 'yengo-source'
   Processed: 50 (analyze: 50, publish: 50)
   Remaining: 150 in staging
@@ -102,12 +105,12 @@ done
 
 ### Choosing `--drain` vs `--batch-size`
 
-| Scenario                    | Recommendation                                         |
+| Scenario | Recommendation |
 | --------------------------- | ------------------------------------------------------ |
-| Testing / development       | `--batch-size 5` — quick feedback                      |
-| Normal daily import         | Default (2000) — balanced throughput                   |
-| Large initial import        | `--drain` if time allows, or default + `--resume` loop |
-| CI/CD with time constraints | `--batch-size 50` — predictable duration               |
+| Testing / development | `--batch-size 5` — quick feedback |
+| Normal daily import | Default (2000) — balanced throughput |
+| Large initial import | `--drain` if time allows, or default + `--resume` loop |
+| CI/CD with time constraints | `--batch-size 50` — predictable duration |
 
 ---
 
@@ -116,20 +119,24 @@ done
 The publish stage is designed for **crash safety**:
 
 - **Write-ahead logging**: Each SGF file gets a publish log entry immediately after being written to disk. If the process crashes, the log entry survives.
+
 - **Sub-batch flushing**: `BatchState` is saved to disk every `flush_interval` files (default: 500). Override with `--flush-interval N`.
+
 - **Orphan recovery**: On the next publish run after a crash, orphaned entries (logged but not in snapshot) are automatically recovered — no user action needed.
+
 - **Atomic state writes**: Pipeline state files use temp-file-then-rename for crash safety.
+
 - **Self-healing JSONL**: Corrupted/truncated publish log lines are safely skipped during reads.
 
 ---
 
 ## Pipeline Stages
 
-| Stage       | Input               | Output                          | What It Does                                     |
+| Stage | Input | Output | What It Does |
 | ----------- | ------------------- | ------------------------------- | ------------------------------------------------ |
-| **ingest**  | External source     | `.pm-runtime/staging/ingest/`   | Fetches puzzles from source, validates SGF       |
-| **analyze** | `staging/ingest/`   | `.pm-runtime/staging/analyzed/` | Classifies difficulty, adds tags, enriches hints |
-| **publish** | `staging/analyzed/` | `yengo-puzzle-collections/`     | Writes to collection, updates indexes            |
+| **ingest** | External source | `.pm-runtime/staging/ingest/` | Fetches puzzles from source, validates SGF |
+| **analyze** | `staging/ingest/` | `.pm-runtime/staging/analyzed/` | Classifies difficulty, adds tags, enriches hints |
+| **publish** | `staging/analyzed/` | `yengo-puzzle-collections/` | Writes to collection, updates indexes |
 
 ### Running Individual Stages
 
@@ -155,8 +162,10 @@ python -m backend.puzzle_manager run --resume
 On resume, the pipeline:
 
 1. Restores `source_id` from the saved `config_snapshot`
-2. Continues from the last completed batch
-3. Maintains the original `run_id` for correlation
+
+1. Continues from the last completed batch
+
+1. Maintains the original `run_id` for correlation
 
 ---
 
@@ -170,8 +179,9 @@ python -m backend.puzzle_manager status --json
 ```
 
 Stage statuses:
+
 | Status | Meaning |
-|--------|---------|
+| -------- | --------- |
 | `completed` | Stage finished successfully |
 | `failed` | Stage encountered errors |
 | `in_progress` | Stage currently running |
@@ -205,7 +215,7 @@ grep '"run_id":"20260130-abc12345"' .pm-runtime/logs/*.jsonl
 
 State is persisted in `.pm-runtime/state/`:
 
-```
+```text
 .pm-runtime/state/
 ├── current_run.json       # Active run state
 ├── archived/              # Completed run states
@@ -238,20 +248,24 @@ State is persisted in `.pm-runtime/state/`:
 ## Best Practices
 
 1. **Always specify source**: Use `--source` to ensure log correlation
-2. **Use dry-run first**: Preview changes before writing
-3. **Monitor logs**: Check logs for errors during long runs
-4. **Archive state**: State files are auto-archived after completion
-5. **Small batches for testing**: Use `--batch-size 5` for testing
+
+1. **Use dry-run first**: Preview changes before writing
+
+1. **Monitor logs**: Check logs for errors during long runs
+
+1. **Archive state**: State files are auto-archived after completion
+
+1. **Small batches for testing**: Use `--batch-size 5` for testing
 
 ---
 
 ## Environment Variables
 
-| Variable            | Purpose                                     | Default                          |
+| Variable | Purpose | Default |
 | ------------------- | ------------------------------------------- | -------------------------------- |
-| `YENGO_RUNTIME_DIR` | Runtime directory for staging, state, logs  | `.pm-runtime/`                   |
-| `YENGO_LOG_LEVEL`   | Log verbosity (DEBUG, INFO, WARNING, ERROR) | `INFO`                           |
-| `YENGO_CONFIG_DIR`  | Configuration directory                     | `backend/puzzle_manager/config/` |
+| `YENGO_RUNTIME_DIR` | Runtime directory for staging, state, logs | `.pm-runtime/` |
+| `YENGO_LOG_LEVEL` | Log verbosity (DEBUG, INFO, WARNING, ERROR) | `INFO` |
+| `YENGO_CONFIG_DIR` | Configuration directory | `backend/puzzle_manager/config/` |
 
 ### Custom Runtime Directory
 
@@ -264,7 +278,7 @@ python -m backend.puzzle_manager run --source yengo-source
 
 This creates:
 
-```
+```text
 /custom/path/
 ├── staging/
 ├── state/

@@ -7,13 +7,20 @@
 ## Prerequisites
 
 1. **KataGo binary** — `tools/puzzle-enrichment-lab/katago/katago.exe` (Windows) or equivalent
-2. **Neural net model** — at least one `.bin.gz` file in `tools/puzzle-enrichment-lab/models-data/`:
+
+1. **Neural net model** — at least one `.bin.gz` file in `tools/puzzle-enrichment-lab/models-data/`:
+
    - `b6c96` (~3.7 MB) — smallest, browser-suitable
+
    - `b10c128` (~10.6 MB) — quick engine
+
    - `b15c192` (~35 MB) — recommended for production
+
    - `b28c512` (~260 MB) — strongest, referee engine
-3. **Python 3.11+** with dependencies installed (`pip install -r requirements.txt`)
-4. **Puzzle SGF files** in `.pm-runtime/staging/analyzed/` (produced by pipeline analyze stage)
+
+1. **Python 3.11+** with dependencies installed (`pip install -r requirements.txt`)
+
+1. **Puzzle SGF files** in `.pm-runtime/staging/analyzed/` (produced by pipeline analyze stage)
 
 ## Quick Start
 
@@ -112,8 +119,11 @@ The `--gui` flag starts the FastAPI bridge server (`bridge.py`) as a subprocess 
 #### What the GUI shows
 
 - **PipelineStageBar** — 9-stage progress bar (Parse → Teaching) with real-time status via SSE
+
 - **GoBoard** — Interactive board; read-only during pipeline observation, click-to-play after completion
+
 - **MoveTree** — Color-coded nodes: green (correct), red (wrong), orange (refutation)
+
 - **Eval/ownership overlays** — Same visualizations as web-katrain (winrate, score graph, PV overlay)
 
 #### Observation mode
@@ -121,7 +131,9 @@ The `--gui` flag starts the FastAPI bridge server (`bridge.py`) as a subprocess 
 While the pipeline is running, the board enters **observation mode** (`isObserving=true`):
 
 - Board updates reflect each pipeline stage automatically
+
 - Click-to-play is disabled to prevent conflicts with SSE updates
+
 - Once the pipeline completes, full interactivity is restored
 
 #### Bridge server standalone
@@ -135,18 +147,19 @@ python -m gui.bridge --katago katago/katago.exe --port 8999
 
 ### Exit Codes
 
-| Code | Meaning                                             |
-| :--: | --------------------------------------------------- |
-|  0   | ACCEPTED — puzzle validated successfully            |
-|  1   | ERROR/REJECTED — pipeline failure or invalid puzzle |
-|  2   | FLAGGED — puzzle needs human review                 |
+| Code | Meaning |
+| :---: | --------------------------------------------------- |
+| 0 | ACCEPTED — puzzle validated successfully |
+| 1 | ERROR/REJECTED — pipeline failure or invalid puzzle |
+| 2 | FLAGGED — puzzle needs human review |
 
 ### Configuration Overrides (Python vs KataGo)
 
 The CLI accepts two different configuration flags that serve distinct purposes:
 
 1. **`--config`**: Expects a `.json` file that configures the Python enrichment pipeline (default: `config/katago-enrichment.json`).
-2. **`--katago-config`**: Expects a `.cfg` file that configures the KataGo engine behavior itself. If omitted, it auto-detects `tsumego_analysis.cfg` next to the `katago` binary.
+
+1. **`--katago-config`**: Expects a `.cfg` file that configures the KataGo engine behavior itself. If omitted, it auto-detects `tsumego_analysis.cfg` next to the `katago` binary.
 
 > ⚠️ **Common Error**: Passing `katago/tsumego_analysis.cfg` to `--config` will result in a `json.decoder.JSONDecodeError` because the Python JSON loader cannot parse KataGo's `.cfg` format. Be sure to use `--katago-config` for KataGo configuration files.
 
@@ -187,38 +200,46 @@ Each puzzle produces a JSON file with:
 
 ### Difficulty Level Mapping
 
-| Composite Score |    Yen-Go Level    |
+| Composite Score | Yen-Go Level |
 | :-------------: | :----------------: |
-|    0.0 – 1.0    |       novice       |
-|    1.0 – 2.0    |      beginner      |
-|    2.0 – 3.0    |     elementary     |
-|    3.0 – 4.0    |    intermediate    |
-|    4.0 – 5.0    | upper-intermediate |
-|    5.0 – 6.0    |      advanced      |
-|    6.0 – 7.0    |      low-dan       |
-|    7.0 – 8.0    |      high-dan      |
-|      8.0+       |       expert       |
+| 0.0 – 1.0 | novice |
+| 1.0 – 2.0 | beginner |
+| 2.0 – 3.0 | elementary |
+| 3.0 – 4.0 | intermediate |
+| 4.0 – 5.0 | upper-intermediate |
+| 5.0 – 6.0 | advanced |
+| 6.0 – 7.0 | low-dan |
+| 7.0 – 8.0 | high-dan |
+| 8.0+ | expert |
 
 ## Troubleshooting
 
 ### KataGo fails to start
 
 - Check that the model file exists and is not corrupted
+
 - Verify GPU drivers are up to date (for OpenCL/CUDA builds)
+
 - Try the Eigen (CPU) build if no GPU available
 
 ### Low accuracy results
 
 - Verify tsumego frame is being applied (check logs for "frame applied")
+
 - Increase visits: `--visits 800` or `--visits 2000`
+
 - Use a stronger model label by updating `config/katago-enrichment.json` (`models.deep_enrich` / `models.referee`)
+
 - Check komi is 0 (not 7.5)
 
 ### Slow batch processing
 
 - Use single-engine processing and tune visits for throughput/quality tradeoffs with `--visits`
+
 - Use config-driven visit escalation thresholds to keep deeper analysis only for uncertain puzzles
+
 - Use GPU builds for 10-100x speedup over CPU
+
 - Start with lower visits for speed, then increase only when needed for stability
 
 ## Changing Models
@@ -227,18 +248,20 @@ All model references use **label indirection** via `config/katago-enrichment.jso
 
 ### Available model labels
 
-| Label         | Default Arch | Use Case                              |
+| Label | Default Arch | Use Case |
 | ------------- | ------------ | ------------------------------------- |
-| `quick`       | b18c384      | Fast first-pass analysis (500 visits) |
-| `referee`     | b28c512      | Deep analysis for uncertain puzzles   |
-| `deep_enrich` | b18c384      | Full enrichment (2000 visits)         |
-| `test_fast`   | b10c128      | Integration tests only                |
+| `quick` | b18c384 | Fast first-pass analysis (500 visits) |
+| `referee` | b28c512 | Deep analysis for uncertain puzzles |
+| `deep_enrich` | b18c384 | Full enrichment (2000 visits) |
+| `test_fast` | b10c128 | Integration tests only |
 
 ### Switching models
 
 1. Download the new model to `tools/puzzle-enrichment-lab/models-data/`
-2. Update `config/katago-enrichment.json` → `models.<label>.filename` and `models.<label>.arch`
-3. Re-run calibration to validate accuracy: `python -m pytest tests/test_calibration.py -v -s`
+
+1. Update `config/katago-enrichment.json` → `models.<label>.filename` and `models.<label>.arch`
+
+1. Re-run calibration to validate accuracy: `python -m pytest tests/test_calibration.py -v -s`
 
 No Python code changes are needed — the model path is resolved from config at runtime.
 
@@ -246,12 +269,12 @@ No Python code changes are needed — the model path is resolved from config at 
 
 Key parameters in `config/katago-enrichment.json` → `deep_enrich` section:
 
-| Parameter                       | Default | Effect                                                  |
+| Parameter | Default | Effect |
 | ------------------------------- | ------- | ------------------------------------------------------- |
-| `visits`                        | 2000    | MCTS search depth. Higher = more accurate, slower.      |
-| `root_num_symmetries_to_sample` | 2       | Board symmetries evaluated. 8 = thorough but 4x slower. |
-| `model`                         | b18c384 | Model architecture. b28 is stronger but 3x slower.      |
-| `max_time`                      | 0       | Per-query time limit (0 = unlimited).                   |
+| `visits` | 2000 | MCTS search depth. Higher = more accurate, slower. |
+| `root_num_symmetries_to_sample` | 2 | Board symmetries evaluated. 8 = thorough but 4x slower. |
+| `model` | b18c384 | Model architecture. b28 is stronger but 3x slower. |
+| `max_time` | 0 | Per-query time limit (0 = unlimited). |
 
 ### Tree validation skip
 
@@ -266,6 +289,7 @@ When `deep_enrich.escalate_to_referee = true`, uncertain puzzles (winrate 0.3-0.
 ### Log locations
 
 - **Per-run log**: `.lab-runtime/logs/{run_id}_enrichment.log` — contains only records from that run
+
 - **Aggregate log**: `.lab-runtime/logs/enrichment.log` — rotating log across all runs
 
 ### Log format
@@ -274,14 +298,14 @@ Logs use structured JSON format with fields: `time`, `level`, `logger`, `run_id`
 
 ### Key log messages
 
-| Message Pattern            | Level   | Meaning                                                                  |
+| Message Pattern | Level | Meaning |
 | -------------------------- | ------- | ------------------------------------------------------------------------ |
-| `Puzzle start:`            | INFO    | Enrichment beginning — shows puzzle_id, source, board_size, player       |
-| `Post-analysis:`           | INFO    | KataGo analysis complete — correct_move, winrate, policy, visits, model  |
-| `Enrichment complete:`     | INFO    | Full SGF property summary — yg, yt, yq, yx, yr, yk, yo, yh_count         |
-| `Level mismatch:`          | WARNING | YG differs from KataGo estimate — original_level, katago_level, distance |
-| `Tree validation skipped:` | INFO    | Confident skip — winrate above threshold                                 |
-| `Refutation escalation:`   | INFO    | Retrying with higher visits                                              |
+| `Puzzle start:` | INFO | Enrichment beginning — shows puzzle_id, source, board_size, player |
+| `Post-analysis:` | INFO | KataGo analysis complete — correct_move, winrate, policy, visits, model |
+| `Enrichment complete:` | INFO | Full SGF property summary — yg, yt, yq, yx, yr, yk, yo, yh_count |
+| `Level mismatch:` | WARNING | YG differs from KataGo estimate — original_level, katago_level, distance |
+| `Tree validation skipped:` | INFO | Confident skip — winrate above threshold |
+| `Refutation escalation:` | INFO | Retrying with higher visits |
 
 ### Path format
 
@@ -304,7 +328,9 @@ python scripts/hydrate_calibration_fixtures.py \
 The script:
 
 - Reads YG property from each SGF to find matching puzzles
+
 - Samples randomly (seed-controlled for reproducibility)
+
 - Never overwrites existing Cho Chikun fixtures (protected prefix `cho-`)
 
 ### Configuring fixture directories
@@ -342,7 +368,7 @@ Calibration validates that the enrichment pipeline produces correct results on k
 ### Engine Modes
 
 | Mode | Flag | Visits | Escalation | Speed | When to Use |
-|------|------|--------|------------|-------|-------------|
+| ------ | ------ | -------- | ------------ | ------- | ------------- |
 | **Quick-only** | `--quick-only` | 500, capped | Disabled — no referee re-analysis | Fast | Calibration, smoke tests, iGPU |
 | **Default** | _(no flag)_ | 500 base, escalates to 2000+ | Enabled — uncertain puzzles re-analyzed with more visits | Slower | Production enrichment |
 
@@ -353,7 +379,9 @@ Calibration validates that the enrichment pipeline produces correct results on k
 On Intel integrated GPUs (e.g., Iris Xe), KataGo's OpenCL backend can crash after processing many puzzles (driver bug, exit code `0xC0000005`). The `restart_every_n` setting periodically restarts the engine to give the GPU a fresh OpenCL context.
 
 - **Default**: restart every 10 puzzles (~1–2% overhead)
+
 - **Disable**: `--restart-every-n 0`
+
 - **More frequent**: `--restart-every-n 5` (for unstable drivers)
 
 ### CLI Script: `run_calibration.py`
@@ -412,7 +440,7 @@ python scripts/run_calibration.py --quick-only \
 #### All CLI options
 
 | Option | Default | Description |
-|--------|---------|-------------|
+| -------- | --------- | ------------- |
 | `--input-dir` | _(from config)_ | Directory with SGFs; overrides config `fixture_dirs` |
 | `--output-dir` | _(from config)_ | Where to write results |
 | `--run-label` | `""` | Label for this calibration run |
@@ -435,7 +463,9 @@ python scripts/run_calibration.py --quick-only \
 Results are written to the output directory (default: `.lab-runtime/calibration-results/`):
 
 - One JSON file per puzzle with enrichment results
+
 - Console summary: accepted/rejected/flagged counts, pass rate
+
 - Logs include the random seed used (for reproducibility)
 
 ### Pytest: `test_calibration.py`
@@ -452,7 +482,7 @@ The pytest path has no CLI overrides — to change `sample_size`, `seed`, or `ra
 ### Quick Reference
 
 | What | Config default | CLI override |
-|------|---------------|--------------|
+| ------ | --------------- | -------------- |
 | Puzzles per collection | 5 | `--sample-size N` |
 | Collections | cho-elementary, cho-intermediate, cho-advanced | `--input-dir <path>` or edit `fixture_dirs` |
 | Sampling mode | Random (v1.27) | `--seed N` for deterministic |
@@ -486,7 +516,7 @@ pytest tests/test_technique_calibration.py -k "snapback" -v
 ### When to run
 
 | Situation | Run technique calibration? |
-|-----------|---------------------------|
+| ----------- | --------------------------- |
 | Changed a technique detector | Yes — validates detection accuracy |
 | Changed difficulty algorithm | No — use `test_calibration.py` instead |
 | Added/replaced a technique fixture | Yes — validates new fixture works |
@@ -498,15 +528,21 @@ pytest tests/test_technique_calibration.py -k "snapback" -v
 When adding a new calibration entry (e.g., after replacing a fixture):
 
 1. Place the SGF fixture in `tests/fixtures/`
-2. Determine the correct first move in GTP format (e.g., "B2")
-3. Add a `TechniqueSpec` entry to the `TECHNIQUE_REGISTRY` dict in `test_technique_calibration.py`
-4. Set `expected_tags`, difficulty range (`min_level_id`/`max_level_id`), `min_refutations`, and `expect_teaching_comments`
-5. Run: `pytest tests/test_technique_calibration.py -k "your_tag" -v`
+
+1. Determine the correct first move in GTP format (e.g., "B2")
+
+1. Add a `TechniqueSpec` entry to the `TECHNIQUE_REGISTRY` dict in `test_technique_calibration.py`
+
+1. Set `expected_tags`, difficulty range (`min_level_id`/`max_level_id`), `min_refutations`, and `expect_teaching_comments`
+
+1. Run: `pytest tests/test_technique_calibration.py -k "your_tag" -v`
 
 ### Test markers
 
 Technique calibration tests use these markers:
+
 - `@pytest.mark.unit` — 3 cross-check tests (no KataGo)
+
 - `@pytest.mark.slow` + `@pytest.mark.integration` — 5 × 25 parametrized integration tests
 
 ---
@@ -540,9 +576,13 @@ Without `initial_stones`, the function falls back to adjacency-based detection (
 > **See also:**
 >
 > - [Architecture: KataGo Enrichment](../../architecture/tools/katago-enrichment.md) — design decisions
+>
 > - [Architecture: Enrichment Lab GUI](../../architecture/tools/enrichment-lab-gui.md) — GUI design decisions
+>
 > - [Reference: KataGo Enrichment Config](../../reference/katago-enrichment-config.md) — full configuration reference
+>
 > - [Concepts: Quality — Benson Gate](../../concepts/quality.md#benson-gate) — quality signals
+>
 > - [Concepts: Quality](../../concepts/quality.md) — AC quality levels
 
 ## AI-Solve Unified Enrichment (v3)
@@ -566,35 +606,42 @@ python tools/puzzle-enrichment-lab/cli.py batch \
 The pipeline will:
 
 1. Analyze the position to find candidate moves
-2. Classify moves as correct/wrong using configurable thresholds
-3. Build a recursive solution tree for the best correct move
-4. Inject the solution tree into the SGF
+
+1. Classify moves as correct/wrong using configurable thresholds
+
+1. Build a recursive solution tree for the best correct move
+
+1. Inject the solution tree into the SGF
 
 ### Has-Solution Workflow
 
 For puzzles with existing solutions, AI-Solve validates and discovers alternatives:
 
 1. Validates the human's correct move against KataGo's analysis
-2. Discovers alternative correct moves (co-correct detection)
-3. Builds trees for alternatives and injects them
+
+1. Discovers alternative correct moves (co-correct detection)
+
+1. Builds trees for alternatives and injects them
 
 ### AC Quality Levels (DD-4)
 
 The `ac_level` field in output (flows to `YQ` property as `ac:N`):
 
-| Level | Name      | Meaning                                                       |
+| Level | Name | Meaning |
 | :---: | --------- | ------------------------------------------------------------- |
-|   0   | Untouched | AI pipeline not engaged, or enrichment failed                 |
-|   1   | Enriched  | AI validated/enriched; has-solution path; or tree truncated   |
-|   2   | AI Solved | Position-only path with complete, non-truncated solution tree |
-|   3   | Verified  | Reserved for future manual verification                       |
+| 0 | Untouched | AI pipeline not engaged, or enrichment failed |
+| 1 | Enriched | AI validated/enriched; has-solution path; or tree truncated |
+| 2 | AI Solved | Position-only path with complete, non-truncated solution tree |
+| 3 | Verified | Reserved for future manual verification |
 
 ### Observability (DD-11)
 
 Batch runs emit a `BatchSummary` at the end with:
 
 - AC level distribution, disagreement count/rate
+
 - Per-collection disagreement monitoring with configurable WARNING threshold
+
 - Disagreement records written to `.lab-runtime/logs/disagreements/{run_id}.jsonl`
 
 ## Kishimoto-Mueller Search Optimizations
@@ -620,21 +667,22 @@ Add or modify these fields under `ai_solve.solution_tree` in `config/katago-enri
 }
 ```
 
-| Knob                           | Default | Effect                                                     | To Disable                                  |
+| Knob | Default | Effect | To Disable |
 | ------------------------------ | ------- | ---------------------------------------------------------- | ------------------------------------------- |
-| `simulation_enabled`           | `true`  | Reuse proven refutation for sibling opponent responses     | Set `false`                                 |
-| `simulation_verify_visits`     | `50`    | Visits for simulation verification query                   | N/A (only used when simulation enabled)     |
-| `transposition_enabled`        | `true`  | Cache identical board positions within one tree build      | Set `false`                                 |
-| `terminal_detection_enabled`   | `true`  | Pre-query Benson (G1) + interior-point (G2) gates          | Set `false`                                 |
-| `forced_move_visits`           | `125`   | Reduced visits for trivially forced player moves           | Set `0` to disable                          |
-| `forced_move_policy_threshold` | `0.85`  | Policy prior threshold for forced-move detection           | N/A (only used when forced_move_visits > 0) |
-| `depth_policy_scale`           | `0.01`  | Per-depth increment to branch_min_policy at opponent nodes | Set `0.0` to revert to flat threshold       |
+| `simulation_enabled` | `true` | Reuse proven refutation for sibling opponent responses | Set `false` |
+| `simulation_verify_visits` | `50` | Visits for simulation verification query | N/A (only used when simulation enabled) |
+| `transposition_enabled` | `true` | Cache identical board positions within one tree build | Set `false` |
+| `terminal_detection_enabled` | `true` | Pre-query Benson (G1) + interior-point (G2) gates | Set `false` |
+| `forced_move_visits` | `125` | Reduced visits for trivially forced player moves | Set `0` to disable |
+| `forced_move_policy_threshold` | `0.85` | Policy prior threshold for forced-move detection | N/A (only used when forced_move_visits > 0) |
+| `depth_policy_scale` | `0.01` | Per-depth increment to branch_min_policy at opponent nodes | Set `0.0` to revert to flat threshold |
 
 ### Depth-Dependent Winrate Reference (Simulation)
 
 Simulation verification uses a **depth guard** for winrate comparison:
 
 - **Depth 1-2:** Compares against `root_winrate` (root evaluation is still relevant at shallow depth)
+
 - **Depth ≥3:** Compares against local winrate (first sibling's winrate at that depth)
 
 ## Pipeline Internals
@@ -644,7 +692,7 @@ Simulation verification uses a **depth guard** for winrate comparison:
 Each puzzle passes through these stages in order:
 
 | # | Stage | Error Policy | Purpose |
-|---|-------|-------------|---------|
+| --- | ------- | ------------- | --------- |
 | 1 | `ParseStage` | FAIL_FAST | Parse SGF, extract metadata + correct first move |
 | 2 | `SolvePathStage` | DEGRADE | Dispatch: position-only / has-solution / standard |
 | 3 | `AnalyzeStage` | FAIL_FAST | Build query (frame + ROI), run KataGo analysis |
@@ -663,7 +711,7 @@ Stages with `DEGRADE` error policy allow the pipeline to continue even if that s
 KataGo analysis uses tiered visit budgets:
 
 | Tier | Visits | Purpose | When Used |
-|------|--------|---------|-----------|
+| ------ | -------- | --------- | ----------- |
 | T0 | 50 | Policy snapshot | Quick technique pre-classification |
 | T1 | 500 | Standard analysis | Correct move validation, difficulty estimation |
 | T2 | 2000 | Deep analysis | Refutation generation, complex positions |
@@ -686,8 +734,11 @@ The pipeline computes ownership entropy per intersection: `H(p) = -p·log₂(p) 
 No puzzle is silently dropped. When any component fails:
 
 - Frame failure → entropy ROI fallback → `allowMoves` from bounding box
+
 - Technique detection failure → defaults to "life-and-death" tag
+
 - Difficulty estimation failure → uses structural metrics only
+
 - Teaching comment failure → omits comments, puzzle still enriched
 
 This prevents false rejections at deep positions where root_winrate diverges from local evaluations (e.g., seki formations, ko fights at depth 5+). The guard was approved by the Review Panel — Cho Chikun: "The first opponent response can be surprising [at shallow depth], but five moves deep, the comparison should be local."
@@ -697,9 +748,13 @@ This prevents false rejections at deep positions where root_winrate diverges fro
 After tree build, `TreeCompletenessMetrics` includes:
 
 - `simulation_hits` / `simulation_misses` — Kawano simulation success/failure
+
 - `transposition_hits` — position cache hits
+
 - `forced_move_count` — forced-move fast-path activations
+
 - `max_resolved_depth` — deepest non-truncated branch
+
 - `branches_pruned_by_depth_policy` — L3 depth-policy pruning
 
 ### Disabling All Optimizations
@@ -728,12 +783,14 @@ The enrichment pipeline includes an **InstinctStage** that classifies the correc
 
 The InstinctStage runs after TechniqueStage and before TeachingStage:
 
-```
+```text
 ... → TechniqueStage → InstinctStage → TeachingStage → SgfWritebackStage
 ```
 
 - **Error policy**: DEGRADE — if classification fails, the pipeline continues without instinct data
+
 - **Engine queries**: Zero (geometry-only analysis)
+
 - **Output**: `ctx.instinct_results: list[InstinctResult]` (instinct type, confidence, evidence)
 
 ### Policy Entropy as Difficulty Signal
@@ -748,20 +805,20 @@ The entropy value is stored in `ctx.policy_entropy` and used by downstream stage
 
 In `config/teaching.py` → `InstinctConfig`:
 
-| Parameter              | Default | Effect                                              |
+| Parameter | Default | Effect |
 | ---------------------- | ------- | --------------------------------------------------- |
-| `min_confidence`       | 0.6     | Minimum confidence to include instinct in hints     |
-| `instinct_phrases`     | (dict)  | Maps instinct types to hint prefix phrases          |
+| `min_confidence` | 0.6 | Minimum confidence to include instinct in hints |
+| `instinct_phrases` | (dict) | Maps instinct types to hint prefix phrases |
 
 #### Level-Adaptive Templates
 
 In `config/teaching.py` → `LevelAdaptiveTemplates`:
 
-| Level Category | Template Style                                           |
+| Level Category | Template Style |
 | -------------- | -------------------------------------------------------- |
-| `entry`        | Simple language, focus on visual patterns                |
-| `core`         | Standard depth with reading hints + refutation warnings  |
-| `strong`       | Terse/concise, assumes familiarity with Go terminology   |
+| `entry` | Simple language, focus on visual patterns |
+| `core` | Standard depth with reading hints + refutation warnings |
+| `strong` | Terse/concise, assumes familiarity with Go terminology |
 
 Level category is determined by `get_level_category()` in `config/helpers.py`.
 
@@ -770,9 +827,12 @@ Level category is determined by `get_level_category()` in `config/helpers.py`.
 To validate instinct classification accuracy:
 
 1. **Golden fixtures**: Curated SGF puzzles with known instinct labels in `tests/fixtures/`
-2. **Calibration tests**: `tests/test_instinct_calibration.py` runs classification against golden set
-3. **Accuracy target**: ≥80% agreement with human-labeled instinct types
-4. **Process**: Add new fixtures with `instinct_type` metadata, run calibration, adjust confidence thresholds
+
+1. **Calibration tests**: `tests/test_instinct_calibration.py` runs classification against golden set
+
+1. **Accuracy target**: ≥80% agreement with human-labeled instinct types
+
+1. **Process**: Add new fixtures with `instinct_type` metadata, run calibration, adjust confidence thresholds
 
 ```bash
 # Run instinct calibration tests
@@ -821,14 +881,16 @@ Debug artifacts are written to `.lab-runtime/debug/{run_id}/{puzzle_id}.debug.js
 ```
 
 | Field | Description |
-|-------|-------------|
+| ------- | ------------- |
 | `trap_moves` | Top-5 wrong moves sorted by delta, with refutation PV and type |
 | `detector_matrix` | Boolean activation state for all 28 technique detectors |
 
 ### When to use
 
 - **Investigating false tags**: Check `detector_matrix` to see which detectors fired
+
 - **Missing refutations**: Review `trap_moves` to see what candidates were found
+
 - **Quality debugging**: Compare trap move deltas across puzzles in a collection
 
 ## Per-Puzzle Diagnostic JSON
@@ -869,7 +931,7 @@ Diagnostic files are written to `.lab-runtime/diagnostics/{run_id}/{puzzle_id}.j
 ### Key Fields
 
 | Field | Description |
-|-------|-------------|
+| ------- | ------------- |
 | `stages_run` / `stages_skipped` | Which pipeline stages executed vs were skipped |
 | `signals_computed` | Computed signal values (entropy, rank, trap density) |
 | `goal_agreement` | Whether stated puzzle goal matches inferred goal (`match`/`mismatch`/`unknown`) |

@@ -3,8 +3,11 @@
 > **See also**:
 >
 > - [How-To: Create Adapter](./create-adapter.md) — Building custom adapters
+>
 > - [Architecture: Adapters](../../architecture/backend/adapters.md) — Adapter design
+>
 > - [Reference: Adapters](../../reference/adapters/) — Per-adapter configs
+>
 > - [Troubleshoot](./troubleshoot.md) — Common issues
 
 **Last Updated**: 2026-02-01
@@ -44,13 +47,13 @@ backend/puzzle_manager/config/sources.json
 
 ### Required Fields
 
-| Field     | Type    | Description                                          |
+| Field | Type | Description |
 | --------- | ------- | ---------------------------------------------------- |
-| `id`      | string  | Unique source identifier (used with `--source` flag) |
-| `name`    | string  | Human-readable display name                          |
-| `adapter` | string  | Adapter registration name                            |
-| `enabled` | boolean | Whether source is active                             |
-| `config`  | object  | Adapter-specific configuration                       |
+| `id` | string | Unique source identifier (used with `--source` flag) |
+| `name` | string | Human-readable display name |
+| `adapter` | string | Adapter registration name |
+| `enabled` | boolean | Whether source is active |
+| `config` | object | Adapter-specific configuration |
 
 ---
 
@@ -67,8 +70,10 @@ The `active_adapter` field defines the **default source** for pipeline runs:
 ### Behavior
 
 1. **Single Source Design**: The pipeline processes ONE source per run
-2. **CLI Override**: Use `--source` to specify a different source
-3. **Safety Check**: Mixing sources requires explicit override
+
+1. **CLI Override**: Use `--source` to specify a different source
+
+1. **Safety Check**: Mixing sources requires explicit override
 
 ### Example Workflow
 
@@ -104,7 +109,9 @@ python -m backend.puzzle_manager run --source source_name --source-override
 ### When NOT to Use
 
 - Don't use if you made a typo in the source name
+
 - Don't use if you're unsure which source to use
+
 - Check `python -m backend.puzzle_manager sources` first
 
 ---
@@ -119,7 +126,7 @@ python -m backend.puzzle_manager run --source source_name --source-override
        ...
    ```
 
-2. **Add to sources.json**:
+1. **Add to sources.json**:
 
    ```json
    {
@@ -133,7 +140,7 @@ python -m backend.puzzle_manager run --source source_name --source-override
    }
    ```
 
-3. **Verify registration**:
+1. **Verify registration**:
 
    ```bash
    python -m backend.puzzle_manager sources

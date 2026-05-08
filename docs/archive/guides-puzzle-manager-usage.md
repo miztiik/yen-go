@@ -28,7 +28,7 @@ The puzzle manager uses a **source adapter** to fetch puzzles from external sour
 ### Key Concepts
 
 | Concept | Description |
-|---------|-------------|
+| --------- | ------------- |
 | `active_adapter` | The default adapter set in `sources.json`. Used when `--source` is not specified. |
 | `--source` | CLI flag to specify which adapter to use for the **ingest stage only**. |
 | `--source-override` | Required when `--source` differs from `active_adapter`. Safety mechanism. |
@@ -40,15 +40,17 @@ The puzzle manager uses a **source adapter** to fetch puzzles from external sour
 The puzzle manager has 3 stages:
 
 1. **ingest** - Fetches puzzles from source → writes to `.pm-runtime/staging/`
-2. **analyze** - Enriches puzzles (hints, tags, level) → updates staging files
-3. **publish** - Writes finalized SGF to `yengo-puzzle-collections/`
+
+1. **analyze** - Enriches puzzles (hints, tags, level) → updates staging files
+
+1. **publish** - Writes finalized SGF to `yengo-puzzle-collections/`
 
 **Important**: The `--source` flag only affects the **ingest** stage. The analyze and publish stages process whatever is in the staging directory.
 
 ### Source Selection Rules
 
 | Scenario | `--source` | `--source-override` | Result |
-|----------|-----------|---------------------|--------|
+| ---------- | ----------- | --------------------- | -------- |
 | Default operation | Not specified | N/A | Uses `active_adapter` |
 | Source matches active | `--source X` (X == active) | Not needed | Proceeds normally |
 | Source differs from active | `--source X` (X != active) | Not specified | **ERROR + exit** |
@@ -60,7 +62,9 @@ The puzzle manager has 3 stages:
 The override requirement prevents accidental data mixing:
 
 - **Scenario**: Active adapter is `yengo-source`, you run `--source yengo-source` by mistake
+
 - **Without safety**: yengo-source puzzles get ingested, but analyze/publish might process yengo-source leftovers
+
 - **With safety**: CLI stops you with clear error message
 
 ## Command Reference
@@ -201,7 +205,7 @@ python -m backend.puzzle_manager run --source yengo-source
 
 ### "No active_adapter configured"
 
-```
+```text
 ❌ ERROR: No --source specified and no active_adapter configured
    To proceed, either:
    1. Specify a source: run --source yengo-source
@@ -212,7 +216,7 @@ python -m backend.puzzle_manager run --source yengo-source
 
 ### "Source differs from active_adapter"
 
-```
+```text
 ❌ ERROR: --source 'yengo-source' differs from active_adapter 'yengo-source'
    To proceed, either:
    1. Add --source-override flag: run --source yengo-source --source-override
@@ -223,7 +227,7 @@ python -m backend.puzzle_manager run --source yengo-source
 
 ### "Warning: --source only affects ingest stage"
 
-```
+```text
 ⚠️  --source 'yengo-source' only affects 'ingest' stage; ignored for ['analyze', 'publish']
 ```
 
@@ -260,7 +264,7 @@ The `active_adapter` field is managed by the `enable-adapter` and `disable-adapt
 ### Runtime Directories
 
 | Directory | Purpose |
-|-----------|---------|
+| ----------- | --------- |
 | `.pm-runtime/staging/` | Ingested puzzles awaiting enrichment |
 | `.pm-runtime/state/` | Pipeline state and checkpoints |
 | `.pm-runtime/logs/` | Log files |
@@ -271,6 +275,7 @@ The `active_adapter` field is managed by the `enable-adapter` and `disable-adapt
 When source override is used, messages are logged to both console and log file:
 
 - **Console**: `⚠️  Source overridden to 'X' (active_adapter is 'Y')...`
+
 - **Log file**: `WARNING - Source overridden to 'X' (active_adapter is 'Y')...`
 
 This dual logging ensures administrators can track when overrides were used.
@@ -278,5 +283,7 @@ This dual logging ensures administrators can track when overrides were used.
 ## See Also
 
 - [CLI Reference](../reference/puzzle-manager-cli.md) - Full command documentation
+
 - [Adapter Design Standards](../architecture/backend/adapter-design-standards.md) - How adapters work
+
 - [Configuration Guide](../reference/configuration.md) - All config options

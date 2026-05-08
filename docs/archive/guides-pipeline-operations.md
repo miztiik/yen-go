@@ -3,7 +3,7 @@
 > ⚠️ **ARCHIVED** — This document is preserved for historical context.
 > Current canonical documentation: [docs/how-to/backend/run-pipeline.md](../how-to/backend/run-pipeline.md)
 > Archived: 2026-03-24
-
+>
 > **Spec Reference**: 043-pipeline-observability  
 > **Last Updated**: 2026-01-30
 
@@ -15,7 +15,7 @@ Guide for operating and monitoring the puzzle manager pipeline.
 
 The puzzle manager pipeline processes Go tsumego puzzles through three stages:
 
-```
+```text
 INGEST → ANALYZE → PUBLISH
 ```
 
@@ -51,9 +51,12 @@ python -m backend.puzzle_manager run --resume
 ```
 
 On resume, the pipeline:
+
 1. Restores `source_id` from the saved `config_snapshot`
-2. Continues from the last completed batch
-3. Maintains the original `run_id` for correlation
+
+1. Continues from the last completed batch
+
+1. Maintains the original `run_id` for correlation
 
 ---
 
@@ -75,6 +78,7 @@ Every log entry includes the `run_id` for tracing:
 ```
 
 Filter logs by run:
+
 ```bash
 grep '"run_id":"20260130-abc12345"' pm_logs/*.jsonl
 ```
@@ -82,14 +86,16 @@ grep '"run_id":"20260130-abc12345"' pm_logs/*.jsonl
 ### Stage Status
 
 Check pipeline status with:
+
 ```bash
 python -m backend.puzzle_manager status
 python -m backend.puzzle_manager status --json
 ```
 
 Stage statuses:
+
 | Status | Meaning |
-|--------|---------|
+| -------- | --------- |
 | `completed` | Stage finished successfully |
 | `failed` | Stage encountered errors |
 | `in_progress` | Stage currently running |
@@ -115,6 +121,7 @@ python -m backend.puzzle_manager publish-log search --source yengo-source
 ```
 
 Publish log entry format:
+
 ```json
 {"run_id":"20260130-abc12345","puzzle_id":"gp-12345","source_id":"yengo-source","path":"sgf/beginner/2026/01/batch-001/gp-12345.sgf"}
 ```
@@ -125,7 +132,7 @@ Publish log entry format:
 
 State is persisted in `.pm-runtime/state/`:
 
-```
+```text
 .pm-runtime/state/
 ├── current_run.json       # Active run state
 ├── archived/              # Completed run states
@@ -195,15 +202,21 @@ python -m backend.puzzle_manager clean --target staging
 ## Best Practices
 
 1. **Always specify source**: Use `--source` to ensure log correlation
-2. **Use dry-run first**: Preview changes before writing
-3. **Monitor logs**: Check logs for errors during long runs
-4. **Archive state**: State files are auto-archived after completion
-5. **Small batches for testing**: Use `--batch-size 5` for testing
+
+1. **Use dry-run first**: Preview changes before writing
+
+1. **Monitor logs**: Check logs for errors during long runs
+
+1. **Archive state**: State files are auto-archived after completion
+
+1. **Small batches for testing**: Use `--batch-size 5` for testing
 
 ---
 
 ## Related Documentation
 
 - [CLI Reference](../reference/puzzle-manager-cli.md)
+
 - [Rollback Guide](./rollback.md)
+
 - [Troubleshooting Guide](./troubleshoot.md)

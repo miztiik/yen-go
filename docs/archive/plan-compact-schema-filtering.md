@@ -1,10 +1,10 @@
-﻿> ⚠️ **ARCHIVED** — This document records the compact-envelope filtering migration that was later superseded by the SQLite search database.
+﻿# Compact Schema & Multi-Dimensional Filtering — Implementation Plan v3
+
+> ⚠️ **ARCHIVED** — This document records the compact-envelope filtering migration that was later superseded by the SQLite search database.
 > The current canonical architecture is [Concepts: SQLite Index Architecture](../concepts/sqlite-index-architecture.md).
 > Kept for historical reference only.
 
 ---
-
-# Compact Schema & Multi-Dimensional Filtering — Implementation Plan v3
 
 **Last Updated**: 2026-02-20
 **Status**: GAP REMEDIATION — ~39% Complete (52/~133 steps done, 71 gaps identified, WP11 validated)
@@ -35,7 +35,7 @@ A 108-step audit on 2026-02-18 revealed **64 gaps** across all phases. The data 
 ```
 
 | Key | Meaning | Type | Example | Decoded |
-|-----|---------|------|---------|---------|
+| ----- | --------- | ------ | --------- | --------- |
 | `p` | path ref | `string` | `"0001/fc38f029205dde14"` | `sgf/0001/fc38f029205dde14.sgf` |
 | `l` | level | `integer` (sparse) | `130` | `elementary` |
 | `t` | tags | `integer[]` (sparse) | `[12,34,36]` | `[ko, ladder, net]` |
@@ -46,7 +46,7 @@ A 108-step audit on 2026-02-18 revealed **64 gaps** across all phases. The data 
 ### Impact
 
 | Metric | Before | After |
-|--------|--------|-------|
+| -------- | -------- | ------- |
 | Avg entry | 143 B | **~68 B** (52% smaller) |
 | Total views (200k) | ~163 MB | **~75 MB** |
 | Git repo (views+SGFs) | ~363 MB | **~275 MB** |
@@ -58,7 +58,7 @@ A 108-step audit on 2026-02-18 revealed **64 gaps** across all phases. The data 
 ## 2. Decisions Registry (D1-D31)
 
 | # | Decision | Choice | v3 Status |
-|---|----------|--------|-----------|
+| --- | ---------- | -------- | ----------- |
 | D1 | Entry schema | Compact `{p, l, t, c, x}` everywhere | Done |
 | D2 | Migration strategy | Big-bang, no backward compatibility | Done |
 | D3 | Filtering approach | Client-side `Array.filter()` per loaded page | Not started |
@@ -106,7 +106,7 @@ A 108-step audit on 2026-02-18 revealed **64 gaps** across all phases. The data 
 ### Phase Scorecard
 
 | Phase | Description | Steps | Done | Partial | Not Done | % |
-|-------|-------------|-------|------|---------|----------|---|
+| ------- | ------------- | ------- | ------ | --------- | ---------- | --- |
 | **0** | Config Schema Updates | 6 | 6 | 0 | 0 | **100%** |
 | **1** | SGF Directory Restructuring | 5 | 5 | 0 | 0 | **100%** |
 | **2** | Compact Entry Construction | 9 | 6 | 1 | 2 | **67%** |
@@ -119,7 +119,7 @@ A 108-step audit on 2026-02-18 revealed **64 gaps** across all phases. The data 
 | **9** | Page Integration | 12 | 0 | 1 | 11 | **0%** |
 | **10** | Visual Testing | 11 | 0 | 0 | 11 | **0%** |
 | **11** | Documentation | 2 | 1 | 0 | 1 | **50%** |
-| **TOTAL** | | **108** | **39** | **8** | **55** | **36%** |
+| **TOTAL** | — | **108** | **39** | **8** | **55** | **36%** |
 
 ---
 
@@ -128,7 +128,7 @@ A 108-step audit on 2026-02-18 revealed **64 gaps** across all phases. The data 
 ### 4.1 Backend Gaps (19)
 
 | ID | Phase | What's Wrong | Severity | WP |
-|----|-------|-------------|----------|-----|
+| ---- | ------- | ------------- | ---------- | ----- |
 | G1 | 2.5 | `pagination_writer.py` uses `"sequence_number"` not `"n"` in collection entries | **High** | WP2 |
 | G2 | 2.6 | `PuzzleRef` model uses `{id, level, path}` not compact format | Medium | WP3 |
 | G3 | 2.6 | No daily master index generation code | Medium | WP3 |
@@ -152,7 +152,7 @@ A 108-step audit on 2026-02-18 revealed **64 gaps** across all phases. The data 
 ### 4.2 Frontend Gaps (44)
 
 | ID | Phase | What's Wrong | Severity | WP |
-|----|-------|-------------|----------|-----|
+| ---- | ------- | ------------- | ---------- | ----- |
 | G20 | 7.1 | No `configService.ts` -- config pre-fetch missing | **High** | WP4 |
 | G21 | 7.4 | Decoded types lose `yx` (complexity) -- no `DecodedEntry` with full fields | Medium | WP4 |
 | G22 | 7.5 | No `entryDecoder.ts` -- decode logic in wrong file | Medium | WP4 |
@@ -183,13 +183,13 @@ A 108-step audit on 2026-02-18 revealed **64 gaps** across all phases. The data 
 ### 4.3 Documentation Gap (1)
 
 | ID | Phase | What's Wrong | WP |
-|----|-------|-------------|-----|
+| ---- | ------- | ------------- | ----- |
 | G64 | 11.1 | `docs/concepts/numeric-id-scheme.md` does not exist | WP10 |
 
 ### 4.4 Config Gaps (v3.1 — from architect review)
 
 | ID | Source | What's Wrong | Severity | WP |
-|----|--------|-------------|----------|-----|
+| ---- | -------- | ------------- | ---------- | ----- |
 | G65 | D30 | `config/tags.json` tag IDs need band shift (tesuji +10, technique +10) | **High** | WP0 |
 | G66 | D31 | `config/tags.json` field `numericId` must rename to `id`, old `id` to `slug` | **High** | WP0 |
 | G67 | D31 | `config/collections.json` field `numericId` must rename to `id` | **High** | WP0 |
@@ -229,8 +229,11 @@ A 108-step audit on 2026-02-18 revealed **64 gaps** across all phases. The data 
 > **Principle**: Go study follows a natural hierarchy: Level -> Technique -> Specific Pattern. A 15-kyu student studying life-and-death should be able to filter to their level and see only puzzles they can attempt.
 >
 > **Recommendation**: The primary filter dimension should match the page context:
+>
 > - **Training (level-centric)**: Primary = level *(already set)*, Secondary = **tag/technique filter** *(new)*
+>
 > - **Technique (tag-centric)**: Primary = tag *(already set)*, Secondary = **level filter** *(new)*
+>
 > - **Collections**: Both **level + tag** as secondary filters within the collection
 >
 > This aligns with how Go teachers assign homework: "Do 20 life-and-death problems at your level."
@@ -282,7 +285,7 @@ A 108-step audit on 2026-02-18 revealed **64 gaps** across all phases. The data 
 ### 5.2 Filtering Matrix -- Per Page
 
 | Page | Primary Dimension | Filter 1 (new) | Filter 2 (new) | Component | Data Source |
-|------|------------------|-----------------|-----------------|-----------|-------------|
+| ------ | ------------------ | ----------------- | ----------------- | ----------- | ------------- |
 | **Training browse** | Level (existing category pills) | -- | -- | *(no change -- tag filter moves to solve page per Go Pro #3)* | -- |
 | **Training solve** | Level (from URL) | Tag FilterDropdown | -- | FilterDropdown (29 tags, grouped) | Level master -> `tags` distribution |
 | **Technique** | Tag (existing category pills) | Level FilterBar (9 pills desktop, 3 mobile) | -- | FilterBar with counts, responsive | Tag master -> `levels` distribution |
@@ -300,7 +303,7 @@ A 108-step audit on 2026-02-18 revealed **64 gaps** across all phases. The data 
 
 **Visual**: Looks like a single FilterBar pill that expands on click.
 
-```
+```text
 Closed state:
 +-----------------------------+
 | v  Filter by technique      |  <- rounded-full pill, same as FilterBar pill
@@ -316,29 +319,37 @@ Open state:
 |    Life & Death (42)            |
 |    Ko (18)                      |
 |    Living (7)                   |
-|    Seki (3)                     |
-|---------------------------------|
-|  TESUJI PATTERNS                |
-|    Snapback (12)                |
+| Seki (3) |
+| --------------------------------- |
+| TESUJI PATTERNS |
+| Snapback (12) |
 |    Ladder (42)                  |  <- Count from master index distribution
 |    Net (35)                     |
-|    ...                          |
-|---------------------------------|
-|  TECHNIQUES                     |
-|    Capture Race (17)            |
-|    Eye Shape (8)                |
-|    ...                          |
+| ... |
+| --------------------------------- |
+| TECHNIQUES |
+| Capture Race (17) |
+| Eye Shape (8) |
+| ... |
 +=================================+
 ```
 
 **Styling**:
+
 - Trigger: exactly like a FilterBar pill (`rounded-full`, `min-h-[44px]`, `px-4`, same bg/border tokens)
+
 - When active: accent bg (same as selected FilterBar pill)
+
 - Dropdown panel: `rounded-xl`, `border`, `shadow-xl`, `z-[--z-dropdown]`, `max-h-[400px] overflow-y-auto`
+
 - Category headers: `text-xs uppercase tracking-wider font-bold text-[--color-text-muted] px-4 py-2`
+
 - Options: `px-4 py-2.5 min-h-[44px]` touch targets, hover bg-elevated
+
 - Count badge: `text-xs text-[--color-text-muted]` right-aligned
+
 - Backdrop: `fixed inset-0 z-[999]` transparent click-to-close (same pattern as SettingsGear)
+
 - New icons needed: `ChevronDownIcon`, `CheckIcon` (add to `components/shared/icons/`)
 
 **Accessibility**: `role="listbox"`, `aria-expanded`, `aria-labelledby`, `aria-selected` on active option, `Escape` to close + return focus to trigger, arrow keys to navigate, **focus trap** (Tab cycles within dropdown only, per WCAG 2.1 AA combobox pattern).
@@ -349,7 +360,7 @@ Open state:
 
 Add optional `count?: number` to `FilterOption`:
 
-```
+```text
 +----------+ +--------------+ +--------------+ +-----------+
 | All (57) | | Novice (12)  | | Beginner (8) | | Elem (15) | ...
 +----------+ +--------------+ +--------------+ +-----------+
@@ -361,7 +372,7 @@ Count is `text-xs opacity-75` appended to label. When count is 0: option is disa
 
 When a filter is applied, show a dismissible chip **inline in the filter strip** (right side, where ViewToggle or sort sits):
 
-```
+```text
 +------------------------------------------+
 |  [FilterBar pills]     Ladder x          |  <- chip inline, not below
 +------------------------------------------+
@@ -380,8 +391,11 @@ const { levelId, tagId, setLevel, setTag, clearAll, hasActiveFilters,
 ```
 
 - `levelOptions`: all levels with counts (if tag selected, counts from tag's `levels` distribution)
+
 - `tagOptions`: all tags with counts (if level selected, counts from level's `tags` distribution)
+
 - Cascading: selecting a level recalculates tag counts, and vice versa
+
 - `clearAll()` resets both to null
 
 ### 5.4 Page-by-Page Filter Layout
@@ -391,8 +405,11 @@ const { levelId, tagId, setLevel, setTag, clearAll, hasActiveFilters,
 Training *selection* page: **no change** -- keep it clean with level cards only (per Go Professional #3).
 
 Training *solve* page (inside PuzzleSetPlayer): add tag FilterDropdown above the board.
+
 - FilterDropdown (Filter by technique) -- filters the puzzle set to matching tag
+
 - Active filter chip inline, dismiss returns to full set
+
 - Count budges from level master -> `tags` distribution
 
 **Rationale**: Students on the selection page think in levels, not techniques. Tag filtering belongs INSIDE the puzzle-solving context, where the student is already committed to a level.
@@ -400,10 +417,15 @@ Training *solve* page (inside PuzzleSetPlayer): add tag FilterDropdown above the
 #### Technique Page -- Add Level Filter (Responsive)
 
 Layer 2 filter strip adds a level FilterBar on the right:
+
 - Left: FilterBar (All | Objectives | Techniques | Tesuji) -- existing
+
 - Right (desktop >= 768px): FilterBar (All | Nov | Beg | Elem | Int | U.Int | Adv | L.Dan | H.Dan | Exp) -- 9 pills with `shortName`, tooltip shows full name + rank range
+
 - Right (mobile < 768px): FilterBar (All | Beginner | Intermediate | Advanced) -- 3 category pills (same grouping as Training selection page)
+
 - Active filter chip inline in filter strip right side (not below it per UX #3)
+
 - Layer 3: Technique cards with "N at this level" counts
 
 **Behavior**: When a level is selected, technique cards show puzzle count at that level. Techniques with 0 puzzles at that level are dimmed/hidden. All counts reactively update when cross-filter changes (per Go Pro #4).
@@ -413,9 +435,13 @@ Layer 2 filter strip adds a level FilterBar on the right:
 Collections *browse* page: **no change** -- keep search bar only (per Go Professional #4). Curated collections have well-defined boundaries; filtering the browse list by level/tag adds complexity without matching user intent.
 
 Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterDropdown.
+
 - Level FilterBar (responsive: 9 pills desktop, 3 mobile) + Tag FilterDropdown
+
 - Active filter chip inline in filter strip
+
 - Filter applies to puzzles within the collection
+
 - Count badges from collection master -> both distributions
 
 **Behavior**: Level + tag act as compound AND filter within the collection. "Clear all" button shown only when 2+ filters active (per UX #4).
@@ -431,7 +457,7 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 **Branch**: `feature/wp0-config-bigbang`
 
 | Step | Task | Files | Gap |
-|------|------|-------|-----|
+| ------ | ------ | ------- | ----- |
 | 0.1 | Rename `numericId` to `id` in all 29 tag entries; rename old `id` (slug) to `slug` | `config/tags.json` | G66 |
 | 0.2 | Rename `numericId` to `id` in all 159 collection entries | `config/collections.json` | G67 |
 | 0.3 | Shift tesuji tag IDs +10 (20-42 becomes 30-52) | `config/tags.json` | G65 |
@@ -447,7 +473,8 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 | 0.13 | **Update test tag IDs**: grep backend+frontend test files for old tag IDs (20,22,24,26,28,30,32,34,36,38,40,42,50,52,54,56,58,60,62,64,66,68,70,72) and update to shifted values (+10) | Test files | G65 |
 
 **Verification**:
-```
+
+```text
 - [ ] `grep -r "numericId" config/` -> zero matches
 - [ ] `grep -r "numericId" backend/puzzle_manager/core/id_maps.py` -> zero matches
 - [ ] `grep -r "numericId" frontend/scripts/generate-types.ts` -> zero matches
@@ -471,7 +498,7 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 **Branch**: `feature/wp1-numeric-view-dirs`
 
 | Step | Task | Files | Gap |
-|------|------|-------|-----|
+| ------ | ------ | ------- | ----- |
 | 1.1 | Inject `IdMaps` into `PaginationWriter.__init__()` -- add `id_maps` parameter | `pagination_writer.py` | G6-G8 |
 | 1.2 | Change `get_level_dir(level)` to use `str(self._id_maps.level_slug_to_id(level))` | `pagination_writer.py` L364-372 | G6 |
 | 1.3 | Change `get_tag_dir(tag)` to use `str(self._id_maps.tag_slug_to_id(tag))` | `pagination_writer.py` L375-383 | G7 |
@@ -487,7 +514,8 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 | 1.13 | Update 12+ test files with slug-based directory assertions to numeric | All pagination tests | G15 |
 
 **Verification**:
-```
+
+```text
 - [ ] `ls yengo-puzzle-collections/views/by-level/` -> only numeric dirs (110/, 120/, etc.) after fresh publish
 - [ ] `ls yengo-puzzle-collections/views/by-tag/` -> only numeric dirs (30/, 32/, etc.)
 - [ ] `ls yengo-puzzle-collections/views/by-collection/` -> only numeric dirs (1/, 2/, etc.)
@@ -505,7 +533,7 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 **Branch**: `feature/wp2-backend-cleanup`
 
 | Step | Task | Gap |
-|------|------|-----|
+| ------ | ------ | ----- |
 | 2.1 | Fix `pagination_writer.py` -- replace `"sequence_number"` with `"n"` | G1, G17 |
 | 2.2 | Delete `_update_indexes_flat()` from publish.py L508-572 | G4 |
 | 2.3 | Delete `_update_collection_indexes()` flat fallback from publish.py L574-636 | G5 |
@@ -517,7 +545,8 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 | 2.9 | Update test_daily_posix.py fixtures to compact shapes | G14 |
 
 **Verification**:
-```
+
+```text
 - [ ] `grep -r "sequence_number" backend/puzzle_manager/ --include="*.py"` -> zero matches (including tests)
 - [ ] `grep -r "_update_indexes_flat" backend/puzzle_manager/` -> zero matches
 - [ ] Test fixtures use {p, l, t, c, x} shapes only
@@ -533,14 +562,15 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 **Branch**: `feature/wp3-daily-master`
 
 | Step | Task | Gap |
-|------|------|-----|
+| ------ | ------ | ----- |
 | 3.1 | Evaluate whether `PuzzleRef` needs compact format or stays as daily-specific model | G2 |
 | 3.2 | Create daily master index generator -- `views/daily/index.json` | G3 |
 | 3.3 | Include level + tag distributions per daily challenge date | G9 |
 | 3.4 | Wire daily master index generation into publish pipeline | G3 |
 
 **Verification**:
-```
+
+```text
 - [ ] `views/daily/index.json` exists after fresh publish with version "2.0"
 - [ ] Daily master index has level + tag distributions
 - [ ] `pytest -m "not (cli or slow)"` passes
@@ -555,7 +585,7 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 **Branch**: `feature/wp4-decode-config`
 
 | Step | Task | Gap |
-|------|------|-----|
+| ------ | ------ | ----- |
 | 4.1 | Create `services/configService.ts` -- sync for levels/tags, async init for collections | G20 |
 | 4.2 | Create `services/entryDecoder.ts` -- port ALL logic from `compact-entry.ts` | G22 |
 | 4.3 | Add `DecodedEntry` type with full fields including complexity | G21 |
@@ -569,7 +599,8 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 | 4.11 | Write unit tests for configService and entryDecoder | -- |
 
 **Verification**:
-```
+
+```text
 - [ ] `grep -r "compact-entry" frontend/src/` -> zero matches
 - [ ] `grep -r "id-maps" frontend/src/` -> zero matches
 - [ ] `entryDecoder.ts` exists with DecodedEntry type including complexity
@@ -588,7 +619,7 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 **Depends on**: WP1 (backend dirs exist) + WP4 (VIEW_PATHS updated)
 
 | Step | Task | Gap |
-|------|------|-----|
+| ------ | ------ | ----- |
 | 5.1 | Update `loadLevelIndex()` -- resolve slug to numeric ID | G24 |
 | 5.2 | Update `loadTagIndex()` / `loadTagIndexV2()` -- same pattern | G25 |
 | 5.3 | Fix direct interpolation in collectionService.ts -- use `VIEW_PATHS` | G27 |
@@ -597,7 +628,8 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 | 5.6 | Add `loadCollectionMasterIndex()` to collectionService.ts | -- |
 
 **Verification**:
-```
+
+```text
 - [ ] `grep -r "by-level/beginner" frontend/src/` -> zero matches
 - [ ] VIEW_PATHS accepts number, not string
 - [ ] Dev server loads all pages without 404
@@ -615,7 +647,7 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 **Depends on**: WP4 + WP5
 
 | Step | Task | Gap |
-|------|------|-----|
+| ------ | ------ | ----- |
 | 6.1 | Delete `filterPuzzlesByLevel()`, `filterPuzzlesByRank()` | G28-G29 |
 | 6.2 | Delete `TagPuzzleEntry`, `TagIndex` types | G30 |
 | 6.3 | Remove `Array.isArray()` legacy fallback from `loadLevelIndex()` | G31 |
@@ -630,7 +662,8 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 | 6.12 | Replace hardcoded `'novice'`/`'elementary'` defaults with config references | G40 |
 
 **Verification**:
-```
+
+```text
 - [ ] `grep -r "TAG_DISPLAY_INFO\|SLUG_OVERRIDES\|PUZZLE_TAGS\|CATEGORY_LEVELS\|LEVEL_CATEGORY" frontend/src/` -> zero
 - [ ] `grep -r "'beginner'" frontend/src/ --include="*.ts*" | grep -v generated | grep -v test` -> zero
 - [ ] `grep -r "filterPuzzlesByLevel\|filterPuzzlesByRank\|TagPuzzleEntry" frontend/src/` -> zero
@@ -648,7 +681,7 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 **Depends on**: WP4 (configService for tag metadata)
 
 | Step | Task | Gap |
-|------|------|-----|
+| ------ | ------ | ----- |
 | 7.1 | Create `ChevronDownIcon` and `CheckIcon` SVG components | -- |
 | 7.2 | Create `FilterDropdown.tsx` -- per section 5.3 spec | G41 |
 | 7.3 | Extend `FilterBar` -- add `count?: number` to `FilterOption` | G42 |
@@ -658,7 +691,8 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 | 7.7 | Unit test `useFilterState` | -- |
 
 **Verification**:
-```
+
+```text
 - [ ] FilterDropdown.tsx exists with aria-expanded
 - [ ] FilterBar accepts count prop
 - [ ] useFilterState.ts exists
@@ -675,7 +709,7 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 **Depends on**: WP5 (master loaders) + WP7 (filter components)
 
 | Step | Task | Gap |
-|------|------|-----|
+| ------ | ------ | ----- |
 | 8.1 | Training solve page -- add tag FilterDropdown inside PuzzleSetPlayer chrome | G44 |
 | 8.2 | Training solve page -- load level master index for tag distribution counts | G44 |
 | 8.3 | Training solve page -- filter puzzle set by tag | G44 |
@@ -698,7 +732,8 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 | 8.20 | Wire CollectionViewPage level+tag filter to `CollectionPuzzleLoader` — pass `levelId`/`tagId` so loader filters puzzle set (F8) | -- |
 
 **Verification**:
-```
+
+```text
 - [ ] Training, Technique, Collections, Random pages render filters
 - [ ] Master index distributions power count badges
 - [ ] Empty filter state renders "No puzzles match"
@@ -716,7 +751,7 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 **Depends on**: WP8
 
 | Step | Task | Gap |
-|------|------|-----|
+| ------ | ------ | ----- |
 | 9.1 | Run `npm run test:visual` -- verify existing baselines still pass | -- |
 | 9.2 | Create `FilterBar-extended.visual.spec.ts` | G53 |
 | 9.3 | Create `FilterDropdown.visual.spec.ts` | G54 |
@@ -728,7 +763,8 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 | 9.9 | Update existing baselines for modified pages | -- |
 
 **Verification**:
-```
+
+```text
 - [ ] 6 new visual spec files exist in tests/visual/specs/
 - [ ] `npm run test:visual` passes against updated baselines
 - [ ] Mobile + dark mode screenshots reviewed
@@ -743,7 +779,7 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 **Branch**: `feature/wp10-docs`
 
 | Step | Task | Gap |
-|------|------|-----|
+| ------ | ------ | ----- |
 | 10.1 | Create `docs/concepts/numeric-id-scheme.md` | G64 |
 | 10.2 | Update `docs/architecture/backend/view-index-pagination.md` -- fix `sequence_number`, `pagination_threshold` | -- |
 | 10.3 | Update `docs/architecture/backend/integrity.md` -- fix `sequence_number` reference | -- |
@@ -755,7 +791,8 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 | 10.9 | Update `.github/copilot-instructions.md` -- same | -- |
 
 **Verification**:
-```
+
+```text
 - [ ] `grep -r "sequence_number" docs/` -> zero matches
 - [ ] `grep -r "compact-entry.ts" docs/ CLAUDE.md .github/` -> zero matches
 - [ ] `grep -r "id-maps.ts" docs/ CLAUDE.md .github/` -> zero matches
@@ -773,7 +810,7 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 **Depends on**: WP0 (data wiped) + WP1+WP2 (code changes) + fresh pipeline ingest
 
 | Step | Task |
-|------|------|
+| ------ | ------ |
 | 11.1 | Run full pipeline: `python -m backend.puzzle_manager run --source {all sources}` |
 | 11.2 | Verify view dirs are numeric: `ls views/by-level/`, `ls views/by-tag/`, `ls views/by-collection/` |
 | 11.3 | Verify master indexes have `"id"` field and distributions |
@@ -789,7 +826,8 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 | 11.13 | Run automated test suite: `pytest tests/integration/test_rollback_posix.py tests/integration/test_inventory_check.py tests/integration/test_inventory_cli.py tests/integration/test_inventory_integration.py tests/integration/test_inventory_publish.py -v` |
 
 **Verification**:
-```
+
+```text
 - [x] All 13 steps above pass (validated 2026-02-20)
 - [x] After rollback+re-ingest cycle: final count matches initial count (1083)
 - [x] Trace data (YM property) exists in every published puzzle
@@ -799,18 +837,24 @@ Collections *detail* page (inside puzzle set): add level FilterBar + tag FilterD
 **Exit criteria**: Pipeline integrity confirmed. Rollback (individual + bulk per-run-id), rebuild, inventory, trace all functional.
 
 **WP11 Execution Notes (2026-02-20)**:
+
 - `trace` CLI subcommand documented in CLAUDE.md was not implemented; replaced with `publish-log` commands
+
 - `rollback --all` does not exist; bulk rollback done by rolling back each run-id individually
+
 - Test file names updated to match actual files (test_rollback_posix.py, test_inventory_*.py)
+
 - Inventory `--check` has Unicode encoding issue on Windows; use `PYTHONIOENCODING=utf-8`
+
 - After rollback, publish log entries from rolled-back runs are not purged (append-only audit log)
+
 - Each pipeline run produces unique content hashes due to trace_id/run_id in YM metadata
 
 ---
 
 ## 7. Execution Order & Dependencies
 
-```
+```text
 WP0 (Config + Big-Bang Wipe) -- FIRST, before everything
   |
   v
@@ -828,11 +872,17 @@ WP4 (entryDecoder + configService) ----+                      |
 ```
 
 **Dependencies (explicit)**:
+
 - WP0 must complete before ALL other WPs (config contract)
+
 - WP4 depends on WP0 (generated-types must reflect new tag IDs)
+
 - WP5 depends on WP1 + WP4
+
 - WP7 depends on WP4
+
 - WP8 depends on WP5 + WP7
+
 - WP11 depends on WP0 + WP1 + WP2 + fresh pipeline run
 
 **Parallelizable**: WP1 + WP4 (different codebases, both after WP0). WP2 + WP4. WP10 after any WP.
@@ -844,7 +894,7 @@ WP4 (entryDecoder + configService) ----+                      |
 ## 8. Risks and Mitigations
 
 | # | Risk | Severity | Mitigation | WP |
-|---|------|----------|------------|-----|
+| --- | ------ | ---------- | ------------ | ----- |
 | R1 | `loadLevelIndex()` 404 after D23 | **Critical** | WP5 must execute atomically with WP1 | WP1+WP5 |
 | R2 | State recovery breaks with numeric dirs | Medium | `_recover_state_from_files()` translates numeric to slug | WP1 |
 | R3 | 12+ test files need fixture updates | Medium | Batch update in WP2, validate with `pytest -m unit` | WP2 |
@@ -862,21 +912,21 @@ WP4 (entryDecoder + configService) ----+                      |
 Kyu=100s, Dan=200s. Gaps of 10 allow insertion.
 
 | ID | Slug | Rank Range | Insert example |
-|----|------|-----------|---------------|
+| ---- | ------ | ----------- | --------------- |
 | 110 | `novice` | 30k-26k | 100=pre-novice |
 | 120 | `beginner` | 25k-21k | 121,125=sub-split |
-| 130 | `elementary` | 20k-16k | |
+| 130 | `elementary` | 20k-16k | — |
 | 140 | `intermediate` | 15k-11k | 141,145,148=3-way split |
-| 150 | `upper-intermediate` | 10k-6k | |
+| 150 | `upper-intermediate` | 10k-6k | — |
 | 160 | `advanced` | 5k-1k | 170=approaching-dan |
-| 210 | `low-dan` | 1d-3d | |
-| 220 | `high-dan` | 4d-6d | |
+| 210 | `low-dan` | 1d-3d | — |
+| 220 | `high-dan` | 4d-6d | — |
 | 230 | `expert` | 7d-9d | 240=professional |
 
 ### 9.2 Tag IDs (Sparse by Category, Pedagogical Order) -- Updated D30
 
 | Range | Category | Tags |
-|-------|----------|------|
+| ------- | ---------- | ------ |
 | **10-28** | Objectives | 10=life-and-death, 12=ko, 14=living, 16=seki *(5 spare even slots: 18,20,22,24,26,28 for future)* |
 | **30-52** | Tesuji | 30=snapback, 32=double-atari, 34=ladder, 36=net, 38=throw-in, 40=clamp, 42=nakade, 44=connect-and-die, 46=under-the-stones, 48=liberty-shortage, 50=vital-point, 52=tesuji |
 | **60-82** | Techniques | 60=capture-race, 62=eye-shape, 64=dead-shapes, 66=escape, 68=connection, 70=cutting, 72=sacrifice, 74=corner, 76=shape, 78=endgame, 80=joseki, 82=fuseki |
@@ -895,9 +945,12 @@ Kyu=100s, Dan=200s. Gaps of 10 allow insertion.
 > **v3.0 Assessment**: The v3 plan correctly identifies the D23 gap as the critical blocker. The decision to keep state keys as slugs while filesystem dirs go numeric is the right boundary -- it minimizes blast radius. The `IdMaps` injection into `PaginationWriter` follows the existing dependency injection pattern in the codebase.
 >
 > **Approved with conditions**:
+>
 > 1. WP1+WP5 must deploy atomically (same merge, same publish)
-> 2. Update `view-index.schema.json` to require `"id"` in master index entries
-> 3. Add a migration test that verifies numeric dir names match IdMaps output
+>
+> 1. Update `view-index.schema.json` to require `"id"` in master index entries
+>
+> 1. Add a migration test that verifies numeric dir names match IdMaps output
 >
 > **v3.1 Review (2026-02-18)**:
 >
@@ -924,9 +977,12 @@ Kyu=100s, Dan=200s. Gaps of 10 allow insertion.
 > **Concern -- `entryDecoder.ts` dual responsibility**: Consider keeping `isCompactEntry()` co-located with the type definition rather than the decoder.
 >
 > **Approved with conditions**:
+>
 > 1. Add graceful fallback in rollback for unknown numeric dir names
-> 2. Create a `make_compact_entry()` test helper to DRY fixture construction (evaluate during WP2 -- if <20 fixtures, use raw literals)
-> 3. Co-locate `isCompactEntry()` with the type definition rather than the decoder
+>
+> 1. Create a `make_compact_entry()` test helper to DRY fixture construction (evaluate during WP2 -- if <20 fixtures, use raw literals)
+>
+> 1. Co-locate `isCompactEntry()` with the type definition rather than the decoder
 >
 > **v3.1 Review (2026-02-18)**:
 >
@@ -943,16 +999,18 @@ Kyu=100s, Dan=200s. Gaps of 10 allow insertion.
 ## 11. Files Inventory (Updated)
 
 ### Config (needs WP0 updates -- D30, D31)
+
 | File | Status |
-|------|--------|
+| ------ | -------- |
 | `config/puzzle-levels.json` | Done (sparse IDs, v2.0) |
 | `config/tags.json` | **Needs update**: rename `numericId` to `id`, shift tesuji/tech +10, add `killing` (D30, D31) |
 | `config/collections.json` | **Needs update**: rename `numericId` to `id` (D31) |
 | `config/schemas/view-index.schema.json` | **Needs update**: `"id"` in master index entries + new tag ID ranges (D30) |
 
 ### Backend
+
 | File | Change | WP | Status |
-|------|--------|-----|--------|
+| ------ | -------- | ----- | -------- |
 | `core/id_maps.py` | Read `id` instead of `numericId` (5 refs) | WP0 | **Needs update** |
 | `core/pagination_writer.py` | Inject IdMaps, numeric dirs, fix "sequence_number" to "n", add master index "id" field | WP1, WP2 | Not done |
 | `core/pagination_models.py` | No changes needed | -- | Done |
@@ -963,8 +1021,9 @@ Kyu=100s, Dan=200s. Gaps of 10 allow insertion.
 | Tests (12+ files) | Fixture shapes + dir path assertions | WP1, WP2 | Not done |
 
 ### Frontend
+
 | File | Change | WP | Status |
-|------|--------|-----|--------|
+| ------ | -------- | ----- | -------- |
 | `services/configService.ts` | **NEW** -- unified config lookup | WP4 | Not done |
 | `services/entryDecoder.ts` | **NEW** -- replaces compact-entry.ts | WP4 | Not done |
 | `lib/puzzle/compact-entry.ts` | **DELETE** -- absorbed into entryDecoder | WP4 | Not done |
@@ -988,8 +1047,9 @@ Kyu=100s, Dan=200s. Gaps of 10 allow insertion.
 | `hooks/useFilterState.ts` | **NEW** | WP7 | Not done |
 
 ### Visual Tests (NEW)
+
 | File | WP | Status |
-|------|-----|--------|
+| ------ | ----- | -------- |
 | `tests/visual/specs/FilterBar-extended.visual.spec.ts` | WP9 | Not done |
 | `tests/visual/specs/FilterDropdown.visual.spec.ts` | WP9 | Not done |
 | `tests/visual/specs/TrainingPage-filtered.visual.spec.ts` | WP9 | Not done |
@@ -998,8 +1058,9 @@ Kyu=100s, Dan=200s. Gaps of 10 allow insertion.
 | `tests/visual/specs/ActiveFilterChip.visual.spec.ts` | WP9 | Not done |
 
 ### Documentation
+
 | File | Change | WP | Status |
-|------|--------|-----|--------|
+| ------ | -------- | ----- | -------- |
 | `docs/concepts/numeric-id-scheme.md` | **NEW** | WP10 | Not done |
 | `CLAUDE.md` | Update decode/config references | WP10 | Partial |
 | `.github/copilot-instructions.md` | Update decode/config references | WP10 | Partial |
@@ -1013,20 +1074,31 @@ Kyu=100s, Dan=200s. Gaps of 10 allow insertion.
 **Conducted by**: AI agent, cross-referencing v2 plan steps against actual codebase state.
 
 **Method**:
+
 1. Subagent research for each phase (0-11) checking every step against actual files
-2. Backend: read pagination_writer.py, publish.py, pagination_models.py, id_maps.py, maintenance/views.py, rollback.py, daily models; listed actual view directories; read published JSON files
-3. Frontend: searched for every component/type/function named in plan; read every loader, every type file, every page component; audited hardcoded slugs
-4. Documentation: checked existence of every named doc file
+
+1. Backend: read pagination_writer.py, publish.py, pagination_models.py, id_maps.py, maintenance/views.py, rollback.py, daily models; listed actual view directories; read published JSON files
+
+1. Frontend: searched for every component/type/function named in plan; read every loader, every type file, every page component; audited hardcoded slugs
+
+1. Documentation: checked existence of every named doc file
 
 **Finding**: 36% completion (39/108 steps). Critical D23 (numeric view directories) was never implemented. Phases 8-10 were 0% complete. The claim that "both sides agree on the old convention" was flagged as an unacceptable rationalization -- the plan committed to numeric directories and they were not delivered.
 
 **v3 amendments**:
+
 - D22a: Collections also switch to numeric dirs (user decision, overriding original D22)
+
 - D26: Create `entryDecoder.ts`, delete `compact-entry.ts`
+
 - D27: Backend state keys stay as slugs, only filesystem dirs go numeric
+
 - D28: FilterBar pills + FilterDropdown for >8 options
+
 - D29: `generated-types.ts` (build-time) for levels/tags, async for collections
+
 - Expert reviews from 2 UI/UX experts and 2 1P Go professionals documented in section 5.1
+
 - Systems Architect and Staff Engineer reviews documented in section 10
 
 ### v3.1 Architect Review Integration (2026-02-18)
@@ -1034,12 +1106,18 @@ Kyu=100s, Dan=200s. Gaps of 10 allow insertion.
 **Conducted by**: Principal Systems Architect (purist) + Staff Engineer critical review of v3.0 + supplement plan.
 
 **6 structural flaws found and fixed**:
+
 1. D25 marked "Done" but D30 changes it → D25 now SUPERSEDED by D30
-2. `numericId` → `id` rename not tracked in any gap → Added G65-G69, D31
-3. Big-bang wipe contradicts WP1 step 1.14 → Removed republish steps, created WP0
-4. Tag ID shift has no WP → Created WP0 with 12 steps
-5. Verification checklists not in main plan → Added to every WP (WP0-WP11)
-6. Pipeline testing has no WP → Created WP11
+
+1. `numericId` → `id` rename not tracked in any gap → Added G65-G69, D31
+
+1. Big-bang wipe contradicts WP1 step 1.14 → Removed republish steps, created WP0
+
+1. Tag ID shift has no WP → Created WP0 with 12 steps
+
+1. Verification checklists not in main plan → Added to every WP (WP0-WP11)
+
+1. Pipeline testing has no WP → Created WP11
 
 **New items added**: D30, D31, G65-G71, WP0 (Config + Big-Bang), WP11 (Pipeline Validation)
 **Removed items**: WP1 step 1.14, WP2 step 2.10 (moot with big-bang wipe)
@@ -1053,7 +1131,7 @@ Kyu=100s, Dan=200s. Gaps of 10 allow insertion.
 **6 new issues found and fixed**:
 
 | # | Flaw | Fix |
-|---|------|-----|
+| --- | ------ | ----- |
 | 7 | §1 entry example used old tag IDs (`t:[12,24,26]`) — ladder is now 34, net 36 | Updated example to `[12,34,36]` |
 | 8 | §3 Phase Scorecard says "100%" for Phase 0, misleading after WP0 additions | Added disclaimer noting WP0/WP11 expand total to ~133 steps |
 | 9 | WP0 step 0.12 "wipe frontend state" was vague — which localStorage keys? | Specified: clear all `yengo:*` keys except `yengo:settings` |
@@ -1062,10 +1140,15 @@ Kyu=100s, Dan=200s. Gaps of 10 allow insertion.
 | 12 | No risk for tag ID shift breaking cached data | Added R7 noting big-bang wipe mitigates this |
 
 **Staff Engineer additions**:
+
 - WP2 verification now checks tests too (was excluding them with `grep -v test`)
+
 - WP0 step 0.13 added: grep+fix old tag IDs in test files
+
 - `killing` tag: specified full fields (name, description, aliases), noted alias collision with `life-and-death`
+
 - WP10 expanded from 4 steps to 9 steps covering all 9 doc files with stale references
+
 - WP4 steps 4.8-4.9 added: port test files for deleted modules
 
 ### v3.2 Go Professional + UX Expert Review (2026-02-18)
@@ -1075,7 +1158,7 @@ Kyu=100s, Dan=200s. Gaps of 10 allow insertion.
 **Key decisions changed**:
 
 | Decision | Before | After | Rationale |
-|----------|--------|-------|-----------|
+| ---------- | -------- | ------- | ----------- |
 | `killing` tag (D30) | Add new tag id:18 | **DROPPED (YAGNI)** | Go Pro #3: life-and-death is ONE discipline, kill/live are same skill |
 | Training page filter | Tag dropdown on selection page | **Tag dropdown on solve page** | Go Pro #3: students think in levels on browse, techniques inside puzzles |
 | Collections page filter | Level + tag filters on browse page | **Filters inside collection detail only** | Go Pro #4: curated sets have boundaries, filter inside not above |
@@ -1098,6 +1181,9 @@ Kyu=100s, Dan=200s. Gaps of 10 allow insertion.
 ---
 
 > **See also**:
+>
 > - [plan-rush-play-enhancement.md](./plan-rush-play-enhancement.md) -- Rush Play feature plan
+>
 > - [entry-compression-proposal.md](./entry-compression-proposal.md) -- Architecture analysis (A/B/C comparison)
+>
 > - [multi-dimensional-puzzle-filtering.md](./multi-dimensional-puzzle-filtering.md) -- Original research (superseded by this plan)

@@ -36,27 +36,40 @@ The exported `isStudyMode(puzzle)` predicate is the single canonical check.
 When `mode === 'study'`:
 
 - `usePuzzleState` initial status is `'study'` instead of `'solving'`.
+
 - Stone placements only fire stone-click sound + `MOVE_PLACED`. No
+
   wrong/correct/complete dispatch, no shake animation, no red/green overlay,
   no failure or success sound.
+
 - A neutral inline banner reads `Study position -- explore freely. No
+
   recorded solution.`
+
 - Undo and reset still work and keep status at `'study'`.
 
 ## Future work
 
 - Hint/Review buttons are still rendered as in solve mode. They have nothing
+
   to act on for study puzzles; revisit when a real friction point appears.
+
 - Daily picker, rush mode, and stats counters do not yet exclude study
+
   puzzles. Add `cx_solution_len > 0` filters there if/when those modes start
   surfacing them in user-visible ways.
+
 - AI-generated solutions could promote a study puzzle into a solve puzzle
+
   by adding a `trunk_next` -- no schema change needed; `mode` flips
   automatically on next parse.
 
 ## See also
 
 - `config/puzzle-validation.json` -- the gate
+
 - `frontend/src/lib/sgf-to-puzzle.ts` -- the parser + predicate
+
 - `frontend/src/hooks/usePuzzleState.ts` -- the state machine
+
 - `docs/architecture/backend/source-ingest-db.md` -- ingest skip-reason persistence

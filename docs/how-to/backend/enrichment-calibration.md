@@ -9,6 +9,7 @@ Guide for running instinct classifier calibration against the human-labeled gold
 ## Prerequisites
 
 - Python 3.11+ with project virtualenv activated
+
 - No KataGo engine required (instinct calibration is purely geometric)
 
 ## Run Calibration Tests
@@ -22,7 +23,7 @@ python -B -m pytest tests/test_instinct_calibration.py -v --log-cli-level=INFO -
 The 4 instinct calibration tests (AC-1 through AC-4) are marked `xfail` — they report accuracy baselines without blocking CI:
 
 | Test | AC | Threshold | What It Measures |
-|------|-----|-----------|------------------|
+| ------ | ----- | ----------- | ------------------ |
 | `test_instinct_macro_accuracy` | AC-1 | ≥70% | Overall classifier primary matches human labels |
 | `test_per_instinct_accuracy` | AC-2 | ≥60% each | Accuracy per instinct category (cut/push/hane/descent/extend) |
 | `test_high_tier_precision` | AC-3 | ≥85% | Precision of HIGH-confidence classifications |
@@ -31,12 +32,14 @@ The 4 instinct calibration tests (AC-1 through AC-4) are marked `xfail` — they
 ## Interpreting Results
 
 - **xfail** = test ran, accuracy below threshold (expected during calibration iteration)
+
 - **xpass** = test passed threshold (classifier improved enough — remove xfail marker)
+
 - Check INFO log output for per-instinct breakdowns and mismatch samples
 
 ## Calibration Set Location
 
-```
+```text
 tools/puzzle-enrichment-lab/tests/fixtures/instinct-calibration/
 ├── labels.json         # Multi-dimensional labels (instinct, technique, objective)
 ├── README.md           # Schema and naming conventions
@@ -91,13 +94,17 @@ python -B -m pytest tests/test_instinct_calibration.py -v --log-cli-level=INFO -
 `{instinct}_{level}_{serial:03d}.sgf`
 
 - **instinct**: push, hane, cut, descent, extend, null
+
 - **level**: novice, beginner, elementary, intermediate, upper-intermediate, advanced, low-dan, high-dan, expert
+
 - **serial**: 3-digit zero-padded, per-instinct sequential
 
 ## Coverage Requirements
 
 - AC-5: ≥120 puzzles total
+
 - C-4: ≥10 per instinct category
+
 - AC-6: ≥5 per top-10 technique tag
 
 ---
@@ -105,6 +112,9 @@ python -B -m pytest tests/test_instinct_calibration.py -v --log-cli-level=INFO -
 > **See also**:
 >
 > - [Architecture: Enrichment Pipeline](../../architecture/backend/pipeline.md) — Pipeline design
+>
 > - [Concepts: SGF Properties](../../concepts/sgf-properties.md) — SGF schema
+>
 > - [Architecture: KataGo Enrichment](../../architecture/tools/katago-enrichment.md) — Module architecture map
+>
 > - [Reference: KataGo Enrichment Config](../../reference/katago-enrichment-config.md) — Calibration and threshold surface

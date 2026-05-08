@@ -1,10 +1,10 @@
+# Plan: Rebuild-Centric Pipeline Architecture (Schema v12)
+
 > ⚠️ **ARCHIVED** — This document records the v12 rebuild-centric migration plan that introduced `YM` metadata flow and `PipelineLock`.
 > The current canonical docs are [Architecture: Inventory Operations](../architecture/backend/inventory-operations.md) and [Concepts: SGF Properties](../concepts/sgf-properties.md).
 > Kept for historical reference only.
 
 ---
-
-# Plan: Rebuild-Centric Pipeline Architecture (Schema v12)
 
 > **Status**: Phase 1-2 Complete, Phase 3A+3B Complete, Phase 5-6 Pending  
 > **Last Updated**: 2026-02-20  
@@ -23,7 +23,7 @@ Replace the current incremental state management (trace sidecars, surgical rollb
 ## Architecture: What is Authoritative vs Derived
 
 | State | Authoritative? | Can Be Rebuilt From | Current Maintenance Cost |
-|-------|---------------|---------------------|--------------------------|
+| ------- | --------------- | --------------------- | -------------------------- |
 | `sgf/**/*.sgf` | **YES** — source of truth | N/A — original data | N/A |
 | `publish-log/*.jsonl` | **YES** — provenance history | N/A — not derivable | Low (append-only, date-partitioned) |
 | `views/by-*/**/*.json` | No — derived | SGF files + config JSONs | ~400L (remove/rebuild paths) |
@@ -39,21 +39,28 @@ Replace the current incremental state management (trace sidecars, surgical rollb
 **Format**: `YM[{"t":"a1b2c3d4e5f67890","f":"Prob0001.json"}]`
 
 | Field | Type | Description | Required |
-|-------|------|-------------|----------|
+| ------- | ------ | ------------- | ---------- |
 | `t` | string | trace_id — 16-char hex UUID for cross-stage log correlation | Yes |
 | `f` | string | original_filename — raw source filename from adapter source_link | No (may be empty) |
 
 **Design decisions:**
+
 - JSON over pipe-delimited: self-describing, extensible (add future fields without positional parsing), standard `json.loads()` parsing
+
 - **Kept in published files**: enables post-hoc debugging without needing pipeline state. Reverses the v8 "provenance in pipeline state, not SGF" decision — trace_id in published SGF is more useful than trace_id in ephemeral sidecar files
+
 - `f` field YAGNI note: currently empty in all 301 publish log entries (adapters don't always set `source_link`). Kept because: low cost (~20 bytes/file), useful when `source_link` IS set, and removing later is harder than carrying forward
 
 **SGF escaping requirement**: The JSON value must be SGF-safe. The `SGFBuilder.build()` method must escape `]` and `\` characters in the YM value per SGF FF[4] spec. Since trace_id is hex-only and original_filename rarely contains `]`, this is defensive but mandatory. The `sgfmill` library handles escaping for standard properties — verify the same escaping applies to custom properties or apply explicitly.
 
 **Defensive parsing**: `parse_pipeline_meta(ym_value)` must handle:
+
 - Missing YM property → return `("", "")`
+
 - Malformed JSON → log warning, return `("", "")`
+
 - Missing `t` or `f` keys → default to `""`
+
 - Old SGFs without YM (pre-v12) → gracefully ignored
 
 ## Rollback: Delete + Rebuild
@@ -65,7 +72,7 @@ Replace the current incremental state management (trace sidecars, surgical rollb
 ### What's removed and why
 
 | Component | Lines | Why removable |
-|-----------|-------|---------------|
+| ----------- | ------- | --------------- |
 | `LockManager` | ~70 | Single-user offline tool. No concurrent agents. Document this assumption explicitly |
 | `TransactionManager` | ~100 | File backup before delete is redundant — git IS the backup. Users can `git checkout -- sgf/` to recover |
 | `AuditLogWriter` | ~80 | Duplicates git commit history. Publish log itself is the audit trail |
@@ -83,16 +90,17 @@ The rollback-specific `LockManager` is removed. A new **`PipelineLock`** ensures
 **New design**: Replace `ConfigLock` with a unified `PipelineLock` that protects both config AND pipeline execution:
 
 | Aspect | Current `ConfigLock` | New `PipelineLock` |
-|--------|---------------------|-------------------|
+| -------- | --------------------- | ------------------- |
 | **Lock file** | `.pm-runtime/config.lock` | `.pm-runtime/pipeline.lock` |
-| **Atomicity** | TOCTOU race (exists-check → write) | Atomic create via `os.open(O_CREAT \| O_EXCL)` — kernel-level atomicity |
+| **Atomicity** | TOCTOU race (exists-check → write) | Atomic create via `os.open` with create-exclusive flags — kernel-level atomicity |
 | **Crash recovery** | None — manual `--force` required | **PID-alive check**: if lock file exists, check if PID is still running (`os.kill(pid, 0)` on Unix, `psutil` or `ctypes.windll` on Windows). If PID dead → auto-recover (delete stale lock, re-acquire) |
 | **Timeout** | `RollbackConfig.lock_timeout_hours` exists but is **never read** (dead config) | Lock file stores `acquired_at`. If lock age > `lock_timeout_hours` → treat as stale, auto-recover |
 | **Scope** | Config edits only | Pipeline run + rollback + config edits — single serialization point |
 | **Release** | `finally` block in coordinator.py | Same — `finally` block. Also `atexit` handler as safety net |
 
 **Lock lifecycle**:
-```
+
+```text
 acquire() → O_CREAT|O_EXCL write {run_id, pid, hostname, acquired_at}
   ↓ if file exists:
     read lock file → check PID alive → if dead: delete + retry
@@ -103,8 +111,11 @@ release() → delete lock file
 ```
 
 **Where used**:
+
 - `coordinator.py` — wrap entire pipeline run (ingest/analyze/publish)
+
 - `rollback.py` — wrap rollback operation
+
 - `ConfigWriter` — check lock before config changes (read-only check, same as today)
 
 **Implementation**: ~80 lines in `backend/puzzle_manager/pipeline/lock.py`. Replaces `config/lock.py` (~200L) and the dead `RollbackConfig.lock_timeout_hours`. Net code reduction.
@@ -116,7 +127,7 @@ The current `inventory.json` has accumulated fields over many specs with growing
 ### Current inventory.json fields
 
 | Section | Fields | Source of Truth | Verdict |
-|---------|--------|----------------|---------|
+| --------- | -------- | ---------------- | --------- |
 | `collection.total_puzzles` | int | SGF files on disk | **KEEP** — core metric, derived from rebuild |
 | `collection.by_puzzle_level` | dict[str,int] | SGF files (YG) | **KEEP** — derived from rebuild, used by CLI status |
 | `collection.by_tag` | dict[str,int] | SGF files (YT) | **KEEP** — derived from rebuild |
@@ -162,8 +173,11 @@ The current `inventory.json` has accumulated fields over many specs with growing
 ### Inventory check simplification
 
 Current `check_integrity()` compares inventory counts vs disk files vs publish log entries. With rebuild-centric architecture:
+
 - **No need to compare inventory vs disk** — inventory IS rebuilt from disk, so it's always correct
+
 - **Orphan detection remains useful**: files on disk with no publish log entry, or publish log entries with no file
+
 - Simplify `check.py` to orphan detection only (~50 lines vs current 223 lines)
 
 ## Rebuild Engine
@@ -172,7 +186,7 @@ Two functions with different use cases:
 
 ### `rebuild_affected()` — used by rollback (selective, fast)
 
-```
+```text
 Input: output_dir, deleted_puzzle_ids: set[str], affected_levels: set[str],
        affected_tags: set[str], affected_collections: set[str]
 
@@ -191,7 +205,7 @@ At 1M total, rolling back 100 puzzles touching 2 levels = scan ~20K entries ≈ 
 
 ### `rebuild_all()` — used by CLI `reconcile` command (full, slow)
 
-```
+```text
 Input: output_dir (containing sgf/ directory)
 Output: views/ directory + inventory.json + .pagination-state.json
 
@@ -221,15 +235,21 @@ Writing 24+ view files isn't atomic. If rebuild crashes midway, views are incons
 ### Empty entity handling
 
 After rollback, some levels/tags/collections may have 0 puzzles. Rebuild must:
+
 - Skip entities with 0 entries (no pages generated)
+
 - Exclude 0-count entities from master indexes
+
 - This is inherently correct with the rebuild approach (only non-empty groups produce output)
 
 ### Collection sequence numbers (`n` field)
 
 The `n` field provides ordering within a collection. During publish, `n` is assigned incrementally. During rebuild:
+
 - **Deterministic rule**: Sort entries within each collection by puzzle_id (content hash), assign `n = 1, 2, 3, ...`
+
 - This produces stable, reproducible ordering that doesn't depend on publish order
+
 - Trade-off: original publisher-assigned sequence may differ. Acceptable since no backward compatibility needed
 
 ## Performance Characteristics
@@ -239,7 +259,7 @@ The `n` field provides ordering within a collection. During publish, `n` is assi
 ### Full rebuild timing (all puzzles)
 
 | Scale | SGF Parse (8 threads) | Entry Building | View Writing | Total Rebuild |
-|-------|----------------------|----------------|--------------|---------------|
+| ------- | ---------------------- | ---------------- | -------------- | --------------- |
 | 300 puzzles | <0.1s | <0.05s | <0.1s | **<0.3s** |
 | 10K puzzles | ~2s | ~0.5s | ~1s | **~3-5s** |
 | 100K puzzles | ~15s | ~5s | ~10s | **~30s** |
@@ -252,15 +272,19 @@ Full rebuild at 1M is unacceptable for rollback (~5 min). **Selective rebuild is
 Rollback does NOT rebuild everything. It rebuilds only the **affected entities**:
 
 1. Read publish log entries for the rolled-back run → extract unique `level`, `tags`, `collections` values
-2. Delete only those SGFs
-3. For each affected level/tag/collection: scan ONLY the page files for that entity, filter out removed puzzle_ids, rewrite pages
-4. Update master indexes (update counts for affected entities only)
-5. Recompute inventory from master index counts (O(num_entities), not O(num_puzzles))
+
+1. Delete only those SGFs
+
+1. For each affected level/tag/collection: scan ONLY the page files for that entity, filter out removed puzzle_ids, rewrite pages
+
+1. Update master indexes (update counts for affected entities only)
+
+1. Recompute inventory from master index counts (O(num_entities), not O(num_puzzles))
 
 **Selective rebuild timing at 1M total puzzles:**
 
 | Rollback scope | Entities affected | Puzzles to re-scan | Time |
-|----------------|-------------------|-------------------|------|
+| ---------------- | ------------------- | ------------------- | ------ |
 | 100 puzzles, 2 levels | 2 level dirs + ~5 tag dirs + ~2 collection dirs | ~20K (puzzles in those entities) | **~1-3s** |
 | 1K puzzles, 5 levels | ~5 levels + ~10 tags + ~5 collections | ~100K | **~10-15s** |
 | 10K puzzles, all 9 levels | All entities (degrades to full rebuild) | 1M | **~5 min** |
@@ -276,7 +300,9 @@ Normal pipeline flow (ingest → analyze → publish) still appends to views inc
 ### Publish log query performance
 
 `PublishLogReader` currently does O(n) linear scans across all JSONL files. At 1M puzzles with 90-day retention:
+
 - ~11K entries/day → ~1M entries across 90 JSONL files
+
 - Linear scan per rollback query: ~1-2s (acceptable but noisy)
 
 **Mandatory optimization**: Publish log files are already date-partitioned (`YYYY-MM-DD.jsonl`). Rollback by `run_id` extracts the date prefix (`20260220-...`) → scan only that day's file, not all 90 files. This reduces scan from O(total_entries) to O(entries_per_day) ≈ 11K entries ≈ <100ms. This date-based filtering **must** be implemented in Phase 3-4.
@@ -286,7 +312,7 @@ Normal pipeline flow (ingest → analyze → publish) still appends to views inc
 ### Current files (what changes with v12)
 
 | Path | Size/Count | After v12 | Reason |
-|------|-----------|-----------|--------|
+| ------ | ----------- | ----------- | -------- |
 | `logs/*.log` | 4 files/day | **KEEP** | Per-stage logs, needed for debugging |
 | `raw/{source}/` | Varies | **KEEP** | Raw download cache (adapter-specific) |
 | `staging/ingest/*.sgf` | N files | **KEEP** | SGFs between stages |
@@ -309,7 +335,7 @@ Each implementation phase includes its own tests and documentation. Here's the e
 ### Phase 1-2 (Commit 1): YM + Trace Elimination
 
 | Category | What |
-|----------|------|
+| ---------- | ------ |
 | **Production** | Add YM to parser/builder, set in ingest, read in analyze/publish, delete trace_map.py |
 | **Tests deleted** | 5 trace sidecar test files (~1,034L) |
 | **Tests created** | 2 new YM test files (pipeline_meta round-trip, defensive parsing) |
@@ -319,7 +345,7 @@ Each implementation phase includes its own tests and documentation. Here's the e
 ### Phase 3-4 (Commit 2): Rebuild Engine + Rollback + Lock + Inventory
 
 | Category | What |
-|----------|------|
+| ---------- | ------ |
 | **Production** | Rebuild engine, rollback rewrite, PipelineLock, inventory simplification, pagination cleanup |
 | **Tests deleted** | 4 files (~1,410L): batch_removal, pagination_rollback, inventory_rollback, (parts of inventory_manager) |
 | **Tests rewritten** | 3 files (~1,600L): rollback unit, rollback integration, rollback benchmark |
@@ -330,7 +356,7 @@ Each implementation phase includes its own tests and documentation. Here's the e
 ### Phase 5-6 (Commit 3): Documentation + Test Cleanup
 
 | Category | What |
-|----------|------|
+| ---------- | ------ |
 | **Production** | None |
 | **Tests** | Final cleanup — remove any remaining stale assertions, update conftest helpers |
 | **Docs rewritten** | 3 files: integrity architecture, observability concepts, rollback how-to |
@@ -345,7 +371,7 @@ Each implementation phase includes its own tests and documentation. Here's the e
 > **Test results**: 1720 passed, 0 failed, 13 skipped  
 > **Staff review**: All P0/P1 issues identified and fixed. Key fixes: `to_game()` property loss (P0-1), `UnboundLocalError` in analyze/publish exception handlers (P0-3/P1-3), `unescape_sgf_value()` added for SGF→JSON safety, schema `current_version` updated.  
 > **Additional deliverables**: `unescape_sgf_value()` utility function, 6 unescape unit tests, SGF-escaped JSON parse test.
-
+>
 > Smallest blast radius. Independently testable. After this phase, pipeline works identically but without sidecar files.
 
 **Phase atomicity requirement**: After this commit, the old rollback code (not yet rewritten) must still work. This is safe because `read_trace_map()` already returns an empty dict when the sidecar file doesn't exist, producing `trace_id=""` in publish log entries — the same behavior as today. No import breakage occurs because `trace_map.py` is deleted but rollback.py doesn't import from it (only publish.py and analyze.py do, and both are updated in this phase).
@@ -353,8 +379,8 @@ Each implementation phase includes its own tests and documentation. Here's the e
 **Production code changes:**
 
 | File | Action | Detail |
-|------|--------|--------|
-| `core/sgf_parser.py` | Modify (~5L) | Add `pipeline_meta: str \| None = None` to `YenGoProperties`. Parse `YM` in `from_sgf_props()` |
+| ------ | -------- | -------- |
+| `core/sgf_parser.py` | Modify (~5L) | Add `pipeline_meta: Optional[str] = None` to `YenGoProperties`. Parse `YM` in `from_sgf_props()` |
 | `core/sgf_builder.py` | Modify (~15L) | Add `set_pipeline_meta(trace_id, original_filename)` method. Emit `YM[{...}]` in `build()`. Ensure SGF escaping of `]` chars |
 | `core/trace_utils.py` | Modify (~20L) | Add `parse_pipeline_meta(ym_value: str) -> tuple[str, str]` with defensive JSON parsing |
 | `core/schema.py` | Modify (~1L) | `YENGO_SGF_VERSION` → 12 |
@@ -367,7 +393,7 @@ Each implementation phase includes its own tests and documentation. Here's the e
 **Test changes:**
 
 | File | Action | Detail |
-|------|--------|--------|
+| ------ | -------- | -------- |
 | `tests/unit/test_trace_map.py` | **DELETE** (194L) | Tests deleted module |
 | `tests/stages/test_ingest_trace.py` | **DELETE** (227L) | Tests sidecar writing |
 | `tests/stages/test_analyze_trace.py` | **DELETE** (193L) | Tests sidecar reading |
@@ -386,11 +412,11 @@ Each implementation phase includes its own tests and documentation. Here's the e
 **Production code changes:**
 
 | File | Action | Detail |
-|------|--------|--------|
+| ------ | -------- | -------- |
 | `inventory/reconcile.py` | Modify/Extend | Add `rebuild_affected(output_dir, affected_levels, affected_tags, affected_collections) -> RebuildResult` for selective rebuild. Also add `rebuild_all(output_dir)` for full reconciliation (CLI command). Both use `ThreadPoolExecutor(max_workers=8)` and `IdMaps`. Selective rebuild: reload affected entity page files → filter out removed IDs → rewrite pages → update master indexes. Full rebuild: scan all SGFs (for CLI `reconcile` command only, not rollback) |
 | `inventory/rebuild.py` | **DELETE** or merge (187L) | Redundant — `rebuild_all()` replaces both `rebuild_inventory()` (from publish logs) and `reconcile_inventory()` (from SGFs). Single path eliminates dual-rebuild confusion |
 | `rollback.py` | **REWRITE** (~838L → ~200L) | New `RollbackManager`: date-filtered publish log lookup → delete SGF files → `rebuild_affected()` for only touched levels/tags/collections → update inventory from master index counts. No LockManager, TransactionManager, AuditLogWriter. Acquires `PipelineLock` before operating |
-| `pipeline/lock.py` | **CREATE** (~80L) | New `PipelineLock` with atomic `O_CREAT\|O_EXCL`, PID-alive stale detection, timeout-based auto-recovery. Replaces `config/lock.py` |
+| `pipeline/lock.py` | **CREATE** (~80L) | New `PipelineLock` with atomic create-exclusive file locking, PID-alive stale detection, timeout-based auto-recovery. Replaces `config/lock.py` |
 | `config/lock.py` | **DELETE** (~200L) | Replaced by `pipeline/lock.py`. TOCTOU race and no crash recovery eliminated |
 | `inventory/models.py` | Modify (~200L removed) | Remove `StagesStats`, `IngestMetrics`, `AnalyzeMetrics`, `PublishMetrics`, `ComputedMetrics`, `AuditMetrics`. Keep `CollectionStats` wrapper with `total_puzzles`, `by_puzzle_level`, `by_tag`, `by_puzzle_quality`. Remove `avg_quality_score`, `hint_coverage_pct`. New schema v2.0 |
 | `inventory/check.py` | **REWRITE** (223L → ~50L) | Simplify to orphan detection only (files without publish log entries, entries without files). Remove inventory-vs-disk count comparisons (rebuild makes them always correct) |
@@ -403,7 +429,7 @@ Each implementation phase includes its own tests and documentation. Here's the e
 **Test changes:**
 
 | File | Action | Detail |
-|------|--------|--------|
+| ------ | -------- | -------- |
 | `tests/unit/test_rollback.py` (641L) | **REWRITE** | Test new simplified rollback (delete + rebuild) |
 | `tests/integration/test_rollback_integration.py` (641L) | **REWRITE** | Full rollback integration tests |
 | `tests/integration/test_rollback_benchmark.py` (317L) | **REWRITE** | Rollback performance benchmarks |
@@ -426,7 +452,7 @@ Each implementation phase includes its own tests and documentation. Here's the e
 **Documentation updates:**
 
 | File | Action | Sections |
-|------|--------|----------|
+| ------ | -------- | ---------- |
 | `docs/concepts/sgf-properties.md` | Modify | Add YM property, bump version table, add JSON format docs |
 | `docs/architecture/backend/integrity.md` | **Heavy rewrite** | Replace "Trace Map Architecture" and "Rollback Design" with rebuild-centric description |
 | `docs/concepts/observability.md` | **Heavy rewrite** | Rewrite trace_id lifecycle (now in SGF, not sidecar), remove trace map references |
@@ -443,7 +469,7 @@ Each implementation phase includes its own tests and documentation. Here's the e
 ## Impact Summary
 
 | Metric | Before | After |
-|--------|--------|-------|
+| -------- | -------- | ------- |
 | Production code (rollback/trace/inventory) | ~4,400L | ~2,600L (**-1,800L**) |
 | Test code (affected files) | ~3,900L | ~2,200L (**-1,700L**) |
 | Sidecar files per run | 2 (trace-map + original-filenames) | 0 |
@@ -459,7 +485,7 @@ Each implementation phase includes its own tests and documentation. Here's the e
 ## Risks and Mitigations
 
 | Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|------------|
+| ------ | ----------- | -------- | ------------ |
 | SGF escaping breaks YM JSON | Low | High — corrupt SGF | Test with edge-case filenames containing `]` `\` chars |
 | Rebuild too slow at scale | Low (selective) | Medium | Selective rebuild per affected entity — O(affected) not O(total). Full rebuild only via CLI `reconcile` command |
 | Crash during rebuild leaves inconsistent views | Low | Medium | Atomic temp-dir + rename pattern |
@@ -469,7 +495,7 @@ Each implementation phase includes its own tests and documentation. Here's the e
 ## Decisions Log
 
 | Decision | Choice | Alternative Considered | Rationale |
-|----------|--------|----------------------|-----------|
+| ---------- | -------- | ---------------------- | ----------- |
 | YM format | JSON object | Pipe-delimited (like YH) | Extensible, self-describing field names, standard parsing |
 | Property name | YM (Yengo Metadata) | SO (overload standard SGF) | SO is standard FF[4] property — external viewers show raw content |
 | Schema version | v12 (skip v11) | v11 | Marks architectural change, not incremental addition |
@@ -485,15 +511,25 @@ Each implementation phase includes its own tests and documentation. Here's the e
 ## Verification
 
 ### Automated
+
 - `pytest -m unit` — all unit tests pass
+
 - `pytest -m "not (cli or slow)"` — full regression
+
 - `ruff check .` — no lint warnings
 
 ### Manual integration test
+
 1. `clean --target puzzles-collection --dry-run false`
-2. `run --source sanderland` (full pipeline: ingest → analyze → publish)
-3. Verify published SGFs contain `YM[{"t":"...","f":"..."}]` and `YV[12]`
-4. Verify NO sidecar files in `.pm-runtime/staging/` (no `.trace-map-*`, no `.original-filenames-*`)
-5. Verify views and inventory match expected counts
-6. `rollback --run-id {run-id}` — verify files deleted, views rebuilt, inventory updated
-7. Re-run `run --source sanderland` — verify clean re-publish works
+
+1. `run --source sanderland` (full pipeline: ingest → analyze → publish)
+
+1. Verify published SGFs contain `YM[{"t":"...","f":"..."}]` and `YV[12]`
+
+1. Verify NO sidecar files in `.pm-runtime/staging/` (no `.trace-map-*`, no `.original-filenames-*`)
+
+1. Verify views and inventory match expected counts
+
+1. `rollback --run-id {run-id}` — verify files deleted, views rebuilt, inventory updated
+
+1. Re-run `run --source sanderland` — verify clean re-publish works

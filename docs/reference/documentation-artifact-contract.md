@@ -9,23 +9,31 @@ Defines the minimum documentation contract for initiatives so that documentation
 This contract ensures every initiative records:
 
 - why decisions were made,
+
 - where canonical docs were updated,
+
 - how readers navigate related docs.
 
 ## Core Principles
 
 1. Why in docs, how in code.
-2. Update existing global docs first.
-3. Create new docs only when no canonical destination exists.
-4. Cross-reference all related docs to preserve navigability.
+
+1. Update existing global docs first.
+
+1. Create new docs only when no canonical destination exists.
+
+1. Cross-reference all related docs to preserve navigability.
 
 ## Required Planning Fields
 
 `30-plan.md` MUST include a `## Documentation Plan` section with:
 
 - `files_to_update`: list of existing docs that will be updated.
+
 - `files_to_create`: list of new docs (must include rationale for why new file is needed).
+
 - `why_updated`: one-line reason per file that captures design rationale.
+
 - `cross_references`: links to architecture/how-to/concepts/reference docs.
 
 Example:
@@ -80,6 +88,7 @@ If `present=false` or `coverage!=complete`, plan gate must return `change_reques
 Status values:
 
 - `✅ verified`
+
 - `❌ missing`
 
 Any `❌ missing` row is a closeout blocker unless explicitly deferred with owner and follow-up task.
@@ -89,16 +98,23 @@ Any `❌ missing` row is a closeout blocker unless explicitly deferred with owne
 Before final closeout approval:
 
 1. All planned docs were updated/created.
-2. Each updated doc contains rationale aligned with the initiative changes.
-3. Existing global docs were preferred over new doc creation where possible.
-4. Cross-references are present and valid.
-5. `Last Updated` dates were refreshed.
+
+1. Each updated doc contains rationale aligned with the initiative changes.
+
+1. Existing global docs were preferred over new doc creation where possible.
+
+1. Cross-references are present and valid.
+
+1. `Last Updated` dates were refreshed.
 
 ## Governance Enforcement
 
 - `charter`: check documentation intent exists for non-trivial changes.
+
 - `plan`: enforce `Documentation Plan` completeness and mapping to tasks.
+
 - `review`: verify docs were actually updated and evidence is present.
+
 - `closeout`: verify rationale quality and cross-reference integrity.
 
 ## Fast-Track Exception
@@ -109,5 +125,7 @@ Fast-track only reduces panel size; it does not waive documentation obligations.
 > **See also**:
 >
 > - [Reference: Planning Artifact Contract](./planning-artifact-contract.md) - Full initiative artifact lifecycle
+>
 > - [Reference: copilot-instructions](../../.github/copilot-instructions.md) - Repository-wide doc rules
+>
 > - [Architecture: System Overview](../architecture/system-overview.md) - Global architecture context

@@ -1,8 +1,11 @@
 # SGF Architecture
 
 > **See also**:
+>
 > - [Concepts: SGF Properties](../../concepts/sgf-properties.md) — Property reference (single source of truth)
+>
 > - [Concepts: Hints](../../concepts/hints.md) — Hint system
+>
 > - [Reference: Schema](../../../config/schemas/sgf-properties.schema.json) — JSON schema
 
 **Last Updated**: 2026-03-25
@@ -22,11 +25,17 @@ For the full property-by-property reference, see [Concepts: SGF Properties](../.
 ## File Locations
 
 - **Published puzzles**: `yengo-puzzle-collections/sgf/`
+
 - **Properties schema**: `config/schemas/sgf-properties.schema.json`
+
 - **Naming schema**: `config/schemas/sgf-naming.schema.json` (16-char hash standard)
+
 - **Property policies**: `config/sgf-property-policies.json`
+
 - **Parser**: `backend/puzzle_manager/core/sgf_parser.py`
+
 - **Builder**: `backend/puzzle_manager/core/sgf_builder.py`
+
 - **Naming utility**: `backend/puzzle_manager/core/naming.py`
 
 ---
@@ -41,38 +50,38 @@ SGF FF[4] provides **no standard properties** for puzzle difficulty, technique c
 
 ### Why `Y*` Prefix?
 
-| Reason                 | Explanation                                    |
+| Reason | Explanation |
 | ---------------------- | ---------------------------------------------- |
-| **Standard-compliant** | SGF allows application-defined properties      |
-| **Collision-free**     | Won't conflict with future standard properties |
-| **Recognizable**       | Easy to identify YenGo-specific properties     |
-| **Short**              | Single character keeps files compact           |
+| **Standard-compliant** | SGF allows application-defined properties |
+| **Collision-free** | Won't conflict with future standard properties |
+| **Recognizable** | Easy to identify YenGo-specific properties |
+| **Short** | Single character keeps files compact |
 
 ### Why 9 Levels?
 
 The original 5-level system was too coarse. 9 levels provide ~5 rank granularity per level and a clean mapping to DDK/SDK/Dan progression.
 
-| Ranks   | Level              |
+| Ranks | Level |
 | ------- | ------------------ |
-| 30k-26k | novice             |
-| 25k-21k | beginner           |
-| 20k-16k | elementary         |
-| 15k-11k | intermediate       |
-| 10k-6k  | upper-intermediate |
-| 5k-1k   | advanced           |
-| 1d-3d   | low-dan            |
-| 4d-6d   | high-dan           |
-| 7d+     | expert             |
+| 30k-26k | novice |
+| 25k-21k | beginner |
+| 20k-16k | elementary |
+| 15k-11k | intermediate |
+| 10k-6k | upper-intermediate |
+| 5k-1k | advanced |
+| 1d-3d | low-dan |
+| 4d-6d | high-dan |
+| 7d+ | expert |
 
 ### Why Three Hints?
 
 Progressive disclosure is pedagogically effective:
 
-| Hint | Purpose               | Example                   |
+| Hint | Purpose | Example |
 | ---- | --------------------- | ------------------------- |
-| 1    | What concept to apply | "Look for a snapback"     |
-| 2    | Why it works          | "Direct capture fails..." |
-| 3    | The answer            | "Play at {!cg}."          |
+| 1 | What concept to apply | "Look for a snapback" |
+| 2 | Why it works | "Direct capture fails..." |
+| 3 | The answer | "Play at {!cg}." |
 
 Players can request increasing help without skipping straight to the solution.
 
@@ -84,10 +93,10 @@ Earlier drafts used separate `YH1`/`YH2`/`YH3` properties. The current compact `
 
 Two orthogonal concerns:
 
-| Property            | Measures            | Example               |
+| Property | Measures | Example |
 | ------------------- | ------------------- | --------------------- |
-| **YQ** (Quality)    | How well-documented | Comments, refutations |
-| **YX** (Complexity) | How difficult       | Depth, reading count  |
+| **YQ** (Quality) | How well-documented | Comments, refutations |
+| **YX** (Complexity) | How difficult | Depth, reading count |
 
 A simple 3-move problem might have premium documentation. A deep 20-move problem might have minimal documentation.
 
@@ -96,8 +105,11 @@ A simple 3-move problem might have premium documentation. A deep 20-move problem
 Collections (curated sets like "Cho Chikun" or "Gokyo Shumyo") are distinct from technical tags ("ko", "ladder").
 
 Considered: Combining into `YT` (Tags). Rejected because:
+
 - **Semantics**: `YT` = *what* it is (technique). `YL` = *where* it belongs (curation).
+
 - **UI**: Tags are for filtering; Collections are for browsing/progress tracking.
+
 - **Source-driven**: `YL` is derived from file paths/authorship, not board analysis.
 
 ### Why Not JSON Inside Properties?
@@ -122,7 +134,7 @@ Source adapter ID is now tracked via the CLI `--source` flag and publish records
 
 | Property | Status | Replaced By |
 | -------- | ------ | ----------- |
-| `YH1`/`YH2`/`YH3` | Removed in v8 | Compact `YH[hint1\|hint2\|hint3]` |
+| `YH1`/`YH2`/`YH3` | Removed in v8 | Compact `YH[hint1\ | hint2\ | hint3]` |
 | `YG[slug:sublevel]` | Sub-levels deprecated | Plain slug: `YG[intermediate]` |
 | `SO` | Removed in v8 | Provenance in pipeline state |
 | `YS` (Source Adapter ID) | Removed | Source tracked via CLI `--source` and publish logs |
@@ -133,10 +145,15 @@ Source adapter ID is now tracked via the CLI `--source` flag and publish records
 ## Current Conventions
 
 - Use compact `YH[hint1|hint2|hint3]` instead of separate hint fields.
+
 - Keep `YT` alphabetically sorted and deduplicated.
+
 - Store collection membership separately in `YL` rather than mixing it into `YT`.
+
 - Preserve SGF structure as SGF properties rather than embedding broad JSON blobs.
+
 - Keep provenance in `YM` and pipeline records instead of scattering it across multiple custom properties.
+
 - Root `C[]` comments are **preserved by default** (configurable via `preserve_root_comment`). Move `C[]` comments are standardized with Correct/Wrong prefix.
 
 ---
@@ -144,4 +161,5 @@ Source adapter ID is now tracked via the CLI `--source` flag and publish records
 ## References
 
 - [SGF FF[4] Specification](https://www.red-bean.com/sgf/)
+
 - [KGS SGF Extensions](https://www.gokgs.com/help/sgf.html)

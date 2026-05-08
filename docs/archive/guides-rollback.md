@@ -9,7 +9,9 @@ This guide covers how to rollback puzzles published by the pipeline.
 ## When to Use Rollback
 
 - **Bad import**: A pipeline run imported corrupted or incorrect puzzles
+
 - **Quality issue**: Specific puzzles failed quality review after publication
+
 - **Testing cleanup**: Remove test puzzles from production collections
 
 ## Rollback Commands
@@ -54,7 +56,7 @@ Output shows what would be deleted without making changes.
 
 Rollbacks affecting >100 puzzles require confirmation:
 
-```
+```text
 About to delete 150 puzzles. Continue? [y/N]
 ```
 
@@ -97,12 +99,18 @@ python -m backend.puzzle_manager publish-log search --puzzle-id puz-001
 ## What Rollback Does
 
 1. **Validates** all puzzle IDs exist (fails fast if any missing)
-2. **Acquires lock** to prevent concurrent rollbacks
-3. **Backs up** files to `.rollback-backup/` directory
-4. **Deletes** SGF files from collections
-5. **Updates** level and tag indexes (removes deleted entries)
-6. **Writes** audit log entry
-7. **Releases** lock and cleans up backup
+
+1. **Acquires lock** to prevent concurrent rollbacks
+
+1. **Backs up** files to `.rollback-backup/` directory
+
+1. **Deletes** SGF files from collections
+
+1. **Updates** level and tag indexes (removes deleted entries)
+
+1. **Writes** audit log entry
+
+1. **Releases** lock and cleans up backup
 
 If any step fails, files are restored from backup.
 
@@ -110,7 +118,7 @@ If any step fails, files are restored from backup.
 
 All rollback operations are logged to:
 
-```
+```text
 yengo-puzzle-collections/publish-log/rollback-audit.jsonl
 ```
 
@@ -153,9 +161,12 @@ If backup directory exists with files, restoration was incomplete. Contact maint
 ## Best Practices
 
 1. **Always use --dry-run first** to preview changes
-2. **Document the reason** in commit message when committing rollback
-3. **Verify indexes** after large rollbacks with `--verify` flag
-4. **Check audit log** to confirm operation completed
+
+1. **Document the reason** in commit message when committing rollback
+
+1. **Verify indexes** after large rollbacks with `--verify` flag
+
+1. **Check audit log** to confirm operation completed
 
 ---
 

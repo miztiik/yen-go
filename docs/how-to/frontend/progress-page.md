@@ -13,17 +13,25 @@ Click the **profile icon** (top-right corner of the header, next to the settings
 ### Progress Overview
 
 Shows your key stats at a glance:
+
 - **Total Puzzles Solved** — cumulative count across all modes
+
 - **Overall Accuracy** — percentage of puzzles solved correctly on first attempt
+
 - **Current Streak** — consecutive days with at least one puzzle solved
+
 - **Longest Streak** — your personal best streak record
 
 ### Technique Radar
 
 Horizontal bars showing your accuracy per technique (Life & Death, Ladder, Ko, etc.):
+
 - Green arrow = improving trend (last 30 days)
+
 - Red arrow = declining trend
+
 - "Low data" label when fewer than 10 puzzles attempted
+
 - Smart insight recommends practice for your weakest technique
 
 ### Difficulty Chart
@@ -37,11 +45,17 @@ SVG bar chart showing accuracy by difficulty level (Novice through Expert).
 ### Achievements
 
 Badge tiles for 22 achievements across categories:
+
 - Solve milestones (1, 10, 50, 100, 500, 1000)
+
 - Perfect solve streaks
+
 - Streak achievements
+
 - Rush high scores
+
 - Time milestones
+
 - Hint discipline
 
 New achievements trigger a toast notification that auto-dismisses after 5 seconds.
@@ -49,10 +63,14 @@ New achievements trigger a toast notification that auto-dismisses after 5 second
 ### Smart Practice
 
 The CTA at the bottom identifies your weakest techniques and launches a targeted practice session:
+
 1. Queries your worst 3 techniques by accuracy
-2. Finds unsolved puzzles matching those techniques
-3. Shuffles and presents up to 15 puzzles
-4. Failed puzzles are added to a retry queue for future practice
+
+1. Finds unsolved puzzles matching those techniques
+
+1. Shuffles and presents up to 15 puzzles
+
+1. Failed puzzles are added to a retry queue for future practice
 
 ## Data Sources
 
@@ -61,5 +79,7 @@ All data comes from existing localStorage progress records cross-referenced with
 > **See also**:
 >
 > - [Architecture: Puzzle Modes](../../architecture/frontend/puzzle-modes.md) — Mode architecture overview
+>
 > - [How-To: Rush Mode](./rush-mode.md) — Similar feature guide pattern
+>
 > - [Concepts: SQLite Index](../../concepts/sqlite-index-architecture.md) — Database architecture
