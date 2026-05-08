@@ -264,7 +264,7 @@ corpus, regardless of which subsystem produced the event."
 
 ---
 
-## Theme 14 — Inventory Health Surface (P0) — NEW ◐
+## Theme 14 — Inventory Health Surface (P0) — NEW ☑
 
 **User pain (verbatim, paraphrased)**: the dashboard shows an inventory
 *count* but hides the operator-grade actions the CLI already supports
