@@ -854,3 +854,31 @@ class DailyPreviewResponse(BaseModel):
             "({ok, db_exists, date, challenge?, failures[]})."
         ),
     )
+
+
+class DailyCancelRequest(BaseModel):
+    """``POST /api/daily/cancel/{preview,apply}`` request (Theme 8c)."""
+
+    date: str | None = Field(default=None, description="Single date YYYY-MM-DD.")
+    from_date: str | None = Field(
+        default=None, alias="from", description="Range start YYYY-MM-DD.",
+    )
+    to_date: str | None = Field(
+        default=None, alias="to", description="Range end YYYY-MM-DD.",
+    )
+    force: bool = Field(default=False, description="Skip pipeline lock.")
+
+    model_config = {"populate_by_name": True}
+
+
+class DailyCancelResponse(BaseModel):
+    """``POST /api/daily/cancel/...`` payload (Theme 8c, preview + apply)."""
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON from `daily-cancel --json` "
+            "({ok, dry_run, db_exists, from, to, dates_affected[], "
+            "puzzle_rows_affected, schedule_rows_deleted?})."
+        ),
+    )

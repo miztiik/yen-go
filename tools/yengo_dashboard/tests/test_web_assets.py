@@ -1029,3 +1029,12 @@ def test_daily_preview_wired(app_js: str) -> None:
     assert "data-daily-preview-btn" in app_js
     assert "data-daily-preview-target" in app_js
     assert "/api/daily/preview" in app_js
+
+
+def test_daily_cancel_wired(app_js: str) -> None:
+    """Theme 8c: per-row Cancel button → preview-then-confirm-then-apply."""
+    assert "_runDailyCancel" in app_js
+    assert "data-daily-cancel-btn" in app_js
+    assert "/api/daily/cancel/preview" in app_js
+    assert "/api/daily/cancel/apply" in app_js
+    assert "confirmDialog" in app_js

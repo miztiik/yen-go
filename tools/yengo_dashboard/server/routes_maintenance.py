@@ -45,6 +45,8 @@ from tools.yengo_dashboard.server.models import (
     DailyListResponse,
     DailyStatusResponse,
     DailyPreviewResponse,
+    DailyCancelRequest,
+    DailyCancelResponse,
     CleanPreviewResponse,
     CleanRequest,
     InventoryMutationApplyResponse,
@@ -509,5 +511,38 @@ def build_maintenance_router(
                 },
             ) from exc
         return DailyPreviewResponse(raw=payload)
+
+    def _daily_cancel_call(req: DailyCancelRequest, *, dry_run: bool) -> dict:
+        try:
+            return runner.daily_cancel(
+                date=req.date, from_date=req.from_date, to_date=req.to_date,
+                dry_run=dry_run, force=req.force,
+            )
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400 if exc.returncode == 2 else 502,
+                detail={
+                    "message": "puzzle_manager daily-cancel failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+
+    @router.post(
+        "/daily/cancel/preview",
+        response_model=DailyCancelResponse,
+    )
+    def daily_cancel_preview(req: DailyCancelRequest) -> DailyCancelResponse:
+        """Theme 8c: dry-run preview of cancel deletes."""
+        return DailyCancelResponse(raw=_daily_cancel_call(req, dry_run=True))
+
+    @router.post(
+        "/daily/cancel/apply",
+        response_model=DailyCancelResponse,
+    )
+    def daily_cancel_apply(req: DailyCancelRequest) -> DailyCancelResponse:
+        """Theme 8c: apply (deletes daily_schedule + daily_puzzles rows)."""
+        return DailyCancelResponse(raw=_daily_cancel_call(req, dry_run=False))
 
     return router

@@ -520,6 +520,31 @@ class PipelineRunner:
             )
         return result
 
+    def daily_cancel(
+        self, *, date: str | None = None,
+        from_date: str | None = None, to_date: str | None = None,
+        dry_run: bool = True, force: bool = False,
+    ) -> dict:
+        """Theme 8c: wraps ``daily-cancel ... --json`` (preview + apply)."""
+        args = ["daily-cancel", "--json"]
+        if date:
+            args += ["--date", date]
+        if from_date:
+            args += ["--from", from_date]
+        if to_date:
+            args += ["--to", to_date]
+        if dry_run:
+            args.append("--dry-run")
+        if force:
+            args.append("--force")
+        result = self._run_json_any(args)
+        if not isinstance(result, dict):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON object, got {type(result).__name__}", "",
+            )
+        return result
+
     def pipeline_config_set(
         self, *, set_pairs: list[str], force: bool = False,
     ) -> dict:

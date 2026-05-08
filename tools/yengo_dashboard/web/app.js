@@ -3494,6 +3494,8 @@ function _renderDailyListBlock(raw) {
             <td class="text-right">
               <button type="button" class="text-xs underline text-sky-600 dark:text-sky-300"
                       data-daily-preview-btn data-date="${escapeHtml(r.date)}">Preview</button>
+              <button type="button" class="ml-2 text-xs underline text-rose-600 dark:text-rose-300"
+                      data-daily-cancel-btn data-date="${escapeHtml(r.date)}">Cancel</button>
             </td>
           </tr>
         `).join("")}
@@ -3504,6 +3506,40 @@ function _renderDailyListBlock(raw) {
   host.querySelectorAll("[data-daily-preview-btn]").forEach((btn) => {
     btn.addEventListener("click", () => _runDailyPreview(btn.dataset.date));
   });
+  host.querySelectorAll("[data-daily-cancel-btn]").forEach((btn) => {
+    btn.addEventListener("click", () => _runDailyCancel(btn.dataset.date));
+  });
+}
+
+async function _runDailyCancel(date) {
+  // Theme 8c: preview-then-confirm-then-apply.
+  let preview;
+  try {
+    preview = await postJSON("/api/daily/cancel/preview",
+      { date, force: false });
+  } catch (err) {
+    toast("error", `cancel preview failed: ${err.body?.detail?.message || err.message}`);
+    return;
+  }
+  const raw = preview.raw || {};
+  const ok = await confirmDialog({
+    title: `Cancel daily ${date}`,
+    body: `Will delete ${raw.dates_affected?.length || 0} schedule row(s) ` +
+          `and ${raw.puzzle_rows_affected || 0} puzzle row(s) from ` +
+          `daily_schedule + daily_puzzles. This is irreversible.`,
+    verb: `cancel ${date}`,
+  });
+  if (!ok) return;
+  try {
+    const res = await postJSON("/api/daily/cancel/apply",
+      { date, force: false });
+    const r = res.raw || {};
+    toast("ok", `cancelled ${r.schedule_rows_deleted || 0} day(s), ` +
+                `${r.puzzle_rows_affected || 0} puzzle row(s)`);
+    renderDaily();
+  } catch (err) {
+    toast("error", `cancel failed: ${err.body?.detail?.message || err.message}`);
+  }
 }
 
 async function _runDailyPreview(date) {

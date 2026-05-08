@@ -1255,3 +1255,27 @@ class TestDailyEndpoints:
             resp = client.get("/api/daily/preview?date=not-a-date")
         assert resp.status_code == 502, resp.text
 
+    def test_cancel_preview_db_missing_ok(self, tmp_path: Path) -> None:
+        # Theme 8c: preview always returns 200 with empty effects when DB missing.
+        config_dir = self._seed(tmp_path)
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.post(
+                "/api/daily/cancel/preview",
+                json={"date": "2026-05-08", "force": True},
+            )
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["dry_run"] is True
+        assert raw["dates_affected"] == []
+
+    def test_cancel_missing_args_returns_400(self, tmp_path: Path) -> None:
+        # Theme 8c: no date / no range → CLI rc=2 → 400.
+        config_dir = self._seed(tmp_path)
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.post(
+                "/api/daily/cancel/preview", json={"force": True},
+            )
+        assert resp.status_code == 400, resp.text
+

@@ -463,6 +463,24 @@ Examples:
     daily_preview_parser.add_argument("--json", action="store_true",
                                        help="Emit JSON.")
 
+    # Theme 8c: daily-cancel (destructive — preview-then-apply pattern)
+    daily_cancel_parser = subparsers.add_parser(
+        "daily-cancel",
+        help="Remove daily_schedule + daily_puzzles rows for a date range.",
+    )
+    daily_cancel_parser.add_argument("--date", type=str, metavar="YYYY-MM-DD")
+    daily_cancel_parser.add_argument("--from", dest="from_date",
+                                      type=str, metavar="YYYY-MM-DD")
+    daily_cancel_parser.add_argument("--to", dest="to_date",
+                                      type=str, metavar="YYYY-MM-DD")
+    daily_cancel_parser.add_argument("--dry-run", action="store_true",
+                                      dest="dry_run",
+                                      help="Preview only — no DB writes.")
+    daily_cancel_parser.add_argument("--force", action="store_true",
+                                      help="Skip pipeline lock acquisition.")
+    daily_cancel_parser.add_argument("--json", action="store_true",
+                                      help="Emit JSON.")
+
     # status command
     status_parser = subparsers.add_parser("status", help="Show pipeline status")
     status_parser.add_argument(
@@ -1957,6 +1975,110 @@ def cmd_daily_preview(args: argparse.Namespace) -> int:
             tech = ch.get("standard", {}).get("technique_of_day", "")  # type: ignore[union-attr]
             print(f"[PREVIEW] {args.date}  technique={tech!r}  standard_puzzles={std_total}")
     return 0
+
+
+def cmd_daily_cancel(args: argparse.Namespace) -> int:
+    """Theme 8c: cancel (delete) daily_schedule + daily_puzzles in a date range.
+
+    Supports --date DATE for a single day or --from FROM --to TO for a range.
+    --dry-run emits the affected dates + row counts without writing. Apply
+    path acquires PipelineLock (skip with --force) and deletes inside a
+    single transaction.
+    """
+    import sqlite3
+    from backend.puzzle_manager.pipeline.lock import PipelineLock, PipelineLockError
+
+    json_out = bool(getattr(args, "json", False))
+    dry_run = bool(getattr(args, "dry_run", False))
+
+    def _emit(payload: dict, rc: int = 0) -> int:
+        if json_out:
+            print(json.dumps(payload, indent=2))
+        else:
+            if payload.get("ok"):
+                print(f"[{'PREVIEW' if dry_run else 'OK'}] "
+                      f"dates={len(payload.get('dates_affected', []))} "
+                      f"puzzle_rows={payload.get('puzzle_rows_affected', 0)}")
+            else:
+                print(f"Error: {payload.get('error', 'unknown')}")
+        return rc
+
+    # Validate date inputs.
+    date_arg = getattr(args, "date", None)
+    from_arg = getattr(args, "from_date", None)
+    to_arg = getattr(args, "to_date", None)
+    if date_arg:
+        from_d, to_d = date_arg, date_arg
+    elif from_arg and to_arg:
+        from_d, to_d = from_arg, to_arg
+    elif from_arg:
+        from_d = to_d = from_arg
+    else:
+        return _emit({"ok": False, "error": "Provide --date or --from/--to"}, rc=2)
+    for v in (from_d, to_d):
+        try:
+            datetime.strptime(v, "%Y-%m-%d")
+        except (TypeError, ValueError):
+            return _emit({"ok": False, "error": f"Invalid date '{v}'"}, rc=2)
+    if from_d > to_d:
+        return _emit({"ok": False, "error": "--from must be <= --to"}, rc=2)
+
+    db_path = _daily_db_path()
+    payload: dict[str, object] = {
+        "ok": True, "dry_run": dry_run, "db_exists": db_path.exists(),
+        "from": from_d, "to": to_d,
+        "dates_affected": [], "puzzle_rows_affected": 0,
+    }
+    if not db_path.exists():
+        return _emit(payload)
+
+    # Read affected rows (always, even for apply — we want them in the result).
+    conn = sqlite3.connect(f"file:{db_path.as_posix()}?mode=ro", uri=True)
+    try:
+        conn.row_factory = sqlite3.Row
+        dates = [r["date"] for r in conn.execute(
+            "SELECT date FROM daily_schedule WHERE date >= ? AND date <= ? ORDER BY date",
+            (from_d, to_d),
+        )]
+        puzzle_rows = conn.execute(
+            "SELECT COUNT(*) AS n FROM daily_puzzles "
+            "WHERE date >= ? AND date <= ?",
+            (from_d, to_d),
+        ).fetchone()["n"]
+    finally:
+        conn.close()
+    payload["dates_affected"] = dates
+    payload["puzzle_rows_affected"] = int(puzzle_rows)
+
+    if dry_run or not dates:
+        return _emit(payload)
+
+    # Apply path: acquire lock then delete inside one transaction.
+    if not args.force:
+        try:
+            PipelineLock(run_id="daily-cancel").acquire()
+        except PipelineLockError as exc:
+            return _emit({"ok": False, "error": f"pipeline-locked: {exc}"}, rc=2)
+
+    try:
+        conn = sqlite3.connect(str(db_path))
+        try:
+            with conn:
+                conn.execute(
+                    "DELETE FROM daily_puzzles WHERE date >= ? AND date <= ?",
+                    (from_d, to_d),
+                )
+                cur = conn.execute(
+                    "DELETE FROM daily_schedule WHERE date >= ? AND date <= ?",
+                    (from_d, to_d),
+                )
+                payload["schedule_rows_deleted"] = int(cur.rowcount)
+        finally:
+            conn.close()
+    except sqlite3.Error as exc:
+        return _emit({"ok": False, "error": f"sqlite: {exc}"}, rc=1)
+
+    return _emit(payload)
 
 
 def cmd_clean(args: argparse.Namespace) -> int:
@@ -4110,6 +4232,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_daily_status(args)
     elif args.command == "daily-preview":
         return cmd_daily_preview(args)
+    elif args.command == "daily-cancel":
+        return cmd_daily_cancel(args)
     elif args.command == "status":
         return cmd_status(args)
     elif args.command == "clean":
