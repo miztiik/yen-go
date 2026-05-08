@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
   "current_batch": 1,
-  "files_in_current_batch": 1000,
-  "last_updated": "2026-04-12T20:27:45.449721+00:00",
+  "files_in_current_batch": 799,
+  "last_updated": "2026-05-08T17:29:22.486552+00:00",
   "last_error": null,
   "retry_count": 0,
-  "recovery_timestamp": "2026-04-12T20:24:51.633949+00:00"
+  "recovery_timestamp": "2026-05-08T17:28:56.200301+00:00"
 }

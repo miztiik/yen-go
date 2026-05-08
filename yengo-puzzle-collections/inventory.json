@@ -1,0 +1,26 @@
+{
+  "by_collection_category": {
+    "author": 88,
+    "book": 1,
+    "graded": 9,
+    "reference": 46,
+    "system": 2,
+    "technique": 47
+  },
+  "by_content_type": {
+    "2": 781,
+    "3": 18
+  },
+  "by_level_id": {
+    "110": 184,
+    "120": 13,
+    "130": 202,
+    "140": 200,
+    "160": 200
+  },
+  "collections_total": 193,
+  "daily_schedule_total": 0,
+  "db_version": "20260508-c123e77c",
+  "puzzles_total": 799,
+  "schema_version": 2
+}
