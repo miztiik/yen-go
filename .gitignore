@@ -120,3 +120,5 @@ tools/puzzle-enrichment-lab/tests/fixtures/
 
 # Stash recovery workspace (RCA 2026-05-06 — agent stash@{0} violation)
 .recovery/
+# Crawler/tool log files (per docs/reference/git-safety-prompt.md)
+external-sources/*/logs/
