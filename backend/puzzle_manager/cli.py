@@ -781,6 +781,27 @@ File Locations:
     adapter_config_bootstrap.add_argument("--json", action="store_true")
     adapter_config_bootstrap.add_argument("--force", action="store_true")
 
+    # Theme 7d: pipeline-config {show|set} --- read/edit pipeline.json.
+    pipeline_config_parser = subparsers.add_parser(
+        "pipeline-config",
+        help="Inspect or mutate pipeline.json (Theme 7d).",
+    )
+    pipeline_config_subparsers = pipeline_config_parser.add_subparsers(
+        dest="pipeline_config_action",
+    )
+    pc_show = pipeline_config_subparsers.add_parser(
+        "show", help="Print pipeline.json (Theme 7d).",
+    )
+    pc_show.add_argument("--json", action="store_true")
+    pc_set = pipeline_config_subparsers.add_parser(
+        "set", help="Patch pipeline.json with dotted KEY=VALUE pairs.",
+    )
+    pc_set.add_argument("--set", action="append", default=[], dest="set_pairs",
+                        metavar="KEY=VALUE",
+                        help="Repeatable; e.g. batch.size=4000.")
+    pc_set.add_argument("--json", action="store_true")
+    pc_set.add_argument("--force", action="store_true")
+
     # enable-adapter command
     enable_adapter_parser = subparsers.add_parser(
         "enable-adapter",
@@ -2997,6 +3018,89 @@ def _adapter_config_bootstrap(
     return _emit(payload, 0)
 
 
+def cmd_pipeline_config(args: argparse.Namespace) -> int:
+    """Theme 7d: read/edit pipeline.json under PipelineLock + atomic write."""
+    from backend.puzzle_manager.core.atomic_write import atomic_write_json
+    from backend.puzzle_manager.pipeline.lock import PipelineLock, PipelineLockError
+
+    action = getattr(args, "pipeline_config_action", None)
+    json_out = bool(getattr(args, "json", False))
+
+    try:
+        loader = ConfigLoader(Path(args.config) if args.config else None)
+    except PuzzleManagerError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    pipeline_path = loader.config_dir / "pipeline.json"
+    if not pipeline_path.exists():
+        print(f"Error: pipeline.json not found at {pipeline_path}",
+              file=sys.stderr)
+        return 2
+    doc = json.loads(pipeline_path.read_text(encoding="utf-8"))
+
+    if action == "show":
+        if json_out:
+            print(json.dumps({"ok": True, "pipeline": doc}, indent=2))
+        else:
+            print(json.dumps(doc, indent=2))
+        return 0
+
+    if action != "set":
+        print("Usage: puzzle_manager pipeline-config {show|set}", file=sys.stderr)
+        return 2
+
+    pairs: list[str] = list(getattr(args, "set_pairs", []) or [])
+    if not pairs:
+        print("Error: pipeline-config set requires at least one --set KEY=VALUE",
+              file=sys.stderr)
+        return 2
+
+    new_doc = json.loads(json.dumps(doc))  # deep-copy
+    try:
+        for pair in pairs:
+            key, value = _parse_set_pair(pair)
+            cursor = new_doc
+            parts = key.split(".")
+            for part in parts[:-1]:
+                if part not in cursor or not isinstance(cursor[part], dict):
+                    cursor[part] = {}
+                cursor = cursor[part]
+            cursor[parts[-1]] = value
+    except ValueError as exc:
+        msg = {"ok": False, "message": str(exc),
+               "errors": [{"code": "bad-set", "message": str(exc)}]}
+        print(json.dumps(msg, indent=2) if json_out else f"[ERROR] {exc}",
+              file=sys.stderr if not json_out else sys.stdout)
+        return 2
+
+    force = bool(getattr(args, "force", False))
+    lock = PipelineLock(run_id="pipeline-config-set")
+    try:
+        if not force:
+            lock.acquire()
+    except PipelineLockError as exc:
+        msg = {"ok": False, "message": str(exc),
+               "errors": [{"code": "pipeline-locked", "message": str(exc)}]}
+        if json_out:
+            print(json.dumps(msg, indent=2))
+        else:
+            print(f"[ERROR] {exc}", file=sys.stderr)
+        return 2
+    try:
+        atomic_write_json(pipeline_path, new_doc)
+    finally:
+        if not force:
+            lock.release()
+
+    payload = {"ok": True, "applied": True, "pipeline": new_doc,
+               "message": f"applied {len(pairs)} change(s) to pipeline.json"}
+    if json_out:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(payload["message"])
+    return 0
+
+
 def cmd_enable_adapter(args: argparse.Namespace) -> int:
     """Execute the enable-adapter command.
 
@@ -3783,6 +3887,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_source_ingest_state(args)
     elif args.command == "adapter-config":
         return cmd_adapter_config(args)
+    elif args.command == "pipeline-config":
+        return cmd_pipeline_config(args)
     elif args.command == "enable-adapter":
         return cmd_enable_adapter(args)
     elif args.command == "disable-adapter":

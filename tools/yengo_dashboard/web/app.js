@@ -2619,6 +2619,10 @@ async function renderMaintenance() {
         ${cardsBySection.destructive.join("\n")}
       </div>
     </section>
+
+    <!-- ===== Pipeline Config (Theme 7d) ================================= -->
+    <section id="pipeline-config-section" class="mt-6"
+             data-pipeline-config></section>
   `;
 
   // Wire each rendered button defensively — a card is absent when its
@@ -2695,6 +2699,86 @@ async function renderMaintenance() {
   });
 
   if (window.lucide?.createIcons) window.lucide.createIcons();
+  _renderPipelineConfigSection();
+}
+
+// Theme 7d: pipeline-config show + dotted-path set, presented as read-only
+// JSON pre + a small "Edit key" form. Stays presentation-only — every change
+// round-trips through `pipeline-config set --json`.
+function _renderPipelineConfigSection() {
+  const section = document.getElementById("pipeline-config-section");
+  if (!section) return;
+  section.innerHTML = `
+    <div class="rounded border border-slate-200 dark:border-slate-700 p-4"
+         data-pipeline-config-card>
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-base font-semibold">Pipeline config</h3>
+        <button type="button" data-pipeline-config-refresh
+                class="px-2 py-1 text-xs rounded border">Refresh</button>
+      </div>
+      <pre class="text-xs overflow-auto bg-slate-50 dark:bg-slate-900 p-2 rounded"
+           data-pipeline-config-show>(loading…)</pre>
+      <form class="mt-3 flex flex-wrap items-end gap-2"
+            data-pipeline-config-set-form>
+        <label class="text-xs">
+          <div class="text-slate-500">Dotted key</div>
+          <input type="text" placeholder="batch.size"
+                 class="border rounded px-2 py-1 w-48"
+                 data-pipeline-config-set-key>
+        </label>
+        <label class="text-xs">
+          <div class="text-slate-500">Value (JSON or string)</div>
+          <input type="text" placeholder="4000"
+                 class="border rounded px-2 py-1 w-40"
+                 data-pipeline-config-set-value>
+        </label>
+        <button type="submit"
+                class="px-3 py-1 text-xs rounded bg-blue-600 text-white"
+                data-pipeline-config-set-apply>Apply</button>
+      </form>
+      <div class="mt-2 text-xs" data-pipeline-config-result></div>
+    </div>
+  `;
+  const pre = section.querySelector("[data-pipeline-config-show]");
+  const refresh = section.querySelector("[data-pipeline-config-refresh]");
+  const form = section.querySelector("[data-pipeline-config-set-form]");
+  const result = section.querySelector("[data-pipeline-config-result]");
+
+  const reload = async () => {
+    try {
+      const r = await fetch("/api/pipeline-config");
+      const j = await r.json();
+      pre.textContent = JSON.stringify(j.raw?.pipeline ?? j.raw, null, 2);
+    } catch (e) { pre.textContent = `error: ${e}`; }
+  };
+  refresh.addEventListener("click", reload);
+  form.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const key = form.querySelector("[data-pipeline-config-set-key]").value.trim();
+    const value = form.querySelector("[data-pipeline-config-set-value]").value;
+    if (!key) { toast("warn", "key required"); return; }
+    const ok = await confirmDialog({
+      title: "Apply pipeline-config change",
+      body: `Set ${key} = ${value}`,
+      verb: "apply",
+    });
+    if (!ok) return;
+    try {
+      const r = await fetch("/api/pipeline-config", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ set_pairs: [`${key}=${value}`], force: false }),
+      });
+      const j = await r.json();
+      if (!r.ok) {
+        result.textContent = `error: ${JSON.stringify(j.detail || j)}`;
+        return;
+      }
+      result.textContent = j.raw?.message || "applied";
+      reload();
+    } catch (e) { result.textContent = `error: ${e}`; }
+  });
+  reload();
 }
 
 // ---------- Logs (Slice 5) ----------

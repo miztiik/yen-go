@@ -464,6 +464,28 @@ class PipelineRunner:
             args.append("--force")
         return self._run_json_any(args)
 
+    def pipeline_config_show(self) -> dict:
+        """Theme 7d: wraps ``pipeline-config show --json``."""
+        args = ["pipeline-config", "show", "--json"]
+        result = self._run_json_any(args)
+        if not isinstance(result, dict):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON object, got {type(result).__name__}", "",
+            )
+        return result
+
+    def pipeline_config_set(
+        self, *, set_pairs: list[str], force: bool = False,
+    ) -> dict:
+        """Theme 7d: wraps ``pipeline-config set --json``."""
+        args = ["pipeline-config", "set", "--json"]
+        for pair in set_pairs:
+            args.extend(["--set", pair])
+        if force:
+            args.append("--force")
+        return self._run_json_any(args)
+
     def adapter_config_bootstrap(
         self, *, from_folder: str, adapter: str = "local",
         id_prefix: str = "", dry_run: bool = True,

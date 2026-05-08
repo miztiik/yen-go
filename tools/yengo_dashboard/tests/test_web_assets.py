@@ -994,3 +994,13 @@ def test_adapter_bootstrap_section_wired(app_js: str) -> None:
     assert "data-adapter-bootstrap-table" in app_js
     assert "/api/adapter-config/bootstrap" in app_js
     assert "function adapterBootstrapBlock" in app_js
+
+
+def test_pipeline_config_section_wired(app_js: str) -> None:
+    """Theme 7d: Operations view exposes pipeline-config show + set form."""
+    assert 'id="pipeline-config-section"' in app_js
+    assert "data-pipeline-config-show" in app_js
+    assert "data-pipeline-config-set-form" in app_js
+    assert "data-pipeline-config-set-apply" in app_js
+    assert "/api/pipeline-config" in app_js
+    assert "_renderPipelineConfigSection" in app_js

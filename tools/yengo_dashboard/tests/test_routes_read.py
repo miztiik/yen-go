@@ -1130,3 +1130,65 @@ class TestAdapterConfigBootstrapEndpoint:
         assert "newone" in raw["applied_ids"]
         assert "src-a" not in raw["applied_ids"]
 
+
+class TestPipelineConfigEndpoints:
+    """Theme 7d: GET + POST /api/pipeline-config."""
+
+    def _seed(self, tmp_path: Path) -> Path:
+        config_dir = tmp_path / "config"
+        config_dir.mkdir(parents=True)
+        # sources.json — minimal so create_app boot path is happy.
+        (config_dir / "sources.json").write_text(
+            json.dumps({
+                "active_adapter": "src-a",
+                "sources": [{
+                    "id": "src-a", "name": "A", "adapter": "local",
+                    "config": {"path": (tmp_path / "data").as_posix()},
+                }],
+            }),
+            encoding="utf-8",
+        )
+        (config_dir / "pipeline.json").write_text(
+            json.dumps({
+                "version": "1.0",
+                "batch": {"size": 2000, "max_files_per_dir": 2000},
+            }),
+            encoding="utf-8",
+        )
+        return config_dir
+
+    def test_show_returns_pipeline_doc(self, tmp_path: Path) -> None:
+        config_dir = self._seed(tmp_path)
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.get("/api/pipeline-config")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["ok"] is True
+        assert raw["pipeline"]["batch"]["size"] == 2000
+
+    def test_set_mutates_dotted_path(self, tmp_path: Path) -> None:
+        config_dir = self._seed(tmp_path)
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.post("/api/pipeline-config", json={
+                "set_pairs": ["batch.size=4000"], "force": True,
+            })
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["applied"] is True
+        doc = json.loads(
+            (config_dir / "pipeline.json").read_text(encoding="utf-8"))
+        assert doc["batch"]["size"] == 4000
+        assert doc["batch"]["max_files_per_dir"] == 2000  # sibling preserved
+
+    def test_set_with_empty_pairs_rejected(self, tmp_path: Path) -> None:
+        config_dir = self._seed(tmp_path)
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.post("/api/pipeline-config", json={
+                "set_pairs": [], "force": True,
+            })
+        # Pydantic min_length=1 → 422.
+        assert resp.status_code == 422
+

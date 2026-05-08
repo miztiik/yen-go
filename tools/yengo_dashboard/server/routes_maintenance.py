@@ -39,6 +39,9 @@ from tools.yengo_dashboard.server.models import (
     AdapterConfigMutationResponse,
     AdapterConfigRemoveRequest,
     AdapterConfigUpdateRequest,
+    PipelineConfigSetRequest,
+    PipelineConfigSetResponse,
+    PipelineConfigShowResponse,
     CleanPreviewResponse,
     CleanRequest,
     InventoryMutationApplyResponse,
@@ -391,5 +394,49 @@ def build_maintenance_router(
                 },
             ) from exc
         return AdapterConfigBootstrapResponse(raw=payload)
+
+    @router.get(
+        "/pipeline-config",
+        response_model=PipelineConfigShowResponse,
+    )
+    def pipeline_config_show() -> PipelineConfigShowResponse:
+        """Theme 7d: read pipeline.json via ``pipeline-config show``."""
+        try:
+            payload = runner.pipeline_config_show()
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": "puzzle_manager pipeline-config show failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return PipelineConfigShowResponse(raw=payload)
+
+    @router.post(
+        "/pipeline-config",
+        response_model=PipelineConfigSetResponse,
+    )
+    def pipeline_config_set(
+        body: PipelineConfigSetRequest,
+    ) -> PipelineConfigSetResponse:
+        """Theme 7d: dotted KEY=VALUE mutation of pipeline.json."""
+        try:
+            payload = runner.pipeline_config_set(
+                set_pairs=body.set_pairs, force=body.force,
+            )
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "puzzle_manager pipeline-config set failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return PipelineConfigSetResponse(raw=payload)
 
     return router

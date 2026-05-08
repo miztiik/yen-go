@@ -35,7 +35,7 @@ get done; the order is the prioritization, not the filter.
 | 17 | Puzzle-ID rollback audit           | ☑      |  P0   | Dead UI removed (2026-05-07): CLI `--puzzle-id` stripped, dashboard contract slimmed to `run_id`-only |
 | 5  | Tag/Level inspector (read-only)    | ☐      |  P1   | Surfaces taxonomy that's invisible today |
 | 6  | Adapter detail page                | ☐      |  P1   | Drill-in from existing adapters table. Includes per-source ingest-DB management |
-| 7  | Adapter configuration management   | ☐      |  P1   | NEW: scaffold / clone / bulk-bootstrap sources.json + pipeline.json |
+| 7  | Adapter configuration management   | ✅     |  P1   | Theme 7a-7d landed: read-only validate-all/show + add/clone/update/remove + bootstrap wizard + pipeline-config show/set |
 | 8  | Daily Challenge management         | ☐      |  P2   | Whole feature is invisible today. Includes daily status surface (rolling-window health + gap detection) |
 | 9  | Run diff / compare                 | ☐      |  P2   | "what did run X do differently" |
 | 10 | Puzzle Detail page                 | ☐      |  P2   | Headline feature; depends on 4, 5, 9 |
@@ -603,7 +603,10 @@ the file (write-tmp + os.replace).
       re-encodes the schema, always fetches it via the CLI.
       *(Theme 7a: read-only `adapter-config show` ships the schema fragment
       from `sources.schema.json $defs/{Kind}Config`; UI renders the read-only
-      block from it. Mutation slices 7b/7c/7d will reuse the same pipe.)*
+      block from it. Theme 7d adds `pipeline-config show|set` (dotted-path
+      mutation) with the same `PipelineLock` + `atomic_write_json` discipline,
+      surfaced as `GET/POST /api/pipeline-config` and a read-only `<pre>` +
+      Edit-key form on the Operations view.)*
 
 ### Dependencies
 - Visually depends on Theme 0 (consistent form styling).

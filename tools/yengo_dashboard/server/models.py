@@ -782,3 +782,38 @@ class AdapterConfigBootstrapResponse(BaseModel):
             "({ok, dry_run, applied, from_folder, entries[], applied_ids?})."
         ),
     )
+
+
+class PipelineConfigShowResponse(BaseModel):
+    """``GET /api/pipeline-config`` payload (Theme 7d)."""
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON from `pipeline-config show --json` "
+            "({ok, pipeline})."
+        ),
+    )
+
+
+class PipelineConfigSetRequest(BaseModel):
+    """``POST /api/pipeline-config`` body (Theme 7d)."""
+
+    set_pairs: list[str] = Field(
+        ..., min_length=1,
+        description="Dotted KEY=VALUE pairs (e.g. ['batch.size=4000']).",
+    )
+    force: bool = Field(default=False,
+                         description="Bypass PipelineLock when True.")
+
+
+class PipelineConfigSetResponse(BaseModel):
+    """Mutation result (Theme 7d)."""
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON from `pipeline-config set --json` "
+            "({ok, applied, pipeline, message})."
+        ),
+    )
