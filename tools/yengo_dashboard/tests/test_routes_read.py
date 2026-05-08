@@ -1360,4 +1360,58 @@ class TestPuzzleInfoEndpoint:
         assert raw["puzzle_id"] == "ffffffffffffffff"
 
 
+class TestTaxonomyMutationPreviewEndpoints:
+    """Theme 11: real subprocess against real config (read-only previews).
+
+    Apply paths are deferred — these endpoints only invoke `--dry-run`.
+    """
+
+    def test_tags_rename_unknown_source_returns_invalid(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.post(
+                "/api/tags/rename/preview",
+                json={"old": "totally-not-a-real-tag-zzz", "new": "new-tag-zzz"},
+            )
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["op"] == "tags-rename"
+        assert raw["valid"] is False
+        assert any("unknown tag" in e for e in raw["errors"])
+
+    def test_tags_merge_validation_runs(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.post(
+                "/api/tags/merge/preview",
+                json={"sources": ["nope-a-zzz", "nope-b-zzz"], "target": "merged-target-zzz"},
+            )
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["op"] == "tags-merge"
+        assert raw["valid"] is False
+        assert raw["target"] == "merged-target-zzz"
+
+    def test_levels_rename_unknown_source_returns_invalid(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.post(
+                "/api/levels/rename/preview",
+                json={"old": "no-such-level-zzz", "new": "new-level-zzz"},
+            )
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["op"] == "levels-rename"
+        assert raw["valid"] is False
+
+    def test_tags_merge_too_few_sources_returns_422(self) -> None:
+        app = create_app(repo_root=REPO_ROOT)
+        with TestClient(app) as client:
+            resp = client.post(
+                "/api/tags/merge/preview",
+                json={"sources": ["only-one"], "target": "merged"},
+            )
+        assert resp.status_code == 422
+
+
 

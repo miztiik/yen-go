@@ -925,3 +925,29 @@ class PuzzleInfoResponse(BaseModel):
     """
 
     raw: dict = Field(..., description="Parsed JSON from `puzzle-info --json`.")
+
+
+class TaxonomyMutationPreviewResponse(BaseModel):
+    """``POST /api/tags/rename/preview`` etc. (Theme 11).
+
+    Cockpit principle #6: full passthrough; the CLI owns the schema
+    (``TaxonomyMutationPreview`` from
+    ``backend.puzzle_manager.models.taxonomy``).
+    """
+
+    raw: dict = Field(..., description="Parsed JSON from the `--dry-run --json` CLI call.")
+
+
+class TagsRenamePreviewRequest(BaseModel):
+    old: str = Field(..., min_length=1)
+    new: str = Field(..., min_length=1)
+
+
+class TagsMergePreviewRequest(BaseModel):
+    sources: list[str] = Field(..., min_length=2)
+    target: str = Field(..., min_length=1)
+
+
+class LevelsRenamePreviewRequest(BaseModel):
+    old: str = Field(..., min_length=1)
+    new: str = Field(..., min_length=1)

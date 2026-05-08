@@ -1255,6 +1255,31 @@ Examples:
         help="Emit JSON list of TagUsageEntry shapes.",
     )
 
+    # Theme 11 preview surfaces (apply path deferred).
+    tags_rename_parser = tags_subparsers.add_parser(
+        "rename", help="Preview a tag rename (V1: --dry-run only).",
+    )
+    tags_rename_parser.add_argument("old", help="Existing canonical tag slug.")
+    tags_rename_parser.add_argument("new", help="Proposed canonical tag slug.")
+    tags_rename_parser.add_argument(
+        "--dry-run", action="store_true",
+        help="Required in V1 — apply path not yet implemented.",
+    )
+    tags_rename_parser.add_argument("--json", action="store_true")
+
+    tags_merge_parser = tags_subparsers.add_parser(
+        "merge", help="Preview merging two or more tags into a single target.",
+    )
+    tags_merge_parser.add_argument(
+        "sources", nargs="+", help="Two or more tag slugs to merge.",
+    )
+    tags_merge_parser.add_argument(
+        "--into", required=True, dest="target",
+        help="Target tag slug (existing or new).",
+    )
+    tags_merge_parser.add_argument("--dry-run", action="store_true")
+    tags_merge_parser.add_argument("--json", action="store_true")
+
     # levels command (Theme 5) — taxonomy inspector
     levels_parser = subparsers.add_parser(
         "levels",
@@ -1279,6 +1304,15 @@ Examples:
         "--json", action="store_true",
         help="Emit JSON list of LevelUsageEntry shapes.",
     )
+
+    # Theme 11 preview surface (apply path deferred).
+    levels_rename_parser = levels_subparsers.add_parser(
+        "rename", help="Preview a level rename (V1: --dry-run only).",
+    )
+    levels_rename_parser.add_argument("old", help="Existing level slug.")
+    levels_rename_parser.add_argument("new", help="Proposed level slug.")
+    levels_rename_parser.add_argument("--dry-run", action="store_true")
+    levels_rename_parser.add_argument("--json", action="store_true")
 
     # runtime-info command (Theme 3a)
     runtime_info_parser = subparsers.add_parser(
@@ -4372,8 +4406,13 @@ def cmd_tags(args: argparse.Namespace) -> int:
     """Theme 5: list canonical tags with usage counts (read-only)."""
     from backend.puzzle_manager.models.taxonomy import TagUsageEntry
 
-    if getattr(args, "tags_action", None) != "list":
-        print("Usage: tags list [--with-usage] [--json]")
+    action = getattr(args, "tags_action", None)
+    if action == "rename":
+        return _cmd_tags_rename_preview(args)
+    if action == "merge":
+        return _cmd_tags_merge_preview(args)
+    if action != "list":
+        print("Usage: tags {list|rename|merge} ...")
         return 0
 
     cfg = _load_tags_config()
@@ -4408,8 +4447,11 @@ def cmd_levels(args: argparse.Namespace) -> int:
     """Theme 5: list level slugs with usage counts (read-only)."""
     from backend.puzzle_manager.models.taxonomy import LevelUsageEntry
 
-    if getattr(args, "levels_action", None) != "list":
-        print("Usage: levels list [--with-usage] [--json]")
+    action = getattr(args, "levels_action", None)
+    if action == "rename":
+        return _cmd_levels_rename_preview(args)
+    if action != "list":
+        print("Usage: levels {list|rename} ...")
         return 0
 
     cfg = _load_levels_config()
@@ -4440,6 +4482,126 @@ def cmd_levels(args: argparse.Namespace) -> int:
         rk = f"{e.rank_min or '?'}-{e.rank_max or '?'}"
         print(f"{e.level:24s} {e.id:4d}  {rk:>10s}  {e.usage_count}")
     return 0
+
+
+# ---------- Theme 11: tag/level mutation preview (apply path deferred) ----------
+
+_SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
+
+
+def _emit_taxonomy_preview(args: argparse.Namespace, preview) -> int:
+    """Shared emit + return-code for the three Theme 11 preview commands."""
+    if getattr(args, "json", False):
+        print(json.dumps(preview.model_dump(), indent=2))
+    else:
+        print(f"\n{preview.op}  {preview.sources} -> {preview.target}")
+        print(f"  affected puzzles : {preview.affected_puzzle_count}")
+        print(f"  config_changes   : {preview.config_changes}")
+        if preview.errors:
+            print(f"  errors           : {preview.errors}")
+        print(f"  valid            : {preview.valid}  (apply path deferred)")
+    return 0 if preview.valid else 2
+
+
+def _cmd_tags_rename_preview(args: argparse.Namespace) -> int:
+    from backend.puzzle_manager.models.taxonomy import TaxonomyMutationPreview
+
+    if not getattr(args, "dry_run", False):
+        print("--dry-run is required (apply path not yet implemented)", file=sys.stderr)
+        return 2
+
+    cfg = _load_tags_config()
+    by_tag, _ = _load_inventory_counts()
+    tags = cfg.get("tags", {}) or {}
+    old, new = args.old, args.new
+
+    errors: list[str] = []
+    if old not in tags:
+        errors.append(f"unknown tag: {old}")
+    if new in tags:
+        errors.append(f"target already exists: {new} (use 'tags merge' instead)")
+    if not _SLUG_RE.match(new or ""):
+        errors.append(f"invalid target slug: {new!r}")
+
+    preview = TaxonomyMutationPreview(
+        op="tags-rename", dry_run=True, valid=not errors, errors=errors,
+        sources=[old], target=new,
+        affected_puzzle_count=int(by_tag.get(old, 0)),
+        config_changes={
+            "config_file": "config/tags.json",
+            "rename_key": {old: new},
+        } if not errors else {},
+    )
+    return _emit_taxonomy_preview(args, preview)
+
+
+def _cmd_tags_merge_preview(args: argparse.Namespace) -> int:
+    from backend.puzzle_manager.models.taxonomy import TaxonomyMutationPreview
+
+    if not getattr(args, "dry_run", False):
+        print("--dry-run is required (apply path not yet implemented)", file=sys.stderr)
+        return 2
+
+    cfg = _load_tags_config()
+    by_tag, _ = _load_inventory_counts()
+    tags = cfg.get("tags", {}) or {}
+    sources = list(args.sources or [])
+    target = args.target
+
+    errors: list[str] = []
+    if len(sources) < 2:
+        errors.append("merge requires at least two source tags")
+    for s in sources:
+        if s not in tags:
+            errors.append(f"unknown source tag: {s}")
+    if target in sources:
+        errors.append(f"--into target {target!r} cannot also be a source")
+    if not _SLUG_RE.match(target or ""):
+        errors.append(f"invalid target slug: {target!r}")
+
+    preview = TaxonomyMutationPreview(
+        op="tags-merge", dry_run=True, valid=not errors, errors=errors,
+        sources=sources, target=target,
+        affected_puzzle_count=sum(int(by_tag.get(s, 0)) for s in sources),
+        config_changes={
+            "config_file": "config/tags.json",
+            "remove_keys": sources,
+            "ensure_key": target,
+        } if not errors else {},
+    )
+    return _emit_taxonomy_preview(args, preview)
+
+
+def _cmd_levels_rename_preview(args: argparse.Namespace) -> int:
+    from backend.puzzle_manager.models.taxonomy import TaxonomyMutationPreview
+
+    if not getattr(args, "dry_run", False):
+        print("--dry-run is required (apply path not yet implemented)", file=sys.stderr)
+        return 2
+
+    cfg = _load_levels_config()
+    _, by_level = _load_inventory_counts()
+    known = {body["slug"] for body in cfg.get("levels", []) or []}
+    old, new = args.old, args.new
+
+    errors: list[str] = []
+    if old not in known:
+        errors.append(f"unknown level: {old}")
+    if new in known:
+        errors.append(f"target already exists: {new}")
+    if not _SLUG_RE.match(new or ""):
+        errors.append(f"invalid target slug: {new!r}")
+
+    preview = TaxonomyMutationPreview(
+        op="levels-rename", dry_run=True, valid=not errors, errors=errors,
+        sources=[old], target=new,
+        affected_puzzle_count=int(by_level.get(old, 0)),
+        config_changes={
+            "config_file": "config/puzzle-levels.json",
+            "rename_slug": {old: new},
+        } if not errors else {},
+    )
+    return _emit_taxonomy_preview(args, preview)
 
 
 def cmd_activity(args: argparse.Namespace) -> int:

@@ -28,7 +28,11 @@ from tools.yengo_dashboard.server.models import (
     CliInvocationResponse,
     DisableAdapterRequest,
     EnableAdapterRequest,
+    LevelsRenamePreviewRequest,
     PublishLogSearchResponse,
+    TagsMergePreviewRequest,
+    TagsRenamePreviewRequest,
+    TaxonomyMutationPreviewResponse,
 )
 from tools.yengo_dashboard.server.pipeline_runner import PipelineCommandError, PipelineRunner
 
@@ -88,5 +92,56 @@ def build_admin_router(*, runner: PipelineRunner) -> APIRouter:
                 },
             ) from exc
         return PublishLogSearchResponse(raw=payload)
+
+    @router.post("/tags/rename/preview", response_model=TaxonomyMutationPreviewResponse)
+    def tags_rename_preview(body: TagsRenamePreviewRequest) -> TaxonomyMutationPreviewResponse:
+        """Theme 11: dry-run preview of `tags rename`. Apply path deferred."""
+        try:
+            payload = runner.tags_rename_preview(old=body.old, new=body.new)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": "puzzle_manager tags rename preview failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return TaxonomyMutationPreviewResponse(raw=payload)
+
+    @router.post("/tags/merge/preview", response_model=TaxonomyMutationPreviewResponse)
+    def tags_merge_preview(body: TagsMergePreviewRequest) -> TaxonomyMutationPreviewResponse:
+        """Theme 11: dry-run preview of `tags merge`. Apply path deferred."""
+        try:
+            payload = runner.tags_merge_preview(sources=body.sources, target=body.target)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": "puzzle_manager tags merge preview failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return TaxonomyMutationPreviewResponse(raw=payload)
+
+    @router.post("/levels/rename/preview", response_model=TaxonomyMutationPreviewResponse)
+    def levels_rename_preview(body: LevelsRenamePreviewRequest) -> TaxonomyMutationPreviewResponse:
+        """Theme 11: dry-run preview of `levels rename`. Apply path deferred."""
+        try:
+            payload = runner.levels_rename_preview(old=body.old, new=body.new)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": "puzzle_manager levels rename preview failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return TaxonomyMutationPreviewResponse(raw=payload)
 
     return router

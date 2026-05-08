@@ -1076,3 +1076,15 @@ def test_puzzle_search_box_in_index(index_html: str) -> None:
     assert "puzzle-search-input" in index_html
     assert "view-puzzle-detail" in index_html
 
+
+def test_taxonomy_mutation_wired(app_js: str) -> None:
+    """Theme 11: inline rename + tag-merge UI is wired against the preview API."""
+    assert "openTaxonomyRenameModal" in app_js
+    assert "openTagMergeModal" in app_js
+    assert "data-taxonomy-rename" in app_js
+    assert "data-taxonomy-merge" in app_js
+    assert "/api/tags/rename/preview" in app_js
+    assert "/api/tags/merge/preview" in app_js
+    assert "/api/levels/rename/preview" in app_js
+    assert "Apply (deferred)" in app_js
+

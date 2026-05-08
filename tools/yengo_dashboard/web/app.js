@@ -453,6 +453,22 @@ async function _loadTaxonomySection() {
         ${taxonomyTable("Levels", levelsResp.raw, "level", false)}
       </div>
     `;
+    // Theme 11: wire inline rename + tag-merge buttons (delegated).
+    section.querySelectorAll("[data-taxonomy-rename]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        openTaxonomyRenameModal({
+          kind: btn.dataset.taxonomyRename,
+          oldSlug: btn.dataset.slug,
+        });
+      });
+    });
+    section.querySelectorAll("[data-taxonomy-merge='tag']").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        openTagMergeModal();
+      });
+    });
   } catch (err) {
     section.innerHTML = `
       <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-3">Taxonomy</h3>
@@ -464,31 +480,166 @@ async function _loadTaxonomySection() {
 function taxonomyTable(title, rows, key, showCategory) {
   const sorted = [...(rows || [])].sort((a, b) => (b.usage_count || 0) - (a.usage_count || 0));
   const headerCells = showCategory
-    ? `<th class="px-2 py-1 text-left">${escapeHtml(key)}</th><th class="px-2 py-1 text-left">category</th><th class="px-2 py-1 text-right">usage</th>`
-    : `<th class="px-2 py-1 text-left">${escapeHtml(key)}</th><th class="px-2 py-1 text-left">rank</th><th class="px-2 py-1 text-right">usage</th>`;
+    ? `<th class="px-2 py-1 text-left">${escapeHtml(key)}</th><th class="px-2 py-1 text-left">category</th><th class="px-2 py-1 text-right">usage</th><th class="px-2 py-1"></th>`
+    : `<th class="px-2 py-1 text-left">${escapeHtml(key)}</th><th class="px-2 py-1 text-left">rank</th><th class="px-2 py-1 text-right">usage</th><th class="px-2 py-1"></th>`;
   const bodyRows = sorted.map((r) => {
-    const left = escapeHtml(r[key] || "—");
+    const slug = r[key] || "";
+    const left = escapeHtml(slug || "—");
     const mid = showCategory
       ? escapeHtml(r.category || "—")
       : `${escapeHtml(r.rank_min || "?")}–${escapeHtml(r.rank_max || "?")}`;
     const usage = (r.usage_count || 0).toLocaleString();
+    const renameBtn = slug
+      ? `<button type="button" class="text-[10px] uppercase tracking-wider text-slate-400 hover:text-slate-200" data-taxonomy-rename="${escapeHtml(key)}" data-slug="${escapeHtml(slug)}">rename</button>`
+      : "";
     return `<tr class="border-t border-slate-800/50">
       <td class="px-2 py-1 font-mono text-slate-200">${left}</td>
       <td class="px-2 py-1 text-slate-400">${mid}</td>
       <td class="px-2 py-1 text-right tabular-nums text-slate-200">${usage}</td>
+      <td class="px-2 py-1 text-right">${renameBtn}</td>
     </tr>`;
   }).join("");
+  const headerExtra = key === "tag"
+    ? `<button type="button" class="text-[10px] uppercase tracking-wider text-slate-400 hover:text-slate-200" data-taxonomy-merge="tag">merge…</button>`
+    : "";
   return `
     <div class="rounded-md ring-1 ring-slate-800 bg-slate-900/60 overflow-hidden" data-taxonomy="${escapeHtml(key)}">
-      <div class="px-3 py-2 text-xs uppercase tracking-wider text-slate-400 border-b border-slate-800">${escapeHtml(title)}</div>
+      <div class="px-3 py-2 text-xs uppercase tracking-wider text-slate-400 border-b border-slate-800 flex items-center justify-between">
+        <span>${escapeHtml(title)}</span>
+        ${headerExtra}
+      </div>
       <div class="max-h-72 overflow-auto">
         <table class="w-full text-xs">
           <thead class="text-slate-500 sticky top-0 bg-slate-900/95">
             <tr>${headerCells}</tr>
           </thead>
-          <tbody>${bodyRows || `<tr><td colspan="3" class="px-2 py-3 text-center text-slate-500">no rows</td></tr>`}</tbody>
+          <tbody>${bodyRows || `<tr><td colspan="4" class="px-2 py-3 text-center text-slate-500">no rows</td></tr>`}</tbody>
         </table>
       </div>
+    </div>
+  `;
+}
+
+// Theme 11: open the inline rename preview modal for a tag or level.
+async function openTaxonomyRenameModal({ kind, oldSlug }) {
+  const dlg = $("#preview-dialog");
+  const title = $("#pv-title");
+  const body = $("#pv-body");
+  const goBtn = $("#pv-go");
+  title.textContent = `${kind} rename: ${oldSlug}`;
+  body.innerHTML = `
+    <form id="taxonomy-rename-form" class="space-y-2">
+      <label class="block text-xs text-slate-400">New ${escapeHtml(kind)} slug
+        <input type="text" name="new" required minlength="1" maxlength="64"
+               class="mt-1 w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 font-mono text-sm text-slate-100"
+               pattern="[a-z0-9][a-z0-9-]{0,63}"
+               placeholder="lowercase-with-dashes" />
+      </label>
+      <div class="text-[11px] text-slate-500">Allowed: a–z, 0–9, dash. Starts with letter/digit. Max 64 chars.</div>
+    </form>
+    <div id="taxonomy-rename-result" class="mt-3 text-xs text-slate-500">enter a new slug, then preview…</div>
+  `;
+  goBtn.disabled = false;
+  goBtn.textContent = "Preview";
+  dlg.showModal();
+
+  const newGoBtn = goBtn.cloneNode(true);
+  goBtn.parentNode.replaceChild(newGoBtn, goBtn);
+  const endpoint = kind === "tag" ? "/api/tags/rename/preview" : "/api/levels/rename/preview";
+  newGoBtn.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const form = $("#taxonomy-rename-form");
+    const newSlug = (new FormData(form).get("new") || "").toString().trim();
+    if (!newSlug) {
+      $("#taxonomy-rename-result").innerHTML = `<span class="text-rose-300">new slug required</span>`;
+      return;
+    }
+    newGoBtn.disabled = true;
+    $("#taxonomy-rename-result").innerHTML = `<span class="text-slate-400">running preview…</span>`;
+    try {
+      const resp = await postJSON(endpoint, { old: oldSlug, new: newSlug });
+      $("#taxonomy-rename-result").innerHTML = _renderTaxonomyPreviewBody(resp.raw || {});
+    } catch (err) {
+      $("#taxonomy-rename-result").innerHTML = errorBlock(`POST ${endpoint}`, err);
+    } finally {
+      newGoBtn.disabled = false;
+    }
+  });
+}
+
+// Theme 11: open the tag-merge preview modal (multi-source → target).
+async function openTagMergeModal() {
+  const dlg = $("#preview-dialog");
+  const title = $("#pv-title");
+  const body = $("#pv-body");
+  const goBtn = $("#pv-go");
+  title.textContent = `tags merge`;
+  body.innerHTML = `
+    <form id="tag-merge-form" class="space-y-2">
+      <label class="block text-xs text-slate-400">Source tags (comma-separated, ≥ 2)
+        <input type="text" name="sources" required
+               class="mt-1 w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 font-mono text-sm text-slate-100"
+               placeholder="ko, life-and-death" />
+      </label>
+      <label class="block text-xs text-slate-400">Target tag (will receive merged puzzles)
+        <input type="text" name="target" required
+               class="mt-1 w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 font-mono text-sm text-slate-100"
+               pattern="[a-z0-9][a-z0-9-]{0,63}"
+               placeholder="merged-slug" />
+      </label>
+    </form>
+    <div id="tag-merge-result" class="mt-3 text-xs text-slate-500">enter sources + target, then preview…</div>
+  `;
+  goBtn.disabled = false;
+  goBtn.textContent = "Preview";
+  dlg.showModal();
+
+  const newGoBtn = goBtn.cloneNode(true);
+  goBtn.parentNode.replaceChild(newGoBtn, goBtn);
+  newGoBtn.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const form = $("#tag-merge-form");
+    const fd = new FormData(form);
+    const sources = (fd.get("sources") || "").toString().split(",").map((s) => s.trim()).filter(Boolean);
+    const target = (fd.get("target") || "").toString().trim();
+    if (sources.length < 2 || !target) {
+      $("#tag-merge-result").innerHTML = `<span class="text-rose-300">need ≥ 2 sources and a target</span>`;
+      return;
+    }
+    newGoBtn.disabled = true;
+    $("#tag-merge-result").innerHTML = `<span class="text-slate-400">running preview…</span>`;
+    try {
+      const resp = await postJSON("/api/tags/merge/preview", { sources, target });
+      $("#tag-merge-result").innerHTML = _renderTaxonomyPreviewBody(resp.raw || {});
+    } catch (err) {
+      $("#tag-merge-result").innerHTML = errorBlock(`POST /api/tags/merge/preview`, err);
+    } finally {
+      newGoBtn.disabled = false;
+    }
+  });
+}
+
+function _renderTaxonomyPreviewBody(raw) {
+  const validBadge = raw.valid
+    ? `<span class="pill ${PILL_VARIANTS.ok}"><span class="glyph"></span>valid</span>`
+    : `<span class="pill ${PILL_VARIANTS.error}"><span class="glyph"></span>invalid</span>`;
+  const errs = Array.isArray(raw.errors) && raw.errors.length
+    ? `<ul class="mt-2 list-disc list-inside text-rose-300">${raw.errors.map((e) => `<li>${escapeHtml(e)}</li>`).join("")}</ul>`
+    : "";
+  const sources = Array.isArray(raw.sources) ? raw.sources.join(", ") : "—";
+  const stats = [
+    _previewStat("Op", raw.op || "—"),
+    _previewStat("Sources", sources),
+    _previewStat("Target", raw.target || "—"),
+    _previewStat("Affected puzzles", raw.affected_puzzle_count == null ? "—" : raw.affected_puzzle_count),
+  ].join("");
+  return `
+    <div class="mb-2">${validBadge}</div>
+    ${stats}
+    ${errs}
+    <div class="mt-3 text-[11px] text-slate-500">
+      Apply path is deferred — V1 ships preview only.
+      <button type="button" disabled class="ml-2 px-2 py-0.5 rounded bg-slate-800 text-slate-500 cursor-not-allowed">Apply (deferred)</button>
     </div>
   `;
 }

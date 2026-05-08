@@ -574,6 +574,45 @@ class PipelineRunner:
             )
         return result
 
+    def tags_rename_preview(self, *, old: str, new: str) -> dict:
+        """Theme 11: wraps ``tags rename OLD NEW --dry-run --json``."""
+        args = ["tags", "rename", old, new, "--dry-run", "--json"]
+        return self._run_taxonomy_preview(args)
+
+    def tags_merge_preview(self, *, sources: list[str], target: str) -> dict:
+        """Theme 11: wraps ``tags merge SRC... --into TARGET --dry-run --json``."""
+        args = ["tags", "merge", *sources, "--into", target, "--dry-run", "--json"]
+        return self._run_taxonomy_preview(args)
+
+    def levels_rename_preview(self, *, old: str, new: str) -> dict:
+        """Theme 11: wraps ``levels rename OLD NEW --dry-run --json``."""
+        args = ["levels", "rename", old, new, "--dry-run", "--json"]
+        return self._run_taxonomy_preview(args)
+
+    def _run_taxonomy_preview(self, args: list[str]) -> dict:
+        """Tolerates rc=2 (preview returns invalid=true with errors[])."""
+        cmd = self._base_cmd()
+        if self.config_dir is not None:
+            cmd += ["--config", str(self.config_dir)]
+        cmd += args
+        result = subprocess.run(
+            cmd, cwd=str(self.repo_root), capture_output=True, text=True,
+            encoding="utf-8", errors="replace",
+            timeout=self.timeout_s, env=self._env(),
+        )
+        if result.returncode not in (0, 2):
+            raise PipelineCommandError(cmd, result.returncode, result.stderr, result.stdout)
+        try:
+            payload = json.loads(result.stdout)
+        except json.JSONDecodeError as exc:
+            raise PipelineCommandError(cmd, result.returncode, result.stderr, result.stdout) from exc
+        if not isinstance(payload, dict):
+            raise PipelineCommandError(
+                cmd, result.returncode,
+                f"expected JSON object, got {type(payload).__name__}", result.stdout,
+            )
+        return payload
+
     def runs_diff(
         self, *, run_a: str, run_b: str, max_samples: int = 20,
     ) -> dict:

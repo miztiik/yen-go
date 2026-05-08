@@ -39,7 +39,7 @@ get done; the order is the prioritization, not the filter.
 | 8  | Daily Challenge management         | ☐      |  P2   | Whole feature is invisible today. Includes daily status surface (rolling-window health + gap detection) |
 | 9  | Run diff / compare                 | ☐      |  P2   | "what did run X do differently" |
 | 10 | Puzzle Detail page                 | ✅      |  P2   | Headline feature; depends on 4, 5, 9 |
-| 11 | Tag/Level mutation (rename, merge) | ☐      |  P3   | After read-only inspector lands |
+| 11 | Tag/Level mutation (rename, merge) | ◐      |  P3   | V1 preview-only landed (`--dry-run --json` for tags rename/merge + levels rename + cockpit modals); apply path deferred |
 | 12 | Adapter scaffold (new adapter src) | ☐      |  P3   | Rare; only after #7 sticks |
 
 **Phases**:
@@ -716,13 +716,14 @@ the file (write-tmp + os.replace).
 Build only after Theme 5's read-only inspector ships and is in use.
 
 ### Backend additions
-- `tags rename OLD NEW --dry-run` (re-tags every puzzle).
-- `tags merge A B --into C --dry-run`.
-- `levels rename` (rare).
+- ✅ `tags rename OLD NEW --dry-run --json` (validation + affected count).
+- ✅ `tags merge SRC1 SRC2 [...] --into TARGET --dry-run --json`.
+- ✅ `levels rename OLD NEW --dry-run --json`.
+- ☐ Apply path (rewrites SGFs + DB + config under `PipelineLock`) — deferred to a follow-up slice.
 
 ### UI surfaces
-- Inline rename / merge actions on the Taxonomy tables, behind a
-  typed-verb confirmation.
+- ✅ Inline rename buttons on the Taxonomy tables + a header "merge…" action on the Tags table; both open `#preview-dialog` with the preview JSON, errors, and a disabled `Apply (deferred)` button.
+- ☐ Typed-verb confirmation + Apply button (depends on backend apply path).
 
 ---
 
