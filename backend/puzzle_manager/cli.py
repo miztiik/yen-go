@@ -634,6 +634,42 @@ File Locations:
         ),
     )
 
+    # source-ingest-state command (Theme 6b — per-source ingest DB inspection + reset)
+    source_ingest_state_parser = subparsers.add_parser(
+        "source-ingest-state",
+        help="Inspect (default) or reset a source's per-source ingest DB.",
+    )
+    source_ingest_state_parser.add_argument(
+        "source_id",
+        type=str,
+        metavar="SOURCE_ID",
+        help="The source ID whose .yengo-ingest.sqlite to inspect/reset.",
+    )
+    source_ingest_state_parser.add_argument(
+        "--reset",
+        action="store_true",
+        help=(
+            "Delete the per-source ingest DB. With --dry-run, returns a "
+            "preview payload without touching disk."
+        ),
+    )
+    source_ingest_state_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Used with --reset to emit the preview payload only.",
+    )
+    source_ingest_state_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON.",
+    )
+    source_ingest_state_parser.add_argument(
+        "--max-failed-rows",
+        type=int,
+        default=20,
+        help="Cap on failed_rows sample size (default 20).",
+    )
+
     # enable-adapter command
     enable_adapter_parser = subparsers.add_parser(
         "enable-adapter",
@@ -2141,6 +2177,238 @@ def _build_source_details(
     }
 
 
+def cmd_source_ingest_state(args: argparse.Namespace) -> int:
+    """Theme 6b: inspect or reset a per-source ``.yengo-ingest.sqlite``.
+
+    Default (no flags): emit ``SourceIngestState`` JSON.
+    ``--reset --dry-run --json``: emit ``SourceIngestResetPreview`` JSON.
+    ``--reset --json`` (or ``--reset`` alone in human mode): apply reset and
+    emit ``SourceIngestResetResult``.
+
+    Read path is read-only against the SQLite (URI mode=ro), so it never
+    contends with a live ingest run. Reset path uses ``SourceIngestDB.wipe``
+    which removes the file and its WAL/SHM sidecars.
+    """
+    import sqlite3
+    from datetime import UTC, datetime
+
+    from backend.puzzle_manager.core.source_ingest_db import (
+        FileStatus,
+        SourceIngestDB,
+        db_path_for_source,
+    )
+    from backend.puzzle_manager.paths import get_project_root
+
+    try:
+        loader = ConfigLoader(Path(args.config) if args.config else None)
+        sources = loader.load_sources()
+        source_id: str = args.source_id
+        source = next((s for s in sources if s.id == source_id), None)
+        if source is None:
+            payload = {"error": f"unknown source: {source_id}"}
+            if args.json:
+                print(json.dumps(payload))
+            else:
+                print(f"Error: {payload['error']}")
+            return 2
+
+        raw_path = source.config.path
+        if not raw_path:
+            payload = {"error": f"source {source_id!r} has no 'path' configured"}
+            if args.json:
+                print(json.dumps(payload))
+            else:
+                print(f"Error: {payload['error']}")
+            return 2
+
+        project_root = get_project_root()
+        source_root = Path(raw_path)
+        if not source_root.is_absolute():
+            source_root = project_root / source_root
+        db_path = db_path_for_source(source_root)
+        try:
+            db_rel = db_path.resolve().relative_to(project_root.resolve()).as_posix()
+        except (OSError, ValueError):
+            db_rel = db_path.as_posix()
+
+        db_exists = db_path.exists()
+        max_failed = max(0, int(getattr(args, "max_failed_rows", 20) or 0))
+
+        # Reset --dry-run: produce preview without touching disk.
+        if args.reset and args.dry_run:
+            counts = _read_ingest_counts(db_path) if db_exists else (0, 0, 0, 0)
+            preview = {
+                "source_id": source_id,
+                "would_delete_path": db_rel if db_exists else None,
+                "db_exists": db_exists,
+                "row_count_lost": counts[3],
+                "failed_rows_lost": counts[2],
+                "requires_full_reingest": db_exists,
+            }
+            if args.json:
+                print(json.dumps(preview, indent=2))
+            else:
+                print(
+                    f"reset preview: would_delete={preview['would_delete_path']} "
+                    f"rows={preview['row_count_lost']} failed={preview['failed_rows_lost']}"
+                )
+            return 0
+
+        # Reset (apply): remove the SQLite + sidecars.
+        if args.reset:
+            counts = _read_ingest_counts(db_path) if db_exists else (0, 0, 0, 0)
+            removed = SourceIngestDB.wipe(source_root)
+            result = {
+                "source_id": source_id,
+                "deleted_path": db_rel if removed else None,
+                "removed": removed,
+                "rows_lost": counts[3],
+            }
+            if args.json:
+                print(json.dumps(result, indent=2))
+            else:
+                if removed:
+                    print(f"Removed {db_rel} ({counts[3]} rows lost)")
+                else:
+                    print(f"Nothing to remove (no DB at {db_rel})")
+            return 0
+
+        # Default: read-only inspection.
+        ingested, skipped, failed, total = (0, 0, 0, 0)
+        last_modified: str | None = None
+        last_run_id: str | None = None
+        failed_rows: list[dict] = []
+        status: str = "missing"
+
+        if db_exists:
+            try:
+                stat = db_path.stat()
+                last_modified = datetime.fromtimestamp(stat.st_mtime, UTC).isoformat(
+                    timespec="seconds"
+                )
+                uri = f"file:{db_path.as_posix()}?mode=ro"
+                conn = sqlite3.connect(uri, uri=True, timeout=2.0)
+                try:
+                    counts_map = {
+                        int(FileStatus.INGESTED): 0,
+                        int(FileStatus.SKIPPED): 0,
+                        int(FileStatus.FAILED): 0,
+                    }
+                    for s_int, n in conn.execute(
+                        "SELECT status, COUNT(*) FROM files GROUP BY status"
+                    ):
+                        counts_map[int(s_int)] = int(n)
+                    ingested = counts_map[int(FileStatus.INGESTED)]
+                    skipped = counts_map[int(FileStatus.SKIPPED)]
+                    failed = counts_map[int(FileStatus.FAILED)]
+                    total = ingested + skipped + failed
+                    row = conn.execute(
+                        "SELECT value FROM meta WHERE key='last_run_id'"
+                    ).fetchone()
+                    if row:
+                        last_run_id = row[0]
+                    if max_failed > 0 and failed > 0:
+                        for r in conn.execute(
+                            "SELECT rel_path, skip_reason, run_id, content_hash "
+                            "FROM files WHERE status = ? ORDER BY rel_path LIMIT ?",
+                            (int(FileStatus.FAILED), max_failed),
+                        ):
+                            failed_rows.append({
+                                "rel_path": r[0],
+                                "skip_reason": r[1],
+                                "run_id": r[2] or "",
+                                "content_hash": r[3] or "",
+                            })
+                finally:
+                    conn.close()
+                if total == 0:
+                    status = "empty"
+                elif failed > 0 and ingested == 0:
+                    status = "stale"
+                else:
+                    status = "healthy"
+            except sqlite3.Error as exc:
+                payload = {
+                    "source_id": source_id,
+                    "db_path": db_rel,
+                    "db_exists": True,
+                    "status": "stale",
+                    "rows": 0,
+                    "ingested": 0,
+                    "skipped": 0,
+                    "failed": 0,
+                    "last_modified": last_modified,
+                    "last_run_id": None,
+                    "failed_rows": [],
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+                if args.json:
+                    print(json.dumps(payload, indent=2))
+                else:
+                    print(f"Error reading DB: {payload['error']}")
+                return 1
+
+        payload = {
+            "source_id": source_id,
+            "db_path": db_rel,
+            "db_exists": db_exists,
+            "status": status,
+            "rows": total,
+            "ingested": ingested,
+            "skipped": skipped,
+            "failed": failed,
+            "last_modified": last_modified,
+            "last_run_id": last_run_id,
+            "failed_rows": failed_rows,
+        }
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            print(
+                f"{source_id}: status={status} rows={total} "
+                f"ingested={ingested} skipped={skipped} failed={failed}"
+            )
+            print(f"  db_path={db_rel} last_modified={last_modified}")
+        return 0
+
+    except PuzzleManagerError as exc:
+        print(f"Error: {exc}")
+        return 1
+
+
+def _read_ingest_counts(db_path: Path) -> tuple[int, int, int, int]:
+    """Return ``(ingested, skipped, failed, total)`` from a source ingest DB.
+
+    Read-only attach; tolerates corruption (returns zeros). Used by the reset
+    preview/apply paths to surface what's about to be lost.
+    """
+    import sqlite3
+
+    from backend.puzzle_manager.core.source_ingest_db import FileStatus
+
+    try:
+        uri = f"file:{db_path.as_posix()}?mode=ro"
+        conn = sqlite3.connect(uri, uri=True, timeout=2.0)
+        try:
+            counts = {
+                int(FileStatus.INGESTED): 0,
+                int(FileStatus.SKIPPED): 0,
+                int(FileStatus.FAILED): 0,
+            }
+            for s_int, n in conn.execute(
+                "SELECT status, COUNT(*) FROM files GROUP BY status"
+            ):
+                counts[int(s_int)] = int(n)
+        finally:
+            conn.close()
+    except sqlite3.Error:
+        return (0, 0, 0, 0)
+    ing = counts[int(FileStatus.INGESTED)]
+    skp = counts[int(FileStatus.SKIPPED)]
+    fld = counts[int(FileStatus.FAILED)]
+    return (ing, skp, fld, ing + skp + fld)
+
+
 def cmd_enable_adapter(args: argparse.Namespace) -> int:
     """Execute the enable-adapter command.
 
@@ -2923,6 +3191,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_sources(args)
     elif args.command == "source-status":
         return cmd_source_status(args)
+    elif args.command == "source-ingest-state":
+        return cmd_source_ingest_state(args)
     elif args.command == "enable-adapter":
         return cmd_enable_adapter(args)
     elif args.command == "disable-adapter":

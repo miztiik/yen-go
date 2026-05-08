@@ -352,6 +352,43 @@ class PipelineRunner:
             )
         return result
 
+    def source_ingest_state(self, source_id: str) -> dict:
+        """Theme 6b: wraps ``source-ingest-state ID --json`` (read-only).
+
+        CLI returncode 2 (unknown source / no path) surfaces as
+        :class:`PipelineCommandError` so the route layer can map it to 400.
+        """
+        args = ["source-ingest-state", source_id, "--json"]
+        result = self._run_json_any(args)
+        if not isinstance(result, dict):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON object, got {type(result).__name__}", "",
+            )
+        return result
+
+    def source_ingest_state_reset_preview(self, source_id: str) -> dict:
+        """Theme 6b: wraps ``source-ingest-state ID --reset --dry-run --json``."""
+        args = ["source-ingest-state", source_id, "--reset", "--dry-run", "--json"]
+        result = self._run_json_any(args)
+        if not isinstance(result, dict):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON object, got {type(result).__name__}", "",
+            )
+        return result
+
+    def source_ingest_state_reset_apply(self, source_id: str) -> dict:
+        """Theme 6b: wraps ``source-ingest-state ID --reset --json`` (apply path)."""
+        args = ["source-ingest-state", source_id, "--reset", "--json"]
+        result = self._run_json_any(args)
+        if not isinstance(result, dict):
+            raise PipelineCommandError(
+                self._base_cmd() + args, 0,
+                f"expected JSON object, got {type(result).__name__}", "",
+            )
+        return result
+
     def activity(
         self,
         *,

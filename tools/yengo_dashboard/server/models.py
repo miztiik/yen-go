@@ -625,3 +625,46 @@ class SourceDetailsResponse(BaseModel):
             "Shape owned by `backend.puzzle_manager.models.source_details.SourceDetails`."
         ),
     )
+
+
+class SourceIngestStateResponse(BaseModel):
+    """``GET /api/adapters/{id}/ingest-state`` payload — verbatim
+    ``source-ingest-state ID --json`` output (Theme 6b).
+
+    Shape owned by
+    ``backend.puzzle_manager.models.source_ingest_state.SourceIngestState``.
+    """
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON object of `source-ingest-state ID --json`. "
+            "Shape owned by `backend.puzzle_manager.models.source_ingest_state.SourceIngestState`."
+        ),
+    )
+
+
+class SourceIngestStateResetPreviewResponse(BaseModel):
+    """``GET /api/adapters/{id}/ingest-state/preview`` payload (Theme 6b)."""
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON of `source-ingest-state ID --reset --dry-run --json`. "
+            "Shape owned by "
+            "`backend.puzzle_manager.models.source_ingest_state.SourceIngestResetPreview`."
+        ),
+    )
+
+
+class SourceIngestStateResetResultResponse(BaseModel):
+    """``POST /api/adapters/{id}/ingest-state/reset`` payload (Theme 6b)."""
+
+    raw: dict = Field(
+        ...,
+        description=(
+            "Parsed JSON of `source-ingest-state ID --reset --json`. "
+            "Shape owned by "
+            "`backend.puzzle_manager.models.source_ingest_state.SourceIngestResetResult`."
+        ),
+    )

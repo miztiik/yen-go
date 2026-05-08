@@ -913,3 +913,27 @@ def test_adapter_detail_view_section_in_index_html() -> None:
         Path(__file__).resolve().parents[1] / "web" / "index.html"
     ).read_text(encoding="utf-8")
     assert 'id="view-adapter-detail"' in html
+
+
+def test_ingest_state_reset_flow_wired(app_js: str) -> None:
+    """Theme 6b: adapter detail page surfaces ingest-state tile + reset modal.
+
+    Pins the ingest-state loader, the per-source endpoints, the reset button
+    selector wired through the document-level click handler, and the
+    typed-confirm requirement (confirmDialog with a verb token) before the
+    POST goes out.
+    """
+    assert "_loadIngestStateSection" in app_js, (
+        "Theme 6b: adapter detail must lazy-load the ingest-state tile."
+    )
+    assert "function ingestStateBlock" in app_js
+    assert 'data-ingest-reset' in app_js, (
+        "Theme 6b: reset button must carry data-ingest-reset for the click delegate."
+    )
+    assert 'async function openIngestStateResetModal' in app_js
+    assert '/api/adapters/${encodeURIComponent(adapterId)}/ingest-state' in app_js
+    assert '/api/adapters/${encodeURIComponent(adapterId)}/ingest-state/preview' in app_js
+    assert '/api/adapters/${encodeURIComponent(adapterId)}/ingest-state/reset' in app_js
+    # Typed-confirm gate must wrap the apply POST.
+    assert "confirmDialog({" in app_js
+    assert "verb: `reset ${adapterId}`" in app_js

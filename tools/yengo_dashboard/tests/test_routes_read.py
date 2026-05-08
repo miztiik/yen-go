@@ -851,3 +851,65 @@ class TestSourceDetailsEndpoint:
         with TestClient(app) as client:
             resp = client.get("/api/adapters/does-not-exist/details")
         assert resp.status_code == 400
+
+
+class TestSourceIngestStateEndpoints:
+    """Theme 6b: per-source ingest-DB inspection + reset wiring."""
+
+    def test_inspect_returns_counts_and_failed_rows(self, tmp_path: Path) -> None:
+        config_dir = _seed_real_source(
+            tmp_path, source_id="ingest-fixture", ingested=2, skipped=0, failed=2
+        )
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.get("/api/adapters/ingest-fixture/ingest-state")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["source_id"] == "ingest-fixture"
+        assert raw["db_exists"] is True
+        assert raw["status"] == "healthy"
+        assert raw["rows"] == 4
+        assert raw["ingested"] == 2
+        assert raw["failed"] == 2
+        assert len(raw["failed_rows"]) == 2
+
+    def test_inspect_unknown_source_returns_400(self, tmp_path: Path) -> None:
+        config_dir = _seed_real_source(
+            tmp_path, source_id="known", ingested=0, skipped=0, failed=0
+        )
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.get("/api/adapters/missing/ingest-state")
+        assert resp.status_code == 400
+
+    def test_reset_preview_does_not_delete_db(self, tmp_path: Path) -> None:
+        config_dir = _seed_real_source(
+            tmp_path, source_id="ingest-prv", ingested=1, skipped=0, failed=1
+        )
+        db_file = tmp_path / "data" / ".yengo-ingest.sqlite"
+        assert db_file.exists()
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.get("/api/adapters/ingest-prv/ingest-state/preview")
+        assert resp.status_code == 200, resp.text
+        assert db_file.exists(), "preview must NOT delete the DB"
+        raw = resp.json()["raw"]
+        assert raw["db_exists"] is True
+        assert raw["row_count_lost"] == 2
+        assert raw["failed_rows_lost"] == 1
+        assert raw["requires_full_reingest"] is True
+
+    def test_reset_apply_removes_db(self, tmp_path: Path) -> None:
+        config_dir = _seed_real_source(
+            tmp_path, source_id="ingest-apply", ingested=1, skipped=0, failed=1
+        )
+        db_file = tmp_path / "data" / ".yengo-ingest.sqlite"
+        assert db_file.exists()
+        app = create_app(repo_root=REPO_ROOT, config_dir=config_dir)
+        with TestClient(app) as client:
+            resp = client.post("/api/adapters/ingest-apply/ingest-state/reset")
+        assert resp.status_code == 200, resp.text
+        raw = resp.json()["raw"]
+        assert raw["removed"] is True
+        assert raw["rows_lost"] == 2
+        assert not db_file.exists(), "apply must remove the DB"

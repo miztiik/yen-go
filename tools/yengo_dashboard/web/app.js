@@ -931,6 +931,9 @@ async function renderAdapterDetail(adapterId) {
         ${summaryTile("failed", summary.failed, "text-rose-300")}
         ${summaryTile("total", summary.total, "text-slate-300")}
       </section>
+      <section id="ingest-state-section" class="mb-4" data-adapter-id="${escapeHtml(adapterId)}">
+        <div class="text-xs text-slate-500">loading ingest state…</div>
+      </section>
       <section class="mb-4">
         <h3 class="text-xs uppercase tracking-wider text-slate-500 mb-2">recent runs</h3>
         ${adapterDetailRunsTable(recentRuns)}
@@ -944,9 +947,182 @@ async function renderAdapterDetail(adapterId) {
         <pre class="text-xs bg-slate-900 ring-1 ring-slate-800 rounded p-3 overflow-x-auto">${escapeHtml(JSON.stringify(d.config || {}, null, 2))}</pre>
       </section>
     `;
+    _loadIngestStateSection(adapterId);
   } catch (e) {
     root.innerHTML = errorBlock(`/api/adapters/${adapterId}/details`, e);
   }
+}
+
+// Theme 6b: per-source ingest-DB tile + reset button.
+async function _loadIngestStateSection(adapterId) {
+  const section = document.getElementById("ingest-state-section");
+  if (!section) return;
+  try {
+    const resp = await getJSON(`/api/adapters/${encodeURIComponent(adapterId)}/ingest-state`);
+    const s = resp.raw || {};
+    section.innerHTML = ingestStateBlock(s, adapterId);
+  } catch (e) {
+    section.innerHTML = errorBlock(`/api/adapters/${adapterId}/ingest-state`, e);
+  }
+}
+
+function ingestStateBlock(s, adapterId) {
+  const status = s.status || "missing";
+  const statusClass = {
+    healthy: "bg-emerald-500/15 text-emerald-300 ring-emerald-500/40",
+    stale:   "bg-amber-500/15 text-amber-300 ring-amber-500/40",
+    empty:   "bg-slate-500/15 text-slate-300 ring-slate-500/40",
+    missing: "bg-slate-700/40 text-slate-400 ring-slate-700",
+  }[status] || "bg-slate-700/40 text-slate-400 ring-slate-700";
+  const rows = Number(s.rows || 0).toLocaleString();
+  const failed = Number(s.failed || 0).toLocaleString();
+  const lastMod = s.last_modified || "—";
+  const dbPath = s.db_path || "—";
+  const failedRows = (s.failed_rows || []);
+  const failedTable = failedRows.length === 0
+    ? `<div class="text-xs text-slate-500 italic mt-2">no failed rows recorded</div>`
+    : `
+      <details class="mt-2">
+        <summary class="text-xs text-slate-400 cursor-pointer hover:text-slate-200">
+          show ${failedRows.length} failed row${failedRows.length === 1 ? "" : "s"}
+        </summary>
+        <div class="mt-2 overflow-x-auto rounded border border-slate-800">
+          <table class="w-full text-xs">
+            <thead class="text-slate-500 uppercase tracking-wider">
+              <tr>
+                <th class="text-left font-normal py-1 pl-2">rel_path</th>
+                <th class="text-left font-normal py-1">skip_reason</th>
+                <th class="text-left font-normal py-1 pr-2">run_id</th>
+              </tr>
+            </thead>
+            <tbody>${failedRows.map((r) => `
+              <tr class="border-t border-slate-800">
+                <td class="py-1 pl-2 pr-3 font-mono">${escapeHtml(r.rel_path || "")}</td>
+                <td class="py-1 pr-3">${escapeHtml(r.skip_reason || "—")}</td>
+                <td class="py-1 pr-2 font-mono text-slate-500">${escapeHtml(r.run_id || "")}</td>
+              </tr>
+            `).join("")}</tbody>
+          </table>
+        </div>
+      </details>
+    `;
+  const resetEnabled = s.db_exists ? "" : "disabled";
+  return `
+    <div class="rounded-md bg-slate-900 ring-1 ring-slate-800 p-3">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-xs uppercase tracking-wider text-slate-500">ingest state</h3>
+        <button type="button"
+                data-ingest-reset="${escapeHtml(adapterId)}"
+                ${resetEnabled}
+                class="text-xs px-2 py-1 rounded bg-rose-500/15 text-rose-300 ring-1 ring-rose-500/40
+                       hover:bg-rose-500/25 disabled:opacity-40 disabled:pointer-events-none">
+          Reset ingest state
+        </button>
+      </div>
+      <div class="grid md:grid-cols-4 gap-3 text-xs">
+        <div>
+          <div class="text-[10px] uppercase tracking-wider text-slate-500">status</div>
+          <span class="inline-block mt-1 px-2 py-0.5 rounded ring-1 ${statusClass}">${escapeHtml(status)}</span>
+        </div>
+        <div>
+          <div class="text-[10px] uppercase tracking-wider text-slate-500">rows</div>
+          <div class="font-mono tabular-nums text-slate-200">${rows}</div>
+        </div>
+        <div>
+          <div class="text-[10px] uppercase tracking-wider text-slate-500">failed</div>
+          <div class="font-mono tabular-nums text-rose-300">${failed}</div>
+        </div>
+        <div>
+          <div class="text-[10px] uppercase tracking-wider text-slate-500">last modified</div>
+          <div class="text-slate-300">${escapeHtml(lastMod)}</div>
+        </div>
+      </div>
+      <div class="mt-2 text-[11px] text-slate-500 font-mono">${escapeHtml(dbPath)}</div>
+      ${failedTable}
+    </div>
+  `;
+}
+
+// Two-stage modal: GET /preview → typed-confirm → POST /reset. Mirrors the
+// inventory-mutation flow (Theme 14c3) but per-source.
+async function openIngestStateResetModal(adapterId) {
+  const dlg = document.getElementById("preview-dialog");
+  const title = document.getElementById("pv-title");
+  const body = document.getElementById("pv-body");
+  const goBtn = document.getElementById("pv-go");
+  title.textContent = `source-ingest-state ${adapterId} --reset`;
+  body.innerHTML = `<div class="text-xs text-slate-500">loading preview…</div>`;
+  goBtn.disabled = true;
+  goBtn.textContent = "Reset";
+  dlg.showModal();
+
+  let preview = {};
+  try {
+    const resp = await getJSON(
+      `/api/adapters/${encodeURIComponent(adapterId)}/ingest-state/preview`
+    );
+    preview = resp.raw || {};
+  } catch (err) {
+    body.innerHTML = errorBlock(
+      `GET /api/adapters/${adapterId}/ingest-state/preview`,
+      err,
+    );
+    return;
+  }
+
+  body.innerHTML = `
+    <div class="text-sm text-slate-200">
+      This will permanently delete the per-source ingest DB at:
+      <pre class="mt-1 text-xs bg-slate-900 ring-1 ring-slate-800 rounded p-2 overflow-x-auto">${escapeHtml(preview.would_delete_path || "—")}</pre>
+    </div>
+    <div class="grid grid-cols-3 gap-3 mt-3 text-xs">
+      <div>
+        <div class="text-[10px] uppercase tracking-wider text-slate-500">rows lost</div>
+        <div class="font-mono tabular-nums text-rose-300">${Number(preview.row_count_lost || 0).toLocaleString()}</div>
+      </div>
+      <div>
+        <div class="text-[10px] uppercase tracking-wider text-slate-500">failed rows lost</div>
+        <div class="font-mono tabular-nums text-amber-300">${Number(preview.failed_rows_lost || 0).toLocaleString()}</div>
+      </div>
+      <div>
+        <div class="text-[10px] uppercase tracking-wider text-slate-500">requires full re-ingest</div>
+        <div class="text-slate-200">${preview.requires_full_reingest ? "yes" : "no"}</div>
+      </div>
+    </div>
+    <p class="text-xs text-slate-500 mt-3">
+      The next pipeline run for this source will re-walk every file from scratch.
+    </p>
+  `;
+  goBtn.disabled = false;
+
+  // Replace the button to drop any prior listeners.
+  const newGoBtn = goBtn.cloneNode(true);
+  goBtn.parentNode.replaceChild(newGoBtn, goBtn);
+  newGoBtn.addEventListener("click", async (e) => {
+    e.preventDefault();
+    dlg.close();
+    const ok = await confirmDialog({
+      title: "Reset ingest state",
+      body: `This wipes the per-source ingest DB for "${adapterId}". The next run will reprocess every file from scratch.`,
+      verb: `reset ${adapterId}`,
+    });
+    if (!ok) return;
+    try {
+      const resp = await postJSON(
+        `/api/adapters/${encodeURIComponent(adapterId)}/ingest-state/reset`,
+        {},
+      );
+      const result = resp.raw || {};
+      if (result.removed) {
+        toast("ok", `ingest DB removed (${Number(result.rows_lost || 0).toLocaleString()} rows lost)`);
+      } else {
+        toast("warn", "no ingest DB to remove");
+      }
+      _loadIngestStateSection(adapterId);
+    } catch (err) {
+      toast("error", `reset failed: ${err && err.message ? err.message : err}`);
+    }
+  });
 }
 
 function summaryTile(label, value, valueClass) {
@@ -1029,6 +1205,11 @@ document.addEventListener("click", (e) => {
   if (back && !e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) {
     e.preventDefault();
     showTab("library");
+  }
+  const reset = e.target.closest("button[data-ingest-reset]");
+  if (reset && !reset.disabled) {
+    e.preventDefault();
+    openIngestStateResetModal(reset.dataset.ingestReset);
   }
 });
 

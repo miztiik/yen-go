@@ -513,10 +513,10 @@ edit / delete the file by hand to re-ingest a source.
   failed rows from `failed_rows` so the operator sees what they're losing.
 
 **Acceptance**:
-- [ ] Tests: seed a `.yengo-ingest.sqlite` with both successful + failed rows;
+- [x] Tests: seed a `.yengo-ingest.sqlite` with both successful + failed rows;
       assert query returns counts; assert reset --dry-run never writes;
       assert reset removes the file atomically.
-- [ ] Dashboard test pins the reset flow and the typed-confirm requirement.
+- [x] Dashboard test pins the reset flow and the typed-confirm requirement.
 
 ---
 

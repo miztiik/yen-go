@@ -40,6 +40,8 @@ from tools.yengo_dashboard.server.models import (
     RollbackPreviewResponse,
     RollbackRequest,
     RunSnapshot,
+    SourceIngestStateResetPreviewResponse,
+    SourceIngestStateResetResultResponse,
     VacuumDbPreviewResponse,
     VacuumDbRequest,
 )
@@ -234,5 +236,64 @@ def build_maintenance_router(
                 },
             ) from exc
         return InventoryMutationApplyResponse(raw=payload)
+
+    @router.get(
+        "/adapters/{source_id}/ingest-state/preview",
+        response_model=SourceIngestStateResetPreviewResponse,
+    )
+    def source_ingest_state_preview(
+        source_id: str,
+    ) -> SourceIngestStateResetPreviewResponse:
+        """Theme 6b: synchronous dry-run preview for the reset modal.
+
+        Mirrors the ``/api/inventory/preview`` two-stage pattern but lives on
+        a per-source URL so deep-linking from the adapter detail page is
+        natural. CLI failures (returncode 2 for unknown source / no path)
+        surface as 400 so the UI shows the operator the actual stderr.
+        """
+        try:
+            payload = runner.source_ingest_state_reset_preview(source_id)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": (
+                        "puzzle_manager source-ingest-state --reset --dry-run --json failed"
+                    ),
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return SourceIngestStateResetPreviewResponse(raw=payload)
+
+    @router.post(
+        "/adapters/{source_id}/ingest-state/reset",
+        response_model=SourceIngestStateResetResultResponse,
+    )
+    def source_ingest_state_apply(
+        source_id: str,
+    ) -> SourceIngestStateResetResultResponse:
+        """Theme 6b: apply path for the per-source ingest-DB reset.
+
+        The CLI removes the SQLite file (and WAL/SHM sidecars) atomically via
+        :meth:`SourceIngestDB.wipe`. There's no pipeline lock for this op —
+        a concurrent ingest run would either re-create the file fresh or
+        fail open() naturally; either is acceptable since the operator
+        explicitly chose the wipe.
+        """
+        try:
+            payload = runner.source_ingest_state_reset_apply(source_id)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "puzzle_manager source-ingest-state --reset --json failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return SourceIngestStateResetResultResponse(raw=payload)
 
     return router

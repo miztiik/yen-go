@@ -24,6 +24,7 @@ from tools.yengo_dashboard.server.models import (
     RunsResponse,
     RuntimeInfoResponse,
     SourceDetailsResponse,
+    SourceIngestStateResponse,
     TagsListResponse,
 )
 from tools.yengo_dashboard.server.pipeline_runner import PipelineCommandError, PipelineRunner
@@ -268,5 +269,30 @@ def build_read_router(
                 },
             ) from exc
         return SourceDetailsResponse(raw=payload)
+
+    @router.get(
+        "/adapters/{source_id}/ingest-state",
+        response_model=SourceIngestStateResponse,
+    )
+    def source_ingest_state(_request: Request, source_id: str) -> SourceIngestStateResponse:
+        """Theme 6b: passthrough of ``source-ingest-state ID --json``.
+
+        Adapter detail SPA route's "Ingest state" tile consumes this. CLI
+        returncode 2 (unknown source / no path) maps to 400 so the UI can
+        surface the actual error message.
+        """
+        try:
+            payload = runner.source_ingest_state(source_id)
+        except PipelineCommandError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "message": "puzzle_manager source-ingest-state --json failed",
+                    "returncode": exc.returncode,
+                    "stderr": exc.stderr.strip()[:500],
+                    "stdout": exc.stdout.strip()[:500],
+                },
+            ) from exc
+        return SourceIngestStateResponse(raw=payload)
 
     return router

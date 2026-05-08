@@ -40,6 +40,7 @@ EXPECTED_MUTATING_OPS = {
     "enable-adapter",
     "disable-adapter",
     "config-lock release",
+    "source-ingest-state --reset",
 }
 
 

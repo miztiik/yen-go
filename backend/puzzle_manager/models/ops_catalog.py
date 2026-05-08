@@ -162,6 +162,14 @@ OPS_CATALOG: list[OpsCatalogEntry] = [
         section="maintenance",
         summary="Release a stuck pipeline config-lock (use --force if foreign).",
     ),
+    OpsCatalogEntry(
+        op="source-ingest-state --reset",
+        scope=["ingest_state"],
+        reversible=False,
+        preview_supported=True,
+        section="destructive",
+        summary="Wipe a single source's .yengo-ingest.sqlite (forces full re-ingest).",
+    ),
 ]
 
 
